@@ -1,0 +1,16 @@
+# django
+Django==1.11
+
+# database access
+psycopg2==2.7.1
+
+# data aggregation
+netCDF4==1.2.7
+numpy==1.12.1
+pytz==2017.2
+
+# deployment
+dj-config-url==0.1.1
+newrelic
+whitenoise
+gunicorn

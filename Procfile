@@ -1,0 +1,1 @@
+web: NEW_RELIC_CONFIG_FILE=newrelic.ini newrelic-admin run-program gunicorn bdo_platform.wsgi --timeout 300 --log-file -
