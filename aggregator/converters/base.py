@@ -37,7 +37,7 @@ class Dimension(BaseVariable):
             'axis': self.axis,
         })
 
-        return document
+        return encode_document(document)
 
 
 class Variable(BaseVariable):
@@ -60,7 +60,7 @@ class Variable(BaseVariable):
             'dimensions': self.dimensions,
         })
 
-        return document
+        return encode_document(document)
 
 
 class DatasetInfo(object):
@@ -70,30 +70,28 @@ class DatasetInfo(object):
     references = []
 
     def to_json(self):
-        return {
+        return encode_document({
             'title': self.title,
             'source': self.source,
             'description': self.description,
             'references': self.references,
-        }
+        })
 
 
-class DocumentEncoder(json.JSONEncoder):
+def encode_document(obj):
+    for key in obj.keys():
+        if isinstance(obj[key], numpy.integer):
+            obj[key] = int(obj[key])
+        elif isinstance(obj[key], numpy.floating):
+            obj[key] = float(obj[key])
+        elif isinstance(obj[key], numpy.ndarray):
+            obj[key] = obj[key].tolist()
 
-    def default(self, obj):
-        if isinstance(obj, numpy.integer):
-            return int(obj)
-        elif isinstance(obj, numpy.floating):
-            return float(obj)
-        elif isinstance(obj, numpy.ndarray):
-            return obj.tolist()
-        else:
-            return super(DocumentEncoder, self).default(obj)
+    return obj
 
 
 class BaseConverter(object):
     name = None
-    _document = None
     _dataset = None
     _variables = []
     _dimensions = []
@@ -127,32 +125,30 @@ class BaseConverter(object):
             return None
 
     @staticmethod
-    def full_input_path(filename):
+    def full_input_path(filename=None):
         source_path = DATASET_DIR + 'source\\'
         if not os.path.isdir(source_path):
             os.mkdir(source_path)
 
-        return os.path.join(DATASET_DIR + 'source\\', filename)
+        if filename is None:
+            return source_path
+
+        return os.path.join(source_path, filename)
 
     @staticmethod
-    def full_output_path(filename):
+    def full_output_path(filename=None):
         dist_path = DATASET_DIR + 'dist\\'
         if not os.path.isdir(dist_path):
             os.mkdir(dist_path)
 
-        return os.path.join(DATASET_DIR + 'dist\\', filename)
+        if filename is None:
+            return dist_path
+
+        return os.path.join(dist_path, filename)
 
     @property
-    def document(self):
-        if self._document is None:
-            self._document = {
-                'dataset_info': self.dataset.to_json(),
-                'dimensions': [d.to_json() for d in self.dimensions],
-                'variables': [v.to_json() for v in self.variables],
-                'data': [{'variable': v.name, 'data': self.data(v_name=v.name)} for v in self.variables],
-            }
-
-        return self._document
+    def json_data(self):
+        return [encode_document({'variable': v.name, 'data': self.data(v_name=v.name)}) for v in self.variables]
 
     def write_to_disk(self):
 
@@ -163,18 +159,71 @@ class BaseConverter(object):
             os.mkdir(dist_path)
 
         with open('%s\\dataset_info.json' % dist_path, 'w') as output:
-            output.write(json.dumps(self.document['dataset_info'], cls=DocumentEncoder))
+            output.write(json.dumps(self.dataset.to_json()))
 
         with open('%s\\variables.json' % dist_path, 'w') as output:
-            output.write(json.dumps(self.document['variables'], cls=DocumentEncoder))
+            output.write(json.dumps([v.to_json() for v in self.variables]))
 
         with open('%s\\dimensions.json' % dist_path, 'w') as output:
-            output.write(json.dumps(self.document['dimensions'], cls=DocumentEncoder))
+            output.write(json.dumps([d.to_json() for d in self.dimensions]))
 
         # make sure the actual data folder exists
         if not os.path.isdir('%s\\data' % dist_path):
             os.mkdir('%s\\data' % dist_path)
 
-        for datum in self.document['data']:
+        for datum in self.json_data:
             with open('%s\\data\\%s.json' % (dist_path, datum['variable']), 'w') as output:
-                output.write(json.dumps(datum, cls=DocumentEncoder))
+                output.write(json.dumps(datum))
+
+    def write_to_db(self, db):
+
+        # insert dataset info
+        dataset_id = db.datasets.insert_one(self.dataset.to_json()).inserted_id
+
+        # add dimensions
+        dimension_docs = []
+        dimension_docs_by_name = {}
+        for d in self.dimensions:
+            dimension_doc = d.to_json()
+            dimension_doc['dataset_id'] = dataset_id
+            dimension_docs.append(dimension_doc)
+            dimension_docs_by_name[dimension_doc['name']] = dimension_doc
+
+        # bulk insert
+        dimension_ids = db.dimensions.insert_many(dimension_docs).inserted_ids
+        for idx, dimension_id in enumerate(dimension_ids):
+            dimension_docs[idx]['_id'] = dimension_id
+
+        # add variables
+        variable_docs = []
+        variable_docs_by_name = {}
+        for v in self.variables:
+            variable_doc = v.to_json()
+            variable_doc['dataset_id'] = dataset_id
+
+            # replace references to dimension names with dimension ObjectIDs
+            dims = variable_doc['dimensions'][:]
+            del variable_doc['dimensions']
+            variable_doc['dimension_ids'] = []
+            for dim in dims:
+                variable_doc['dimension_ids'].append(dimension_docs_by_name[dim]['_id'])
+
+            variable_docs.append(variable_doc)
+            variable_docs_by_name[variable_doc['name']] = variable_doc
+
+        # bulk insert
+        variable_ids = db.variables.insert_many(variable_docs).inserted_ids
+        for idx, variable_id in enumerate(variable_ids):
+            variable_docs[idx]['_id'] = variable_id
+
+        # add actual data
+        data_docs = []
+        for datum in self.json_data:
+            # replace reference to variable name with variable ObjectIDs
+            datum['variable_id'] = variable_docs_by_name[datum['variable']]['_id']
+            del datum['variable']
+            datum['dataset_id'] = dataset_id
+            data_docs.append(datum)
+
+        # bulk insert
+        data_ids = db.data.insert_many(data_docs).inserted_ids

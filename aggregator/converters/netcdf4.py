@@ -35,10 +35,26 @@ class NetCDF4Converter(BaseConverter):
     def _parse_variable(self, target, source):
         # variable extends base variable
         self._parse_base_variable(target, source)
-        target.scale_factor = source.scale_factor
-        target.add_offset = source.add_offset
-        target.cell_methods = source.cell_methods.split(' ')
-        target.type_of_analysis = source.type_of_analysis
+        try:
+            target.scale_factor = source.scale_factor
+        except AttributeError:
+            pass
+
+        try:
+            target.add_offset = source.add_offset
+        except AttributeError:
+            pass
+
+        try:
+            target.cell_methods = source.cell_methods.split(' ')
+        except AttributeError:
+            pass
+
+        try:
+            target.type_of_analysis = source.type_of_analysis
+        except AttributeError:
+            pass
+
         try:
             target.extra_info = {
                 'WMO_code': source.WMO_code,
@@ -58,7 +74,10 @@ class NetCDF4Converter(BaseConverter):
         try:
             target.step = v.step
         except AttributeError:
-            target.step = d_data[1] - d_data[0]
+            try:
+                target.step = d_data[1] - d_data[0]
+            except IndexError:
+                target.step = None
 
         try:
             target.axis = source.axis
