@@ -115,3 +115,8 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = 'staticfiles'
+
+# bdo main app settings
+DATASET_DIR = os.path.join(BASE_DIR, 'aggregator\\datasets\\')
+if not os.path.isdir(DATASET_DIR):
+    os.mkdir(DATASET_DIR)

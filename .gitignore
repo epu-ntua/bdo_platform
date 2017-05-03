@@ -56,7 +56,6 @@ coverage.xml
 *.log
 local_settings.py
 staticfiles/*
-settings-loader.txt
 
 # Flask stuff:
 instance/
@@ -97,3 +96,6 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# BDO specific
+settings-loader.txt
+aggregator/datasets

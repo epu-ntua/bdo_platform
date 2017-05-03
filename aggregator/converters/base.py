@@ -5,7 +5,7 @@ import decimal
 
 import numpy
 
-from settings import DATASET_DIR
+from bdo_platform.settings import DATASET_DIR
 
 
 class BaseVariable(object):
@@ -92,6 +92,7 @@ class DocumentEncoder(json.JSONEncoder):
 
 
 class BaseConverter(object):
+    name = None
     _document = None
     _dataset = None
     _variables = []
@@ -126,8 +127,20 @@ class BaseConverter(object):
             return None
 
     @staticmethod
-    def full_filename(filename):
-        return os.path.join(DATASET_DIR, filename)
+    def full_input_path(filename):
+        source_path = DATASET_DIR + 'source\\'
+        if not os.path.isdir(source_path):
+            os.mkdir(source_path)
+
+        return os.path.join(DATASET_DIR + 'source\\', filename)
+
+    @staticmethod
+    def full_output_path(filename):
+        dist_path = DATASET_DIR + 'dist\\'
+        if not os.path.isdir(dist_path):
+            os.mkdir(dist_path)
+
+        return os.path.join(DATASET_DIR + 'dist\\', filename)
 
     @property
     def document(self):
@@ -136,20 +149,32 @@ class BaseConverter(object):
                 'dataset_info': self.dataset.to_json(),
                 'dimensions': [d.to_json() for d in self.dimensions],
                 'variables': [v.to_json() for v in self.variables],
-                'data': [self.data(v_name=v.name) for v in self.variables],
+                'data': [{'variable': v.name, 'data': self.data(v_name=v.name)} for v in self.variables],
             }
 
         return self._document
 
-    def write(self):
-        with open('out\\dataset_info.json', 'w') as output:
+    def write_to_disk(self):
+
+        dist_path = self.full_output_path('.'.join(self.name.split('.')[:-1]))
+
+        # make sure the dataset folder exists
+        if not os.path.isdir(dist_path):
+            os.mkdir(dist_path)
+
+        with open('%s\\dataset_info.json' % dist_path, 'w') as output:
             output.write(json.dumps(self.document['dataset_info'], cls=DocumentEncoder))
 
-        with open('out\\variables.json', 'w') as output:
+        with open('%s\\variables.json' % dist_path, 'w') as output:
             output.write(json.dumps(self.document['variables'], cls=DocumentEncoder))
 
-        with open('out\\dimensions.json', 'w') as output:
+        with open('%s\\dimensions.json' % dist_path, 'w') as output:
             output.write(json.dumps(self.document['dimensions'], cls=DocumentEncoder))
 
-        with open('out\\data.json', 'w') as output:
-            output.write(json.dumps(self.document['data'], cls=DocumentEncoder))
+        # make sure the actual data folder exists
+        if not os.path.isdir('%s\\data' % dist_path):
+            os.mkdir('%s\\data' % dist_path)
+
+        for datum in self.document['data']:
+            with open('%s\\data\\%s.json' % (dist_path, datum['variable']), 'w') as output:
+                output.write(json.dumps(datum, cls=DocumentEncoder))

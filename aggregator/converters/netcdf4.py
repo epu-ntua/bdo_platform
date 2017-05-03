@@ -1,13 +1,14 @@
 from netCDF4 import Dataset
 
-from converters.base import *
+from aggregator.converters.base import *
 
 
-class BaseNetCDF4Converter(BaseConverter):
+class NetCDF4Converter(BaseConverter):
     _f = None
 
     def __init__(self, name):
-        self._f = Dataset(BaseConverter.full_filename(name), mode='r')
+        self.name = name
+        self._f = Dataset(BaseConverter.full_input_path(name), mode='r')
 
         # validations
         if not self._f.dimensions.keys():
@@ -38,9 +39,12 @@ class BaseNetCDF4Converter(BaseConverter):
         target.add_offset = source.add_offset
         target.cell_methods = source.cell_methods.split(' ')
         target.type_of_analysis = source.type_of_analysis
-        # target.extra_info = {
-        #     'WMO_code': source.WMO_code,
-        # }
+        try:
+            target.extra_info = {
+                'WMO_code': source.WMO_code,
+            }
+        except AttributeError:
+            pass
 
     def _parse_dimension(self, target, source, v_source):
         # dimension extends base variable
