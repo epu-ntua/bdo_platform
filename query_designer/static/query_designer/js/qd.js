@@ -15,6 +15,11 @@ var QueryDesigner = function($container, params) {
         // toolbar
         toolbar: {
             classesSource: {type: 'GET', from: '/queries/datasets/{{ datasetId }}/variables/?p={{ p }}'}
+        },
+
+        // classes
+        classes: {
+            propertySource: {type: 'GET', from: '/queries/datasets/{{ datasetId }}/variables/{{ variableId }}/properties/'}
         }
 
     }, params);
@@ -58,6 +63,9 @@ var QueryDesigner = function($container, params) {
 
     // setup toolbar
     this.toolbar = new Toolbar(this);
+
+    // create arrows
+    this.arrows = new Arrows(this);
 
     // setup workbench
     this.workbench = new BuilderWorkbench(this);

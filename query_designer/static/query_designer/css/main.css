@@ -375,8 +375,8 @@
 }
 
 #builder_workspace .class-instance .title h3{
-    margin-right: 50px;
-    display: inline-block
+    margin: 0 50px 0 0;
+    display: inline-block;
 }
 
 #builder_workspace .class-instance .title span.delete, #builder_workspace .class-instance .title span.dataset {
@@ -390,15 +390,15 @@
 }
 
 #builder_workspace .class-instance .title h3 {
-    top: -10px;
-    position: relative;
+    /* top: -10px; */
+    /* position: relative; */
 }
 
 #builder_workspace .class-instance .title span.uri {
     font-size: 10px;
     position: absolute;
     left: 10px;
-    top: 35px;
+    top: 48px;
     color: #ddd;
     line-height: 10px;
 }

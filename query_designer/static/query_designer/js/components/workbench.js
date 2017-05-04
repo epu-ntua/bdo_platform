@@ -1,7 +1,12 @@
-    BuilderWorkbench = function() {
+    BuilderWorkbench = function(qd) {
+        var that = this;
+
         Array.prototype.move = function (from, to) {
             this.splice(to, 0, this.splice(from, 1)[0]);
         };
+
+        this.qd = qd;
+        this.config = qd.config.classes;
 
         this.builder = {
             instances: [],
@@ -31,21 +36,14 @@
                 }
             },
 
+            /* default reset function */
+            reset: function() {
+
+            },
+
             /* Get the name of an endpoint*/
             endpoint_to_name: function (endpoint) {
-                var result = undefined;
-
-                $.each(total_endpoints, function (name, e) {
-                    if (e === endpoint) {
-                        result = name;
-                    }
-                });
-
-                if (result === undefined) {
-                    result = endpoint;
-                }
-
-                return result;
+                return endpoint;
             },
 
             /* Get the endpoint based on a datasource name */
@@ -54,10 +52,10 @@
             },
 
             /*Adds an instance of a class*/
-            add_instance: function (dt_name, uri, x, y, default_properties) {
+            add_instance: function (dt_name, uri, label, x, y, default_properties) {
                 var new_id = this.instances.length;
                 $('.help-prompt').remove();
-                var new_instance = $.parseHTML('<div id="class_instance_' + new_id + '" class="class-instance" data-n="' + new_id + '"style="left: ' + x + 'px; top: ' + y + 'px;"><div class="title"><h3>' + uri_to_label(uri) + '</h3><span class="subquery-select empty"></span><span class="uri">&lt;' + uri + '&gt;</span><span class="delete" data-about="' + new_id + '">x</span><span class="dataset">' + this.endpoint_to_name(dt_name) + '</span></div><div class="properties"><span class="loading">Loading properties...</span></div></div>');
+                var new_instance = $.parseHTML('<div id="class_instance_' + new_id + '" class="class-instance" data-n="' + new_id + '"style="left: ' + x + 'px; top: ' + y + 'px;"><div class="title"><h3>' + label + '</h3><span class="subquery-select empty"></span><span class="uri">&lt;' + uri + '&gt;</span><span class="delete" data-about="' + new_id + '">x</span><span class="dataset">' + this.endpoint_to_name(dt_name) + '</span></div><div class="properties"><span class="loading">Loading properties...</span></div></div>');
                 $("#builder_workspace").append(new_instance);
                 $(new_instance).draggable({
                     cancel: '.subquery-select', handle: '.title', cursor: 'move', drag: function () {
@@ -67,25 +65,30 @@
                 });
                 this.bring_to_front(new_instance);
 
-                var instance_object = {id: new_id, uri: uri, dt_name: dt_name, selected_properties: []}
+                var instance_object = {id: new_id, uri: uri, dt_name: dt_name, selected_properties: []};
                 this.instances.push(instance_object);
 
                 $(new_instance).find(".properties").html('<div class="property-table"><div class="header-row"><div></div><span>Show</span><span>Property</span><span>Optional</span><span>Order by</span><span>Filters</span><span>Foreign</span></div></div>');
                 $(new_instance).find(".properties").append('<div class="property-control"></div>');
 
                 //add property selector
-                instance_object.property_select = new property_select(instance_object);
+                instance_object.property_select = new PropertySelect(that.qd, instance_object);
 
                 var self = this;
                 var inst = self.instances[new_id];
 
-                //get number of class instances
-                $.ajax({ //make request for classes
-                    url: ADVANCED_BUILDER_API_URI + "class_info/" + dt_name + "?class_uri=" + encodeURIComponent(uri),
+                // get number of class instances
+                var propertyUrl = that.config.propertySource.from
+                    .replace('{{ datasetId }}', dt_name)
+                    .replace('{{ variableId }}', uri);
+
+                // make request for properties
+                $.ajax({
+                    url: propertyUrl,
                     type: "GET",
-                    success: function (data, textStatus, jqXHR) {
-                        if (data.results.bindings.length > 0) {
-                            var n = data.results.bindings[0].cnt.value;
+                    success: function (data) {
+                        if (data.length > 0) {
+                            var n = data.length;
                             $("#class_instance_" + new_id + " .title h3").append('<span class="n-of-instances">(' + Number(n).toLocaleString() + ')</span>');
                         }
                     }
@@ -150,8 +153,8 @@
                 }
 
                 that.builder.reset_height($("#class_instance_" + new_id));
-                builder.reset();
-                arrows.draw();
+                that.builder.reset();
+                that.qd.arrows.draw();
             },
 
             update_orders: function (e, ui) { //update properties, arrows & query after property reordering
@@ -188,13 +191,13 @@
 
                 //update options variable order
                 if (old_n < new_n) {
-                    builder.options.reorder('?' + that.builder.instances[i].selected_properties[new_n].name, '?' + that.builder.instances[i].selected_properties[new_n - 1].name, true);
+                    that.builder.options.reorder('?' + that.builder.instances[i].selected_properties[new_n].name, '?' + that.builder.instances[i].selected_properties[new_n - 1].name, true);
                 } else {
-                    builder.options.reorder('?' + that.builder.instances[i].selected_properties[new_n].name, '?' + that.builder.instances[i].selected_properties[new_n + 1].name, false);
+                    that.builder.options.reorder('?' + that.builder.instances[i].selected_properties[new_n].name, '?' + that.builder.instances[i].selected_properties[new_n + 1].name, false);
                 }
 
                 //update the query
-                builder.reset();
+                that.builder.reset();
             },
 
             get_uri_position: function (instance) {
@@ -268,7 +271,7 @@
                 $(id + " .property-table").append(property_object);
 
                 that.builder.reset_height($(id));
-                builder.reset();
+                that.builder.reset();
 
                 if (p_object.uri != "URI") {
                     $.ajax({  //make an ajax request to get property return type
@@ -293,7 +296,7 @@
                     var inst = data.instances[i];
 
                     var endpoint = this.name_to_endpoint(inst.dt_name) || inst.dt_name;
-                    this.add_instance(endpoint, inst.uri, inst.position.x, inst.position.y, inst.selected_properties);
+                    this.add_instance(endpoint, inst.uri, inst.label, inst.position.x, inst.position.y, inst.selected_properties);
                     sub_Q.set_subquery(i, data.instances[i].subquery);
                 }
 
@@ -309,8 +312,8 @@
                 builder.options.offset = data.offset;
                 builder.options.variables = data.variables;
 
-                arrows.draw();
-                builder.reset();
+                that.qd.arrows.draw();
+                that.builder.reset();
             },
 
             to_json: function () { //export the design to a json object
@@ -392,7 +395,7 @@
             }
 
             that.builder.instances.splice(n, 1); //also delete from instance array
-            builder.reset();
+            that.builder.reset();
         });
 
         /*Delete properties*/
@@ -411,16 +414,16 @@
 
             $(this).parent().remove(); //remove the row
 
-            arrows.remove_property('#class_instance_' + i, n); //remove arrows from and to this property
+            that.qd.arrows.remove_property('#class_instance_' + i, n); //remove arrows from and to this property
             that.builder.instances[i].selected_properties.splice(n, 1); //also delete from selected properties array
 
-            builder.reset();
+            that.builder.reset();
         });
 
         /*Order by*/
         $("body").on('change', '.property-row span:nth-of-type(4) select', function (e) {
             that.builder.instances[$(this).parent().parent().data('i')].selected_properties[$(this).parent().parent().data('n')].order_by = $(this).val();
-            builder.reset();
+            that.builder.reset();
         });
 
         /*Adding filter*/
@@ -507,7 +510,7 @@
                 $(this).removeClass('connecting');
 
                 that.builder.connection_from = undefined;
-                builder.reset();
+                that.builder.reset();
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -525,8 +528,8 @@
                 style = "dashed";
             }
 
-            arrows.set_style('#class_instance_' + i, n, style);
-            builder.reset();
+            that.qd.arrows.set_style('#class_instance_' + i, n, style);
+            that.builder.reset();
         });
 
         /*Show or not a property in the results*/
@@ -538,7 +541,7 @@
             that.builder.instances[i].selected_properties[n].show = $(this).is(':checked');
             propagate_shown_property(i, n, $(this).is(':checked'));
 
-            builder.reset();
+            that.builder.reset();
         });
 
         //search for connected properties & change their show to
@@ -611,13 +614,25 @@
             }
         });
 
-        /*Warn on page unload*/
+        /* Warn on page unload */
         window.addEventListener("beforeunload", function (e) {
             if (builder.query != builder.saved_query) {
                 var confirmationMessage = 'There are changes in the Query Designer that have not been saved.';
 
                 (e || window.event).returnValue = confirmationMessage; //Gecko + IE
                 return confirmationMessage; //Gecko + Webkit, Safari, Chrome etc.
+            }
+        });
+
+        /* Drag & Dropping */
+        $("#builder_workspace").mouseup(function(e) {
+            console.log(that.builder.selection)
+            if ((e.which == 1) && that.builder.selection) { //only for left click and when a class selection has been made
+                that.builder.add_instance(that.builder.selection.dt_name, that.builder.selection.uri, that.builder.selection.label, e.pageX - $(this).position().left, e.pageY - $(this).position().top);
+
+                that.builder.selection = undefined;
+                $(this).removeClass("accepting-instance");
+                $(".toolbar, #tree_toolbar").removeClass("accepting-instance");
             }
         });
 

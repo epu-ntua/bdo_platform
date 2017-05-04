@@ -201,15 +201,16 @@ var Toolbar = function(qd) {
     });
 
     // on class start drag
-    $("body").on('mousedown','.class_button', function(e) {
+    $("body").on('mousedown', '.class_button', function(e) {
         if (e.which == 1) { // only for left click
-            that.qd.workbench.selection = {'type': $(this).data("type"), 'uri': $(this).data("uri"), 'dt_name': $toolbar.find(' > select').val()};
-            if ($(this).data("type") == "property") {
-                that.qd.workbench.builder.selection.domain = $(this).data("domain");
-                that.qd.workbench.builder.selection.range = $(this).data("range");
-            }
+            that.qd.workbench.builder.selection = {
+                'type': $(this).data("type"),
+                'uri': $(this).data("id"),
+                'label': $(this).text(),
+                'dt_name': $toolbar.find(' > select').val()
+            };
 
-            $toolbar.addClass("accepting-instance");
+            $('#builder_workspace').addClass("accepting-instance");
             e.preventDefault();
             e.stopPropagation();
         }
