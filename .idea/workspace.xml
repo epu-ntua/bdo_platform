@@ -1,18 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d1de3af5-5a60-4e6d-9dea-8b900466eed0" name="Default" comment="Basic QD toolbar functionality (choose dataset, search/paginate classes)">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/query_designer/static/query_designer/js/components/arrows.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/query_designer/static/query_designer/js/components/property-select.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bdo_main_app/templates/index.html" afterPath="$PROJECT_DIR$/bdo_main_app/templates/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/query_designer/static/query_designer/css/main.css" afterPath="$PROJECT_DIR$/query_designer/static/query_designer/css/main.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/query_designer/static/query_designer/js/components/toolbar.js" afterPath="$PROJECT_DIR$/query_designer/static/query_designer/js/components/toolbar.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/query_designer/static/query_designer/js/components/workbench.js" afterPath="$PROJECT_DIR$/query_designer/static/query_designer/js/components/workbench.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/query_designer/static/query_designer/js/qd.js" afterPath="$PROJECT_DIR$/query_designer/static/query_designer/js/qd.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/query_designer/templates/query_designer/index.html" afterPath="$PROJECT_DIR$/query_designer/templates/query_designer/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/query_designer/urls.py" afterPath="$PROJECT_DIR$/query_designer/urls.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/query_designer/views.py" afterPath="$PROJECT_DIR$/query_designer/views.py" />
+    <list default="true" id="d1de3af5-5a60-4e6d-9dea-8b900466eed0" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -82,6 +72,16 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="201">
+              <caret line="99" column="0" lean-forward="true" selection-start-line="99" selection-start-column="0" selection-end-line="99" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="property-select.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/property-select.js">
           <provider selected="true" editor-type-id="text-editor">
@@ -124,21 +124,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="main.css" pinned="false" current-in-tab="true">
+      <file leaf-file-name="main.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/css/main.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="514">
-              <caret line="966" column="1" lean-forward="false" selection-start-line="966" selection-start-column="1" selection-end-line="966" selection-end-column="1" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/bdo_main_app/templates/index.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="23" lean-forward="false" selection-start-line="0" selection-start-column="23" selection-end-line="0" selection-end-column="23" />
+            <state relative-caret-position="205">
+              <caret line="53" column="0" lean-forward="false" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -158,7 +148,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>pageS</find>
       <find>.loadClasses</find>
       <find>if (window.Worker) {</find>
       <find>getDataset</find>
@@ -188,6 +177,7 @@
       <find>builder.reset();</find>
       <find>qb.</find>
       <find>_this</find>
+      <find>74</find>
     </findStrings>
     <replaceStrings>
       <replace>/static/builder/</replace>
@@ -219,7 +209,6 @@
         <option value="$PROJECT_DIR$/aggregator/settings.py" />
         <option value="$PROJECT_DIR$/bdo_platform/settings_management/development.py" />
         <option value="$PROJECT_DIR$/aggregator/connectors/motu/util/__init__.py" />
-        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/aggregator/connectors/motu/__init__.py" />
         <option value="$PROJECT_DIR$/bdo_platform/settings_management/development_dpap.py" />
         <option value="$PROJECT_DIR$/aggregator/converters/base.py" />
@@ -253,6 +242,7 @@
         <option value="$PROJECT_DIR$/query_designer/urls.py" />
         <option value="$PROJECT_DIR$/query_designer/views.py" />
         <option value="$PROJECT_DIR$/query_designer/static/query_designer/css/main.css" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -881,7 +871,28 @@
       <option name="project" value="LOCAL" />
       <updated>1493912461419</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Adding classes to QD">
+      <created>1493929080556</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1493929080557</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Minor updates">
+      <created>1493929362983</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1493929362983</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Added PyCharm files to gitignore">
+      <created>1493929434419</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1493929434419</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -925,7 +936,10 @@
     <MESSAGE value="Updated example" />
     <MESSAGE value="Old query designer merged (non-functional)" />
     <MESSAGE value="Basic QD toolbar functionality (choose dataset, search/paginate classes)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Basic QD toolbar functionality (choose dataset, search/paginate classes)" />
+    <MESSAGE value="Adding classes to QD" />
+    <MESSAGE value="Minor updates" />
+    <MESSAGE value="Added PyCharm files to gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added PyCharm files to gitignore" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -1140,14 +1154,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="106">
-          <caret line="25" column="2" lean-forward="false" selection-start-line="25" selection-start-column="2" selection-end-line="25" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/base.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -1240,8 +1246,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/css/main.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="514">
-          <caret line="966" column="1" lean-forward="false" selection-start-line="966" selection-start-column="1" selection-end-line="966" selection-end-column="1" />
+        <state relative-caret-position="205">
+          <caret line="53" column="0" lean-forward="false" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="201">
+          <caret line="99" column="0" lean-forward="true" selection-start-line="99" selection-start-column="0" selection-end-line="99" selection-end-column="0" />
           <folding />
         </state>
       </provider>
