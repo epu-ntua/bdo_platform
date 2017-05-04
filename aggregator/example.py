@@ -17,9 +17,9 @@ db.variables.drop()
 db.data.drop()
 
 # load nc file & write results
-# cnv = NetCDF4Converter('global-analysis-forecast-wav-001-023_1493738249917.nc')
+cnv = NetCDF4Converter('global-analysis-forecast-wav-001-023_1493738249917.nc')
 # cnv.write_to_disk()
-# cnv.write_to_db(db=db)
+cnv.write_to_db(db=db)
 
 # motu file
 motu_args = (

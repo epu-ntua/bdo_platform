@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'query_designer/css/main.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <div id="query-designer-container">
+
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'query_designer/js/components/toolbar.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/dataset-select.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/workbench.js' %}"></script>
+    <script src="{% static 'query_designer/js/qd.js' %}"></script>
+
+    <script>
+        $(function() {
+            $('#query-designer-container').qd();
+        });
+    </script>
+{% endblock %}

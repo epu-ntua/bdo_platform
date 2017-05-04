@@ -1,0 +1,967 @@
+#tree_toolbar {
+    position: absolute;
+    right: 0;
+    max-width: 300px;
+    top: 150px;
+    z-index: 500;
+    background: #fff;
+    border-left: 1px solid #eee;
+}
+
+#tree_toolbar_objects {
+    overflow: auto;
+    height: 580px;
+}
+
+#tree_toolbar .class-wrapper {
+    white-space: nowrap;
+    padding-right: 30px;
+}
+
+#tree_toolbar .tree-toolbar-open, #tree_toolbar .tree-toolbar-close {
+    cursor: pointer;
+    float: right;
+}
+
+#tree_toolbar .arrow {
+    cursor: pointer;
+}
+
+#tree_toolbar .class-contents {
+    padding-left: 35px;
+}
+
+#tree_toolbar .property {
+    color: #aaa;
+}
+
+#tree_toolbar .arrow {
+    display: inline-block;
+    margin: 5px;
+}
+
+#tree_toolbar .arrow.loading {
+    width: 0;
+    padding: 0 8px;
+}
+
+#tree_toolbar > div span {
+    vertical-align: top;
+}
+
+.toolbar {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.toolbar-container {
+    background: #eee;
+}
+
+.toolbar-container > * {
+    vertical-align: top;
+}
+
+.toolbar .active-classes {
+    display: inline;
+    padding: 10px;
+}
+
+.toolbar .active-classes .classes-container {
+    display: inline;
+}
+
+.toolbar .active-classes .button {
+    margin: 0 5px 5px 5px;
+    background: #b2b2b2;
+    border-radius: 2px;
+}
+
+.toolbar .prev-next-classes-button {
+    font-size: 20px;
+    font-weight: 600;
+    color: #00B16A;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.toolbar .prev-next-classes-button:hover {
+    color: #1E8BC3;
+    cursor: pointer;
+}
+
+.toolbar .info {
+    margin-left: 20px;
+}
+
+.toolbar .class_button, #tree_toolbar .class-wrapper .class {
+    cursor: grab;
+    cursor: -o-grab;
+    cursor: -ms-grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+
+.toolbar .class_button:active, #tree_toolbar .class-wrapper .class:active {
+    cursor: grabbing;
+    cursor: -o-grabbing;
+    cursor: -ms-grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+}
+
+.toolbar .class_button.property:hover {
+    background: #1E8BC3;
+}
+
+.toolbar .class_button.class:hover {
+    background: #26C281;
+}
+
+.toolbar select {
+    padding: 5px;
+}
+
+.builder-advanced .qb-equivalent-query-main {
+    display: none !important;
+}
+
+.glyphicon.loading {
+    padding: 0 !important;
+}
+
+.designer-menu {
+    background: #eee;
+    /*border-bottom: 1px solid #aaa;*/
+}
+
+.designer-menu .designer-button,
+.query-title {
+    display: inline-block;
+    border: 1px solid #eee;
+    padding: 2px 5px;
+    vertical-align: top;
+    margin: 2px 5px;
+}
+
+.designer-button, designer-button * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.run-query-info {
+    display: inline-block;
+    margin-top: 5px;
+    position: absolute;
+    color: #6C7A89;
+    font-size: 80%;
+    text-align: center;
+}
+
+.main.sparql .run-query-info {
+    margin-top: 0;
+}
+
+.run-query-info > span {
+    vertical-align: top;
+}
+
+.run-query-info .bs-component {
+    width: 185px;
+    height: 10px;
+}
+
+.run-query-info .bs-component > .progress {
+    height: 10px;
+}
+
+.query-title {
+    color: #6C7A89;
+}
+
+.designer-menu .designer-button > span.text {
+    margin-left: 5px;
+    display: inline-block;
+    vertical-align: top;
+    color: #888;
+}
+
+.designer-menu .designer-button.checked {
+    background: #ccc;
+}
+
+.designer-menu #show-source .source-icon {
+    font-family: Consolas;
+    font-weight: 600;
+}
+
+.text-green {
+    color: #00B16A;
+}
+
+.text-red {
+    color: #D64541;
+}
+
+.text-white {
+    color: #fff;
+}
+
+.text-orange {
+    color: #FC5006;
+}
+
+.text-gray {
+    color: #999;
+}
+
+.designer-menu .designer-button img {
+    height: 30px;
+}
+
+.designer-menu .designer-button:hover {
+    border: 1px solid #ddd;
+    background: #eaeaea;
+    cursor: pointer;
+}
+
+#builder_workspace {
+    width: 100%;
+    height: 600px;
+    position: relative;
+}
+
+#builder_workspace > span {
+    padding: 5px;
+}
+
+#query_pattern {
+    width: 240px;
+    text-transform: uppercase;
+}
+
+#query_pattern, #query_limit, #query_offset {
+    width: 300px;
+    margin-top: 5px;
+}
+
+#query_variables {
+    display: inline;
+}
+
+#query_variables .variable {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border-radius: 2px;
+    padding: 2px 5px;
+    background: #aaa;
+}
+
+#builder_workspace.accepting-instance {
+    border: 1px dotted #FC5006;
+    background: #f3f3f3;
+    cursor: grabbing;
+    cursor: -o-grabbing;
+    cursor: -ms-grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+}
+
+.toolbar.accepting-instance, #tree_toolbar.accepting-instance {
+    cursor: grabbing;
+    cursor: -o-grabbing;
+    cursor: -ms-grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+}
+
+#builder_workspace .class-instance {
+    position: absolute;
+    border: 2px solid #2574A9;
+    min-width: 400px;
+    z-index: 1;
+	width: auto !important;
+	height: auto !important;
+}
+
+#builder_workspace .class-instance .title {
+    display: block;
+    color: #fff;
+    background: #5C97BF;
+    padding: 10px;
+	cursor: move;
+    border-bottom: 1px solid #2574A9;
+    min-height: 40px;
+}
+
+#builder_workspace .class-instance .title .subquery-select {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 10px;
+    height: 14px;
+    color: #fff;
+    font-size: 9px;
+    text-align: center;
+    vertical-align: top;
+    border-radius: 0 0 4px 0;
+    border-bottom: 1px dotted rgba(27,45,57, 0.5);
+    border-right: 1px dotted rgba(27,45,57, 0.5);
+    text-shadow: 1px 1px #1d1d1d;
+    cursor: pointer;
+    user-select: none;
+    font-family: Consolas;
+}
+
+#builder_workspace span.n-of-instances {
+    font-size: 50%;
+    color: #fff;
+    margin-left: 10px;
+    vertical-align: top;
+    margin-top: 10px;
+    display: inline-block;
+}
+
+#builder_workspace .class-instance .subquery-selector {
+    position: absolute;
+    height: 20px;
+    top: -23px;
+    left: -2px;
+    width: 200px;
+    overflow: hidden;
+    background: #eee;
+    border-top: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-radius: 5px 5px 0 0;
+}
+
+#builder_workspace .class-instance .subquery-selector .subquery-value {
+    font-size: 9px;
+    margin-right: 5px;
+    padding: 1px 5px;
+    top: -5px;
+    position: relative;
+    color: #fff;
+    border: 1px dotted #fff;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: Consolas;
+}
+
+#builder_workspace .class-instance .subquery-selector .subquery-value:hover {
+    opacity: 0.8;
+}
+
+#builder_workspace .class-instance .title .subquery-select:hover {
+    opacity: 0.8;
+}
+
+#builder_workspace .class-instance .title .subquery-select.empty {
+    width: 8px;
+    height: 8px;
+}
+
+#builder_workspace .class-instance .title.connecting {
+	cursor: pointer;
+}
+
+#builder_workspace .class-instance .title:hover {
+	opacity: 0.9;
+}
+
+#builder_workspace .class-instance .title h3{
+    margin-right: 50px;
+    display: inline-block
+}
+
+#builder_workspace .class-instance .title span.delete, #builder_workspace .class-instance .title span.dataset {
+    float: right;
+    font-size: 0.8em;
+    margin-top: 10px;
+    max-width: 200px;
+    max-height: 1.4em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#builder_workspace .class-instance .title h3 {
+    top: -10px;
+    position: relative;
+}
+
+#builder_workspace .class-instance .title span.uri {
+    font-size: 10px;
+    position: absolute;
+    left: 10px;
+    top: 35px;
+    color: #ddd;
+    line-height: 10px;
+}
+
+#builder_workspace .class-instance .title span.delete {
+    margin-top: -7px;
+}
+
+#builder_workspace .class-instance .title span.delete:hover {
+    color: #D64541;
+    cursor: pointer;
+}
+
+#builder_workspace .class-instance .property-control {
+    display: block;
+    color: #fff;
+    background: #5C97BF;
+    padding: 10px;
+    border-top: 1px solid #2574A9;
+    position: relative;
+}
+
+#builder_workspace .class-instance .property-control .property-dropdown {
+    position: absolute;
+    display: none;
+    top: 40px;
+    min-width: 195px;
+    max-width: 500px;
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #34495e;
+}
+
+#builder_workspace .class-instance .property-control .dropdown-toggle-properties {
+    display: inline-block;
+    padding: 3px 10px;
+    cursor: pointer;
+    background: #eee;
+    border-left: 1px solid #aaa;
+    margin-right: 10px;
+}
+
+#builder_workspace .class-instance .property-control .dropdown-toggle-properties .loading {
+    padding-left: 0;
+}
+
+#builder_workspace .class-instance .property-control .dropdown-toggle-properties:hover {
+    background: #ddd;
+}
+
+#builder_workspace .class-instance .property-control .property-dropdown .button, #builder_workspace .class-instance .property-control .property-dropdown .property {
+    display: block;
+}
+
+#builder_workspace .class-instance .property-control .property-dropdown .property {
+    padding: 2px 10px;
+}
+
+#builder_workspace .class-instance .property-control .property-dropdown .up {
+    border-bottom: 1px solid #aaa;
+}
+
+#builder_workspace .class-instance .property-control input {
+    background: #eee;
+    border: none;
+    padding: 3px 4px;
+    width: 164px;
+}
+
+#builder_workspace .class-instance .property-control input:focus {
+    outline: 0;
+}
+
+#builder_workspace .class-instance .property-control .property-dropdown .down {
+    border-top: 1px solid #aaa;
+}
+
+#builder_workspace .class-instance .property-control .property-dropdown .property:hover,
+#builder_workspace .class-instance .property-control .property-dropdown .down:hover,
+#builder_workspace .class-instance .property-control .property-dropdown .up:hover {
+    cursor: pointer;
+    background: #5C97BF;
+}
+
+#builder_workspace .class-instance .property-control .property-dropdown .property.uncertain {
+    color: #aaa;
+}
+
+#builder_workspace .class-instance .properties {
+    min-height: 100px;
+    background: #fff;
+}
+
+#builder_workspace .class-instance .properties select {
+    width: 300px;
+    margin-right: 10px;
+}
+
+#builder_workspace .class-instance .property-table {
+    display: table;
+    width: 100%;
+}
+
+#builder_workspace .class-instance .property-table > .property-row, #builder_workspace .class-instance .property-table > .header-row {
+    display: table-row;
+}
+
+#builder_workspace .class-instance .property-table > .property-row > *, #builder_workspace .class-instance .property-table > .header-row > * {
+    display: table-cell;
+    padding: 5px;
+    white-space: nowrap;
+}
+
+#builder_workspace .class-instance .property-table > .property-row > span:nth-of-type(2) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+#builder_workspace .class-instance .property-table .property-show,
+#builder_workspace .class-instance .property-table .property-optional,
+#builder_workspace .class-instance .header-row span:nth-of-type(1),
+#builder_workspace .class-instance .header-row span:nth-of-type(3) {
+    text-align: center
+}
+
+#builder_workspace .class-instance .property-table .property-order-by select {
+    width: 50px;
+}
+
+#builder_workspace .class-instance .add-property {
+    color: #eee;
+}
+
+#builder_workspace .class-instance .add-property:hover {
+    color: #fff;
+    cursor: pointer;
+}
+
+#builder_workspace .property-row.context-menu-active {
+    background: #ddd;
+}
+
+#builder_workspace .class-instance header-row span/*:nth-of-type(5), #builder_workspace .class-instance .header-row span:nth-of-type(6)*/{
+    color: #000 !important;
+}
+
+#builder_workspace .class-instance .property-row .delete-property, #builder_workspace .class-instance .property-row span:nth-of-type(5), #builder_workspace .class-instance .property-row span:nth-of-type(6) {
+    color: #fff;
+}
+
+#builder_workspace .class-instance .property-row:hover .delete-property, #builder_workspace .class-instance .property-row:hover span:nth-of-type(5), #builder_workspace .class-instance .property-row:hover span:nth-of-type(6) {
+    color: #333;
+    vertical-align: top;
+}
+
+#builder_workspace .class-instance .property-row .delete-property {
+    font-size: 12px;
+}
+
+#builder_workspace .property-row .ui-icon-check {
+    position: absolute;
+}
+
+#builder_workspace .property-row:hover .ui-icon-check {
+    display: none;
+}
+
+#builder_workspace .class-instance .property-row .delete-property:hover, #builder_workspace .class-instance .property-row span:nth-of-type(5):hover, #builder_workspace .class-instance .property-row span:nth-of-type(6):hover {
+    color: #FC5006;
+    cursor: pointer;
+}
+
+#builder_workspace .class-instance .property-table .property-row.ui-sortable-helper {
+    background: #eee;
+    cursor: move;
+}
+
+#builder-canvas {
+    position: relative;
+    width: 100%;
+}
+
+.builder-advanced .row.qb-equivalent-query-main, .builder-advanced .row.qb-equivalent-query-main *,
+#sparql_results_container, #sparql_results_container *{
+    box-sizing: border-box;
+}
+
+.builder-advanced #sparql_results_container, .builder-advanced #sparql_results_container * {
+    box-sizing: border-box;
+}
+
+.builder-advanced .loading,
+.sparql .loading {
+    padding: 10px;
+    padding-right: 16px;
+    background: url('/static/query_designer/img/loading.gif') no-repeat right center;
+    background-size: 16px;
+}
+
+.ui-front {
+    z-index: 10000;
+}
+
+.ui-widget div {
+    padding-top: 10px;
+}
+
+.ui-widget select {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.ui-widget-header {
+    background: #FC5006;
+}
+
+#property-filters {
+    display: none;
+}
+
+#all-filters {
+    border-bottom: 1px dotted #aaa;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.filter-row .filter-remove {
+    color: #ddd;
+    font-size: 12px;
+    vertical-align: top;
+}
+
+.filter-row:hover .filter-remove {
+    color: #333;
+}
+
+.filter-row:hover .filter-remove:hover {
+    cursor: pointer;
+    color: #FC5006;
+}
+
+.filter-object {
+    display: inline-block;
+    padding: 5px;
+    color: #fff;
+    margin: 5px;
+    background: #00B16A;
+    border-radius: 5px;
+    position: relative;
+    padding-right: 20px;
+}
+
+.filter-object .filter-id {
+    font-size: 80%;
+    color: #eee;
+    margin-left: 10px;
+}
+
+.filter-object .filter-remove {
+    position: absolute;
+    top: 0px;
+    right: 5px;
+    margin-left: 10px;
+    margin-right: 5px;
+    font-size: 80%;
+    color: #00B16A;
+    cursor: pointer;
+}
+
+.filter-object:hover .filter-remove {
+    color: #eee;
+}
+
+#show-query-options {
+    margin-right: 10px;
+}
+
+#builder-options {
+    display: none;
+}
+
+#property-options {
+    display: none;
+}
+
+#builder-options label {
+    width: 150px;
+}
+
+#property-options .property-uri {
+    font-size: 80%;
+    color: #777;
+	word-break: break-all;
+	max-width: calc(100% - 150px);
+	vertical-align: top;
+	text-align: left;
+}
+
+.builder-advanced .ui-dialog {
+    padding: 0 !important;
+}
+
+.builder-advanced .ui-dialog-titlebar {
+    border-radius: 0;
+}
+
+.delete-arrow-link {
+    position: absolute;
+    z-index: 10000;
+    color: #fff;
+}
+
+.class-instance .property-control .sort-frequency {
+    display: none;
+    cursor: pointer;
+    padding: 10px;
+    padding-right: 16px;
+    background: url('/static/images/sort_both.png') no-repeat right center;
+    background-size: 16px;
+}
+
+.class-instance .property-control:hover .sort-frequency {
+    display: inline;
+}
+
+.add-filter {
+    margin-right: 10px;
+}
+
+.ui-dialog-titlebar-close {
+    display: block;
+    background: none;
+    border: none;
+    color: #eee;
+    outline: none;
+    font-size: 80% !important;
+}
+
+.ui-dialog-titlebar-close:after {
+    content: "X";
+}
+
+#sparql_results_table th {
+    word-break: break-all;
+}
+
+#sparql_result_paginator > div {
+    display: inline-block;
+}
+
+#sparql_result_paginator .results-prev-container {
+    width: 25%;
+    text-align: left;
+    padding-left: 30px;
+}
+
+#sparql_result_paginator .results-cur-container {
+    width: calc(50% - 40px);
+    text-align: center;
+}
+
+#sparql_result_paginator .results-next-container {
+    width: 25%;
+    text-align: right;
+}
+
+#sparql_result_paginator .results-prev-container span, #sparql_result_paginator .results-next-container span {
+    color: #FC5006;
+    cursor: pointer;
+}
+
+.sparql .panel-body, .builder-advanced .qb-equivalent-query-main .panel-body {
+    padding: 0;
+}
+
+#alert_modal pre {
+    background: #fff;
+}
+
+#sparql-editor-warning-message > .ui-state-error {
+    border: 0;
+    padding: 0;
+}
+
+#sparql-editor-warning-message > .ui-state-error .ui-icon-alert {
+    float: left;
+    margin-right: .3em;
+    margin-top: .3em;
+}
+
+.editor-container .panel-footer .btn-success {
+    height: 45px;
+}
+
+.open>.dropdown-menu {
+    display: block;
+    max-height: 400px;
+    overflow-y: scroll;
+}
+
+/*Chosen*/
+.chosen-container {
+    vertical-align: top;
+}
+
+.toolbar .chosen-container,
+.toolbar select {
+    max-width: 250px;
+}
+
+.toolbar input[type="search"] {
+    vertical-align: top;
+}
+
+.chosen-container .chosen-single {
+    background: #fff;
+    height: 30px;
+    padding-top: 2px;
+}
+
+.sparql .chosen-container {
+    width: 100% !important;
+}
+
+/* ace editor tooltips */
+.autocomplete-tooltip {
+    z-index: 200000;
+    background: #fbfbfb;
+    color: #444;
+    border: 1px lightgray solid;
+    position: fixed;
+    box-shadow: 2px 3px 5px rgba(0,0,0,.2);
+    line-height: 1.4;
+    width: 600px;
+    min-height: 100px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.autocomplete-tooltip h3 {
+    font-family: Consolas;
+    border-bottom: 1px dotted #ccc;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}
+
+.autocomplete-tooltip h6 {
+    margin-bottom: 10px;
+}
+
+.autocomplete-tooltip .code {
+    background: #C8F7C5;
+    font-family: Consolas;
+}
+
+.autocomplete-tooltip pre {
+    font-family: Consolas;
+    padding: 5px;
+    margin: 10px 0;
+    font-weight: 300;
+}
+
+.autocomplete-tooltip ul {
+    list-style: disc;
+}
+
+.autocomplete-tooltip li {
+    list-style: disc;
+    margin-left: 20px;
+    font-weight: 400;
+}
+
+.autocomplete-tooltip table.code {
+    margin: 10px 0;
+}
+
+.autocomplete-tooltip table.code td,
+.autocomplete-tooltip table.code th {
+    border: 1px solid #aaa;
+    padding: 5px;
+}
+
+.autocomplete-tooltip table.code th {
+    font-weight: 600;
+}
+.autocomplete-tooltip table.code td {
+    font-weight: 400;
+}
+
+.autocomplete-tooltip .functional {
+    display: block;
+    font-family: Consolas;
+    font-size: 1.6em;
+    margin-bottom: 10px;
+}
+
+.autocomplete-tooltip .json-container {
+    margin-bottom: 10px;
+}
+
+.autocomplete-tooltip .json-container > .json-inner {
+    margin: 0 0 0 40px;
+    display: block;
+}
+
+/* Transformation */
+.transformation .grid > * {
+    box-sizing: border-box;
+}
+
+.transformation #main-container > .main {
+    background-color: #eee;
+}
+
+.transformation .red {
+    background: none;
+}
+
+.transformation input[type="submit"].navigation_button {
+    float: right;
+}
+
+/* Datasource suggestions */
+.datasource-suggestion-title {
+    width: 30%;
+}
+.datasource-suggestion-description {
+    width: 20%;
+}
+
+.suggestions-table tr.even {
+    background-color: #eee;
+}
+
+.suggestions-table a, .add-suggested-datasource {
+    color: #5C97BF;
+    cursor: pointer;
+}
+
+.suggestions-table .glyphicon {
+    margin-right: 10px;
+}
+
+.datasource-suggestion-size {
+    text-align: right;
+}
+
+.datasource-suggestion-format {
+    width: 10%;
+}
+
+.suggestions-table span.error {
+    display: block;
+}
+
+.datasource-suggestions .dataTables_filter input {
+    height: 25px;
+}
+
+.config-form .chosen-container {
+    display: block;
+    width: 310px !important;
+}
