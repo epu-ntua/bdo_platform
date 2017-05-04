@@ -27,11 +27,11 @@ motu_args = (
     COPERNICUS_SERVER['PASSWORD'],
     COPERNICUS_SERVER['HOST'],
     BaseConverter.full_input_path(),
-    'ARC-NERSC-ARC-TOPAZ4_PHYS-RAN-TDS--12345.nc',
+    'BALTICSEA_ANALYSIS_FORECAST_BIO_003_007-TDS--12345.nc',
 )
 
 motu_download(('-u %s -p %s -m %s ' +
-               '-s ARC-NERSC-ARC-TOPAZ4_PHYS-RAN-TDS -d dataset-ran-arc-myoceanv2-be -x -180 -X 180 -y 34.69 -Y 90 -t "2015-11-15" -T "2015-12-15" -z 5 -Z 3000.0001 -v time -v ssh -v x -v y -v u -v bsfd -v latitude -v model_depth -v vice -v temperature -v hsnow -v longitude -v uice -v salinity -v v -v depth -v fice -v mlp -v btemp -v hice ' +
+               '-s BALTICSEA_ANALYSIS_FORECAST_BIO_003_007-TDS -d dataset-bal-analysis-forecast-bio-dailymeans -x 9.0416660308838 -X 30.319446563721 -y 53.024993896484 -Y 65.891662597656 -t "2017-05-01" -T "2017-05-04" -z 0 -Z 15.0001 -v Nitrate -v Phosphate -v Chl_a -v DO ' +
                '-o "%s" -f %s') % motu_args)
 cnv = NetCDF4Converter(motu_args[4])
 # cnv.write_to_disk()
