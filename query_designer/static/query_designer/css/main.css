@@ -51,7 +51,6 @@
 
 .toolbar {
     padding: 10px;
-    border-bottom: 1px solid #ddd;
 }
 
 .toolbar-container {
@@ -75,6 +74,7 @@
     margin: 0 5px 5px 5px;
     background: #b2b2b2;
     border-radius: 2px;
+    text-transform: none;
 }
 
 .toolbar .prev-next-classes-button {
@@ -322,7 +322,7 @@
     color: #fff;
     margin-left: 10px;
     vertical-align: top;
-    margin-top: 10px;
+    margin-bottom: 10px;
     display: inline-block;
 }
 
