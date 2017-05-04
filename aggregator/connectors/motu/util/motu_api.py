@@ -605,9 +605,9 @@ def execute_request(_options):
                         else: # finished (error|success)
                             break
     
-                    if status == "2": 
-                        log.error(msg) 
-                    if status == "1": 
+                    if status == "2":
+                        log.error(msg)
+                    if status == "1":
                         log.info('The product is ready for download')
                         if dwurl != "":
                             dl_2_file(dwurl, fh, _options.block_size, not (_options.describe or _options.size), **url_config)

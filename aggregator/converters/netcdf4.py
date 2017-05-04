@@ -119,10 +119,11 @@ class NetCDF4Converter(BaseConverter):
                 # reference dimensions
                 variable.dimensions = []
                 for d_name in _v._CoordinateAxes.strip().split(' '):
-                    if not self.get_dimension(d_name):
-                        raise ValueError('Dimension "%s" was not defined' % d_name)
+                    if d_name not in variable.dimensions:
+                        if not self.get_dimension(d_name):
+                            raise ValueError('Dimension "%s" was not defined' % d_name)
 
-                    variable.dimensions.append(d_name)
+                        variable.dimensions.append(d_name)
 
                 # add to variables
                 self._variables.append(variable)
@@ -130,5 +131,7 @@ class NetCDF4Converter(BaseConverter):
         return self._variables
 
     def data(self, v_name):
+        # if v_name == 'bsfd':
+        #    import pdb; pdb.set_trace()
         return self._f.variables[v_name][:]
 
