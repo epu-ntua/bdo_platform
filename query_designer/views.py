@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from bson import ObjectId
+from django.http import JsonResponse
 from django.shortcuts import render
 
 from mongo_client import get_mongo_db, MongoResponse
@@ -43,8 +44,6 @@ def dataset_variables(request, dataset_id):
 
 
 def dataset_variable_properties(request, dataset_id, variable_id):
-    page = int(request.GET.get('p', '1'))
-
     db = get_mongo_db()
     variables = db.variables
 
@@ -59,3 +58,18 @@ def dataset_variable_properties(request, dataset_id, variable_id):
     dimensions = db.dimensions.find({'_id': {'$in': [ObjectId(d_id) for d_id in variable['dimension_ids']]}})
 
     return MongoResponse([d for d in dimensions], safe=False)
+
+
+def count_variable_values(request, dataset_id, variable_id):
+    db = get_mongo_db()
+    # count values
+    _data = db.data.find_one({'dataset_id': ObjectId(dataset_id), 'variable_id': ObjectId(variable_id)})['data']
+    _approx = 1
+    while True:
+        try:
+            _approx *= _data[0].__len__()
+            _data = _data[0]
+        except (IndexError, AttributeError):
+            break
+
+    return JsonResponse({'count': _approx})

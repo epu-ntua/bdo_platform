@@ -394,15 +394,6 @@
     /* position: relative; */
 }
 
-#builder_workspace .class-instance .title span.uri {
-    font-size: 10px;
-    position: absolute;
-    left: 10px;
-    top: 48px;
-    color: #ddd;
-    line-height: 10px;
-}
-
 #builder_workspace .class-instance .title span.delete {
     margin-top: -7px;
 }

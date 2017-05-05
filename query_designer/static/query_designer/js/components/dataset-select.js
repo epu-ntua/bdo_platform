@@ -33,6 +33,18 @@ DatasetSelect = function(qd) {
         return this.ui.$elem.val();
     };
 
+    this.getDatasetFromId = function(_id) {
+        var resultDataset = null;
+        $.each(this.datasets, function(idx, dataset) {
+            if (dataset._id === _id) {
+                resultDataset = dataset;
+                return false;
+            }
+        });
+
+        return resultDataset;
+    };
+
     this.ui = {
         $elem: undefined,
 

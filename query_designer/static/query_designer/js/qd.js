@@ -19,7 +19,8 @@ var QueryDesigner = function($container, params) {
 
         // classes
         classes: {
-            propertySource: {type: 'GET', from: '/queries/datasets/{{ datasetId }}/variables/{{ variableId }}/properties/'}
+            propertySource: {type: 'GET', from: '/queries/datasets/{{ datasetId }}/variables/{{ variableId }}/properties/'},
+            valuesCountSource: {type: 'GET', from: '/queries/datasets/{{ datasetId }}/variables/{{ variableId }}/count/'}
         }
 
     }, params);

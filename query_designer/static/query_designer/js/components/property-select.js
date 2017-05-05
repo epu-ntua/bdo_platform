@@ -41,6 +41,9 @@ function PropertySelect(qd, instance) {
                     o.frequence = '1';
 
                     that.properties.push(o);
+
+                    // add to instance by default
+                    that.qd.workbench.builder.add_property(that.c.id, o.uri, o.label);
                 }
 
                 that.repeating_pages = 0;
@@ -181,48 +184,6 @@ function PropertySelect(qd, instance) {
         e.stopPropagation();
     });
 
-    $propertyControl.find('input').on('keyup', function(e) {
-        if (e.keyCode == 13) {
-            var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-              '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-              '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-              '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-              '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-              '(\\#[-a-z\\d_]*)?$','i');
-
-            var v = $(this).val();
-            if (pattern.test(v)) { // is URI
-                var n = $(this).closest(".class-instance").data('n');
-                var p_select = that.qd.workbench.builder.instances[n].property_select;
-
-                //add to properties if it was not found
-                var found = false;
-                for (var i=0; i<p_select.properties.length; i++) {
-                    if (p_select.properties[i].uri == v) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    p_select.properties.push({'uri': v});
-                }
-
-                that.qd.workbench.builder.add_property(n, v);
-                that.qd.workbench.builder.reset();
-
-                $(this).parent().find(".property-dropdown").hide();
-                $(this).closest(".class-instance").find(".property-control .properties-found").html(Number(p_select.properties.length).toLocaleString() + ' properties found');
-
-                //reset search
-                $(this).val('');
-                that.qd.workbench.builder.instances[n].property_select.set_page(0);
-
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-    });
-
     /* On filter */
     $propertyControl.find('input').on('input', function() {
         var n = $(this).parent().parent().parent().data('n');
@@ -256,18 +217,18 @@ function PropertySelect(qd, instance) {
     });
 
     /*Adding properties*/
-    $propertyControl.find('.property-dropdown .property').on('click', function(e) {
+    $propertyControl.on('click', '.properties-list .property', function(e) {
         var uri = $(this).data("uri");
         var n = $(this).closest(".class-instance").data('n');
 
-        that.qd.workbench.builder.add_property(n, uri);
+        that.qd.workbench.builder.add_property(n, uri, $(this).text());
         that.qd.workbench.builder.reset();
 
         $(this).closest(".property-dropdown").toggle();
 
         //reset search
         $(this).closest(".property-dropdown").parent().find("input").val('');
-        that.qd.workbench.builder.instances[n].property_select.set_page(0);
+        that.set_page(0);
 
         e.preventDefault();
         e.stopPropagation();

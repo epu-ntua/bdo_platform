@@ -8,6 +8,7 @@ urlpatterns = [
     url('datasets/$', views.datasets),
     url('datasets/(?P<dataset_id>[\w-]+)/variables/$', views.dataset_variables),
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/properties/$', views.dataset_variable_properties),
+    url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/count/$', views.count_variable_values),
 
     # basic page
     url('$', views.index, name='home'),

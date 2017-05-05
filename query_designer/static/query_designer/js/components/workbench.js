@@ -43,7 +43,7 @@
 
             /* Get the name of an endpoint*/
             endpoint_to_name: function (endpoint) {
-                return endpoint;
+                return that.qd.datasetSelect.getDatasetFromId(endpoint).title
             },
 
             /* Get the endpoint based on a datasource name */
@@ -55,7 +55,7 @@
             add_instance: function (dt_name, uri, label, x, y, default_properties) {
                 var new_id = this.instances.length;
                 $('.help-prompt').remove();
-                var new_instance = $.parseHTML('<div id="class_instance_' + new_id + '" class="class-instance" data-n="' + new_id + '"style="left: ' + x + 'px; top: ' + y + 'px;"><div class="title"><h3>' + label + '</h3><span class="subquery-select empty"></span><span class="uri">&lt;' + uri + '&gt;</span><span class="delete" data-about="' + new_id + '">x</span><span class="dataset">' + this.endpoint_to_name(dt_name) + '</span></div><div class="properties"><span class="loading">Loading properties...</span></div></div>');
+                var new_instance = $.parseHTML('<div id="class_instance_' + new_id + '" class="class-instance" data-n="' + new_id + '"style="left: ' + x + 'px; top: ' + y + 'px;"><div class="title"><h3>' + label + '</h3><span class="subquery-select empty"></span><span class="delete" data-about="' + new_id + '">x</span><span class="dataset">' + this.endpoint_to_name(dt_name) + '</span></div><div class="properties"><span class="loading">Loading properties...</span></div></div>');
                 $("#builder_workspace").append(new_instance);
                 $(new_instance).draggable({
                     cancel: '.subquery-select', handle: '.title', cursor: 'move', drag: function () {
@@ -78,19 +78,16 @@
                 var inst = self.instances[new_id];
 
                 // get number of class instances
-                var propertyUrl = that.config.propertySource.from
+                var valuesCountUrl = that.config.valuesCountSource.from
                     .replace('{{ datasetId }}', dt_name)
                     .replace('{{ variableId }}', uri);
 
                 // make request for properties
                 $.ajax({
-                    url: propertyUrl,
+                    url: valuesCountUrl,
                     type: "GET",
-                    success: function (data) {
-                        if (data.length > 0) {
-                            var n = data.length;
-                            $("#class_instance_" + new_id + " .title h3").append('<span class="n-of-instances">(' + Number(n).toLocaleString() + ')</span>');
-                        }
+                    success: function (resp) {
+                        $("#class_instance_" + new_id + " .title h3").append('<span class="n-of-instances">(' + resp.count.toLocaleString() + ')</span>');
                     }
                 });
 
@@ -99,12 +96,12 @@
                 if (default_properties) {
                     for (var k = 0; k < default_properties.length; k++) {
                         if (typeof default_properties[k] == 'string') {
-                            if (default_properties[k] == 'URI') {
+                            if (default_properties[k] == 'VALUE') {
                                 has_URI = true;
                                 break;
                             }
                         }
-                        else if (default_properties[k].uri == 'URI') {
+                        else if (default_properties[k].uri == 'VALUE') {
                             has_URI = true;
                             break;
                         }
@@ -112,7 +109,7 @@
                 }
 
                 if (!has_URI) {
-                    self.add_property(new_id, 'URI'); //add URI by default
+                    self.add_property(new_id, 'VALUE'); //add URI by default
                 }
 
                 $(".property-table").sortable({ //make properties sortable
@@ -228,67 +225,50 @@
                 $(obj).css("z-index", mx + 1);
             },
 
-            add_property: function (i_num, p_uri, p_name) {
-                var instance = this.instances[i_num];
-                var p_object = {
-                    uri: p_uri,
+            add_property: function (num, _id, label, info) {
+                var instance = this.instances[num];
+                var pObject = {
+                    uri: _id,
+                    label: label,
                     n: instance.selected_properties.length,
                     optional: false,
                     show: true,
                     order_by: undefined,
-                    filters: []
+                    filters: [],
+                    info: info
                 };
-
-                instance.selected_properties.push(p_object);
+                instance.selected_properties.push(pObject);
 
                 var optional_disabled = "";
-                if (p_object.uri == "URI") { //URI can not be optional
+                if (pObject.uri == "URI") { //URI can not be optional
                     optional_disabled = 'disabled = "disabled"';
                 }
 
                 //load custom name
-                if (p_name === undefined) {
-                    if (p_object.uri == "URI") {
-                        p_name = "URI";
-                    } else {
-                        p_name = uri_to_label(p_object.uri);
+                if (label === undefined) {
+                    if (pObject.uri == "VALUE") {
+                        label = "Value";
                     }
                 }
 
-                var data_i_n = 'data-i="' + i_num + '" data-n="' + p_object.n + '"';
-                if (p_object.uri == "URI") {
+                var data_i_n = 'data-i="' + num + '" data-n="' + pObject.n + '"';
+                if (pObject.uri == "VALUE") {
                     var delete_property = '<div></div>';
                 } else {
                     var delete_property = '<div class="delete-property">x</div>';
                 }
 
+                // title is Label followed by type, if available
                 var property_object_str = '<div class="property-row" ' + data_i_n + '>' + delete_property + '<span class="property-show"><input type="checkbox" checked="checked"/></span><span>';
                 var order_select = '<select><option value=""></option><option value="ASC">ASC</option><option value="DESC">DESC</option><option value="NUMBER_ASC">ASC (number)</option><option value="NUMBER_DESC">DESC (number)</option><option value="DATE_ASC">ASC (date)</option>><option value="DATE_DESC">DESC (date)</option></select>'
-                property_object_str += p_name + '</span><span class="property-optional"><input  type="checkbox" ' + optional_disabled + ' /></span><span class="property-order-by">' + order_select + '</span><span>Edit</span><span>+Add</span></div>';
+                property_object_str += label + '</span><span class="property-optional"><input  type="checkbox" ' + optional_disabled + ' /></span><span class="property-order-by">' + order_select + '</span><span>Edit</span><span>+Add</span></div>';
                 var property_object = $.parseHTML(property_object_str);
 
-                var id = "#class_instance_" + i_num;
+                var id = "#class_instance_" + num;
                 $(id + " .property-table").append(property_object);
 
                 that.builder.reset_height($(id));
                 that.builder.reset();
-
-                if (p_object.uri != "URI") {
-                    $.ajax({  //make an ajax request to get property return type
-                        url: ADVANCED_BUILDER_API_URI + "get_property_type/" + instance.dt_name + "/?property_uri=" + encodeURIComponent(p_object.uri),
-                        type: "GET",
-                        success: function (data, textStatus, jqXHR) {
-                            p_object.type = data.type;
-                            if (p_object.type.length != "") {
-                                $("#class_instance_" + i_num + " .property-row:nth-of-type(" + (p_object.n + 2) + ") span:nth-of-type(2)").html(p_name + ' (' + uri_to_label(p_object.type) + ')');
-                                arrows.draw();
-                            }
-                        },
-                        error: function (jqXHR, textStatus, errorThrown) {
-                            console.log(textStatus + ': ' + errorThrown);
-                        }
-                    });
-                }
             },
 
             from_json: function (data) { //re-construct a query design from a json object
