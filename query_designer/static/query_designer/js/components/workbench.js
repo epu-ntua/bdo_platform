@@ -626,7 +626,6 @@
 
         /* Drag & Dropping */
         $("#builder_workspace").mouseup(function(e) {
-            console.log(that.builder.selection)
             if ((e.which == 1) && that.builder.selection) { //only for left click and when a class selection has been made
                 that.builder.add_instance(that.builder.selection.dt_name, that.builder.selection.uri, that.builder.selection.label, e.pageX - $(this).position().left, e.pageY - $(this).position().top);
 

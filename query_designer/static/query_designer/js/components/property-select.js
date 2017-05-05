@@ -5,7 +5,7 @@ function PropertySelect(qd, instance) {
     this.qd = qd;
     this.c = instance;
     this.properties = [];
-    this.page = undefined;
+    this.page = 0;
     this.started_loading = false;
     this.finished_loading = false;
     this.PROPERTY_PAGE_LIMIT = 200;
@@ -14,7 +14,7 @@ function PropertySelect(qd, instance) {
 
     var that = this;
 
-    this.load_property_page = function(p, order, push) {
+    this.load_property_page = function(p) {
         var that = this;
         var c = this.c;
 
@@ -30,18 +30,10 @@ function PropertySelect(qd, instance) {
                     return;
                 }
 
-                if (push === undefined) {
-                    push = true;
-                }
-                if ((p == 1) && (that.started_loading)) { //another load effort already started loading
-                    push = false;
-                }
-
                 if (p > 0) {
                     that.started_loading = true;
                 }
 
-                var prev_properties_length = that.properties.length;
                 for (var i=0; i<data.length; i++) { //add the properties
                     // properties found from the vocabulary are not certain to exist in the data source
                     var o = {'uri': data[i]._id, 'label': data[i].title, 'uncertain': false};
@@ -80,18 +72,8 @@ function PropertySelect(qd, instance) {
         }
 
         this.repeating_pages = 0;
-        this.load_property_page(1, true);
-
-        //set a timeout so after 10 seconds degraded loading starts
-        setTimeout(function() {
-            if (that.started_loading) {
-                return;
-            }
-
-            that.load_property_page(0, false);
-            that.load_property_page(1, false);
-        }, 10000);
-    }
+        this.load_property_page(0);
+    };
 
     this.stop = function() {
         this.to_stop = true;
@@ -102,17 +84,18 @@ function PropertySelect(qd, instance) {
         var added = 0;
         var total = 0;
         var limit = this.SELECT_SIZE;
-        var offset = (this.page-1)*limit;
-        $("#class_instance_" + this.c.id + " .property-control .property-dropdown .properties-list").html('');
-        $("#class_instance_" + this.c.id + " .dropdown-toggle-properties > span").removeClass("loading");
-        $("#class_instance_" + this.c.id + " .dropdown-toggle-properties > span").html('');
-        $("#class_instance_" + this.c.id + " .dropdown-toggle-properties > span").addClass("caret");
+        var offset = (this.page)*limit;
+        var $propertyControl = $("#class_instance_" + this.c.id + " .property-control");
+        $propertyControl.find(".property-dropdown .properties-list").html('');
+        $propertyControl.find(".dropdown-toggle-properties > span").removeClass("loading");
+        $propertyControl.find(".dropdown-toggle-properties > span").html('');
+        $propertyControl.find(".dropdown-toggle-properties > span").addClass("caret");
 
         if (this.page > 1) { // previous page
-            $("#class_instance_" + this.c.id + " .property-control .property-dropdown .up").html('&uarr; results ' + (offset - limit + 1) + ' - ' + (offset));
-            $("#class_instance_" + this.c.id + " .property-control .property-dropdown .up").show();
+            $propertyControl.find(".property-dropdown .up").html('&uarr; results ' + (offset + 1) + ' - ' + (offset + limit));
+            $propertyControl.find(".property-dropdown .up").show();
         } else {
-            $("#class_instance_" + this.c.id + " .property-control .property-dropdown .up").hide();
+            $propertyControl.find(".property-dropdown .up").hide();
         }
 
         for (var i=0; i<this.properties.length; i++) { //foreach property loaded until now
@@ -121,7 +104,7 @@ function PropertySelect(qd, instance) {
             if (!filter || (label.toLowerCase().indexOf(filter.toLowerCase()) >= 0)) {
                 total++;
 
-                if ((total > offset) && (total <= offset + limit)) {
+                if ((total >= offset) && (total < offset + limit)) {
                     var data_str = 'data-uri="' + this.properties[i].uri + '"';
 
                     //create the property html object
@@ -132,13 +115,13 @@ function PropertySelect(qd, instance) {
                     class_str += '"';
 
                     var property_div = '<div ' + class_str + ' ' + data_str + '>' + label;
-                    if (typeof(this.properties[i].frequence) != "undefined") {
+                    if (this.properties[i].frequence !== undefined) {
                         property_div += ' (' + this.properties[i].frequence + ')';
                     }
                     property_div += '</div>';
 
                     //append the property to the select
-                    $("#class_instance_" + this.c.id + " .property-control .property-dropdown .properties-list").append(property_div);
+                    $propertyControl.find(".property-dropdown .properties-list").append(property_div);
                     added++;
                 }
 
@@ -149,19 +132,19 @@ function PropertySelect(qd, instance) {
         }
 
         if (added == limit) { // there are more than those that are shown
-            $("#class_instance_" + this.c.id + " .property-control .property-dropdown .down").html('&darr; results ' + (offset + limit + 1) + ' - ' + (offset + 2*limit));
-            $("#class_instance_" + this.c.id + " .property-control .property-dropdown .down").show();
+            $propertyControl.find(".property-dropdown .down").html('&darr; results ' + (offset + limit + 1) + ' - ' + (offset + 2*limit));
+            $propertyControl.find(".property-dropdown .down").show();
         } else {
-            $("#class_instance_" + this.c.id + " .property-control .property-dropdown .down").hide();
+            $propertyControl.find(".property-dropdown .down").hide();
         }
     };
 
     this.set_page = function(page) {
-        this.page = page;
 
-        if (page < 1) {
-            page = 1;
+        if (page < 0) {
+            page = 0;
         }
+        this.page = page;
 
         this.show();
     };
@@ -232,7 +215,7 @@ function PropertySelect(qd, instance) {
 
                 //reset search
                 $(this).val('');
-                that.qd.workbench.builder.instances[n].property_select.set_page(1);
+                that.qd.workbench.builder.instances[n].property_select.set_page(0);
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -243,7 +226,7 @@ function PropertySelect(qd, instance) {
     /* On filter */
     $propertyControl.find('input').on('input', function() {
         var n = $(this).parent().parent().parent().data('n');
-        that.qd.workbench.builder.instances[n].property_select.set_page(1);
+        that.qd.workbench.builder.instances[n].property_select.set_page(0);
         $(this).parent().find('.property-dropdown').show();
     });
 
@@ -284,7 +267,7 @@ function PropertySelect(qd, instance) {
 
         //reset search
         $(this).closest(".property-dropdown").parent().find("input").val('');
-        that.qd.workbench.builder.instances[n].property_select.set_page(1);
+        that.qd.workbench.builder.instances[n].property_select.set_page(0);
 
         e.preventDefault();
         e.stopPropagation();
