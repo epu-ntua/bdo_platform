@@ -131,7 +131,5 @@ class NetCDF4Converter(BaseConverter):
         return self._variables
 
     def data(self, v_name):
-        # if v_name == 'bsfd':
-        #    import pdb; pdb.set_trace()
         return self._f.variables[v_name][:]
 

@@ -6,7 +6,7 @@ DOCUMENT_STORE_DB = 'bdo'
 
 # copernicus server
 COPERNICUS_SERVER = {
-    'HOST': 'http://cmems-med-mfc.eu/motu-web/Motu',
+    'HOST': 'http://nrtcmems.mercator-ocean.fr/mis-gateway-servlet/Motu',
     'USERNAME': 'dpapaspyros',
     'PASSWORD': 'DimitriosCMEMS2017',
 }

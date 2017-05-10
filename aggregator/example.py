@@ -11,28 +11,30 @@ db = client.get_database(name=DOCUMENT_STORE_DB)
 
 # drop collections for the example
 # DANGER!
-db.datasets.drop()
-db.dimensions.drop()
-db.variables.drop()
-db.data.drop()
+# db.datasets.drop()
+# db.dimensions.drop()
+# db.variables.drop()
+# db.data.drop()
 
 # load nc file & write results
 cnv = NetCDF4Converter('global-analysis-forecast-wav-001-023_1493738249917.nc')
 # cnv.write_to_disk()
 cnv.write_to_db(db=db)
 
+# cnv = NetCDF4Converter('global-analysis-forecast-phy-001-024-hourly-t-u-v-ssh_1494231860235.nc')
+# cnv.write_to_db(db=db)
+
 # motu file
 motu_args = (
     COPERNICUS_SERVER['USERNAME'],
     COPERNICUS_SERVER['PASSWORD'],
-    COPERNICUS_SERVER['HOST'],
     BaseConverter.full_input_path(),
-    'BALTICSEA_ANALYSIS_FORECAST_BIO_003_007-TDS--12345.nc',
+    'GLOBAL_ANALYSIS_FORECAST_PHYS_001_015--12345.nc',
 )
 
-motu_download(('-u %s -p %s -m %s ' +
-               '-s BALTICSEA_ANALYSIS_FORECAST_BIO_003_007-TDS -d dataset-bal-analysis-forecast-bio-dailymeans -x 9.0416660308838 -X 30.319446563721 -y 53.024993896484 -Y 65.891662597656 -t "2017-05-01" -T "2017-05-04" -z 0 -Z 15.0001 -v Nitrate -v Phosphate -v Chl_a -v DO ' +
-               '-o "%s" -f %s') % motu_args)
-cnv = NetCDF4Converter(motu_args[4])
+# motu_download(('-u %s -p %s ' +
+#                '-m http://data.ncof.co.uk/mis-gateway-servlet/Motu -s http://purl.org/myocean/ontology/service/database#GLOBAL_ANALYSIS_FORECAST_PHYS_001_015 -d MetO-GLO-PHYS-daily -x 0 -X -0.25 -y -83 -Y 89.75 -t "2016-11-06" -T "2016-11-18" -z 0 -Z 0.0001 -v itzocrtx -v sossheig -v vosaline -v sotemper -v vomecrty -v sokaraml -v votemper -v iicethic -v iiceconc -v itmecrty -v vozocrtx ' +
+#                '-o "%s" -f %s') % motu_args)
+# cnv = NetCDF4Converter(motu_args[3])
 # cnv.write_to_disk()
-cnv.write_to_db(db=db)
+# cnv.write_to_db(db=db)

@@ -2,8 +2,11 @@ import json
 import os
 
 import decimal
+import bson
+import itertools
 
 import numpy
+from numpy.ma import MaskedArray
 
 from bdo_platform.settings import DATASET_DIR
 
@@ -96,6 +99,8 @@ class BaseConverter(object):
     _variables = []
     _dimensions = []
     _data = []
+    MAX_DOCUMENT_SIZE = 16000000 # 16M limit on BSON documents
+    AVERAGE_ELEMENT_SIZE = 16
 
     @property
     def dataset(self):
@@ -146,9 +151,69 @@ class BaseConverter(object):
 
         return os.path.join(dist_path, filename)
 
-    @property
-    def json_data(self):
-        return [encode_document({'variable': v.name, 'data': self.data(v_name=v.name)}) for v in self.variables]
+    def predicted_document_size(self, dimension_sizes, shards):
+        # predicted size if no shards
+        full_document_size = reduce(lambda x, y: x*y, dimension_sizes) * self.AVERAGE_ELEMENT_SIZE
+
+        # divide based on shards
+        document_size = full_document_size
+        for shard in shards:
+            if shard:
+                document_size /= (len(shard) + 0.0)
+
+        return int(document_size)
+
+    def get_document_shards(self, dimension_sizes):
+        # predict document size
+        # initially plan for no sharding
+        shards = [[(0, dimension_sizes[idx])] for idx in xrange(dimension_sizes.__len__())]
+        shard_idx = 0
+
+        while self.predicted_document_size(dimension_sizes, shards) >= self.MAX_DOCUMENT_SIZE:
+
+            # check if dimension can even be sharded
+            if dimension_sizes[shard_idx] == 1 or \
+                    ((type(shards[shard_idx]) == list) and len(shards[shard_idx]) == dimension_sizes[shard_idx]):
+                shard_idx += 1
+                continue
+
+            # increase sharding on this dimension
+            n_of_shards = len(shards[shard_idx]) + 1
+            shard_size = dimension_sizes[shard_idx] / (n_of_shards + 0.0)
+            shards[shard_idx] = [(int(idx * shard_size), int((idx + 1) * shard_size))
+                                 for idx in xrange(n_of_shards)]
+
+        return shards
+
+    def json_documents(self, variable):
+        print variable.name
+        data = self.data(v_name=variable.name)
+
+        dim_lens = []
+        dt = data
+        while True:
+            if type(dt) not in [list, MaskedArray]:
+                break
+
+            dim_lens.append(dt.__len__())
+            dt = dt[0]
+
+        print dim_lens
+
+        shards = self.get_document_shards(dim_lens)
+
+        for shard in itertools.product(*shards):
+            # slices
+            slc = [slice(None)] * dim_lens.__len__()
+            for idx, s in enumerate(shard):
+                slc[idx] = slice(s[0], s[1])
+
+            encoded_document = encode_document({
+                'variable': variable.name,
+                'offsets': [s[0] for s in shard],
+                'values': data[slc]
+            })
+            yield encoded_document
 
     def write_to_disk(self):
 
@@ -171,9 +236,10 @@ class BaseConverter(object):
         if not os.path.isdir('%s\\data' % dist_path):
             os.mkdir('%s\\data' % dist_path)
 
-        for datum in self.json_data:
-            with open('%s\\data\\%s.json' % (dist_path, datum['variable']), 'w') as output:
-                output.write(json.dumps(datum))
+        for variable in self.variables:
+            with open('%s\\data\\%s.json' % (dist_path, variable.name), 'w') as output:
+                for datum in self.json_documents(variable=variable):
+                    output.write(json.dumps(datum))
 
     def write_to_db(self, db):
 
@@ -217,13 +283,24 @@ class BaseConverter(object):
             variable_docs[idx]['_id'] = variable_id
 
         # add actual data
-        data_docs = []
-        for datum in self.json_data:
-            # replace reference to variable name with variable ObjectIDs
-            datum['variable_id'] = variable_docs_by_name[datum['variable']]['_id']
-            del datum['variable']
-            datum['dataset_id'] = dataset_id
-            data_docs.append(datum)
+        data_cache = []
+        for variable in self.variables:
+            v_id = variable_docs_by_name[variable.name]['_id']
 
-        # bulk insert
-        data_ids = db.data.insert_many(data_docs).inserted_ids
+            for datum in self.json_documents(variable=variable):
+                # replace reference to variable name with variable ObjectIDs
+                datum['variable_id'] = v_id
+                del datum['variable']
+                datum['dataset_id'] = dataset_id
+
+                db.data.insert(datum)
+                # data_cache.append(datum)
+
+                # if data_cache.__len__() >= 100:
+                #     db.data.insert_many(data_cache)
+                #     data_cache = []
+
+        # insert any remaining docs
+        # if data_cache:
+        #     db.data.insert_many(data_cache)
+        #     data_cache = []

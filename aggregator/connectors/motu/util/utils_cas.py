@@ -63,7 +63,7 @@ def authenticate_CAS_for_URL(url, user, pwd, **url_config):
     server, sep, options = url.partition( '?' )
     
     log.info( 'Authenticating user %s for service %s' % (user,server) )      
-    
+
     connexion = utils_http.open_url(url,**url_config)
 
     # connexion response code must be a redirection, else, there's an error (user can't be already connected since no cookie or ticket was sent)

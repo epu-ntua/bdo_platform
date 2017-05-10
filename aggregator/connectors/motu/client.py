@@ -47,6 +47,9 @@ import socket
 # The necessary required version of Python interpreter
 import shlex
 
+import logging
+logging.basicConfig()
+
 REQUIRED_VERSION = (2,7)
 
 # error code to use when exiting after exception catch
