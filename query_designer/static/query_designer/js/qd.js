@@ -57,6 +57,7 @@ var QueryDesigner = function($container, params) {
                     .append($('<canvas id="builder-canvas" />'))
             );
 
+            // resize canvas & init arrows
             $container.find("#builder-canvas").attr({
                 'width': $container.find("#builder_workspace").width(),
                 'height': $container.find("#builder_workspace").height()
@@ -79,6 +80,9 @@ var QueryDesigner = function($container, params) {
 
     // add filters
     this.filters = new BuilderWorkbenchFilters(this);
+
+    // add query editor
+    this.editor = new QueryEditor(this);
 
     return this;
 };

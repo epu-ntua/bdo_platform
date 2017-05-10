@@ -36,19 +36,25 @@
                 }
             },
 
+            /* returns the document used by plugins to generate query text */
+            getQueryDocument: function() {
+                var document = new DocumentBuilder(that.qd).getDocument();
+                console.log(document);
+                return document;
+            },
+
             /* default reset function */
             reset: function() {
+                that.query = that.qd.config.language.parser(this.getQueryDocument()).getQuery();
 
+                that.is_editing = true;
+                that.qd.editor.setValue(that.query);
+                that.is_editing = false;
             },
 
             /* Get the name of an endpoint*/
             endpoint_to_name: function (endpoint) {
                 return that.qd.datasetSelect.getDatasetFromId(endpoint).title
-            },
-
-            /* Get the endpoint based on a datasource name */
-            name_to_endpoint: function (name) {
-                return total_endpoints[name];
             },
 
             /*Adds an instance of a class*/

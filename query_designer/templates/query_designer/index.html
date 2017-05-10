@@ -13,18 +13,30 @@
 {% endblock %}
 
 {% block js %}
+    <script src="{% static 'query_designer/js/components/ace/src/ace.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/ace/src/mode-sparql.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/ace/src/ext-language_tools.js' %}"></script>
+
+    <script src="{% static 'query_designer/js/components/editor.js' %}"></script>
     <script src="{% static 'query_designer/js/components/toolbar.js' %}"></script>
     <script src="{% static 'query_designer/js/components/dataset-select.js' %}"></script>
     <script src="{% static 'query_designer/js/components/property-select.js' %}"></script>
     <script src="{% static 'query_designer/js/components/arrows.js' %}"></script>
     <script src="{% static 'query_designer/js/components/filters.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/document-builder.js' %}"></script>
     <script src="{% static 'query_designer/js/components/workbench.js' %}"></script>
 
+    <script src="{% static 'query_designer/js/languages/bdo-mongo.js' %}"></script>
     <script src="{% static 'query_designer/js/qd.js' %}"></script>
 
     <script>
         $(function() {
-            $('#query-designer-container').qd();
+            $('#query-designer-container').qd({
+                language: {
+                    parser: BDOMongo,
+                    mode: 'json'
+                }
+            });
         });
     </script>
 {% endblock %}
