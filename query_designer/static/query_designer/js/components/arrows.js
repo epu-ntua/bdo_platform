@@ -315,13 +315,18 @@ var Arrows = function(qb) {
                 this.ctx.strokeStyle = '#000000';
             }
 
-            var p1 = {x: $(c.f).position().left, y: $(c.f).position().top + 120 + c.fp*35, w: $(c.f).width()};
+
+            var headerHeightFrom = $(c.f).find('> .title').outerHeight() + $(c.f).find('header-row').outerHeight() || 100,
+                headerHeightTo = $(c.t).find('> .title').outerHeight() + $(c.t).find('header-row').outerHeight() || 100,
+                rowHeight = $(c.t).find('.property-row').outerHeight() || 30;
+
+            var p1 = {x: $(c.f).position().left, y: $(c.f).position().top + headerHeightFrom + c.fp*rowHeight, w: $(c.f).width()};
             if (c.tp != that.qb.workbench.builder.get_uri_position(c.t)) { //specific property
-                var p2 = {x: $(c.t).position().left, y: $(c.t).position().top + 120 + c.tp*35, w: $(c.t).width()};
+                var p2 = {x: $(c.t).position().left, y: $(c.t).position().top + headerHeightTo + c.tp*rowHeight, w: $(c.t).width()};
             } else { //whole instance
                 var p2 = {x: $(c.t).position().left, y: $(c.t).position().top + 20, w: $(c.t).width()};
             }
-            var sm_x = 30;
+            var sm_x = rowHeight;
 
             //four cases
             if (p1.x + p1.w + sm_x< p2.x) { //f is completely left of t

@@ -55,9 +55,18 @@ var QueryDesigner = function($container, params) {
                 $('<div id="builder_workspace" />')
                     .append($('<span class="help-prompt">Drag and drop items here to create a query</span>'))
                     .append($('<canvas id="builder-canvas" />'))
-            )
+            );
+
+            $container.find("#builder-canvas").attr({
+                'width': $container.find("#builder_workspace").width(),
+                'height': $container.find("#builder_workspace").height()
+            });
+            that.arrows.set_canvas("builder-canvas");
         }
     };
+
+    // create arrows
+    this.arrows = new Arrows(this);
 
     // render
     this.ui.render();
@@ -65,11 +74,11 @@ var QueryDesigner = function($container, params) {
     // setup toolbar
     this.toolbar = new Toolbar(this);
 
-    // create arrows
-    this.arrows = new Arrows(this);
-
     // setup workbench
     this.workbench = new BuilderWorkbench(this);
+
+    // add filters
+    this.filters = new BuilderWorkbenchFilters(this);
 
     return this;
 };

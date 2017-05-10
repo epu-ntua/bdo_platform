@@ -63,13 +63,18 @@ def dataset_variable_properties(request, dataset_id, variable_id):
 def count_variable_values(request, dataset_id, variable_id):
     db = get_mongo_db()
     # count values
-    _data = db.data.find_one({'dataset_id': ObjectId(dataset_id), 'variable_id': ObjectId(variable_id)})['data']
-    _approx = 1
-    while True:
-        try:
-            _approx *= _data[0].__len__()
-            _data = _data[0]
-        except (IndexError, AttributeError):
-            break
+    documents = db.data.find({'dataset_id': ObjectId(dataset_id), 'variable_id': ObjectId(variable_id)})
+    total = 0
 
-    return JsonResponse({'count': _approx})
+    for document in documents:
+        values = document['values']
+        _approx = 1
+        while True:
+            try:
+                _approx *= values[0].__len__()
+                values = values[0]
+            except (IndexError, AttributeError):
+                total += _approx
+                break
+
+    return JsonResponse({'count': total})

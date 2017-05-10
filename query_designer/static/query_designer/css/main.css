@@ -318,7 +318,7 @@
 }
 
 #builder_workspace span.n-of-instances {
-    font-size: 50%;
+    font-size: 12px;
     color: #fff;
     margin-left: 10px;
     vertical-align: top;
@@ -390,8 +390,7 @@
 }
 
 #builder_workspace .class-instance .title h3 {
-    /* top: -10px; */
-    /* position: relative; */
+    font-size: 16px;
 }
 
 #builder_workspace .class-instance .title span.delete {
@@ -549,6 +548,7 @@
 
 #builder_workspace .class-instance .property-row .delete-property {
     font-size: 12px;
+    padding: 2px 5px;
 }
 
 #builder_workspace .property-row .ui-icon-check {
@@ -604,8 +604,15 @@
     padding-bottom: 5px;
 }
 
+.ui-widget.ui-widget-content {
+    padding: 0;
+    box-shadow: 0 0 5px #777;
+}
+
 .ui-widget-header {
-    background: #FC5006;
+    background-color: #9c27b0;
+    box-shadow: 0 12px 20px -10px rgba(156, 39, 176, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(156, 39, 176, 0.2);
+    color: white;
 }
 
 #property-filters {
@@ -635,34 +642,35 @@
 
 .filter-object {
     display: inline-block;
-    padding: 5px;
-    color: #fff;
+    padding: 5px 10px;
+    color: #5cb860;
     margin: 5px;
-    background: #00B16A;
+    border: 1px solid #5cb860;
     border-radius: 5px;
     position: relative;
+    height: auto;
     padding-right: 20px;
 }
 
 .filter-object .filter-id {
     font-size: 80%;
-    color: #eee;
+    color: #5cb860;
     margin-left: 10px;
 }
 
 .filter-object .filter-remove {
     position: absolute;
-    top: 0px;
+    top: 0;
     right: 5px;
     margin-left: 10px;
     margin-right: 5px;
     font-size: 80%;
-    color: #00B16A;
+    color: #777;
     cursor: pointer;
 }
 
 .filter-object:hover .filter-remove {
-    color: #eee;
+    color: #555;
 }
 
 #show-query-options {

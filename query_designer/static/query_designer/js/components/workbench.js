@@ -60,12 +60,12 @@
                 $(new_instance).draggable({
                     cancel: '.subquery-select', handle: '.title', cursor: 'move', drag: function () {
                         that.builder.reset_height($(this));
-                        arrows.draw();
+                        that.qd.arrows.draw();
                     }
                 });
                 this.bring_to_front(new_instance);
 
-                var instance_object = {id: new_id, uri: uri, dt_name: dt_name, selected_properties: []};
+                var instance_object = {id: new_id, uri: uri, dt_name: dt_name, selected_properties: [], label: label};
                 this.instances.push(instance_object);
 
                 $(new_instance).find(".properties").html('<div class="property-table"><div class="header-row"><div></div><span>Show</span><span>Property</span><span>Optional</span><span>Order by</span><span>Filters</span><span>Foreign</span></div></div>');
@@ -226,6 +226,13 @@
             },
 
             add_property: function (num, _id, label, info) {
+                //load custom name
+                if (label === undefined) {
+                    if (_id == "VALUE") {
+                        label = "Value";
+                    }
+                }
+
                 var instance = this.instances[num];
                 var pObject = {
                     uri: _id,
@@ -242,13 +249,6 @@
                 var optional_disabled = "";
                 if (pObject.uri == "URI") { //URI can not be optional
                     optional_disabled = 'disabled = "disabled"';
-                }
-
-                //load custom name
-                if (label === undefined) {
-                    if (pObject.uri == "VALUE") {
-                        label = "Value";
-                    }
                 }
 
                 var data_i_n = 'data-i="' + num + '" data-n="' + pObject.n + '"';
@@ -410,7 +410,7 @@
         $("body").on('click', '.property-row span:nth-of-type(5)', function (e) {
             that.builder.property_selection = that.builder.instances[$(this).parent().data('i')].selected_properties[$(this).parent().data('n')];
             that.builder.property_selection_of_instance = $(this).parent().data('i');
-            show_filters();
+            that.qd.filters.show();
         });
 
         /*Adding foreign keys*/
@@ -434,7 +434,7 @@
             e.stopPropagation();
         });
 
-        $("#that.builder").on('click', function (e) {
+        $("#builder_workspace").on('click', function (e) {
             if (e.which != 1) { //not left click
                 that.builder.connection_from = undefined;
             }
