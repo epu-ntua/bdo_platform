@@ -80,7 +80,9 @@ DocumentBuilder = function(qd) {
                 if (p.name === undefined || !p.name_from_user) {
                     p.name = i_name + '_' + slugify(p.label);
                     p.name_from_user = false;
+                    p.instance = inst;
                 }
+
                 this.propertyNames[i][j] = p.name;
             }
         }
@@ -175,9 +177,14 @@ DocumentBuilder = function(qd) {
                 name: that.propertyNames[idx][jdx]
             })
         });
+
     });
 
     // add joins
+    // TODO add joins
+
+    // unpack
+    that.qd.config.properties.unpack(document);
 
     return this;
 };

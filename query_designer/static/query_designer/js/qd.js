@@ -21,6 +21,16 @@ var QueryDesigner = function($container, params) {
         classes: {
             propertySource: {type: 'GET', from: '/queries/datasets/{{ datasetId }}/variables/{{ variableId }}/properties/'},
             valuesCountSource: {type: 'GET', from: '/queries/datasets/{{ datasetId }}/variables/{{ variableId }}/count/'}
+        },
+
+        properties: {
+            pack: function(properties) {
+                return properties
+            },
+
+            unpack: function(properties) {
+                return properties
+            }
         }
 
     }, params);

@@ -22,11 +22,13 @@ function PropertySelect(qd, instance) {
                     .replace('{{ datasetId }}', that.c.dt_name)
                     .replace('{{ variableId }}', that.c.uri);
 
-        $.ajax({  //make an ajax request to get properties
+        // make an ajax request to get properties
+        $.ajax({
             url: propertyUrl,
             type: "GET",
             success: function(data) {
-                if (!c || that.to_stop) { //the instance was deleted in the mean time
+                // check if the instance was deleted in the mean time
+                if (!c || that.to_stop) {
                     return;
                 }
 
@@ -34,16 +36,20 @@ function PropertySelect(qd, instance) {
                     that.started_loading = true;
                 }
 
-                for (var i=0; i<data.length; i++) { //add the properties
-                    // properties found from the vocabulary are not certain to exist in the data source
-                    var o = {'uri': data[i]._id, 'label': data[i].title, 'uncertain': false};
+                // pack some properties
+                data = that.qd.config.properties.pack(data);
 
-                    o.frequence = '1';
+                // add the properties
+                for (var i=0; i<data.length; i++) {
+                    // properties found from the vocabulary are not certain to exist in the data source
+                    var o = {'uri': data[i]._id, 'label': data[i].title, 'uncertain': false, info: data};
+
+                    o.frequence = undefined;
 
                     that.properties.push(o);
 
                     // add to instance by default
-                    that.qd.workbench.builder.add_property(that.c.id, o.uri, o.label);
+                    that.qd.workbench.builder.add_property(that.c.id, o.uri, o.label, o.info);
                 }
 
                 that.repeating_pages = 0;

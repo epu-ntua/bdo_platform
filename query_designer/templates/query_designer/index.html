@@ -14,7 +14,7 @@
 
 {% block js %}
     <script src="{% static 'query_designer/js/components/ace/src/ace.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/ace/src/mode-sparql.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/ace/src/mode-json.js' %}"></script>
     <script src="{% static 'query_designer/js/components/ace/src/ext-language_tools.js' %}"></script>
 
     <script src="{% static 'query_designer/js/components/editor.js' %}"></script>
@@ -32,6 +32,79 @@
     <script>
         $(function() {
             $('#query-designer-container').qd({
+                properties: {
+                    pack: function(properties) {
+                        var resultProperties = [],
+                            latitude = null, longitude = null;
+
+                        // transform latitude, longitude to location
+                        $.each(properties, function(idx, property) {
+                            if ((property.name === 'latitude') && (property.unit === 'degrees_north')) {
+                                latitude = property;
+                            }
+                            else if ((property.name === 'longitude') && (property.unit === 'degrees_east')) {
+                                longitude = property
+                            } else {
+                                resultProperties.push(property);
+                            }
+                        });
+
+                        if ((latitude !== null) && (longitude !== null)
+                                && (latitude.dataset_id == longitude.dataset_id)) {
+                            resultProperties.push({
+                                dataset_id: latitude.dataset_id,
+                                minLat: latitude.min,
+                                maxLat: latitude.max,
+                                minLong: longitude.min,
+                                maxLong: longitude.max,
+                                name: "location",
+                                title: "Location",
+                                stepLat: latitude.step,
+                                stepLong: longitude.step,
+                                unit: "degrees",
+                                _id: 'LOCATION(' + latitude._id + ',' + longitude._id + ')'
+                            });
+                        } else {
+                            if (latitude !== null) {
+                               resultProperties.push(latitude);
+                            }
+                            if (longitude !== null) {
+                               resultProperties.push(longitude);
+                            }
+                        }
+
+                        return resultProperties
+                    },
+
+                    unpack: function(qdDocument) {
+                        var resultSelect = [];
+
+                        $.each(qdDocument.select, function(idx, property) {
+                            console.log(property.type.id)
+                            if (property.type.id.indexOf('LOCATION(') === 0) {
+                                var latProperty = $.extend(true, {}, property),
+                                    longProperty = $.extend(true, {}, property);
+
+                                // update property names
+                                latProperty.name += '_latitude';
+                                longProperty.name += '_longitude';
+
+                                // update IDs and types
+                                latProperty.type.id = property.type.id.split('(')[1].split(',')[0];
+                                latProperty.type.label = 'Latitude';
+                                longProperty.type.id = property.type.id.split('(')[1].split(',')[1].replace(')', '');
+                                longProperty.type.label = 'Longitude';
+
+                                resultSelect.push(latProperty);
+                                resultSelect.push(longProperty);
+                            } else {
+                                resultSelect.push(property)
+                            }
+                        });
+
+                        qdDocument.select = resultSelect;
+                    }
+                },
                 language: {
                     parser: BDOMongo,
                     mode: 'json'
