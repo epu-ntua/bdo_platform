@@ -78,3 +78,4 @@ def count_variable_values(request, dataset_id, variable_id):
                 break
 
     return JsonResponse({'count': total})
+

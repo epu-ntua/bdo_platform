@@ -49,31 +49,6 @@ QueryEditor = function(qd) {
 	var SparqlMode = require("ace/mode/" + qd.config.language.mode).Mode;
 	editor.getSession().setMode(new SparqlMode());
 
-	/*F9 to run query*/
-	$("body").on('keyup', function(e) {
-    	if (e.keyCode == 120) { //F9 key pressed
-    		if ($(".designer-button.run-button").length > 0) {
-    			$(".designer-button.run-button").click();
-    		} else {
-    			execute_sparql_query();
-    		}
-        }
-    });
-
-    /*Ctrl+S to save query*/
-	document.addEventListener("keydown", function(e) {
-    	if (e.keyCode == 83 && e.ctrlKey) { //Ctrl+S key pressed
-        	if (typeof(builder_workbench) === "undefined") {
-        		save_query();
-        	} else {
-        		save_design();
-        	}
-
-			e.preventDefault();
-			e.stopPropagation();
-        }
-    }, false);
-
 	this.setValue = function(newQuery) {
 		editor.setValue(newQuery);
 	};

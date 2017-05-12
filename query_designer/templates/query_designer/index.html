@@ -24,6 +24,7 @@
     <script src="{% static 'query_designer/js/components/arrows.js' %}"></script>
     <script src="{% static 'query_designer/js/components/filters.js' %}"></script>
     <script src="{% static 'query_designer/js/components/document-builder.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/query-executor.js' %}"></script>
     <script src="{% static 'query_designer/js/components/workbench.js' %}"></script>
 
     <script src="{% static 'query_designer/js/languages/bdo-mongo.js' %}"></script>
@@ -80,7 +81,6 @@
                         var resultSelect = [];
 
                         $.each(qdDocument.select, function(idx, property) {
-                            console.log(property.type.id)
                             if (property.type.id.indexOf('LOCATION(') === 0) {
                                 var latProperty = $.extend(true, {}, property),
                                     longProperty = $.extend(true, {}, property);
@@ -105,6 +105,17 @@
                         qdDocument.select = resultSelect;
                     }
                 },
+
+                endpoint: {
+                    type: 'POST',
+                    url: '/execute-query/',
+                    queryParameter: 'query',
+
+                    defaultParameters: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    }
+                },
+
                 language: {
                     parser: BDOMongo,
                     mode: 'json'

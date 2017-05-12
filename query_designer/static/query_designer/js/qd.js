@@ -31,7 +31,9 @@ var QueryDesigner = function($container, params) {
             unpack: function(properties) {
                 return properties
             }
-        }
+        },
+
+        endpoint: {type: 'POST', url: '/queries/execute/', queryParameter: 'query', defaultParameters: {}}
 
     }, params);
 
@@ -93,6 +95,9 @@ var QueryDesigner = function($container, params) {
 
     // add query editor
     this.editor = new QueryEditor(this);
+
+    // setup query executor
+    this.queryExecutor = QueryExecutor(this);
 
     return this;
 };

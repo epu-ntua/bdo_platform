@@ -5,7 +5,7 @@ BDOMongo = function(qdDocument) {
     this.qdDocument = qdDocument;
 
     this.getQuery = function() {
-        var result = 'db.data.find({ variable_id: ObjectId("' + qdDocument.from[0].type.id + '")})';
+        var result = JSON.stringify(qdDocument, null, '\t');
 
         return result;
     };
