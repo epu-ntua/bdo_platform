@@ -312,17 +312,20 @@ class BaseConverter(object):
                                        description=self.dataset.description, references=self.dataset.references)
 
         for v in self.variables:
+            print v.name
             agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.title,
                                             scale_factor=v.scale_factor, add_offset=v.add_offset,
                                             cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
                                             dataset=agd)
 
+            dimensions = []
             for dimension_name in v.dimensions:
                 for d in self.dimensions:
                     if d.name == dimension_name:
-                        agd = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
-                                                         min=d.min, max=d.max, step=d.step, axis=d.axis,
-                                                         variable=agv)
+                        agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
+                                                           min=d.min, max=d.max, step=d.step, axis=d.axis,
+                                                           variable=agv)
+                        dimensions.append(agdim)
                         break
 
             cursor = conn.cursor()
@@ -330,4 +333,31 @@ class BaseConverter(object):
             agv.create_data_table(cursor=cursor)
 
             # add data
-            # TODO add data
+            data = self.data(v_name=v.name)
+            dim_values = []
+            for dimension in dimensions:
+                vv = []
+                v = dimension.min
+                idx = 0
+                while v <= dimension.max:
+                    vv.append((idx, v))
+                    if dimension.step is None:
+                        break
+                    idx += 1
+                    v += dimension.step
+                dim_values.append(vv)
+
+            insert_values = []
+            for comb in itertools.product(*dim_values):
+                dt = data
+                for idx, dimension in enumerate(comb):
+                    dt = dt[comb[idx][0]]
+
+                insert_values.append('(%s)' % ','.join([str(combi[1]) for combi in comb] + [str(dt) if str(dt) != '--' else 'null']))
+                if len(insert_values) == 1000:
+                    cursor.execute('INSERT INTO %s VALUES %s;' % (agv.data_table_name, ','.join(insert_values)))
+                    insert_values = []
+
+            if insert_values:
+                cursor.execute('INSERT INTO %s VALUES %s;' % (agv.data_table_name, ','.join(insert_values)))
+                insert_values = []

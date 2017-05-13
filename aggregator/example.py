@@ -43,3 +43,10 @@ motu_args = (
 # cnv = NetCDF4Converter(motu_args[3])
 # cnv.write_to_disk()
 # cnv.write_to_mongo(db=db)
+
+
+def pg_example():
+    fcnv = NetCDF4Converter('global-analysis-forecast-wav-001-023_1493738249917.nc')
+    # cnv.write_to_disk()
+    # cnv.write_to_mongo(db=db)
+    fcnv.write_to_postgres(conn=connection)
