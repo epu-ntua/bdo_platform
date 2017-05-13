@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     # app
     'bdo_main_app',
+    'aggregator',
     'query_designer',
 ]
 

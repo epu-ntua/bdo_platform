@@ -9,6 +9,7 @@ import numpy
 from numpy.ma import MaskedArray
 
 from bdo_platform.settings import DATASET_DIR
+from aggregator.models import Dataset as AgDataset, Variable as AgVariable, Dimension as AgDimension
 
 
 class BaseVariable(object):
@@ -241,7 +242,7 @@ class BaseConverter(object):
                 for datum in self.json_documents(variable=variable):
                     output.write(json.dumps(datum))
 
-    def write_to_db(self, db):
+    def write_to_mongo(self, db):
 
         # insert dataset info
         dataset_id = db.datasets.insert_one(self.dataset.to_json()).inserted_id
@@ -304,3 +305,29 @@ class BaseConverter(object):
         # if data_cache:
         #     db.data.insert_many(data_cache)
         #     data_cache = []
+
+    def write_to_postgres(self, conn):
+        # add datasets, variables & their dimensions
+        agd = AgDataset.objects.create(title=self.dataset.title, source=self.dataset.source,
+                                       description=self.dataset.description, references=self.dataset.references)
+
+        for v in self.variables:
+            agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.title,
+                                            scale_factor=v.scale_factor, add_offset=v.add_offset,
+                                            cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
+                                            dataset=agd)
+
+            for dimension_name in v.dimensions:
+                for d in self.dimensions:
+                    if d.name == dimension_name:
+                        agd = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
+                                                         min=d.min, max=d.max, step=d.step, axis=d.axis,
+                                                         variable=agv)
+                        break
+
+            cursor = conn.cursor()
+            # create data table for variable
+            agv.create_data_table(cursor=cursor)
+
+            # add data
+            # TODO add data

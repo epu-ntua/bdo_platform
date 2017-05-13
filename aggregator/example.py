@@ -1,3 +1,4 @@
+from django.db import connection
 from pymongo import MongoClient
 
 from aggregator.connectors.motu.client import motu_download
@@ -9,6 +10,9 @@ from bdo_platform.settings_management.development_dpap import DOCUMENT_STORE_URL
 client = MongoClient(DOCUMENT_STORE_URL)
 db = client.get_database(name=DOCUMENT_STORE_DB)
 
+# get a postgres cursor
+cursor = connection.cursor()
+
 # drop collections for the example
 # DANGER!
 # db.datasets.drop()
@@ -19,7 +23,8 @@ db = client.get_database(name=DOCUMENT_STORE_DB)
 # load nc file & write results
 cnv = NetCDF4Converter('global-analysis-forecast-wav-001-023_1493738249917.nc')
 # cnv.write_to_disk()
-cnv.write_to_db(db=db)
+# cnv.write_to_mongo(db=db)
+cnv.write_to_postgres(conn=connection)
 
 # cnv = NetCDF4Converter('global-analysis-forecast-phy-001-024-hourly-t-u-v-ssh_1494231860235.nc')
 # cnv.write_to_db(db=db)
@@ -37,4 +42,4 @@ motu_args = (
 #                '-o "%s" -f %s') % motu_args)
 # cnv = NetCDF4Converter(motu_args[3])
 # cnv.write_to_disk()
-# cnv.write_to_db(db=db)
+# cnv.write_to_mongo(db=db)
