@@ -29,7 +29,11 @@ class NetCDF4Converter(BaseConverter):
         return self._dataset
 
     def _parse_base_variable(self, target, source):
-        target.unit = source.units
+        try:
+            target.unit = source.units
+        except AttributeError:
+            target.unit = ''
+
         target.title = source.long_name
 
     def _parse_variable(self, target, source):
@@ -62,9 +66,13 @@ class NetCDF4Converter(BaseConverter):
         except AttributeError:
             pass
 
-    def _parse_dimension(self, target, source, v_source):
+    def _parse_dimension(self, target, source, v_source=None):
         # dimension extends base variable
-        self._parse_base_variable(target, v_source)
+        if not v_source:
+            target.title = source.name
+            target.unit = ''
+        else:
+            self._parse_base_variable(target, v_source)
 
         v = self._f.variables[target.name]
         d_data = v[:]
@@ -89,8 +97,11 @@ class NetCDF4Converter(BaseConverter):
         if not self._dimensions:
             self._dimensions = []
             for d_name in self._f.dimensions.keys():
+                try:
+                    _v = self._f.variables[d_name]
+                except:
+                    raise ValueError('Files without variable information on their dimensions can not be parsed.')
 
-                _v = self._f.variables[d_name]
                 _d = self._f.dimensions[d_name]
                 dimension = Dimension()
                 dimension.name = d_name
@@ -112,13 +123,14 @@ class NetCDF4Converter(BaseConverter):
                     continue
 
                 _v = self._f.variables[v_name]
+
                 variable = Variable()
                 variable.name = v_name
                 self._parse_variable(target=variable, source=_v)
 
                 # reference dimensions
                 variable.dimensions = []
-                for d_name in _v._CoordinateAxes.strip().split(' '):
+                for d_name in _v.dimensions:
                     if d_name not in variable.dimensions:
                         if not self.get_dimension(d_name):
                             raise ValueError('Dimension "%s" was not defined' % d_name)

@@ -23,6 +23,9 @@ class Dataset(Model):
             'references': self.references,
         }
 
+    def __unicode__(self):
+        return self.title
+
 
 class BaseVariable(Model):
     name = CharField(max_length=64)

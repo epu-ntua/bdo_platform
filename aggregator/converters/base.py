@@ -307,80 +307,88 @@ class BaseConverter(object):
         #     data_cache = []
 
     def write_to_postgres(self, conn, with_indices=True, stdout=None):
-        # add datasets, variables & their dimensions
-        agd = AgDataset.objects.create(title=self.dataset.title, source=self.dataset.source,
-                                       description=self.dataset.description, references=self.dataset.references)
+        agd = None
 
-        for v in self.variables:
-            print v.name
-            agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.title,
-                                            scale_factor=v.scale_factor, add_offset=v.add_offset,
-                                            cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
-                                            dataset=agd)
+        try:
+            # add datasets, variables & their dimensions
+            agd = AgDataset.objects.create(title=self.dataset.title, source=self.dataset.source,
+                                           description=self.dataset.description, references=self.dataset.references)
 
-            dimensions = []
-            for dimension_name in v.dimensions:
-                for d in self.dimensions:
-                    if d.name == dimension_name:
-                        agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
-                                                           min=decimal.Decimal(str(d.min)),
-                                                           max=decimal.Decimal(str(d.max)),
-                                                           step=decimal.Decimal(str(d.step)),
-                                                           axis=d.axis,
-                                                           variable=agv)
-                        dimensions.append(agdim)
-                        break
+            for v in self.variables:
+                print v.name
+                agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.title,
+                                                scale_factor=v.scale_factor, add_offset=v.add_offset,
+                                                cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
+                                                dataset=agd)
 
-            cursor = conn.cursor()
-            # create data table for variable
-            agv.create_data_table(cursor=cursor, with_indices=with_indices)
+                dimensions = []
+                for dimension_name in v.dimensions:
+                    for d in self.dimensions:
+                        if d.name == dimension_name:
+                            agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
+                                                               min=decimal.Decimal(str(d.min)),
+                                                               max=decimal.Decimal(str(d.max)),
+                                                               step=decimal.Decimal(str(d.step)),
+                                                               axis=d.axis,
+                                                               variable=agv)
+                            dimensions.append(agdim)
+                            break
 
-            # add data
-            data = self.data(v_name=v.name)
-            dim_values = []
-            for dimension in dimensions:
-                vv = []
-                v = dimension.min
-                idx = 0
-                while v <= dimension.max:
-                    vv.append((idx, v))
-                    if dimension.step is None:
-                        break
-                    idx += 1
-                    v += dimension.step
-                dim_values.append(vv)
+                cursor = conn.cursor()
+                # create data table for variable
+                agv.create_data_table(cursor=cursor, with_indices=with_indices)
 
-            insert_values = []
-            progress = 0
-            total = 1.0
-            dt = data
-            while True:
-                try:
-                    total *= len(dt)
-                    dt = dt[0]
-                except:
-                    break
+                # add data
+                data = self.data(v_name=v.name)
+                dim_values = []
+                for dimension in dimensions:
+                    vv = []
+                    v = dimension.min
+                    idx = 0
+                    while v <= dimension.max:
+                        vv.append((idx, v))
+                        if dimension.step is None:
+                            break
+                        idx += 1
+                        v += dimension.step
+                    dim_values.append(vv)
 
-            for comb in itertools.product(*dim_values):
+                insert_values = []
+                progress = 0
+                total = 1.0
                 dt = data
-                for idx, dimension in enumerate(comb):
-                    dt = dt[comb[idx][0]]
+                while True:
+                    try:
+                        total *= len(dt)
+                        dt = dt[0]
+                    except:
+                        break
 
-                progress += 1
-                if str(dt) != '--':
-                    insert_values.append('(%s)' % ','.join([str(combi[1]) for combi in comb] + [str(dt) if str(dt) != '--' else 'null']))
+                for comb in itertools.product(*dim_values):
+                    dt = data
+                    for idx, dimension in enumerate(comb):
+                        dt = dt[comb[idx][0]]
 
-                if len(insert_values) == 1000:
-                    if stdout:
-                        stdout.write("\r Adding data... %d%%" % (progress * 100 / total), ending='')
-                        stdout.flush()
+                    progress += 1
+                    if str(dt) != '--':
+                        insert_values.append('(%s)' % ','.join([str(combi[1]) for combi in comb] + [str(dt) if str(dt) != '--' else 'null']))
+
+                    if len(insert_values) == 1000:
+                        if stdout:
+                            stdout.write("\r Adding data... %d%%" % (progress * 100 / total), ending='')
+                            stdout.flush()
+                        cursor.execute('INSERT INTO %s VALUES %s;' % (agv.data_table_name, ','.join(insert_values)))
+                        insert_values = []
+
+                if insert_values:
                     cursor.execute('INSERT INTO %s VALUES %s;' % (agv.data_table_name, ','.join(insert_values)))
                     insert_values = []
 
-            if insert_values:
-                cursor.execute('INSERT INTO %s VALUES %s;' % (agv.data_table_name, ','.join(insert_values)))
-                insert_values = []
+                if stdout:
+                    stdout.write("\r Completed", ending='\n')
+                    stdout.flush()
+        except:
+            if agd:
+                agd.delete()
 
-            if stdout:
-                stdout.write("\r Completed", ending='\n')
-                stdout.flush()
+            raise
