@@ -152,13 +152,9 @@ DocumentBuilder = function(qd) {
 
     // create document
     document = {
-        select: [],
         from: [],
-        where: [],
-        joins: [],
-        order: [],
         offset: 0,
-        limit: null
+        limit: 100
     };
 
     // find instance & property names
@@ -166,18 +162,20 @@ DocumentBuilder = function(qd) {
 
     // add properties to select & add instances to from
     $.each(qd.workbench.builder.instances, function(idx, instance) {
-        document.from.push({
-            type: {id: instance.uri, label: instance.label},
-            name: that.instanceNames[idx].val
-        });
+        var fromObject = {
+            type: instance.uri,
+            name: that.instanceNames[idx].val,
+            select: []
+        };
 
         $.each(instance.selected_properties, function(jdx, property) {
-            document.select.push({
-                type: {id: property.uri, label: property.label},
+            fromObject.select.push({
+                type: property.uri,
                 name: that.propertyNames[idx][jdx]
             })
         });
 
+        document.from.push(fromObject);
     });
 
     // add joins

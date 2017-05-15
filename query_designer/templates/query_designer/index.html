@@ -78,31 +78,31 @@
                     },
 
                     unpack: function(qdDocument) {
-                        var resultSelect = [];
+                        $.each(qdDocument.from, function(idx, _from) {
+                            var resultSelect = [];
 
-                        $.each(qdDocument.select, function(idx, property) {
-                            if (property.type.id.indexOf('LOCATION(') === 0) {
-                                var latProperty = $.extend(true, {}, property),
-                                    longProperty = $.extend(true, {}, property);
+                            $.each(_from.select, function(idx, property) {
+                                if (property.type.indexOf('LOCATION(') === 0) {
+                                    var latProperty = $.extend(true, {}, property),
+                                        longProperty = $.extend(true, {}, property);
 
-                                // update property names
-                                latProperty.name += '_latitude';
-                                longProperty.name += '_longitude';
+                                    // update property names
+                                    latProperty.name += '_latitude';
+                                    longProperty.name += '_longitude';
 
-                                // update IDs and types
-                                latProperty.type.id = property.type.id.split('(')[1].split(',')[0];
-                                latProperty.type.label = 'Latitude';
-                                longProperty.type.id = property.type.id.split('(')[1].split(',')[1].replace(')', '');
-                                longProperty.type.label = 'Longitude';
+                                    // update IDs and types
+                                    latProperty.type = property.type.split('(')[1].split(',')[0];
+                                    longProperty.type = property.type.split('(')[1].split(',')[1].replace(')', '');
 
-                                resultSelect.push(latProperty);
-                                resultSelect.push(longProperty);
-                            } else {
-                                resultSelect.push(property)
-                            }
+                                    resultSelect.push(latProperty);
+                                    resultSelect.push(longProperty);
+                                } else {
+                                    resultSelect.push(property)
+                                }
+                            });
+
+                            _from.select = resultSelect;
                         });
-
-                        qdDocument.select = resultSelect;
                     }
                 },
 
