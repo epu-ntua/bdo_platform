@@ -5,12 +5,23 @@ from django.dispatch import receiver
 from django.utils.text import slugify
 from django.db import connection
 
+import math
+
 
 class Dataset(Model):
     title = TextField()
     source = TextField()
     description = TextField()
     references = ArrayField(TextField())
+
+    def to_json(self):
+        return {
+            '_id': str(self.pk),
+            'title': self.title,
+            'source': self.source,
+            'description': self.description,
+            'references': self.references,
+        }
 
 
 class BaseVariable(Model):
@@ -26,10 +37,22 @@ class Dimension(BaseVariable):
     variable = ForeignKey('Variable', related_name='dimensions')
 
     data_column_name = CharField(max_length=255)
-    min = FloatField(blank=True, null=True, default=None)
-    max = FloatField(blank=True, null=True, default=None)
-    step = FloatField(blank=True, null=True, default=None)
+    min = DecimalField(blank=True, null=True, default=None, max_digits=100, decimal_places=50)
+    max = DecimalField(blank=True, null=True, default=None, max_digits=100, decimal_places=50)
+    step = DecimalField(blank=True, null=True, default=None, max_digits=100, decimal_places=50)
     axis = TextField(blank=True, null=True, default=None)
+
+    def to_json(self):
+        return {
+            '_id': str(self.pk),
+            'name': self.name,
+            'title': self.title,
+            'unit': self.unit,
+            'min': self.min,
+            'max': self.max,
+            'step': self.step,
+            'axis': self.axis,
+        }
 
     @property
     def data_column_name(self):
@@ -42,7 +65,16 @@ class Dimension(BaseVariable):
         try:
             return type_mapping[self.name]
         except KeyError:
-            return 'numeric'
+            # max number of int digits
+            n_int = int(math.log10(self.max)) + 1
+
+            # max number of decimal digits
+            try:
+                n_decimal = str(self.step).split('.')[1].rstrip('0').__len__()
+            except IndexError:
+                n_decimal = 0
+
+            return 'numeric(%d,%d)' % (n_int + n_decimal, n_decimal)
 
 
 class Variable(BaseVariable):
@@ -51,13 +83,25 @@ class Variable(BaseVariable):
     scale_factor = FloatField(default=1)
     add_offset = FloatField(default=0)
     cell_methods = ArrayField(TextField())
-    type_of_analysis = TextField()
+    type_of_analysis = TextField(blank=True, null=True, default=None)
+
+    def to_json(self):
+        return {
+            '_id': str(self.pk),
+            'name': self.name,
+            'title': self.title,
+            'unit': self.unit,
+            'scale_factor': self.scale_factor,
+            'add_offset': self.add_offset,
+            'cell_methods': self.cell_methods,
+            'type_of_analysis': self.type_of_analysis,
+        }
 
     @property
     def data_table_name(self):
         return slugify(self.name, allow_unicode=False).replace('-', '_') + ('_%d' % self.pk)
 
-    def create_data_table(self, cursor):
+    def create_data_table(self, cursor, with_indices=True):
         # gather columns
         columns = []
         for d in self.dimensions.all():
@@ -69,10 +113,11 @@ class Variable(BaseVariable):
                        (self.data_table_name, ','.join(columns)))
 
         # add indices
-        for column in columns:
-            col_name = column.split(' ')[0]
-            cursor.execute('CREATE INDEX idx_%d_%s ON %s (%s);' %
-                           (self.pk, col_name, self.data_table_name, col_name))
+        if with_indices:
+            for column in columns:
+                col_name = column.split(' ')[0]
+                cursor.execute('CREATE INDEX idx_%d_%s ON %s (%s);' %
+                               (self.pk, col_name, self.data_table_name, col_name))
 
     def delete_data_table(self, cursor):
         # delete indeces
@@ -81,6 +126,10 @@ class Variable(BaseVariable):
 
         # delete table
         cursor.execute('DROP TABLE IF EXISTS %s;' % self.data_table_name)
+
+    def count_values(self, cursor):
+        cursor.execute('SELECT COUNT (*) FROM %s;' % self.data_table_name)
+        return cursor.fetchone()[0]
 
 
 # on variable delete, cleanup

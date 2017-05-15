@@ -8,4 +8,4 @@ class Command(BaseCommand):
     help = 'Import example dataset to postgres'
 
     def handle(self, *args, **options):
-        pg_example()
+        pg_example(stdout=self.stdout)
