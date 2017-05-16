@@ -1,0 +1,10 @@
+/* Colors */
+.bg-color--midnight-blue {
+    background: #2c3e50;
+    color: #fff;
+}
+
+.bg-color--lightgray {
+    background: #eee;
+    color: #555;
+}

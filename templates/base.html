@@ -8,7 +8,7 @@
 	<link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
 
-	<title>Material Dashboard by Creative Tim</title>
+	<title>Big Data Ocean | {% block title %}Online Platform{% endblock %}</title>
 
 	<meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
     <meta name="viewport" content="width=device-width" />
@@ -22,6 +22,8 @@
     <link href="{% static 'css/jquery.contextMenu.css' %}" rel="stylesheet" />
     <link href="{% static 'css/jquery.modal.css' %}" rel="stylesheet" />
     <link href="{% static 'css/jquery-ui.min.css' %}" rel="stylesheet" />
+
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" />
 
     <style>
         .form-control {
@@ -43,67 +45,43 @@
 
 	<div class="wrapper">
 
-	    <div class="sidebar" data-color="purple" data-image="{% static 'img/sidebar-1.jpg' %}">
-			<!--
-		        Tip 1: You can change the color of the sidebar using: data-color="purple | blue | green | orange | red"
-
-		        Tip 2: you can also add an image using data-image tag
-		    -->
-
+	    <div class="sidebar" data-color="blue" data-image="{% static 'img/sidebar-1.jpg' %}">
 			<div class="logo">
-				<a href="https://www.creative-tim.com" class="simple-text">
-					Creative Tim
+				<a href="/" class="simple-text">
+					<img src="{% static 'img/logo.png' %}" style="width: 110px; height: auto;">
 				</a>
 			</div>
 
 	    	<div class="sidebar-wrapper">
 	            <ul class="nav">
-	                <li class="active">
-	                    <a href="base.html">
+	                <li{% if sidebar_active == 'dashboard' or not sidebar_active %} class="active"{% endif %}>
+	                    <a href="/">
 	                        <i class="material-icons">dashboard</i>
 	                        <p>Dashboard</p>
 	                    </a>
 	                </li>
 	                <li>
-	                    <a href="user.html">
+	                    <a href="#">
 	                        <i class="material-icons">person</i>
-	                        <p>User Profile</p>
+	                        <p>Providers</p>
 	                    </a>
 	                </li>
 	                <li>
-	                    <a href="table.html">
-	                        <i class="material-icons">content_paste</i>
-	                        <p>Table List</p>
+	                    <a href="#">
+	                        <i class="material-icons">directions_boat</i>
+	                        <p>Products</p>
+	                    </a>
+	                </li>
+	                <li{% if sidebar_active == 'queries' %} class="active"{% endif %}>
+	                    <a href="/queries">
+	                        <i class="material-icons">search</i>
+	                        <p>Explore data</p>
 	                    </a>
 	                </li>
 	                <li>
-	                    <a href="typography.html">
-	                        <i class="material-icons">library_books</i>
-	                        <p>Typography</p>
-	                    </a>
-	                </li>
-	                <li>
-	                    <a href="icons.html">
-	                        <i class="material-icons">bubble_chart</i>
-	                        <p>Icons</p>
-	                    </a>
-	                </li>
-	                <li>
-	                    <a href="maps.html">
-	                        <i class="material-icons">location_on</i>
-	                        <p>Maps</p>
-	                    </a>
-	                </li>
-	                <li>
-	                    <a href="notifications.html">
+	                    <a href="#">
 	                        <i class="material-icons text-gray">notifications</i>
 	                        <p>Notifications</p>
-	                    </a>
-	                </li>
-					<li class="active-pro">
-	                    <a href="upgrade.html">
-	                        <i class="material-icons">unarchive</i>
-	                        <p>Upgrade to PRO</p>
 	                    </a>
 	                </li>
 	            </ul>
@@ -120,7 +98,8 @@
 							<span class="icon-bar"></span>
 							<span class="icon-bar"></span>
 						</button>
-						<a class="navbar-brand" href="#">Material Dashboard</a>
+						<a class="navbar-brand" href="#">How BDO works</a>
+						<a class="navbar-brand" href="#">About us</a>
 					</div>
 					<div class="collapse navbar-collapse">
 						<ul class="nav navbar-nav navbar-right">
@@ -177,29 +156,14 @@
 					<nav class="pull-left">
 						<ul>
 							<li>
-								<a href="#">
-									Home
-								</a>
-							</li>
-							<li>
-								<a href="#">
-									Company
-								</a>
-							</li>
-							<li>
-								<a href="#">
-									Portfolio
-								</a>
-							</li>
-							<li>
-								<a href="#">
-								   Blog
+								<a href="http://bigdataocean.eu/">
+									About the project
 								</a>
 							</li>
 						</ul>
 					</nav>
 					<p class="copyright pull-right">
-						&copy; <script>document.write(new Date().getFullYear())</script> <a href="https://www.creative-tim.com">Creative Tim</a>, made with love for a better web
+						&copy; <script>document.write(new Date().getFullYear())</script> <a href="http://bigdataocean.eu/">Big Data Ocean</a>
 					</p>
 				</div>
 			</footer>

@@ -48,9 +48,9 @@ def example():
 
 
 def pg_example(stdout=None):
-    # fcnv = NetCDF4Converter('global-analysis-forecast-wav-001-023_1493738249917.nc')
+    fcnv = NetCDF4Converter('global-analysis-forecast-wav-001-023_1493738249917.nc')
     # fcnv = NetCDF4Converter('global-analysis-forecast-phy-001-024-hourly-t-u-v-ssh_1494231860235.nc')
-    fcnv = NetCDF4Converter('METO-NWS-BIO-DM-ATTN--12345.nc')
+    # fcnv = NetCDF4Converter('METO-NWS-BIO-DM-ATTN--12345.nc')
     # cnv.write_to_disk()
     # cnv.write_to_mongo(db=db)
     fcnv.write_to_postgres(conn=connection, with_indices=False, stdout=stdout)

@@ -33,8 +33,8 @@ var QueryDesigner = function($container, params) {
             }
         },
 
-        endpoint: {type: 'POST', url: '/queries/execute/', queryParameter: 'query', defaultParameters: {}}
-
+        endpoint: {type: 'POST', url: '/queries/execute/', queryParameter: 'query', defaultParameters: {}},
+        scrollParent: $('body')
     }, params);
 
     // create the dataset select
@@ -78,13 +78,17 @@ var QueryDesigner = function($container, params) {
         }
     };
 
+    // add body class
+    $('body').addClass('qd-body');
+
     // create arrows
     this.arrows = new Arrows(this);
 
     // render
     this.ui.render();
 
-    // setup toolbar
+    // setup toolbar & menu
+    this.menu = new DesignerMenu(this);
     this.toolbar = new Toolbar(this);
 
     // setup workbench

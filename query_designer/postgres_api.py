@@ -9,24 +9,35 @@ from mongo_client import get_mongo_db, MongoResponse
 
 
 def datasets(request):
+    results = [{
+        '_id': 'ALL',
+        'title': 'All datasets',
+    }]
 
-    return JsonResponse([d.to_json() for d in Dataset.objects.all()], safe=False)
+    for d in Dataset.objects.all():
+        results.append(d.to_json())
+
+    return JsonResponse(results, safe=False)
 
 
 def dataset_variables(request, dataset_id):
     page = int(request.GET.get('p', '1'))
 
-    return JsonResponse([v.to_json() for v in Variable.objects.filter(dataset_id=dataset_id)], safe=False)
+    qs = Variable.objects.all()
+    if dataset_id != 'ALL':
+        qs = qs.filter(dataset_id=dataset_id)
+
+    return JsonResponse([v.to_json() for v in qs], safe=False)
 
 
 def dataset_variable_properties(request, dataset_id, variable_id):
 
-    return JsonResponse([d.to_json() for d in Dimension.objects.filter(variable__dataset_id=dataset_id, variable_id=variable_id)],
+    return JsonResponse([d.to_json() for d in Dimension.objects.filter(variable_id=variable_id)],
                         safe=False)
 
 
 def count_variable_values(request, dataset_id, variable_id):
-    variable = Variable.objects.get(dataset_id=dataset_id, pk=variable_id)
+    variable = Variable.objects.get(pk=variable_id)
 
     return JsonResponse({
         'count': variable.count_values(cursor=connection.cursor()),

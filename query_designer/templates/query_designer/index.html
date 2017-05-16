@@ -13,17 +13,26 @@
 {% endblock %}
 
 {% block js %}
+    <!-- amChart -->
+    <script src="https://www.amcharts.com/lib/3/ammap.js"></script>
+    <script src="https://www.amcharts.com/lib/3/maps/js/worldHigh.js"></script>
+    <script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+    <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
+    <script src="https://www.amcharts.com/lib/3/themes/light.js"></script>
+
     <script src="{% static 'query_designer/js/components/ace/src/ace.js' %}"></script>
     <script src="{% static 'query_designer/js/components/ace/src/mode-json.js' %}"></script>
     <script src="{% static 'query_designer/js/components/ace/src/ext-language_tools.js' %}"></script>
 
     <script src="{% static 'query_designer/js/components/editor.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/designer-menu.js' %}"></script>
     <script src="{% static 'query_designer/js/components/toolbar.js' %}"></script>
     <script src="{% static 'query_designer/js/components/dataset-select.js' %}"></script>
     <script src="{% static 'query_designer/js/components/property-select.js' %}"></script>
     <script src="{% static 'query_designer/js/components/arrows.js' %}"></script>
     <script src="{% static 'query_designer/js/components/filters.js' %}"></script>
     <script src="{% static 'query_designer/js/components/document-builder.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/chart-builder.js' %}"></script>
     <script src="{% static 'query_designer/js/components/query-executor.js' %}"></script>
     <script src="{% static 'query_designer/js/components/workbench.js' %}"></script>
 
@@ -108,7 +117,7 @@
 
                 endpoint: {
                     type: 'POST',
-                    url: '/execute-query/',
+                    url: '/queries/execute/',
                     queryParameter: 'query',
 
                     defaultParameters: {
@@ -119,7 +128,9 @@
                 language: {
                     parser: BDOMongo,
                     mode: 'json'
-                }
+                },
+
+                scrollParent: $('.main-panel')
             });
         });
     </script>

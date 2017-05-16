@@ -11,18 +11,17 @@ QueryExecutor = function(qd) {
 
         render: function() {
             this.$elem = $('' +
-                '<div class="row">' +
+                '<div class="row" id="query-results--container">' +
                     '<div class="col-xs-12">' +
                         '<h3>Results</h3>' +
                         '<div class="card card-nav-tabs">' +
-                            '<div class="card-header" data-background-color="orange">' +
+                            '<div class="card-header" data-background-color="blue">' +
                                 '<div class="nav-tabs-navigation">' +
                                     '<div class="nav-tabs-wrapper">' +
-                                        '<span class="nav-tabs-title">Tasks:</span>' +
                                         '<ul class="nav nav-tabs" data-tabs="tabs">' +
                                             '<li class="active">' +
                                                 '<a href="#query-results--visualization" data-toggle="tab" aria-expanded="true">' +
-                                                    '<i class="material-icons">bug_report</i>' +
+                                                    '<i class="material-icons">perm_media</i>' +
                                                     'Overview' +
                                                 '<div class="ripple-container"></div></a>' +
                                             '</li>' +
@@ -81,7 +80,7 @@ QueryExecutor = function(qd) {
 
         renderResults: function(data) {
             var $dataTable = $('<table />').addClass('table');
-            $dataTable.append($('<thead />').addClass('text-warning'));
+            $dataTable.append($('<thead />').addClass('text-info'));
             $dataTable.append($('<tbody />'));
 
             // add headers
@@ -108,6 +107,14 @@ QueryExecutor = function(qd) {
                 .find('#query-results--data')
                 .empty()
                 .append($dataTable);
+
+            // create & add chart
+            new ChartBuilder('#query-results--visualization', data);
+
+            // scroll to results
+            that.qd.config.scrollParent.animate({
+                scrollTop: $('#query-results--container').position().top
+            }, 500, 'swing');
         }
     };
 

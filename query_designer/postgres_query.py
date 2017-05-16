@@ -18,10 +18,12 @@ def execute_query(request):
             dimension = Dimension.objects.get(pk=s['type'])
             column_name = dimension.data_column_name
             column_unit = dimension.unit
+            column_axis = dimension.axis
             header_sql_types.append(dimension.sql_type)
         else:
             column_name = 'value'
             column_unit = 'VALUE'
+            column_axis = None
             header_sql_types.append('double precision')
 
         selects.append('%s AS %s' % (column_name, s['name']))
@@ -29,6 +31,7 @@ def execute_query(request):
             'title': s['title'],
             'name': s['name'],
             'unit': column_unit,
+            'axis': column_axis,
         })
     select_clause = 'SELECT ' + ','.join(selects) + '\n'
 
@@ -65,7 +68,7 @@ def execute_query(request):
     for row in cursor.fetchall():
         res_row = []
         for idx, h_type in enumerate(header_sql_types):
-            if h_type == 'numeric' or h_type.startswith('numeric('):
+            if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:
                 res_row.append(float(row[idx]))
             else:
                 res_row.append(row[idx])

@@ -1,3 +1,7 @@
+body.qd-body {
+    overflow-y: hidden;
+}
+
 #tree_toolbar {
     position: absolute;
     right: 0;
@@ -141,7 +145,7 @@
     border: 1px solid #eee;
     padding: 2px 5px;
     vertical-align: top;
-    margin: 2px 5px;
+    margin: 10px 20px;
 }
 
 .designer-button, designer-button * {
@@ -233,10 +237,14 @@
     width: 100%;
     height: 600px;
     position: relative;
+        background: #fff;
+    border: 1px solid #ddd;
 }
 
 #builder_workspace > span {
-    padding: 5px;
+    padding: 20px;
+    display: block;
+    color: #777;
 }
 
 #query_pattern {
@@ -281,20 +289,21 @@
 
 #builder_workspace .class-instance {
     position: absolute;
-    border: 2px solid #2574A9;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 2px #aaa;
     min-width: 400px;
     z-index: 1;
-	width: auto !important;
-	height: auto !important;
+    width: auto !important;
+    height: auto !important;
 }
 
 #builder_workspace .class-instance .title {
     display: block;
-    color: #fff;
-    background: #5C97BF;
+    color: #333;
+    background: #ecf0f1;
     padding: 10px;
-	cursor: move;
-    border-bottom: 1px solid #2574A9;
+    cursor: move;
+    border-bottom: 1px solid #ccc;
     min-height: 40px;
 }
 
@@ -319,7 +328,7 @@
 
 #builder_workspace span.n-of-instances {
     font-size: 12px;
-    color: #fff;
+    color: #999;
     margin-left: 10px;
     vertical-align: top;
     margin-bottom: 10px;
@@ -387,10 +396,12 @@
     max-height: 1.4em;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: #999;
 }
 
 #builder_workspace .class-instance .title h3 {
     font-size: 16px;
+    max-width: 300px;
 }
 
 #builder_workspace .class-instance .title span.delete {
@@ -404,10 +415,10 @@
 
 #builder_workspace .class-instance .property-control {
     display: block;
-    color: #fff;
-    background: #5C97BF;
+    color: #777;
+    background: #ecf0f1;
     padding: 10px;
-    border-top: 1px solid #2574A9;
+    border-top: 1px solid #ccc;
     position: relative;
 }
 
@@ -420,15 +431,15 @@
     max-height: 200px;
     overflow-y: auto;
     overflow-x: hidden;
-    background: #34495e;
+    background: azure;
 }
 
 #builder_workspace .class-instance .property-control .dropdown-toggle-properties {
     display: inline-block;
     padding: 3px 10px;
     cursor: pointer;
-    background: #eee;
-    border-left: 1px solid #aaa;
+    background: azure;
+    border-left: 1px solid #ddd;
     margin-right: 10px;
 }
 
@@ -453,7 +464,7 @@
 }
 
 #builder_workspace .class-instance .property-control input {
-    background: #eee;
+    background: azure;
     border: none;
     padding: 3px 4px;
     width: 164px;
@@ -472,6 +483,7 @@
 #builder_workspace .class-instance .property-control .property-dropdown .up:hover {
     cursor: pointer;
     background: #5C97BF;
+    color: #fff;
 }
 
 #builder_workspace .class-instance .property-control .property-dropdown .property.uncertain {
@@ -970,4 +982,52 @@
     position: relative;
     width: 100%;
     height: 400px;
+}
+
+#query-results--data th {
+    text-transform: capitalize;
+}
+
+/* Visualizations */
+#query-visualization--container {
+    position: relative;
+}
+
+.amcharts-main-div {
+    height: 500px;
+}
+
+.map-marker {
+    /* adjusting for the marker dimensions
+    so that it is centered on coordinates */
+    margin-left: -8px;
+    margin-top: -8px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.map-marker.map-clickable {
+    cursor: pointer;
+}
+
+.map-marker > .info {
+    display: none;
+    position: absolute;
+    top: 15px;
+    left: -10px;
+    font-size: 80%;
+    background: #FCFBE3;
+    padding: 2px 5px;
+    border: 1px solid #555;
+    min-width: 150px;
+}
+
+.map-marker > .info > p {
+    margin-bottom: 2px;
+}
+
+.map-marker:hover > .info {
+    display: block;
 }

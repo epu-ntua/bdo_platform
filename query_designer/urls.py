@@ -10,6 +10,9 @@ urlpatterns = [
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/properties/$', views.dataset_variable_properties),
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/count/$', views.count_variable_values),
 
+    # execute
+    url('execute/$', views.execute_query, name='execute-query'),
+
     # basic page
     url('$', views.index, name='home'),
 ]
