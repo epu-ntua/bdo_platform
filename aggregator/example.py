@@ -40,7 +40,7 @@ def example():
     )
 
     motu_download(('-u %s -p %s ' +
-                   '-m http://data.ncof.co.uk/mis-gateway-servlet/Motu -s http://purl.org/myocean/ontology/service/database#GLOBAL_ANALYSIS_FORECAST_PHYS_001_015 -d MetO-GLO-PHYS-daily -x 0 -X -0.25 -y -83 -Y 89.75 -t "2016-11-06" -T "2016-11-18" -z 0 -Z 0.0001 -v itzocrtx -v sossheig -v vosaline -v sotemper -v vomecrty -v sokaraml -v votemper -v iicethic -v iiceconc -v itmecrty -v vozocrtx ' +
+                   '-m http://data.ncof.co.uk/motu-web/Motu -s NORTHWESTSHELF_ANALYSIS_FORECAST_BIO_004_002_b -d MetO-NWS-BIO-dm-ATTN -x -19.888889312744 -X 12.999670028687 -y 40.066669464111 -Y 65.001251220703 -t "2017-05-14 12:00:00" -T "2017-05-18 12:00:00" -z 0 -Z 3.0001 -v attn ' +
                    '-o "%s" -f %s') % motu_args)
     # cnv = NetCDF4Converter(motu_args[3])
     # cnv.write_to_disk()
@@ -50,7 +50,7 @@ def example():
 def pg_example(stdout=None):
     # fcnv = NetCDF4Converter('global-analysis-forecast-wav-001-023_1493738249917.nc')
     # fcnv = NetCDF4Converter('global-analysis-forecast-phy-001-024-hourly-t-u-v-ssh_1494231860235.nc')
-    fcnv = NetCDF4Converter('GL_TS_DC_10050130_5600935.nc')
+    fcnv = NetCDF4Converter('METO-NWS-BIO-DM-ATTN--12345.nc')
     # cnv.write_to_disk()
     # cnv.write_to_mongo(db=db)
     fcnv.write_to_postgres(conn=connection, with_indices=False, stdout=stdout)

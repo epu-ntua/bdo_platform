@@ -5,6 +5,7 @@ import decimal
 import bson
 import itertools
 
+import datetime
 import numpy
 from numpy.ma import MaskedArray
 
@@ -307,6 +308,13 @@ class BaseConverter(object):
         #     data_cache = []
 
     def write_to_postgres(self, conn, with_indices=True, stdout=None):
+
+        def db_serialize(val):
+            if type(val) == datetime.datetime:
+                return "TIMESTAMP '%s'" % val.isoformat().replace('T', ' ')
+            else:
+                return str(val)
+
         agd = None
 
         try:
@@ -346,7 +354,7 @@ class BaseConverter(object):
                     v = dimension.min
                     idx = 0
                     while v <= dimension.max:
-                        vv.append((idx, v))
+                        vv.append((idx, self.normalize(dimension, v)))
                         if dimension.step is None:
                             break
                         idx += 1
@@ -371,7 +379,7 @@ class BaseConverter(object):
 
                     progress += 1
                     if str(dt) != '--':
-                        insert_values.append('(%s)' % ','.join([str(combi[1]) for combi in comb] + [str(dt) if str(dt) != '--' else 'null']))
+                        insert_values.append('(%s)' % ','.join([db_serialize(combi[1]) for combi in comb] + [str(dt) if str(dt) != '--' else 'null']))
 
                     if len(insert_values) == 1000:
                         if stdout:

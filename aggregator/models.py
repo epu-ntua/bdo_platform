@@ -28,9 +28,9 @@ class Dataset(Model):
 
 
 class BaseVariable(Model):
-    name = CharField(max_length=64)
-    title = CharField(max_length=128)
-    unit = CharField(max_length=64)
+    name = CharField(max_length=256)
+    title = CharField(max_length=256)
+    unit = CharField(max_length=256)
 
     class Meta:
         abstract = True
@@ -64,6 +64,13 @@ class Dimension(BaseVariable):
     @property
     def sql_type(self):
         type_mapping = {}
+
+        if self.unit.startswith('days since ') or \
+                self.unit.startswith('hours since ') or \
+                self.unit.startswith('minutes since ') or \
+                self.unit.startswith('seconds since ') or \
+                self.unit.startswith('milliseconds since '):
+            return 'TIMESTAMP'
 
         try:
             return type_mapping[self.name]

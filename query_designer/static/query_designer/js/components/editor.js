@@ -10,7 +10,7 @@ QueryEditor = function(qd) {
 
 		render: function() {
 			this.$elem = $(
-				'<div class="panel panel-default editor-container">' +
+				'<div class="panel panel-default editor-container" style="display: none;">' +
 					'<div class="panel-heading">' +
 						'<div class="row">' +
 							'<div class="col-md-6">' +

@@ -171,7 +171,8 @@ DocumentBuilder = function(qd) {
         $.each(instance.selected_properties, function(jdx, property) {
             fromObject.select.push({
                 type: property.uri,
-                name: that.propertyNames[idx][jdx]
+                name: that.propertyNames[idx][jdx],
+                title: property.label
             })
         });
 

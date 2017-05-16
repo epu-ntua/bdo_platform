@@ -11,14 +11,25 @@ def execute_query(request):
 
     # select
     selects = []
+    headers = []
+    header_sql_types = []
     for s in query_document['from'][0]['select']:
         if s['type'] != 'VALUE':
-            column_name = Dimension.objects.get(pk=s['type']).data_column_name
+            dimension = Dimension.objects.get(pk=s['type'])
+            column_name = dimension.data_column_name
+            column_unit = dimension.unit
+            header_sql_types.append(dimension.sql_type)
         else:
             column_name = 'value'
+            column_unit = 'VALUE'
+            header_sql_types.append('double precision')
 
         selects.append('%s AS %s' % (column_name, s['name']))
-
+        headers.append({
+            'title': s['title'],
+            'name': s['name'],
+            'unit': column_unit,
+        })
     select_clause = 'SELECT ' + ','.join(selects) + '\n'
 
     # from
@@ -47,12 +58,28 @@ def execute_query(request):
     t1 = time.time()
     cursor = connection.cursor()
     cursor.execute(q)
-    results = cursor.fetchall()
+
+    # we have to convert numeric results to float
+    # by default they're returned as strings to prevent loss of precision
+    results = []
+    for row in cursor.fetchall():
+        res_row = []
+        for idx, h_type in enumerate(header_sql_types):
+            if h_type == 'numeric' or h_type.startswith('numeric('):
+                res_row.append(float(row[idx]))
+            else:
+                res_row.append(row[idx])
+
+        results.append(res_row)
+
+    # monitor query duration
     q_time = (time.time() - t1) * 1000
 
     return JsonResponse({
         'results': results,
         'headers': {
-            'runtime_msec': q_time
+            'runtime_msec': q_time,
+            'total_results': None,
+            'columns': headers,
         }
     })

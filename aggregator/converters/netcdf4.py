@@ -1,4 +1,4 @@
-from netCDF4 import Dataset
+from netCDF4 import Dataset, num2date
 
 from aggregator.converters.base import *
 
@@ -144,4 +144,27 @@ class NetCDF4Converter(BaseConverter):
 
     def data(self, v_name):
         return self._f.variables[v_name][:]
+
+    def normalize(self, dimension, value):
+        # time
+        if dimension.unit and \
+                (dimension.unit.startswith('days since ') or
+                 dimension.unit.startswith('hours since ') or
+                 dimension.unit.startswith('minutes since ') or
+                 dimension.unit.startswith('seconds since ') or
+                 dimension.unit.startswith('milliseconds since ')
+                 ):
+            try:
+                t_cal = dimension.calendar
+            except AttributeError:
+                try:
+                    t_cal = self._f.variables[dimension.name].calendar
+                except AttributeError:
+                    t_cal = u'gregorian'
+
+                setattr(dimension, 'calendar', t_cal)
+
+            value = num2date(value, units=dimension.unit, calendar=t_cal)
+
+        return value
 
