@@ -132,7 +132,10 @@ QueryExecutor = function(qd) {
             'data': requestParameters,
             success: function(data) {
                 console.log(data);
-                that.ui.renderResults(data)
+                that.ui.renderResults(data);
+
+                // update query options with page info
+                that.qd.options.setPages(data.headers.pages);
             }
         })
     };

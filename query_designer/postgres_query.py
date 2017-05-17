@@ -43,10 +43,10 @@ def execute_query(request):
     where_clause = ''
 
     # offset & limit
-    offset_clause = 'OFFSET %d\n' % \
-                    (int(query_document['offset']) if 'offset' in query_document and query_document['offset'] else 0)
-    limit_clause = 'LIMIT %d\n' % \
-                   (int(query_document['limit']) if 'limit' in query_document and query_document['limit'] else 100)
+    offset = int(query_document['offset']) if 'offset' in query_document and query_document['offset'] else 0
+    offset_clause = 'OFFSET %d\n' % offset
+    limit = int(query_document['limit']) if 'limit' in query_document and query_document['limit'] else 100
+    limit_clause = 'LIMIT %d\n' % limit
 
     # generate query
     q = select_clause + \
@@ -75,6 +75,20 @@ def execute_query(request):
 
         results.append(res_row)
 
+    # count pages
+    pages = {
+        'current': (offset / limit) + 1,
+        'total': 1
+    }
+
+    if len(results) == limit:
+        q_pages = 'SELECT count(*) ' + \
+            from_clause + \
+            where_clause
+
+        cursor.execute(q_pages)
+        pages['total'] = (cursor.fetchone()[0] - 1) / 1000 + 1
+
     # monitor query duration
     q_time = (time.time() - t1) * 1000
 
@@ -82,7 +96,7 @@ def execute_query(request):
         'results': results,
         'headers': {
             'runtime_msec': q_time,
-            'total_results': None,
             'columns': headers,
+            'pages': pages,
         }
     })

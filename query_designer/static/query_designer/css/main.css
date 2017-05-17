@@ -603,30 +603,6 @@ body.qd-body {
     background-size: 16px;
 }
 
-.ui-front {
-    z-index: 10000;
-}
-
-.ui-widget div {
-    padding-top: 10px;
-}
-
-.ui-widget select {
-    padding-top: 5px;
-    padding-bottom: 5px;
-}
-
-.ui-widget.ui-widget-content {
-    padding: 0;
-    box-shadow: 0 0 5px #777;
-}
-
-.ui-widget-header {
-    background-color: #9c27b0;
-    box-shadow: 0 12px 20px -10px rgba(156, 39, 176, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(156, 39, 176, 0.2);
-    color: white;
-}
-
 #property-filters {
     display: none;
 }

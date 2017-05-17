@@ -31,6 +31,10 @@ DesignerMenu = function(qd) {
                 that.qd.queryExecutor.run();
             });
 
+            this.$elem.find('.show-query-options').on('click', function() {
+                that.qd.options.ui.open();
+            });
+
             // add menu to designer
             that.qd.$container.prepend(this.$elem);
         }

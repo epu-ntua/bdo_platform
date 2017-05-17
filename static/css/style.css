@@ -8,3 +8,42 @@
     background: #eee;
     color: #555;
 }
+
+/* Modals */
+.ui-widget select {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.ui-widget.ui-widget-content {
+    padding: 0;
+    box-shadow: 0 0 5px #777;
+}
+
+.ui-widget-header {
+    background-color: #00bcd4;
+    box-shadow: 0 12px 20px -10px rgba(0, 188, 212, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(0, 188, 212, 0.2);
+    color: white;
+}
+
+/* Form overrides */
+.form-group.label-static label.control-label, .form-group.label-floating.is-focused label.control-label, .form-group.label-floating:not(.is-empty) label.control-label {
+    font-size: 13px;
+}
+
+.form-group.label-floating label.control-label, .form-group.label-placeholder label.control-label {
+    top: -20px;
+}
+
+.checkbox label {
+    color: #AAA;
+}
+
+.checkbox .checkbox-material {
+    padding-left: 20px;
+}
+
+.checkbox .checkbox-material:before {
+    left: 20px;
+    top: -5px;
+}

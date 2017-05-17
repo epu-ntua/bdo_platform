@@ -154,8 +154,8 @@ DocumentBuilder = function(qd) {
     // create document
     document = {
         from: [],
-        offset: 0,
-        limit: 100
+        offset: that.qd.options.getOffset(),
+        limit: that.qd.options.getLimit()
     };
 
     // find instance & property names
@@ -184,6 +184,7 @@ DocumentBuilder = function(qd) {
     // TODO add joins
 
     // unpack
+    console.log(document);
     that.qd.config.properties.unpack(document);
 
     return this;
