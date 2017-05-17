@@ -60,7 +60,7 @@
             add_instance: function (dt_name, uri, label, x, y, default_properties) {
                 var new_id = this.instances.length;
                 $('.help-prompt').remove();
-                var new_instance = $.parseHTML('<div id="class_instance_' + new_id + '" class="class-instance" data-n="' + new_id + '"style="left: ' + x + 'px; top: ' + y + 'px;"><div class="title"><h3>' + label + '</h3><span class="subquery-select empty"></span><span class="delete" data-about="' + new_id + '">x</span><span class="dataset">' + this.endpoint_to_name(dt_name) + '</span></div><div class="properties"><span class="loading">Loading properties...</span></div></div>');
+                var new_instance = $.parseHTML('<div id="class_instance_' + new_id + '" class="class-instance" data-n="' + new_id + '"style="left: ' + x + 'px; top: ' + y + 'px;"><div class="title"><h3>' + label + '</h3><span class="subquery-select empty"></span><button type="button" class="delete btn btn-danger btn-simple btn-xs" data-about="' + new_id + '"><i class="material-icons">close</i></button><span class="dataset">' + this.endpoint_to_name(dt_name) + '</span></div><div class="properties"><span class="loading">Loading properties...</span></div></div>');
                 $("#builder_workspace").append(new_instance);
                 $(new_instance).draggable({
                     cancel: '.subquery-select', handle: '.title', cursor: 'move', drag: function () {

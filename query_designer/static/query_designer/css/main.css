@@ -388,7 +388,7 @@ body.qd-body {
     display: inline-block;
 }
 
-#builder_workspace .class-instance .title span.delete, #builder_workspace .class-instance .title span.dataset {
+#builder_workspace .class-instance .title button.delete, #builder_workspace .class-instance .title span.dataset {
     float: right;
     font-size: 0.8em;
     margin-top: 10px;
@@ -396,6 +396,17 @@ body.qd-body {
     max-height: 1.4em;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+#builder_workspace .class-instance .title button.delete {
+    padding: 0 5px;
+}
+
+#builder_workspace .class-instance .title button.delete i {
+    font-size: 14px;
+}
+
+#builder_workspace .class-instance .title span.dataset {
     color: #999;
 }
 
@@ -985,4 +996,8 @@ body.qd-body {
 #query-results--visualization .visualization-filters label {
     padding-right: 10px;
     text-transform: capitalize;
+}
+
+#query-results--visualization .visualization-filters select {
+    margin-right: 25px;
 }

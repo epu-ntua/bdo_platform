@@ -48,8 +48,9 @@ QueryOptions = function(qd) {
             });
 
             // events
-            this.$elem.find('.query-builder-options--update').on('click', function() {
+            this.$elem.find('button').on('click', function() {
                 that.ui.close();
+                that.qd.workbench.builder.reset();
                 that.qd.queryExecutor.run();
             });
         },
