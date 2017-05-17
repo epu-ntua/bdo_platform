@@ -1,9 +1,22 @@
 import json
-
+import decimal
+import datetime
 import time
 from django.http import JsonResponse
 
 from aggregator.models import *
+
+
+class ResultEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+        elif isinstance(obj, float):
+            return float(obj)
+        elif isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+
+        return json.JSONEncoder.default(self, obj)
 
 
 def execute_query(request):
@@ -99,4 +112,4 @@ def execute_query(request):
             'columns': headers,
             'pages': pages,
         }
-    })
+    }, encoder=ResultEncoder)
