@@ -109,7 +109,18 @@ ChartBuilder = function(destSelector, data) {
 
         if ((coordinateCols.latIdx !== undefined) && (coordinateCols.lngIdx !== undefined)) {
             var latRange = this.getRange(coordinateCols.latIdx),
-                lngRange = this.getRange(coordinateCols.lngIdx);
+                lngRange = this.getRange(coordinateCols.lngIdx),
+                $c = $('#query-visualization--container'),
+                $mapCanvas = $('<canvas />')
+                    .attr('id', 'query-visualization--map-canvas')
+                    .attr('width', $c.outerWidth())
+                    .attr('height', 500)
+                    .css('position', 'absolute')
+                    .css('left', '22px')
+                    .css('top', '69px'),
+                mapCtx = $mapCanvas.get(0).getContext("2d");
+
+            $c.parent().append($mapCanvas);
 
             // calculate default zoom level
             var latDiff = Math.abs(latRange.max - latRange.min),
@@ -141,11 +152,36 @@ ChartBuilder = function(destSelector, data) {
                     "map": "worldHigh",
                     "zoomLevel": zoomLevel,
                     "zoomLatitude": (latRange.min + latRange.max) / 2,
-                    "zoomLongitude": (lngRange.min + lngRange.max) / 2,
-                    "images": []
+                    "zoomLongitude": (lngRange.min + lngRange.max) / 2
                 }
             };
 
+            var updating = false;
+            postAddAction = function(map) {
+
+                var redrawCanvas = function() {
+                    if (updating) {
+                        return
+                    }
+                    updating = true;
+                    mapCtx.clearRect(0, 0, $mapCanvas.get(0).width, $mapCanvas.get(0).height);
+                    $.each(data.results, function(idx, r) {
+
+                        var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
+                            v = r[variables[0].idx];
+
+                        mapCtx.beginPath();
+                        mapCtx.fillStyle = that.util.getColorForPercentage((v - variables[0].range.min) / variables[0].range.max);
+                        mapCtx.arc(loc.x + 2, loc.y + 2, zoomLevel, 0, 2 * Math.PI);
+                        mapCtx.fill();
+                    });
+                    updating = false;
+                };
+
+                map.addListener("positionChanged", redrawCanvas);
+            };
+
+            /*
             // add data
             $.each(data.results, function(idx, r) {
                 var infoText = "#" + (idx + 1);
@@ -223,6 +259,7 @@ ChartBuilder = function(destSelector, data) {
 
                 map.addListener("positionChanged", updateCustomMarkers);
             }
+            */
         }
 
         return {

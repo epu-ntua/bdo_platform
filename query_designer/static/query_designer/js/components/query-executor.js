@@ -135,6 +135,12 @@ QueryExecutor = function(qd) {
             // add results
             var $tbody = $dataTable.find('> tbody');
             $.each(data.results, function(idx, result) {
+
+                // TODO add message for trimmed results
+                if (idx >= 200) {
+                    return false;
+                }
+
                 var $tr = $('<tr />');
                 $tr.append($('<td />').text(idx + 1));
                 $.each(result, function(idx, resultValue) {

@@ -975,6 +975,7 @@ body.qd-body {
 /* Visualizations */
 #query-visualization--container {
     position: relative;
+    z-index: 2;
 }
 
 .amcharts-main-div {

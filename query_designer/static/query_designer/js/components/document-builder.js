@@ -185,8 +185,8 @@ DocumentBuilder = function(qd) {
     // TODO add joins
 
     // unpack
-    console.log(document);
     that.qd.config.properties.unpack(document);
+    console.log(document);
 
     return this;
 };
