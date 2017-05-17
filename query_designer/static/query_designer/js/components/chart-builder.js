@@ -156,15 +156,14 @@ ChartBuilder = function(destSelector, data) {
                 }
             };
 
-            var updating = false;
+            var updateRequests = [];
             postAddAction = function(map) {
 
-                var redrawCanvas = function() {
-                    if (updating) {
-                        return
-                    }
-                    updating = true;
+                var clearCanvas = function() {
                     mapCtx.clearRect(0, 0, $mapCanvas.get(0).width, $mapCanvas.get(0).height);
+                };
+
+                var redrawCanvas = function() {
                     $.each(data.results, function(idx, r) {
 
                         var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
@@ -175,10 +174,15 @@ ChartBuilder = function(destSelector, data) {
                         mapCtx.arc(loc.x + 2, loc.y + 2, zoomLevel, 0, 2 * Math.PI);
                         mapCtx.fill();
                     });
-                    updating = false;
                 };
 
-                map.addListener("positionChanged", redrawCanvas);
+                map.addListener("positionChanged", function() {
+                    var updateId = Date.now();
+                    updateRequests.push(updateId);
+                    clearCanvas();
+
+                    setTimeout(function() {if (updateRequests[updateRequests.length - 1] === updateId) {updateRequests = []; redrawCanvas()}}, 400);
+                });
             };
 
             /*
