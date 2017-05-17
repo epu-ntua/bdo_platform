@@ -964,6 +964,14 @@ body.qd-body {
     text-transform: capitalize;
 }
 
+#query-results--container li.disabled a {
+    cursor: default;
+}
+
+#query-results--container li.disabled i {
+    color: #ddd;
+}
+
 /* Visualizations */
 #query-visualization--container {
     position: relative;

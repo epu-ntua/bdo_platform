@@ -3,6 +3,7 @@
  */
 QueryOptions = function(qd) {
     var that = this;
+    this.qd = qd;
     this.pages = {
         current: 0,
         total: 0
@@ -14,28 +15,27 @@ QueryOptions = function(qd) {
         render: function() {
             this.$elem = $(
                 '<div id="query-builder-options">' +
-                    '<label>Variables:</label><div id="query-builder-options--variables"></div><br />' +
                     '<div class="checkbox">' +
                         '<label>Distinct' +
-                            '<input type="checkbox" id="query-builder-options--distinct"><span class="checkbox-material"><span class="check"></span></span>' +
+                            '<input type="checkbox" class="query-builder-options--distinct"><span class="checkbox-material"><span class="check"></span></span>' +
                         '</label>' +
                     '</div>' +
                     '<div class="form-group label-floating is-empty">' +
                         '<label class="control-label">Pattern</label>' +
-                        '<input id="query-builder-options--pattern" type="text" placeholder="e.g A + B" class="form-control">' +
+                        '<input type="text" placeholder="e.g A + B" class="query-builder-options--pattern form-control">' +
                         '<span class="material-input"></span>' +
                     '</div>' +
                     '<div class="form-group label-floating is-empty">' +
                         '<label class="control-label">Limit</label>' +
-                        '<input id="query-builder-options--limit" type="number" step="100" class="form-control" value="100">' +
+                        '<input type="number" step="100" class="query-builder-options--limit form-control" value="100">' +
                         '<span class="material-input"></span>' +
                     '</div>' +
                     '<div class="form-group label-floating is-empty">' +
                         '<label class="control-label">Offset</label>' +
-                        '<input id="query-builder-options--offset" type="number" step="100" class="form-control" value="0">' +
+                        '<input type="number" step="100" class="query-builder-options--offset form-control" value="0">' +
                         '<span class="material-input"></span>' +
                     '</div>' +
-                    '<button id="query-builder-options--update" class="btn btn-sm pull-right btn-success">OK</button>' +
+                    '<button class="btn btn-sm pull-right btn-success">Run</button>' +
                 '</div>'
             );
 
@@ -45,6 +45,12 @@ QueryOptions = function(qd) {
                 title: 'Options',
                 autoOpen: false,
                 width: 600
+            });
+
+            // events
+            this.$elem.find('.query-builder-options--update').on('click', function() {
+                that.ui.close();
+                that.qd.queryExecutor.run();
             });
         },
 
@@ -57,24 +63,78 @@ QueryOptions = function(qd) {
         }
     };
 
-    this.toNextPage = function() {
+    this.hasNextPage = function() {
+        var limit = this.getLimit(),
+            offset = this.getOffset();
 
+        return (offset / limit) + 1 < this.pages.total
+    };
+
+    this.toNextPage = function() {
+        var limit = this.getLimit(),
+            offset = this.getOffset();
+
+        if (((offset / limit) + 1) >= this.pages.total) {
+            return false;
+        }
+
+        setOffset(offset + limit);
+        this.pages.current++;
+
+        // re-run
+        that.qd.workbench.builder.reset();
+        that.qd.queryExecutor.run({
+            scroll: false
+        });
+    };
+
+    this.hasPrevPage = function() {
+        var limit = this.getLimit(),
+            offset = this.getOffset();
+
+        return offset - limit > 0
     };
 
     this.toPrevPage = function() {
+        var limit = this.getLimit(),
+            offset = this.getOffset();
 
+        if (offset - limit < 0) {
+            return false
+        }
+
+        setOffset(limit - offset);
+        this.pages.current--;
+
+         // re-run
+        that.qd.workbench.builder.reset();
+        that.qd.queryExecutor.run({
+            scroll: false
+        });
     };
 
     this.setPages = function(pages) {
         this.pages = pages;
     };
 
+    this.isDistinct = function() {
+        return this.ui.$elem.find('.query-builder-options--distinct').is(":checked")
+    };
+
+    var setLimit = function(newLimit) {
+        that.ui.$elem.find('.query-builder-options--limit').val(newLimit)
+    };
+
     this.getLimit = function() {
-        return Number(this.ui.$elem.find('#query-builder-options--limit').val()) || 100
+        return Number(this.ui.$elem.find('.query-builder-options--limit').val()) || 100
+    };
+
+    var setOffset = function(newOffset) {
+        that.ui.$elem.find('.query-builder-options--offset').val(newOffset)
     };
 
     this.getOffset = function() {
-        return Number(this.ui.$elem.find('#query-builder-options--offset').val()) || 0
+        return Number(this.ui.$elem.find('.query-builder-options--offset').val()) || 0
     };
 
     this.ui.render();

@@ -31,12 +31,15 @@ QueryExecutor = function(qd) {
                                                     'Data' +
                                                 '<div class="ripple-container"></div></a>' +
                                             '</li>' +
+                                            '<li class="pull-right page-next disabled"><a href="#"><i class="material-icons">chevron_right</i><div class="ripple-container"></div></a></li>' +
+                                            '<li class="pull-right page-info"><span style="margin-top: 10px;display: block;"></span></li>' +
+                                            '<li class="pull-right page-prev disabled"><a href="#"><i class="material-icons">chevron_left</i><div class="ripple-container"></div></a></li>' +
                                         '</ul>' +
                                     '</div>' +
                                 '</div>' +
                             '</div>' +
                             '<div class="card-content">' +
-                                '<div class="tab-content">' +
+                                '<div class="tab-content" style="min-height: 490px;">' +
                                     '<div class="tab-pane active" id="query-results--visualization">' +
                                     '</div>' +
                                     '<div class="tab-pane" id="query-results--data">' +
@@ -49,6 +52,21 @@ QueryExecutor = function(qd) {
                     '</div>' +
                 '</div>'
             );
+
+            // add events
+            this.$elem.find('li.page-prev > a').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                that.qd.options.toPrevPage();
+            });
+
+            this.$elem.find('li.page-next > a').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                that.qd.options.toNextPage();
+            });
 
             // add to query designer
 			that.qd.$container.append(this.$elem);
@@ -78,7 +96,30 @@ QueryExecutor = function(qd) {
                 .append($('<p />').text('Loading...'));
         },
 
-        renderResults: function(data) {
+        updatePageInfo: function() {
+            // update buttons
+            if (that.qd.options.hasPrevPage()) {
+                this.$elem.find('li.page-prev').removeClass('disabled')
+            } else {
+                this.$elem.find('li.page-prev').addClass('disabled')
+            }
+
+            if (that.qd.options.hasNextPage()) {
+                this.$elem.find('li.page-next').removeClass('disabled')
+            } else {
+                this.$elem.find('li.page-next').addClass('disabled')
+            }
+
+            // show message
+            this.$elem.find('li.page-info > span').text('Page ' + that.qd.options.pages.current +
+                                                        ' of ' + that.qd.options.pages.total);
+        },
+
+        renderResults: function(data, scroll) {
+            if (scroll === undefined) {
+                scroll = true;
+            }
+
             var $dataTable = $('<table />').addClass('table');
             $dataTable.append($('<thead />').addClass('text-info'));
             $dataTable.append($('<tbody />'));
@@ -112,13 +153,19 @@ QueryExecutor = function(qd) {
             new ChartBuilder('#query-results--visualization', data);
 
             // scroll to results
-            that.qd.config.scrollParent.animate({
-                scrollTop: $('#query-results--container').position().top
-            }, 500, 'swing');
+            if (scroll) {
+                that.qd.config.scrollParent.animate({
+                    scrollTop: $('#query-results--container').position().top
+                }, 500, 'swing');
+            }
         }
     };
 
-    this.run = function() {
+    this.run = function(runConfig) {
+        runConfig = $.extend({}, {
+            scroll: true
+        }, runConfig);
+
         var config = that.qd.config.endpoint,
             requestParameters = jQuery.extend(true, {}, config.defaultParameters);
 
@@ -132,10 +179,13 @@ QueryExecutor = function(qd) {
             'data': requestParameters,
             success: function(data) {
                 console.log(data);
-                that.ui.renderResults(data);
+                that.ui.renderResults(data, runConfig.scroll);
 
                 // update query options with page info
                 that.qd.options.setPages(data.headers.pages);
+
+                // update prev/next arrows
+                that.ui.updatePageInfo();
             }
         })
     };

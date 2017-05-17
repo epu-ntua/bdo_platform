@@ -154,6 +154,7 @@ DocumentBuilder = function(qd) {
     // create document
     document = {
         from: [],
+        distinct: that.qd.options.isDistinct(),
         offset: that.qd.options.getOffset(),
         limit: that.qd.options.getLimit()
     };
