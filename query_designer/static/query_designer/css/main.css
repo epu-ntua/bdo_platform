@@ -982,37 +982,7 @@ body.qd-body {
     height: 500px;
 }
 
-.map-marker {
-    /* adjusting for the marker dimensions
-    so that it is centered on coordinates */
-    margin-left: -8px;
-    margin-top: -8px;
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-
-.map-marker.map-clickable {
-    cursor: pointer;
-}
-
-.map-marker > .info {
-    display: none;
-    position: absolute;
-    top: 15px;
-    left: -10px;
-    font-size: 80%;
-    background: #FCFBE3;
-    padding: 2px 5px;
-    border: 1px solid #555;
-    min-width: 150px;
-}
-
-.map-marker > .info > p {
-    margin-bottom: 2px;
-}
-
-.map-marker:hover > .info {
-    display: block;
+#query-results--visualization .visualization-filters label {
+    padding-right: 10px;
+    text-transform: capitalize;
 }

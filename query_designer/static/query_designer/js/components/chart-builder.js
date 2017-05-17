@@ -1,6 +1,91 @@
 /**
  * Created by dimitris on 16/5/2017.
  */
+
+var ChartFilters = function(chartBuilder, results, filterColumns) {
+    var that = this;
+    this.chartBuilder = chartBuilder;
+    this.filterColumns = filterColumns;
+
+    this.ui = {
+        $elem: undefined,
+
+        // renders all visualization filters
+        render: function() {
+            this.$elem = $('<div />').addClass('visualization-filters');
+            $.each(that.filterColumns, function(idx, fc) {
+                var selectName = 'visualization-filter--' + fc.name,
+                    $label = $('<label />').attr('for', selectName).text(fc.title),
+                    $select = $('<select />').attr('name', selectName);
+                $.each(fc.filters, function(jdx, filter) {
+                    var $option = $('<option />')
+                        .attr('value', jdx)
+                        .text(filter);
+
+                    if (jdx === fc.activeFilterIdx) {
+                        $option.attr('selected', 'selected');
+                    }
+
+                    $select.append($option);
+
+                    // on filter change
+                    $select.on('change', function() {
+                        fc.activeFilterIdx = Number($(this).val());
+                        that.chartBuilder.onDataUpdated();
+                    });
+                });
+
+                that.ui.$elem.append($label);
+                that.ui.$elem.append($select);
+            });
+
+            $('#query-visualization--container').parent().prepend(this.$elem);
+        }
+    };
+
+    /* Responsible to return only data that should be shown according to current filters */
+    this.getFilteredResults = function() {
+        var filteredResults = [];
+        $.each(results, function(idx, result) {
+           var res = true;
+            $.each(that.filterColumns, function(jdx, fc) {
+                if (result[fc.idx] !== fc.filters[fc.activeFilterIdx]) {
+                    res = false;
+                    return false
+                }
+            });
+
+            if (res) {
+                filteredResults.push(result);
+            }
+        });
+
+        return filteredResults;
+    };
+
+    this.initializeFilters = function() {
+        $.each(that.filterColumns, function(idx, fc) {
+            fc.filters = [];
+            fc.activeFilterIdx = 0;
+            $.each(results, function(jdx, result) {
+                if (fc.filters.indexOf(result[fc.idx]) < 0) {
+                    fc.filters.push(result[fc.idx])
+                }
+            });
+            fc.filters.sort();
+        });
+    };
+
+    // initialize
+    this.initializeFilters();
+
+    // render filters
+    this.ui.render();
+
+    return this
+};
+
+
 ChartBuilder = function(destSelector, data) {
     var that = this;
 
@@ -32,34 +117,31 @@ ChartBuilder = function(destSelector, data) {
                 b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
             };
             return 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
-            // or output as hex if preferred
         }
     };
 
     this.ui = {
         $elem: undefined,
         $container: $(destSelector),
+        chart: undefined,
+        containerId: 'query-visualization--container',
 
         render: function() {
-            var containerId = 'query-visualization--container';
             this.$elem = $('<div />')
-                .attr('id', containerId);
+                .attr('id', this.containerId);
 
             // clear & create container
             this.$container
                 .empty()
                 .append(this.$elem);
+        },
 
-            // choose visualization
-            var directives = that.pickVisualizationType();
-
+        renderChart: function() {
             // render visualization
-            var chart = AmCharts.makeChart(containerId, directives.config);
+            this.chart = AmCharts.makeChart(this.containerId, that.directives.config);
 
-            // run post-add actions (e.g map markers)
-            if (directives.postAddAction !== undefined) {
-                directives.postAddAction(chart);
-            }
+            // run post-add action to add data
+            that.directives.onChartCreated();
         }
     };
 
@@ -83,7 +165,9 @@ ChartBuilder = function(destSelector, data) {
     /* Initial configuration for visualization type */
     this.pickVisualizationType = function() {
         var config = {},
-            postAddAction = undefined;
+            nonVisualizedDimensions = [],
+            onChartCreated = undefined,
+            onDataUpdated = undefined;
 
         // find variable(s)
         var variables = [];
@@ -108,6 +192,18 @@ ChartBuilder = function(destSelector, data) {
         });
 
         if ((coordinateCols.latIdx !== undefined) && (coordinateCols.lngIdx !== undefined)) {
+            // we'll visualize map coords & value, all other dimensions are filterable
+            $.each(data.headers.columns, function(idx, col) {
+                if ((coordinateCols.latIdx !== idx) && (coordinateCols.lngIdx !== idx) && (variables[0].idx !== idx)) {
+                    nonVisualizedDimensions.push({
+                        idx: idx,
+                        name: col.name,
+                        unit: col.unit,
+                        title: col.title
+                    })
+                }
+            });
+
             var latRange = this.getRange(coordinateCols.latIdx),
                 lngRange = this.getRange(coordinateCols.lngIdx),
                 $c = $('#query-visualization--container'),
@@ -117,9 +213,10 @@ ChartBuilder = function(destSelector, data) {
                     .attr('height', 500)
                     .css('position', 'absolute')
                     .css('left', '22px')
-                    .css('top', '69px'),
+                    .css('top', '95px'),
                 mapCtx = $mapCanvas.get(0).getContext("2d");
 
+            // append map canvas
             $c.parent().append($mapCanvas);
 
             // calculate default zoom level
@@ -156,123 +253,80 @@ ChartBuilder = function(destSelector, data) {
                 }
             };
 
-            var updateRequests = [];
-            postAddAction = function(map) {
+            var clearCanvas = function() {
+                mapCtx.clearRect(0, 0, $mapCanvas.get(0).width, $mapCanvas.get(0).height);
+            };
 
-                var clearCanvas = function() {
-                    mapCtx.clearRect(0, 0, $mapCanvas.get(0).width, $mapCanvas.get(0).height);
-                };
+            var redrawCanvas = function(map) {
+                $.each(that.filters.getFilteredResults(), function(idx, r) {
 
-                var redrawCanvas = function() {
-                    $.each(data.results, function(idx, r) {
-
-                        var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
-                            v = r[variables[0].idx];
-
-                        mapCtx.beginPath();
-                        mapCtx.fillStyle = that.util.getColorForPercentage((v - variables[0].range.min) / variables[0].range.max);
-                        mapCtx.arc(loc.x + 2, loc.y + 2, zoomLevel, 0, 2 * Math.PI);
-                        mapCtx.fill();
+                    /*
+                    var infoText = "#" + (idx + 1);
+                    $.each(data.headers.columns, function(idx, col) {
+                        if ((idx !== coordinateCols.latIdx) && (idx !== coordinateCols.lngIdx)) {
+                            infoText += '<p>' + data.headers.columns[idx].title + ':<br /><b>' + r[idx] + '</b></p>';
+                        }
                     });
-                };
+                    */
+
+                    var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
+                        v = r[variables[0].idx];
+
+                    mapCtx.beginPath();
+                    mapCtx.fillStyle = that.util.getColorForPercentage((v - variables[0].range.min) / variables[0].range.max);
+                    mapCtx.arc(loc.x + 2, loc.y + 2, zoomLevel, 0, 2 * Math.PI);
+                    mapCtx.fill();
+                });
+            };
+
+            var updateRequests = [];
+            onChartCreated = function() {
+                var map = that.ui.chart;
 
                 map.addListener("positionChanged", function() {
                     var updateId = Date.now();
                     updateRequests.push(updateId);
                     clearCanvas();
 
-                    setTimeout(function() {if (updateRequests[updateRequests.length - 1] === updateId) {updateRequests = []; redrawCanvas()}}, 400);
+                    setTimeout(function() {if (updateRequests[updateRequests.length - 1] === updateId) {updateRequests = []; redrawCanvas(map)}}, 400);
                 });
             };
 
-            /*
-            // add data
-            $.each(data.results, function(idx, r) {
-                var infoText = "#" + (idx + 1);
-                $.each(data.headers.columns, function(idx, col) {
-                    if ((idx !== coordinateCols.latIdx) && (idx !== coordinateCols.lngIdx)) {
-                        infoText += '<p>' + data.headers.columns[idx].title + ':<br /><b>' + r[idx] + '</b></p>';
-                    }
-                });
+            onDataUpdated = function() {
+                var map = that.ui.chart;
 
-                var v = r[variables[0].idx];
-                config.dataProvider.images.push({
-                    "zoomLevel": zoomLevel,
-                    "scale": 0.5,
-                    "text": infoText,
-                    "latitude": r[coordinateCols.latIdx],
-                    "longitude": r[coordinateCols.lngIdx],
-                    "value": v,
-                    "valuePerc": (v - variables[0].range.min) / variables[0].range.max
-                });
-            });
-
-            // add custom markers
-            // add events to recalculate map position when the map is moved or zoomed
-            postAddAction = function(map) {
-
-                // this function will take current images on the map and create HTML elements for them
-                var updateCustomMarkers = function( event ) {
-                    // get map object
-                    var map = event.chart;
-
-                    // go through all of the images
-                    for ( var x in map.dataProvider.images ) {
-                        // get MapImage object
-                        var image = map.dataProvider.images[ x ];
-
-                        // check if it has corresponding HTML element
-                        if ( 'undefined' == typeof image.externalElement ) {
-                            image.externalElement = createCustomMarker(image,
-                                that.util.getColorForPercentage(image.valuePerc));
-                        }
-
-                        // reposition the element accoridng to coordinates
-                        var xy = map.coordinatesToStageXY( image.longitude, image.latitude );
-                        image.externalElement.style.top = xy.y + 'px';
-                        image.externalElement.style.left = xy.x + 'px';
-                    }
-                };
-
-                // this function creates and returns a new marker element
-                var createCustomMarker = function(image, color) {
-                    // create holder
-                    var holder = document.createElement( 'div' );
-                    holder.className = 'map-marker';
-                    holder.style.background = color;
-
-                    // maybe add a link to it?
-                    if (image.url !== undefined) {
-                        holder.onclick = function() {
-                            window.location.href = image.url;
-                        };
-                        holder.className += ' map-clickable';
-                    }
-
-                    // add info
-                    var info = document.createElement( 'div' );
-                    info.className = 'info';
-                    info.innerHTML = image.text;
-                    holder.appendChild(info);
-
-                    // append the marker to the map container
-                    that.ui.$elem.append( holder );
-
-                    return holder;
-                };
-
-                map.addListener("positionChanged", updateCustomMarkers);
+                // at start, draw canvas
+                clearCanvas();
+                redrawCanvas(map);
             }
-            */
         }
 
         return {
             config: config,
-            postAddAction: postAddAction
+            nonVisualizedDimensions: nonVisualizedDimensions,
+            onChartCreated: onChartCreated,
+            onDataUpdated: onDataUpdated
         }
     };
 
+    // basic rendering
     this.ui.render();
+
+    // choose visualization
+    this.directives = this.pickVisualizationType();
+
+    // setup filters
+    this.filters = new ChartFilters(this, data.results, this.directives.nonVisualizedDimensions);
+
+    // render chart
+    this.ui.renderChart();
+
+    // load initial data
+    this.onDataUpdated = function() {
+        this.directives.onDataUpdated();
+    };
+
+    this.onDataUpdated();
 
     return this;
 };
