@@ -15,6 +15,8 @@ DocumentBuilder = function(qd) {
             .replace(/ /g, '_')
             .replace(/-/g, '_')
             .replace(/,/g, '_')
+            .replace(/\//g, '_')
+            .replace(/\\/g, '_')
             .replace(/\./g, '_')
 		    .replace(/\(/g, '_')
 		    .replace(/\)/g, '_')
@@ -155,6 +157,7 @@ DocumentBuilder = function(qd) {
     document = {
         from: [],
         distinct: that.qd.options.isDistinct(),
+        filters: [],
         offset: that.qd.options.getOffset(),
         limit: that.qd.options.getLimit()
     };
@@ -179,6 +182,23 @@ DocumentBuilder = function(qd) {
         });
 
         document.from.push(fromObject);
+    });
+
+    // add filters
+    $.each(qd.workbench.builder.instances, function(idx, instance) {
+        $.each(instance.selected_properties, function (jdx, property) {
+            if (property.filters.length > 0) {
+                var filterStr = property.filter_prototype,
+                    name = that.propertyNames[idx][jdx];
+
+                for (var fId = 0; fId < property.filters.length; fId++) {
+                    var f = property.filters[fId];
+                    filterStr = filterStr.replace('[' + fId + ']', '(' + name + ' ' + f.operator_label + ' ' + f.value + ')')
+                }
+
+                document.filters.push(filterStr);
+            }
+        });
     });
 
     // add joins

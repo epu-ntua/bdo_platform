@@ -42,24 +42,28 @@ var ChartFilters = function(chartBuilder, results, filterColumns) {
                         var stopPlaying = function() {
                             clearInterval(fc.playingTimer);
                             fc.playingTimer = null;
-                            $play.text('play_arrow');
+                            $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
                         };
 
                         if (fc.playingTimer !== null) {
-                            $play.text('play_arrow')
+                            $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
                         } else {
-                            $play.text('pause_arrow')
+                            $play.text('pause_arrow').removeClass('text-green').addClass('text-orange');
                         }
 
                         if (fc.playingTimer === null) {
-                            fc.playingTimer = setInterval(function() {
-                                fc.activeFilterIdx++;
+                            var fn = function() {
                                 that.chartBuilder.onDataUpdated();
+                                fc.activeFilterIdx++;
                                 if (fc.activeFilterIdx + 1 >= fc.filters.length) {
                                     stopPlaying();
                                     fc.activeFilterIdx = 0;
                                 }
-                            }, 2000);
+                            };
+
+                            fc.activeFilterIdx = 0;
+                            fn();
+                            fc.playingTimer = setInterval(fn, 1000);
                         } else {
                             stopPlaying();
                         }

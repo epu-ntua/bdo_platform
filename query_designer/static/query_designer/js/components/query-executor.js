@@ -169,14 +169,31 @@ QueryExecutor = function(qd) {
 
     this.run = function(runConfig) {
         runConfig = $.extend({}, {
-            scroll: true
+            scroll: true,
+            callback: undefined,
+            extraFilters: [],
+            noPagination: false
         }, runConfig);
 
         var config = that.qd.config.endpoint,
             requestParameters = jQuery.extend(true, {}, config.defaultParameters);
 
         // add query property
-        requestParameters[config.queryParameter] = that.qd.workbench.query;
+        var query = that.qd.workbench.query,
+            queryDocument = undefined;
+        if (runConfig.extraFilters.length > 0 || runConfig.noPagination) {
+            queryDocument = new DocumentBuilder(that.qd).getDocument();
+        }
+        if (runConfig.noPagination) {
+            queryDocument.limit = undefined;
+            queryDocument.offset = undefined;
+        }
+
+        if (queryDocument !== undefined) {
+            query = that.qd.config.language.parser(queryDocument.getQuery());
+        }
+
+        requestParameters[config.queryParameter] = query;
         that.ui.setLoading();
 
         $.ajax({
@@ -184,7 +201,12 @@ QueryExecutor = function(qd) {
             'type': config.type,
             'data': requestParameters,
             success: function(data) {
-                console.log(data);
+
+                // if custom callback is set, run that instead
+                if (runConfig.callback !== undefined) {
+                    return runConfig.callback(data);
+                }
+
                 that.ui.renderResults(data, runConfig.scroll);
 
                 // update query options with page info

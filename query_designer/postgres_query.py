@@ -53,7 +53,13 @@ def execute_query(request):
     from_clause = 'FROM ' + _from + '\n'
 
     # where
-    where_clause = ''
+    where_clause = ' AND '.join(['(%s)' % f for f in query_document['filters']]) \
+        .replace(' && ', ' AND ') \
+        .replace(' || ', ' OR ') \
+        .replace('!', ' NOT ')
+
+    if where_clause:
+        where_clause = 'WHERE ' + where_clause + '\n'
 
     # offset & limit
     offset = int(query_document['offset']) if 'offset' in query_document and query_document['offset'] else 0
@@ -61,9 +67,12 @@ def execute_query(request):
     limit = int(query_document['limit']) if 'limit' in query_document and query_document['limit'] else 100
     limit_clause = 'LIMIT %d\n' % limit
 
+    # subqueries
+    subquery = 'SELECT * FROM (' + select_clause + from_clause + ') AS SQ1\n'
+    subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + ') AS SQ1\n'
+
     # generate query
-    q = select_clause + \
-            from_clause + \
+    q = subquery + \
             where_clause + \
             offset_clause + \
             limit_clause
@@ -95,8 +104,7 @@ def execute_query(request):
     }
 
     if len(results) == limit:
-        q_pages = 'SELECT count(*) ' + \
-            from_clause + \
+        q_pages = subquery_cnt + \
             where_clause
 
         cursor.execute(q_pages)
