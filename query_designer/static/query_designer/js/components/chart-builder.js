@@ -14,9 +14,12 @@ var ChartFilters = function(chartBuilder, results, filterColumns) {
         render: function() {
             this.$elem = $('<div />').addClass('visualization-filters');
             $.each(that.filterColumns, function(idx, fc) {
+
                 var selectName = 'visualization-filter--' + fc.name,
                     $label = $('<label />').attr('for', selectName).text(fc.title),
-                    $select = $('<select />').attr('name', selectName);
+                    $select = $('<select />').attr('name', selectName),
+                    $play = $('<i />').addClass('material-icons text-green').text('play_arrow');
+
                 $.each(fc.filters, function(jdx, filter) {
                     var $option = $('<option />')
                         .attr('value', jdx)
@@ -33,10 +36,39 @@ var ChartFilters = function(chartBuilder, results, filterColumns) {
                         fc.activeFilterIdx = Number($(this).val());
                         that.chartBuilder.onDataUpdated();
                     });
+
+                    // on play/pause click
+                    $play.on('click', function() {
+                        var stopPlaying = function() {
+                            clearInterval(fc.playingTimer);
+                            fc.playingTimer = null;
+                            $play.text('play_arrow');
+                        };
+
+                        if (fc.playingTimer !== null) {
+                            $play.text('play_arrow')
+                        } else {
+                            $play.text('pause_arrow')
+                        }
+
+                        if (fc.playingTimer === null) {
+                            fc.playingTimer = setInterval(function() {
+                                fc.activeFilterIdx++;
+                                that.chartBuilder.onDataUpdated();
+                                if (fc.activeFilterIdx + 1 >= fc.filters.length) {
+                                    stopPlaying();
+                                    fc.activeFilterIdx = 0;
+                                }
+                            }, 2000);
+                        } else {
+                            stopPlaying();
+                        }
+                    });
                 });
 
                 that.ui.$elem.append($label);
                 that.ui.$elem.append($select);
+                that.ui.$elem.append($play)
             });
 
             $('#query-visualization--container').parent().prepend(this.$elem);
@@ -67,6 +99,7 @@ var ChartFilters = function(chartBuilder, results, filterColumns) {
         $.each(that.filterColumns, function(idx, fc) {
             fc.filters = [];
             fc.activeFilterIdx = 0;
+            fc.playingTimer = null;
             $.each(results, function(jdx, result) {
                 if (fc.filters.indexOf(result[fc.idx]) < 0) {
                     fc.filters.push(result[fc.idx])
@@ -258,8 +291,9 @@ ChartBuilder = function(destSelector, data) {
             };
 
             var redrawCanvas = function(map) {
+                var zl = map.zoomLevel(),
+                    rad = zl * 0.175;
                 $.each(that.filters.getFilteredResults(), function(idx, r) {
-
                     /*
                     var infoText = "#" + (idx + 1);
                     $.each(data.headers.columns, function(idx, col) {
@@ -274,7 +308,7 @@ ChartBuilder = function(destSelector, data) {
 
                     mapCtx.beginPath();
                     mapCtx.fillStyle = that.util.getColorForPercentage((v - variables[0].range.min) / variables[0].range.max);
-                    mapCtx.arc(loc.x + 2, loc.y + 2, zoomLevel, 0, 2 * Math.PI);
+                    mapCtx.arc(loc.x + zl, loc.y, rad, 0, 2 * Math.PI);
                     mapCtx.fill();
                 });
             };

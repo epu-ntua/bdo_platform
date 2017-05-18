@@ -996,8 +996,18 @@ body.qd-body {
 #query-results--visualization .visualization-filters label {
     padding-right: 10px;
     text-transform: capitalize;
+    display: inline-block;
+    vertical-align: top;
 }
 
 #query-results--visualization .visualization-filters select {
-    margin-right: 25px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+#query-results--visualization .visualization-filters i {
+    display: inline-block;
+    width: 25px;
+    font-size: 20px;
+    margin: 0 25px 0 5px;
 }
