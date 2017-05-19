@@ -140,7 +140,7 @@ class BaseConverter(object):
         if filename is None:
             return source_path
 
-        return source_path + filename
+        return os.path.join(source_path, filename)
 
     @staticmethod
     def full_output_path(filename=None):
