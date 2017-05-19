@@ -1502,10 +1502,10 @@ body, h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
 }
 
 a {
-  color: #9c27b0;
+  color: #00a5bb;
 }
 a:hover, a:focus {
-  color: #89229b;
+  color: #00a5bb;
   text-decoration: none;
 }
 a.text-info:hover, a.text-info:focus {

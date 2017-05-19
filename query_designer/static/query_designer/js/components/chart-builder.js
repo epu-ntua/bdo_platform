@@ -41,7 +41,7 @@ var ChartFilters = function(chartBuilder, filterColumns) {
                 // on play/pause click
                 $play.on('click', function() {
                     var stopPlaying = function() {
-                        clearInterval(fc.playingTimer);
+                        clearTimeout(fc.playingTimer);
                         fc.playingTimer = null;
                         $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
                     };
@@ -54,17 +54,28 @@ var ChartFilters = function(chartBuilder, filterColumns) {
 
                     if (fc.playingTimer === null) {
                         var fn = function() {
-                            that.chartBuilder.onFiltersUpdated();
-                            fc.activeFilterIdx++;
-                            if (fc.activeFilterIdx + 1 >= fc.values.length) {
-                                stopPlaying();
-                                fc.activeFilterIdx = 0;
-                            }
+                            that.chartBuilder.onFiltersUpdated({
+                                ignoreOnStarted: true,
+                                afterRedraw: function() {
+                                    $select.get(0).selectedIndex = fc.activeFilterIdx;
+
+                                    // detect if stopped in the mean time
+                                    if (fc.playingTimer === null) {
+                                        return
+                                    }
+
+                                    if (fc.activeFilterIdx + 1 >= fc.values.length) {
+                                        stopPlaying();
+                                    } else {
+                                        fc.activeFilterIdx++;
+                                        fc.playingTimer = setTimeout(fn, 1000);
+                                    }
+                                }
+                            });
                         };
 
                         fc.activeFilterIdx = 0;
-                        fn();
-                        fc.playingTimer = setInterval(fn, 1000);
+                        fc.playingTimer = setTimeout(fn, 10);
                     } else {
                         stopPlaying();
                     }
@@ -208,6 +219,7 @@ ChartBuilder = function(qd, destSelector, headers) {
         var nonVisualizedDimensions = [],
             variable = undefined,
             onHeadersLoaded = undefined,
+            onFiltersUpdateStarted = undefined,
             onChartCreated = undefined,
             onFiltersUpdated = undefined;
 
@@ -322,7 +334,13 @@ ChartBuilder = function(qd, destSelector, headers) {
                 });
             };
 
-            onFiltersUpdated = function(res) {
+            onFiltersUpdateStarted = function() {
+                clearCanvas();
+            };
+
+            onFiltersUpdated = function(res, resetView, callback) {
+                resetView = resetView || false;
+
                 results = res;
                 var map = that.ui.chart,
                     latRange = that.getRangeFromData(results, coordinateCols.latIdx),
@@ -341,14 +359,21 @@ ChartBuilder = function(qd, destSelector, headers) {
                     zoomLevel = 15;
                 }
 
-                map.dataProvider.zoomLevel = zoomLevel;
-                map.dataProvider.zoomLatitude =  (latRange.min + latRange.max) / 2;
-                map.dataProvider.zoomLongitude = (lngRange.min + lngRange.max) / 2;
-                map.validateData();
+                if (resetView) {
+                    console.log('reset!!');
+                    map.dataProvider.zoomLevel = zoomLevel;
+                    map.dataProvider.zoomLatitude =  (latRange.min + latRange.max) / 2;
+                    map.dataProvider.zoomLongitude = (lngRange.min + lngRange.max) / 2;
+                    map.validateData();
+                }
 
                 // at start, draw canvas
                 clearCanvas();
                 redrawCanvas(map);
+
+                if (callback !== undefined) {
+                    callback();
+                }
             }
         }
 
@@ -357,6 +382,7 @@ ChartBuilder = function(qd, destSelector, headers) {
             variable: variable,
             onHeadersLoaded: onHeadersLoaded,
             onChartCreated: onChartCreated,
+            onFiltersUpdateStarted: onFiltersUpdateStarted,
             onFiltersUpdated: onFiltersUpdated
         }
     };
@@ -385,13 +411,28 @@ ChartBuilder = function(qd, destSelector, headers) {
         }
     });
 
-    // load data
-    this.onFiltersUpdated = function() {
+    // on filter update
+    this.onFiltersUpdated = function(options) {
+        options = $.extend({}, {
+            updateView: false,
+            ignoreOnStarted: false,
+            afterRedraw: undefined
+        }, options);
+
+        if (!options.ignoreOnStarted) {
+            that.directives.onFiltersUpdateStarted();
+        }
+
         that.filters.getFilteredResults(function(results) {
-            that.directives.onFiltersUpdated(results);
+            that.directives.onFiltersUpdated(results, options.updateView, function() {
+                if (options.afterRedraw !== undefined) {
+                    options.afterRedraw();
+                }
+            });
         });
     };
 
+    // base rendering
     this.ui.render();
 
     this.onHeadersLoaded = function() {
@@ -410,7 +451,9 @@ ChartBuilder = function(qd, destSelector, headers) {
         this.ui.renderChart();
 
         // load initial data
-        this.onFiltersUpdated();
+        this.onFiltersUpdated({
+            updateView: true
+        });
     };
 
     return this;

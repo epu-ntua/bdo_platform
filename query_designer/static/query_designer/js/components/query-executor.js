@@ -31,9 +31,6 @@ QueryExecutor = function(qd) {
                                                     'Data' +
                                                 '<div class="ripple-container"></div></a>' +
                                             '</li>' +
-                                            '<li class="pull-right page-next disabled"><a href="#"><i class="material-icons">chevron_right</i><div class="ripple-container"></div></a></li>' +
-                                            '<li class="pull-right page-info"><span style="margin-top: 10px;display: block;"></span></li>' +
-                                            '<li class="pull-right page-prev disabled"><a href="#"><i class="material-icons">chevron_left</i><div class="ripple-container"></div></a></li>' +
                                         '</ul>' +
                                     '</div>' +
                                 '</div>' +
@@ -43,6 +40,13 @@ QueryExecutor = function(qd) {
                                     '<div class="tab-pane active" id="query-results--visualization">' +
                                     '</div>' +
                                     '<div class="tab-pane" id="query-results--data">' +
+                                        '<div class="row">' +
+                                            '<ul class="paginator pull-right">' +
+                                                '<li class="page-prev disabled"><a href="#"><i class="material-icons">chevron_left</i><div class="ripple-container"></div></a></li>' +
+                                                '<li class="page-info"><span style="margin-top: 10px;display: block;"></span></li>' +
+                                                '<li class="page-next disabled"><a href="#"><i class="material-icons">chevron_right</i><div class="ripple-container"></div></a></li>' +
+                                            '</ul>' +
+                                        '</div>'+
                                         '<table class="table table-hover">' +
                                         '</table>' +
                                     '</div>' +
@@ -79,21 +83,27 @@ QueryExecutor = function(qd) {
                 .append($('<p />').text('No results'));
 
             this.$elem
-                .find('#query-results--data')
+                .find('#query-results--data table')
                 .empty()
-                .append($('<p />').text('No data loaded'));
+                .append($('<tr />').append($('<td />').text('No data loaded')));
         },
 
-        setLoading: function() {
-            this.$elem
-                .find('#query-results--visualization')
-                .empty()
-                .append($('<p />').text('Loading...'));
+        setLoading: function(setChartLoading) {
+            if (setChartLoading === undefined) {
+                setChartLoading = true;
+            }
+
+            if (setChartLoading) {
+                this.$elem
+                    .find('#query-results--visualization')
+                    .empty()
+                    .append($('<p />').text('Loading...'));
+            }
 
             this.$elem
-                .find('#query-results--data')
+                .find('#query-results--data table')
                 .empty()
-                .append($('<p />').text('Loading...'));
+                .append($('<tr />').append($('<td />').addClass('loading').text('Loading...')));
         },
 
         updatePageInfo: function() {
@@ -115,12 +125,16 @@ QueryExecutor = function(qd) {
                                                         ' of ' + that.qd.options.pages.total);
         },
 
-        renderResults: function(data, scroll) {
+        renderResults: function(data, updateChart, scroll) {
             if (scroll === undefined) {
                 scroll = true;
             }
+            if (updateChart === undefined) {
+                updateChart = true;
+            }
 
-            var $dataTable = $('<table />').addClass('table');
+            var $dataTable = this.$elem
+                .find('#query-results--data table').empty();
             $dataTable.append($('<thead />').addClass('text-info'));
             $dataTable.append($('<tbody />'));
 
@@ -136,8 +150,9 @@ QueryExecutor = function(qd) {
             var $tbody = $dataTable.find('> tbody');
             $.each(data.results, function(idx, result) {
 
-                // TODO add message for trimmed results
-                if (idx >= 200) {
+                var trimLimit = 500;
+                if (idx >= trimLimit) {
+                    $tbody.append($('<tr />').append($('<td />')).append($('<td />').text('No more than ' + trimLimit + ' results can be shown')));
                     return false;
                 }
 
@@ -149,14 +164,10 @@ QueryExecutor = function(qd) {
                 $tbody.append($tr);
             });
 
-            // add data table
-            this.$elem
-                .find('#query-results--data')
-                .empty()
-                .append($dataTable);
-
             // create & add chart
-            new ChartBuilder(that.qd, '#query-results--visualization', data.headers.columns);
+            if (updateChart) {
+                new ChartBuilder(that.qd, '#query-results--visualization', data.headers.columns);
+            }
 
             // scroll to results
             if (scroll) {
@@ -175,7 +186,8 @@ QueryExecutor = function(qd) {
             variable: undefined,
             dimensionValues: undefined,
             onlyHeaders: false,
-            noPagination: false
+            noPagination: false,
+            updateChart: true
         }, runConfig);
 
         var config = that.qd.config.endpoint,
@@ -217,7 +229,7 @@ QueryExecutor = function(qd) {
         }
 
         if (runConfig.callback === undefined) {
-            that.ui.setLoading();
+            that.ui.setLoading(runConfig.updateChart);
         }
 
         $.ajax({
@@ -231,7 +243,7 @@ QueryExecutor = function(qd) {
                     return runConfig.callback(data);
                 }
 
-                that.ui.renderResults(data, runConfig.scroll);
+                that.ui.renderResults(data, runConfig.updateChart, runConfig.scroll);
 
                 // update query options with page info
                 that.qd.options.setPages(data.headers.pages);

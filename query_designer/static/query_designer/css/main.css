@@ -975,11 +975,28 @@ body.qd-body {
     text-transform: capitalize;
 }
 
-#query-results--container li.disabled a {
+#query-results--container .loading {
+    text-align: center;
+    padding-top: 100px;
+    font-size: 26px;
+    color: #999;
+}
+
+#query-results--container ul.paginator {
+    padding: 0 10px;
+}
+
+#query-results--container ul.paginator li {
+    list-style-type: none;
+    padding: 0 10px;
+    display: inline-block;
+}
+
+#query-results--container ul.paginator li.disabled a {
     cursor: default;
 }
 
-#query-results--container li.disabled i {
+#query-results--container ul.paginator li.disabled i {
     color: #ddd;
 }
 

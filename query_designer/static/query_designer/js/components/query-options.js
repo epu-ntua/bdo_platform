@@ -85,7 +85,8 @@ QueryOptions = function(qd) {
         // re-run
         that.qd.workbench.builder.reset();
         that.qd.queryExecutor.run({
-            scroll: false
+            scroll: false,
+            updateChart: false
         });
     };
 
@@ -93,7 +94,7 @@ QueryOptions = function(qd) {
         var limit = this.getLimit(),
             offset = this.getOffset();
 
-        return offset - limit > 0
+        return offset - limit >= 0
     };
 
     this.toPrevPage = function() {
@@ -104,13 +105,14 @@ QueryOptions = function(qd) {
             return false
         }
 
-        setOffset(limit - offset);
+        setOffset(offset - limit);
         this.pages.current--;
 
          // re-run
         that.qd.workbench.builder.reset();
         that.qd.queryExecutor.run({
-            scroll: false
+            scroll: false,
+            updateChart: false
         });
     };
 

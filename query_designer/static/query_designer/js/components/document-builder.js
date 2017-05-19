@@ -75,7 +75,7 @@ DocumentBuilder = function(qd) {
     // find the names of the properties & forge foreign keys
     this.findPropertyNames = function(w, i) {
         var inst = w.instances[i];
-        var i_name = this.instanceNames[i].val;
+        var i_name = 'i' + i; // this.instanceNames[i].val;
 
         for (var j=0; j<inst.selected_properties.length; j++) {
             var p = inst.selected_properties[j];
