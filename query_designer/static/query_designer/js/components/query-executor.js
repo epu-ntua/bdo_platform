@@ -172,6 +172,7 @@ QueryExecutor = function(qd) {
             scroll: true,
             callback: undefined,
             extraFilters: [],
+            variable: undefined,
             dimensionValues: undefined,
             onlyHeaders: false,
             noPagination: false
@@ -211,7 +212,13 @@ QueryExecutor = function(qd) {
         if (runConfig.dimensionValues !== undefined) {
             requestParameters['dimension_values'] = runConfig.dimensionValues;
         }
-        that.ui.setLoading();
+        if (runConfig.variable !== undefined) {
+            requestParameters['variable'] = runConfig.variable;
+        }
+
+        if (runConfig.callback === undefined) {
+            that.ui.setLoading();
+        }
 
         $.ajax({
             'url': config.url,

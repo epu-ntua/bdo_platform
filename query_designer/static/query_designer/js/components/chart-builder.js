@@ -20,7 +20,7 @@ var ChartFilters = function(chartBuilder, filterColumns) {
                     $select = $('<select />').attr('name', selectName),
                     $play = $('<i />').addClass('material-icons text-green').text('play_arrow');
 
-                $.each(fc.filters, function(jdx, filter) {
+                $.each(fc.values, function(jdx, filter) {
                     var $option = $('<option />')
                         .attr('value', jdx)
                         .text(filter);
@@ -30,44 +30,44 @@ var ChartFilters = function(chartBuilder, filterColumns) {
                     }
 
                     $select.append($option);
+                });
 
-                    // on filter change
-                    $select.on('change', function() {
-                        fc.activeFilterIdx = Number($(this).val());
-                        that.chartBuilder.onFiltersUpdated();
-                    });
+                // on filter change
+                $select.on('change', function() {
+                    fc.activeFilterIdx = Number($(this).val());
+                    that.chartBuilder.onFiltersUpdated();
+                });
 
-                    // on play/pause click
-                    $play.on('click', function() {
-                        var stopPlaying = function() {
-                            clearInterval(fc.playingTimer);
-                            fc.playingTimer = null;
-                            $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
+                // on play/pause click
+                $play.on('click', function() {
+                    var stopPlaying = function() {
+                        clearInterval(fc.playingTimer);
+                        fc.playingTimer = null;
+                        $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
+                    };
+
+                    if (fc.playingTimer !== null) {
+                        $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
+                    } else {
+                        $play.text('pause_arrow').removeClass('text-green').addClass('text-orange');
+                    }
+
+                    if (fc.playingTimer === null) {
+                        var fn = function() {
+                            that.chartBuilder.onFiltersUpdated();
+                            fc.activeFilterIdx++;
+                            if (fc.activeFilterIdx + 1 >= fc.values.length) {
+                                stopPlaying();
+                                fc.activeFilterIdx = 0;
+                            }
                         };
 
-                        if (fc.playingTimer !== null) {
-                            $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
-                        } else {
-                            $play.text('pause_arrow').removeClass('text-green').addClass('text-orange');
-                        }
-
-                        if (fc.playingTimer === null) {
-                            var fn = function() {
-                                that.chartBuilder.onFiltersUpdated();
-                                fc.activeFilterIdx++;
-                                if (fc.activeFilterIdx + 1 >= fc.filters.length) {
-                                    stopPlaying();
-                                    fc.activeFilterIdx = 0;
-                                }
-                            };
-
-                            fc.activeFilterIdx = 0;
-                            fn();
-                            fc.playingTimer = setInterval(fn, 1000);
-                        } else {
-                            stopPlaying();
-                        }
-                    });
+                        fc.activeFilterIdx = 0;
+                        fn();
+                        fc.playingTimer = setInterval(fn, 1000);
+                    } else {
+                        stopPlaying();
+                    }
                 });
 
                 that.ui.$elem.append($label);
@@ -83,10 +83,14 @@ var ChartFilters = function(chartBuilder, filterColumns) {
     this.getFilteredResults = function(callback) {
         var extraFilters = [];
         $.each(that.filterColumns, function(idx, filter) {
-            extraFilters.push(filter.name + ' = ' + filter.values[filter.activeFilterIdx]);
+            var value = filter.values[filter.activeFilterIdx];
+            if (filter.quote !== undefined) {
+                value = filter.quote + value + filter.quote;
+            }
+            extraFilters.push(filter.name + ' = ' + value);
         });
 
-        that.qd.queryExecutor.run({
+        that.chartBuilder.qd.queryExecutor.run({
             noPagination: true,
             extraFilters: extraFilters,
             callback: function(data) {
@@ -116,6 +120,7 @@ ChartBuilder = function(qd, destSelector, headers) {
     var that = this;
     this.qd = qd;
     this.headers = headers;
+    this.chartConfig = undefined;
 
     this.util = {
         getColorForPercentage: function(pct) {
@@ -166,7 +171,7 @@ ChartBuilder = function(qd, destSelector, headers) {
 
         renderChart: function() {
             // render visualization
-            this.chart = AmCharts.makeChart(this.containerId, that.directives.config);
+            this.chart = AmCharts.makeChart(this.containerId, that.chartConfig);
 
             // run post-add action to add data
             that.directives.onChartCreated();
@@ -175,7 +180,6 @@ ChartBuilder = function(qd, destSelector, headers) {
 
     /* Get range of values for a column */
     this.getRange = function(columnIdx) {
-        console.log(this.headers)
         return {
             min: this.headers[columnIdx].values[ 0 ],
             max: this.headers[columnIdx].values[ this.headers[columnIdx].length - 1 ]
@@ -184,10 +188,10 @@ ChartBuilder = function(qd, destSelector, headers) {
 
     /* Get range of values for a column from data */
     this.getRangeFromData = function(data, columnIdx) {
-        var min = data.results[0][columnIdx],
-            max = data.results[0][columnIdx];
+        var min = data[0][columnIdx],
+            max = data[0][columnIdx];
 
-        $.each(data.results, function(idx, r) {
+        $.each(data, function(idx, r) {
             if (r[columnIdx] < min) {
                 min = r[columnIdx]
             }
@@ -201,8 +205,8 @@ ChartBuilder = function(qd, destSelector, headers) {
 
     /* Initial configuration for visualization type */
     this.pickVisualizationType = function() {
-        var config = {},
-            nonVisualizedDimensions = [],
+        var nonVisualizedDimensions = [],
+            variable = undefined,
             onHeadersLoaded = undefined,
             onChartCreated = undefined,
             onFiltersUpdated = undefined;
@@ -218,6 +222,8 @@ ChartBuilder = function(qd, destSelector, headers) {
             }
         });
 
+        variable = variables[0];
+
         // choose map if "degrees_north" & "degrees_east" units are present
         var coordinateCols = {latIdx: undefined, lngIdx: undefined};
         $.each(headers, function(idx, col) {
@@ -232,42 +238,36 @@ ChartBuilder = function(qd, destSelector, headers) {
         if ((coordinateCols.latIdx !== undefined) && (coordinateCols.lngIdx !== undefined)) {
             // we'll visualize map coords & value, all other dimensions are filterable
             $.each(headers, function(idx, col) {
-                if ((coordinateCols.latIdx !== idx) && (coordinateCols.lngIdx !== idx) && (variables[0].idx !== idx)) {
+                if ((coordinateCols.latIdx !== idx) && (coordinateCols.lngIdx !== idx) && (variable.idx !== idx)) {
                     nonVisualizedDimensions.push({
                         idx: idx,
                         name: col.name,
                         unit: col.unit,
-                        title: col.title
+                        title: col.title,
+                        quote: col.quote
                     })
                 }
             });
 
             var mapCtx = null,
-                $mapCanvas = null;
+                $mapCanvas = null,
+                results = undefined;
 
             var clearCanvas = function() {
                 mapCtx.clearRect(0, 0, $mapCanvas.get(0).width, $mapCanvas.get(0).height);
             };
 
-            var redrawCanvas = function(map, results) {
+            var redrawCanvas = function(map) {
                 var zl = map.zoomLevel(),
                     rad = zl * 0.175;
 
+                var vRange = that.headers[variable.idx].range;
                 $.each(results, function(idx, r) {
-                    /*
-                    var infoText = "#" + (idx + 1);
-                    $.each(that.headers, function(idx, col) {
-                        if ((idx !== coordinateCols.latIdx) && (idx !== coordinateCols.lngIdx)) {
-                            infoText += '<p>' + col.title + ':<br /><b>' + r[idx] + '</b></p>';
-                        }
-                    });
-                    */
-
                     var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
-                        v = r[variables[0].idx];
+                        v = r[variable.idx];
 
                     mapCtx.beginPath();
-                    mapCtx.fillStyle = that.util.getColorForPercentage((v - variables[0].range.min) / variables[0].range.max);
+                    mapCtx.fillStyle = that.util.getColorForPercentage((v - vRange.min) / vRange.max);
                     mapCtx.arc(loc.x + zl, loc.y, rad, 0, 2 * Math.PI);
                     mapCtx.fill();
                 });
@@ -291,7 +291,7 @@ ChartBuilder = function(qd, destSelector, headers) {
                 // append map canvas
                 $c.parent().append($mapCanvas);
 
-                config = {
+                that.chartConfig = {
                     "type": "map",
                     "theme": "light",
                     "projection": "miller",
@@ -322,7 +322,8 @@ ChartBuilder = function(qd, destSelector, headers) {
                 });
             };
 
-            onFiltersUpdated = function(results) {
+            onFiltersUpdated = function(res) {
+                results = res;
                 var map = that.ui.chart,
                     latRange = that.getRangeFromData(results, coordinateCols.latIdx),
                     lngRange = that.getRangeFromData(results, coordinateCols.lngIdx);
@@ -343,19 +344,20 @@ ChartBuilder = function(qd, destSelector, headers) {
                 map.dataProvider.zoomLevel = zoomLevel;
                 map.dataProvider.zoomLatitude =  (latRange.min + latRange.max) / 2;
                 map.dataProvider.zoomLongitude = (lngRange.min + lngRange.max) / 2;
+                map.validateData();
 
                 // at start, draw canvas
                 clearCanvas();
-                redrawCanvas(map, results);
+                redrawCanvas(map);
             }
         }
 
         return {
-            config: config,
             nonVisualizedDimensions: nonVisualizedDimensions,
+            variable: variable,
             onHeadersLoaded: onHeadersLoaded,
             onChartCreated: onChartCreated,
-            onDataUpdated: onFiltersUpdated
+            onFiltersUpdated: onFiltersUpdated
         }
     };
 
@@ -373,6 +375,7 @@ ChartBuilder = function(qd, destSelector, headers) {
 
     that.qd.queryExecutor.run({
         onlyHeaders: true,
+        variable: that.directives.variable.name,
         dimensionValues: dimensionValues.join(','),
         noPagination: true,
         callback: function(data) {
@@ -382,7 +385,7 @@ ChartBuilder = function(qd, destSelector, headers) {
         }
     });
 
-    // load initial data
+    // load data
     this.onFiltersUpdated = function() {
         that.filters.getFilteredResults(function(results) {
             that.directives.onFiltersUpdated(results);
@@ -397,7 +400,7 @@ ChartBuilder = function(qd, destSelector, headers) {
 
         // update non visualized dimensions
         $.each(this.directives.nonVisualizedDimensions, function(idx, dim) {
-            dim.filters = that.headers[dim.idx].values;
+            dim.values = that.headers[dim.idx].values;
         });
 
         // setup filters
