@@ -133,18 +133,18 @@ class BaseConverter(object):
 
     @staticmethod
     def full_input_path(filename=None):
-        source_path = DATASET_DIR + 'source\\'
+        source_path = os.path.join(DATASET_DIR, 'source')
         if not os.path.isdir(source_path):
             os.mkdir(source_path)
 
         if filename is None:
             return source_path
 
-        return os.path.join(source_path, filename)
+        return source_path + filename
 
     @staticmethod
     def full_output_path(filename=None):
-        dist_path = DATASET_DIR + 'dist\\'
+        dist_path = os.path.join(DATASET_DIR, 'dist')
         if not os.path.isdir(dist_path):
             os.mkdir(dist_path)
 
