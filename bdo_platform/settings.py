@@ -8,7 +8,7 @@ else:
     try:
         # custom settings files
         settings_files = [sf.strip() for sf in
-                          open('project//settings_management/settings-loader.txt', 'r').read().split(',')]
+                          open('bdo_platform//settings_management/settings-loader.txt', 'r').read().split(',')]
 
         for settings_file in settings_files:
             if settings_file == 'development_dpap':

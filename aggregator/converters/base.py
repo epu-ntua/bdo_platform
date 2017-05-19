@@ -374,13 +374,17 @@ class BaseConverter(object):
 
                 for comb in itertools.product(*dim_values):
                     dt = data
+                    error = False
                     for idx, dimension in enumerate(comb):
                         try:
                             dt = dt[comb[idx][0]]
                         except:
+                            error = True
                             break
 
                     progress += 1
+                    if error:
+                        continue
                     if str(dt) != '--':
                         insert_values.append('(%s)' % ','.join([db_serialize(combi[1]) for combi in comb] + [str(dt) if str(dt) != '--' else 'null']))
 
