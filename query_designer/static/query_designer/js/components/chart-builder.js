@@ -239,10 +239,10 @@ ChartBuilder = function(qd, destSelector, headers) {
         // choose map if "degrees_north" & "degrees_east" units are present
         var coordinateCols = {latIdx: undefined, lngIdx: undefined};
         $.each(headers, function(idx, col) {
-            if (col.unit === 'degrees_north') {
+            if (['degrees_north', 'degree_north'].indexOf(col.unit) >= 0) {
                coordinateCols.latIdx = idx;
             }
-            else if (col.unit === 'degrees_east') {
+            else if (['degrees_east', 'degree_east'].indexOf(col.unit) >= 0) {
                coordinateCols.lngIdx = idx;
             }
         });

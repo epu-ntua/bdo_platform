@@ -39,6 +39,7 @@
             /* returns the document used by plugins to generate query text */
             getQueryDocument: function() {
                 var document = new DocumentBuilder(that.qd).getDocument();
+                console.log(document);
                 return document;
             },
 
