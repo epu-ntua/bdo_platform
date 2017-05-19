@@ -4,7 +4,16 @@ from bdo_platform.settings_management.development import *
 DOCUMENT_STORE_URL = 'mongodb://localhost:27017/'
 DOCUMENT_STORE_DB = 'bdo'
 
-DATABASES['default']['PASSWORD'] = '1234'
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'bdo_platform',
+        'USER': 'postgres',
+        'PASSWORD': '1234',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
 
 # copernicus server
 COPERNICUS_SERVER = {

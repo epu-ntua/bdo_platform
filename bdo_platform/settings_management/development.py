@@ -7,13 +7,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'bdo_platform',
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '5432',
     }
 }
 
 # No emails should be sent on development
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
-CONTACT_EMAIL = 'energymanagement.bemat@gmail.com'
+CONTACT_EMAIL = 'dipapaspyros@gmail.com'
