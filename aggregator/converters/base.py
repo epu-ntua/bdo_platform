@@ -336,7 +336,7 @@ class BaseConverter(object):
                             agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
                                                                min=decimal.Decimal(str(d.min)),
                                                                max=decimal.Decimal(str(d.max)),
-                                                               step=decimal.Decimal(str(d.step)),
+                                                               step=decimal.Decimal(str(d.step)) if d.step is not None else None,
                                                                axis=d.axis,
                                                                variable=agv)
                             dimensions.append(agdim)
@@ -375,7 +375,10 @@ class BaseConverter(object):
                 for comb in itertools.product(*dim_values):
                     dt = data
                     for idx, dimension in enumerate(comb):
-                        dt = dt[comb[idx][0]]
+                        try:
+                            dt = dt[comb[idx][0]]
+                        except:
+                            break
 
                     progress += 1
                     if str(dt) != '--':

@@ -1,5 +1,5 @@
 # django
-Django==1.11
+Django==1.9
 
 # database access
 psycopg2==2.7.1

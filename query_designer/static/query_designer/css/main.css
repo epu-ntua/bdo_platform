@@ -539,6 +539,12 @@ body.qd-body {
     text-align: center
 }
 
+/* Hide optional prop */
+#builder_workspace .class-instance .header-row span:nth-of-type(3),
+#builder_workspace .class-instance .property-row span:nth-of-type(3) {
+    display: none;
+}
+
 #builder_workspace .class-instance .property-table .property-order-by select {
     width: 50px;
 }

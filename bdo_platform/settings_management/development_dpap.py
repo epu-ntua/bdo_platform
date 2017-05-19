@@ -4,6 +4,8 @@ from bdo_platform.settings_management.development import *
 DOCUMENT_STORE_URL = 'mongodb://localhost:27017/'
 DOCUMENT_STORE_DB = 'bdo'
 
+DATABASES['default']['PASSWORD'] = '1234'
+
 # copernicus server
 COPERNICUS_SERVER = {
     'HOST': 'http://nrtcmems.mercator-ocean.fr/mis-gateway-servlet/Motu',

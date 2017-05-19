@@ -330,7 +330,7 @@ ChartBuilder = function(qd, destSelector, headers) {
                     updateRequests.push(updateId);
                     clearCanvas();
 
-                    setTimeout(function() {if (updateRequests[updateRequests.length - 1] === updateId) {updateRequests = []; redrawCanvas(map)}}, 400);
+                    setTimeout(function() {if (updateRequests[updateRequests.length - 1] === updateId) {updateRequests = []; clearCanvas(); redrawCanvas(map)}}, 400);
                 });
             };
 
