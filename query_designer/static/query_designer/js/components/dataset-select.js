@@ -68,6 +68,8 @@ DatasetSelect = function(qd) {
 
                 that.ui.$elem.append($option);
             });
+
+            this.$elem.trigger('change');
         },
 
         render: function() {

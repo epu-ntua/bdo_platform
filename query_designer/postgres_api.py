@@ -12,6 +12,7 @@ def datasets(request):
     results = [{
         '_id': 'ALL',
         'title': 'All datasets',
+        'default': True,
     }]
 
     for d in Dataset.objects.all():
