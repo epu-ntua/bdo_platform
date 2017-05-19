@@ -2,7 +2,7 @@
  * Created by dimitris on 16/5/2017.
  */
 
-var ChartFilters = function(chartBuilder, results, filterColumns) {
+var ChartFilters = function(chartBuilder, filterColumns) {
     var that = this;
     this.chartBuilder = chartBuilder;
     this.filterColumns = filterColumns;
@@ -34,7 +34,7 @@ var ChartFilters = function(chartBuilder, results, filterColumns) {
                     // on filter change
                     $select.on('change', function() {
                         fc.activeFilterIdx = Number($(this).val());
-                        that.chartBuilder.onDataUpdated();
+                        that.chartBuilder.onFiltersUpdated();
                     });
 
                     // on play/pause click
@@ -53,7 +53,7 @@ var ChartFilters = function(chartBuilder, results, filterColumns) {
 
                         if (fc.playingTimer === null) {
                             var fn = function() {
-                                that.chartBuilder.onDataUpdated();
+                                that.chartBuilder.onFiltersUpdated();
                                 fc.activeFilterIdx++;
                                 if (fc.activeFilterIdx + 1 >= fc.filters.length) {
                                     stopPlaying();
@@ -80,36 +80,25 @@ var ChartFilters = function(chartBuilder, results, filterColumns) {
     };
 
     /* Responsible to return only data that should be shown according to current filters */
-    this.getFilteredResults = function() {
-        var filteredResults = [];
-        $.each(results, function(idx, result) {
-           var res = true;
-            $.each(that.filterColumns, function(jdx, fc) {
-                if (result[fc.idx] !== fc.filters[fc.activeFilterIdx]) {
-                    res = false;
-                    return false
-                }
-            });
-
-            if (res) {
-                filteredResults.push(result);
-            }
+    this.getFilteredResults = function(callback) {
+        var extraFilters = [];
+        $.each(that.filterColumns, function(idx, filter) {
+            extraFilters.push(filter.name + ' = ' + filter.values[filter.activeFilterIdx]);
         });
 
-        return filteredResults;
+        that.qd.queryExecutor.run({
+            noPagination: true,
+            extraFilters: extraFilters,
+            callback: function(data) {
+                callback(data.results);
+            }
+        });
     };
 
     this.initializeFilters = function() {
         $.each(that.filterColumns, function(idx, fc) {
-            fc.filters = [];
             fc.activeFilterIdx = 0;
             fc.playingTimer = null;
-            $.each(results, function(jdx, result) {
-                if (fc.filters.indexOf(result[fc.idx]) < 0) {
-                    fc.filters.push(result[fc.idx])
-                }
-            });
-            fc.filters.sort();
         });
     };
 
@@ -123,8 +112,10 @@ var ChartFilters = function(chartBuilder, results, filterColumns) {
 };
 
 
-ChartBuilder = function(destSelector, data) {
+ChartBuilder = function(qd, destSelector, headers) {
     var that = this;
+    this.qd = qd;
+    this.headers = headers;
 
     this.util = {
         getColorForPercentage: function(pct) {
@@ -184,6 +175,15 @@ ChartBuilder = function(destSelector, data) {
 
     /* Get range of values for a column */
     this.getRange = function(columnIdx) {
+        console.log(this.headers)
+        return {
+            min: this.headers[columnIdx].values[ 0 ],
+            max: this.headers[columnIdx].values[ this.headers[columnIdx].length - 1 ]
+        };
+    };
+
+    /* Get range of values for a column from data */
+    this.getRangeFromData = function(data, columnIdx) {
         var min = data.results[0][columnIdx],
             max = data.results[0][columnIdx];
 
@@ -203,23 +203,24 @@ ChartBuilder = function(destSelector, data) {
     this.pickVisualizationType = function() {
         var config = {},
             nonVisualizedDimensions = [],
+            onHeadersLoaded = undefined,
             onChartCreated = undefined,
-            onDataUpdated = undefined;
+            onFiltersUpdated = undefined;
 
         // find variable(s)
         var variables = [];
-        $.each(data.headers.columns, function(idx, col) {
+        $.each(headers, function(idx, col) {
             if (col.unit === 'VALUE') {
                 variables.push({
                     idx: idx,
-                    range: that.getRange(idx)
+                    name: col.name
                 });
             }
         });
 
         // choose map if "degrees_north" & "degrees_east" units are present
         var coordinateCols = {latIdx: undefined, lngIdx: undefined};
-        $.each(data.headers.columns, function(idx, col) {
+        $.each(headers, function(idx, col) {
             if (col.unit === 'degrees_north') {
                coordinateCols.latIdx = idx;
             }
@@ -230,7 +231,7 @@ ChartBuilder = function(destSelector, data) {
 
         if ((coordinateCols.latIdx !== undefined) && (coordinateCols.lngIdx !== undefined)) {
             // we'll visualize map coords & value, all other dimensions are filterable
-            $.each(data.headers.columns, function(idx, col) {
+            $.each(headers, function(idx, col) {
                 if ((coordinateCols.latIdx !== idx) && (coordinateCols.lngIdx !== idx) && (variables[0].idx !== idx)) {
                     nonVisualizedDimensions.push({
                         idx: idx,
@@ -241,68 +242,23 @@ ChartBuilder = function(destSelector, data) {
                 }
             });
 
-            var latRange = this.getRange(coordinateCols.latIdx),
-                lngRange = this.getRange(coordinateCols.lngIdx),
-                $c = $('#query-visualization--container'),
-                $mapCanvas = $('<canvas />')
-                    .attr('id', 'query-visualization--map-canvas')
-                    .attr('width', $c.outerWidth())
-                    .attr('height', 500)
-                    .css('position', 'absolute')
-                    .css('left', '22px')
-                    .css('top', '95px'),
-                mapCtx = $mapCanvas.get(0).getContext("2d");
-
-            // append map canvas
-            $c.parent().append($mapCanvas);
-
-            // calculate default zoom level
-            var latDiff = Math.abs(latRange.max - latRange.min),
-                lngDiff = Math.abs(lngRange.max - lngRange.min),
-                maxDiff = latDiff;
-            if (maxDiff < lngDiff) {
-                maxDiff = lngDiff;
-            }
-
-            var zoomLevel = 120.0 / maxDiff;
-            if (zoomLevel > 15) {
-                zoomLevel = 15;
-            }
-
-            config = {
-                "type": "map",
-                "theme": "light",
-                "projection": "miller",
-
-                "imagesSettings": {
-                    "rollOverColor": "#089282",
-                    "rollOverScale": 3,
-                    "selectedScale": 3,
-                    "selectedColor": "#089282",
-                    "color": "#13564e"
-                },
-
-                "dataProvider": {
-                    "map": "worldHigh",
-                    "zoomLevel": zoomLevel,
-                    "zoomLatitude": (latRange.min + latRange.max) / 2,
-                    "zoomLongitude": (lngRange.min + lngRange.max) / 2
-                }
-            };
+            var mapCtx = null,
+                $mapCanvas = null;
 
             var clearCanvas = function() {
                 mapCtx.clearRect(0, 0, $mapCanvas.get(0).width, $mapCanvas.get(0).height);
             };
 
-            var redrawCanvas = function(map) {
+            var redrawCanvas = function(map, results) {
                 var zl = map.zoomLevel(),
                     rad = zl * 0.175;
-                $.each(that.filters.getFilteredResults(), function(idx, r) {
+
+                $.each(results, function(idx, r) {
                     /*
                     var infoText = "#" + (idx + 1);
-                    $.each(data.headers.columns, function(idx, col) {
+                    $.each(that.headers, function(idx, col) {
                         if ((idx !== coordinateCols.latIdx) && (idx !== coordinateCols.lngIdx)) {
-                            infoText += '<p>' + data.headers.columns[idx].title + ':<br /><b>' + r[idx] + '</b></p>';
+                            infoText += '<p>' + col.title + ':<br /><b>' + r[idx] + '</b></p>';
                         }
                     });
                     */
@@ -318,6 +274,42 @@ ChartBuilder = function(destSelector, data) {
             };
 
             var updateRequests = [];
+
+            onHeadersLoaded = function() {
+                var $c = $('#query-visualization--container');
+
+                $mapCanvas = $('<canvas />')
+                    .attr('id', 'query-visualization--map-canvas')
+                    .attr('width', $c.outerWidth())
+                    .attr('height', 500)
+                    .css('position', 'absolute')
+                    .css('left', '22px')
+                    .css('top', '95px');
+
+                mapCtx = $mapCanvas.get(0).getContext("2d");
+
+                // append map canvas
+                $c.parent().append($mapCanvas);
+
+                config = {
+                    "type": "map",
+                    "theme": "light",
+                    "projection": "miller",
+
+                    "imagesSettings": {
+                        "rollOverColor": "#089282",
+                        "rollOverScale": 3,
+                        "selectedScale": 3,
+                        "selectedColor": "#089282",
+                        "color": "#13564e"
+                    },
+
+                    "dataProvider": {
+                        "map": "worldHigh"
+                    }
+                };
+            };
+
             onChartCreated = function() {
                 var map = that.ui.chart;
 
@@ -330,20 +322,40 @@ ChartBuilder = function(destSelector, data) {
                 });
             };
 
-            onDataUpdated = function() {
-                var map = that.ui.chart;
+            onFiltersUpdated = function(results) {
+                var map = that.ui.chart,
+                    latRange = that.getRangeFromData(results, coordinateCols.latIdx),
+                    lngRange = that.getRangeFromData(results, coordinateCols.lngIdx);
+
+                // calculate default zoom level
+                var latDiff = Math.abs(latRange.max - latRange.min),
+                    lngDiff = Math.abs(lngRange.max - lngRange.min),
+                    maxDiff = latDiff;
+                if (maxDiff < lngDiff) {
+                    maxDiff = lngDiff;
+                }
+
+                var zoomLevel = 120.0 / maxDiff;
+                if (zoomLevel > 15) {
+                    zoomLevel = 15;
+                }
+
+                map.dataProvider.zoomLevel = zoomLevel;
+                map.dataProvider.zoomLatitude =  (latRange.min + latRange.max) / 2;
+                map.dataProvider.zoomLongitude = (lngRange.min + lngRange.max) / 2;
 
                 // at start, draw canvas
                 clearCanvas();
-                redrawCanvas(map);
+                redrawCanvas(map, results);
             }
         }
 
         return {
             config: config,
             nonVisualizedDimensions: nonVisualizedDimensions,
+            onHeadersLoaded: onHeadersLoaded,
             onChartCreated: onChartCreated,
-            onDataUpdated: onDataUpdated
+            onDataUpdated: onFiltersUpdated
         }
     };
 
@@ -353,18 +365,50 @@ ChartBuilder = function(destSelector, data) {
     // choose visualization
     this.directives = this.pickVisualizationType();
 
-    // setup filters
-    this.filters = new ChartFilters(this, data.results, this.directives.nonVisualizedDimensions);
+    // run query just to get headers
+    var dimensionValues = [];
+    $.each(this.directives.nonVisualizedDimensions, function(idx, dim) {
+        dimensionValues.push(dim.name);
+    });
 
-    // render chart
-    this.ui.renderChart();
+    that.qd.queryExecutor.run({
+        onlyHeaders: true,
+        dimensionValues: dimensionValues.join(','),
+        noPagination: true,
+        callback: function(data) {
+            // update headers
+            that.headers = data.headers.columns;
+            that.onHeadersLoaded();
+        }
+    });
 
     // load initial data
-    this.onDataUpdated = function() {
-        this.directives.onDataUpdated();
+    this.onFiltersUpdated = function() {
+        that.filters.getFilteredResults(function(results) {
+            that.directives.onFiltersUpdated(results);
+        });
     };
 
-    this.onDataUpdated();
+    this.ui.render();
+
+    this.onHeadersLoaded = function() {
+        // complete config
+        this.directives.onHeadersLoaded();
+
+        // update non visualized dimensions
+        $.each(this.directives.nonVisualizedDimensions, function(idx, dim) {
+            dim.filters = that.headers[dim.idx].values;
+        });
+
+        // setup filters
+        this.filters = new ChartFilters(this, this.directives.nonVisualizedDimensions);
+
+        // render chart
+        this.ui.renderChart();
+
+        // load initial data
+        this.onFiltersUpdated();
+    };
 
     return this;
 };

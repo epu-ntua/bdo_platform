@@ -206,7 +206,6 @@ DocumentBuilder = function(qd) {
 
     // unpack
     that.qd.config.properties.unpack(document);
-    console.log(document);
 
     return this;
 };

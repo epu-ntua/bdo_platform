@@ -21,11 +21,18 @@ class ResultEncoder(json.JSONEncoder):
 
 def execute_query(request):
     query_document = json.loads(request.POST.get('query'), '')
+    dimension_values = request.POST.get('dimension_values', '')
+    if dimension_values:
+        dimension_values = dimension_values.split(',')
+    else:
+        dimension_values = []
 
     # select
-    selects = []
+    selects = {}
     headers = []
     header_sql_types = []
+
+    variable = Variable.objects.get(pk=query_document['from'][0]['type'])
     for s in query_document['from'][0]['select']:
         if s['type'] != 'VALUE':
             dimension = Dimension.objects.get(pk=s['type'])
@@ -39,18 +46,17 @@ def execute_query(request):
             column_axis = None
             header_sql_types.append('double precision')
 
-        selects.append('%s AS %s' % (column_name, s['name']))
+        selects[s['name']] = {'column': column_name, 'table': variable.data_table_name}
         headers.append({
             'title': s['title'],
             'name': s['name'],
             'unit': column_unit,
             'axis': column_axis,
         })
-    select_clause = 'SELECT ' + ','.join(selects) + '\n'
+    select_clause = 'SELECT ' + ','.join('%s AS %s' % (selects[name]['column'], name) for name in selects.keys()) + '\n'
 
     # from
-    _from = Variable.objects.get(pk=query_document['from'][0]['type']).data_table_name
-    from_clause = 'FROM ' + _from + '\n'
+    from_clause = 'FROM ' + selects[selects.keys()[0]]['table'] + '\n'
 
     # where
     where_clause = ' AND '.join(['(%s)' % f for f in query_document['filters']]) \
@@ -67,7 +73,7 @@ def execute_query(request):
     limit = int(query_document['limit']) if 'limit' in query_document and query_document['limit'] else 100
     limit_clause = 'LIMIT %d\n' % limit
 
-    # subqueries
+    # organize into subquery
     subquery = 'SELECT * FROM (' + select_clause + from_clause + ') AS SQ1\n'
     subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + ') AS SQ1\n'
 
@@ -109,6 +115,22 @@ def execute_query(request):
 
         cursor.execute(q_pages)
         pages['total'] = (cursor.fetchone()[0] - 1) / 1000 + 1
+
+    # include dimension values if requested
+    for d_name in dimension_values:
+        hdx, header = [hi for hi in enumerate(headers) if hi[1]['name'] == d_name][0]
+        q_col_values = 'SELECT DISTINCT(%s) FROM %s ORDER BY %s' % \
+            (selects[d_name]['column'], selects[d_name]['table'], selects[d_name]['column'])
+
+        cursor.execute(q_col_values)
+        header['values'] = []
+        h_type = header_sql_types[hdx]
+        for row in cursor.fetchall():
+            v = row[0]
+            if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(v) in [str, unicode]:
+                header['values'].append(float(v))
+            else:
+                header['values'].append(v)
 
     # monitor query duration
     q_time = (time.time() - t1) * 1000

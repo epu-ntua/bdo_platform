@@ -156,7 +156,7 @@ QueryExecutor = function(qd) {
                 .append($dataTable);
 
             // create & add chart
-            new ChartBuilder('#query-results--visualization', data);
+            new ChartBuilder(that.qd, '#query-results--visualization', data.headers.columns);
 
             // scroll to results
             if (scroll) {
@@ -172,6 +172,8 @@ QueryExecutor = function(qd) {
             scroll: true,
             callback: undefined,
             extraFilters: [],
+            dimensionValues: undefined,
+            onlyHeaders: false,
             noPagination: false
         }, runConfig);
 
@@ -184,16 +186,31 @@ QueryExecutor = function(qd) {
         if (runConfig.extraFilters.length > 0 || runConfig.noPagination) {
             queryDocument = new DocumentBuilder(that.qd).getDocument();
         }
+
+        // add extra filters
+        if (runConfig.extraFilters.length > 0) {
+            $.each(runConfig.extraFilters, function(idx, f) {
+                queryDocument.filters.push(f);
+            })
+        }
+
         if (runConfig.noPagination) {
             queryDocument.limit = undefined;
             queryDocument.offset = undefined;
         }
 
         if (queryDocument !== undefined) {
-            query = that.qd.config.language.parser(queryDocument.getQuery());
+            query = that.qd.config.language.parser(queryDocument).getQuery();
         }
 
+        // construct params
         requestParameters[config.queryParameter] = query;
+        if (runConfig.onlyHeaders === true) {
+            requestParameters['only_headers'] = 'true';
+        }
+        if (runConfig.dimensionValues !== undefined) {
+            requestParameters['dimension_values'] = runConfig.dimensionValues;
+        }
         that.ui.setLoading();
 
         $.ajax({
