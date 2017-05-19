@@ -45,6 +45,9 @@ class Dimension(BaseVariable):
     step = DecimalField(blank=True, null=True, default=None, max_digits=100, decimal_places=50)
     axis = TextField(blank=True, null=True, default=None)
 
+    class Meta:
+        ordering = ['pk']
+
     def to_json(self):
         return {
             '_id': str(self.pk),
