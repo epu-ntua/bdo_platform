@@ -50,10 +50,10 @@
 
                         // transform latitude, longitude to location
                         $.each(properties, function(idx, property) {
-                            if ((property.name === 'latitude') && (property.unit === 'degrees_north')) {
+                            if (['degrees_north', 'degree_north'].indexOf(property.unit)) {
                                 latitude = property;
                             }
-                            else if ((property.name === 'longitude') && (property.unit === 'degrees_east')) {
+                            else if (['degrees_east', 'degree_east'].indexOf(property.unit)) {
                                 longitude = property
                             } else {
                                 resultProperties.push(property);
