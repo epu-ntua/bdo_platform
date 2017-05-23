@@ -5,10 +5,23 @@ from django.contrib import admin
 from aggregator.models import *
 
 
-class DefaultAdmin(admin.ModelAdmin):
-    pass
+class DimensionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'source', 'description', )
 
 
-admin.site.register(Dataset, DefaultAdmin)
-admin.site.register(Variable, DefaultAdmin)
-admin.site.register(Dimension, DefaultAdmin)
+admin.site.register(Dataset, DimensionAdmin)
+
+
+class DimensionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'name', 'unit', 'min', 'max', 'step', 'variable', 'dataset', )
+
+    def dataset(self, obj):
+        return obj.variable.dataset
+
+admin.site.register(Dimension, DimensionAdmin)
+
+
+class VariableAdmin(admin.ModelAdmin):
+    list_display = ('title', 'name', 'unit', 'dataset', )
+
+admin.site.register(Variable, VariableAdmin)

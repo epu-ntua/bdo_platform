@@ -49,7 +49,7 @@ class Dimension(BaseVariable):
         ordering = ['pk']
 
     def __unicode__(self):
-        return u'Dimension %s from dataset %s' % (self.name, self.variable.dataset.title)
+        return u'%s' % self.title
 
     def to_json(self):
         return {
@@ -102,7 +102,7 @@ class Variable(BaseVariable):
     type_of_analysis = TextField(blank=True, null=True, default=None)
 
     def __unicode__(self):
-        return u'Variable %s from dataset %s' % (self.name, self.dataset.title)
+        return u'%s' % self.title
 
     def to_json(self):
         return {
