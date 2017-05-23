@@ -324,7 +324,7 @@ class BaseConverter(object):
 
             for v in self.variables:
                 print v.name
-                agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.title,
+                agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.unit,
                                                 scale_factor=v.scale_factor, add_offset=v.add_offset,
                                                 cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
                                                 dataset=agd)
