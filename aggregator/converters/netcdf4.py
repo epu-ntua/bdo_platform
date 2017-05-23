@@ -30,7 +30,7 @@ class NetCDF4Converter(BaseConverter):
 
     def _parse_base_variable(self, target, source):
         try:
-            target.unit = source.units
+            target.unit = source.units.lower()
         except AttributeError:
             target.unit = ''
 
