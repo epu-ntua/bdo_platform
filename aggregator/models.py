@@ -48,6 +48,9 @@ class Dimension(BaseVariable):
     class Meta:
         ordering = ['pk']
 
+    def __unicode__(self):
+        return u'Dimension %s from dataset %s' % (self.name, self.variable.dataset.title)
+
     def to_json(self):
         return {
             '_id': str(self.pk),
@@ -97,6 +100,9 @@ class Variable(BaseVariable):
     add_offset = FloatField(default=0)
     cell_methods = ArrayField(TextField())
     type_of_analysis = TextField(blank=True, null=True, default=None)
+
+    def __unicode__(self):
+        return u'Variable %s from dataset %s' % (self.name, self.dataset.title)
 
     def to_json(self):
         return {
