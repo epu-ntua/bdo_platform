@@ -182,7 +182,11 @@ ChartBuilder = function(qd, destSelector, headers) {
 
         renderChart: function() {
             // render visualization
-            this.chart = AmCharts.makeChart(this.containerId, that.chartConfig);
+            if (that.chartConfig !== undefined) {
+                this.chart = AmCharts.makeChart(this.containerId, that.chartConfig);
+            } else {
+                $('#query-visualization--container').append($('<p>').text('Data can\'t be visualized'));
+            }
 
             // run post-add action to add data
             that.directives.onChartCreated();
@@ -360,7 +364,6 @@ ChartBuilder = function(qd, destSelector, headers) {
                 }
 
                 if (resetView) {
-                    console.log('reset!!');
                     map.dataProvider.zoomLevel = zoomLevel;
                     map.dataProvider.zoomLatitude =  (latRange.min + latRange.max) / 2;
                     map.dataProvider.zoomLongitude = (lngRange.min + lngRange.max) / 2;
@@ -375,7 +378,15 @@ ChartBuilder = function(qd, destSelector, headers) {
                     callback();
                 }
             }
+        } else {
+            onHeadersLoaded = function() {};
+            onChartCreated = function() {};
+            onFiltersUpdateStarted = function() {};
+            onFiltersUpdated = function() {};
         }
+
+        /* Default - inform user no visualization was found */
+
 
         return {
             nonVisualizedDimensions: nonVisualizedDimensions,
