@@ -21,10 +21,25 @@ class NetCDF4Converter(BaseConverter):
     def dataset(self):
         if not self._dataset:
             self._dataset = DatasetInfo()
-            self._dataset.title = self._f.title
-            self._dataset.source = self._f.institution
-            self._dataset.references = [self._f.references]
-            self._dataset.description = self._f.history
+            try:
+                self._dataset.title = self._f.title
+            except AttributeError:
+                self._dataset.title = '.'.join(self.name.split('.')[:-1])
+
+            try:
+                self._dataset.source = self._f.institution
+            except AttributeError:
+                self._dataset.source = 'Unknown'
+
+            try:
+                self._dataset.references = [self._f.references]
+            except AttributeError:
+                self._dataset.references = []
+
+            try:
+                self._dataset.description = self._f.history
+            except AttributeError:
+                self._dataset.description = ''
 
         return self._dataset
 
@@ -34,7 +49,10 @@ class NetCDF4Converter(BaseConverter):
         except AttributeError:
             target.unit = ''
 
-        target.title = source.long_name
+        try:
+            target.title = source.long_name
+        except AttributeError:
+            target.title = source.name
 
     def _parse_variable(self, target, source):
         # variable extends base variable
@@ -74,18 +92,36 @@ class NetCDF4Converter(BaseConverter):
         else:
             self._parse_base_variable(target, v_source)
 
-        v = self._f.variables[target.name]
-        d_data = v[:]
-        target.min = d_data[0]
-        target.max = d_data[d_data.__len__() - 1]
-
         try:
-            target.step = v.step
-        except AttributeError:
+            v = self._f.variables[target.name]
+            d_data = v[:]
+            target.min = d_data[0]
+            target.max = d_data[d_data.__len__() - 1]
+
             try:
-                target.step = d_data[1] - d_data[0]
+                target.step = v.step
+            except AttributeError:
+                try:
+                    target.step = d_data[1] - d_data[0]
+                except IndexError:
+                    target.step = None
+        except KeyError:
+            try:
+                default_v = [self._f.variables[v] for v in self._f.variables
+                             if target.name in self._f.variables[v].dimensions][0]
             except IndexError:
-                target.step = None
+                raise ValueError('Could not parse dimension %s' % target.name)
+
+            # no dimension information, best guess
+            target.min = 1
+            target.step = 1
+            d_data = default_v[:]
+            for d in default_v.dimensions:
+                if d == target.name:
+                    target.max = len(d_data)
+                    break
+
+                d_data = d_data[0]
 
         try:
             target.axis = source.axis
@@ -99,8 +135,8 @@ class NetCDF4Converter(BaseConverter):
             for d_name in self._f.dimensions.keys():
                 try:
                     _v = self._f.variables[d_name]
-                except:
-                    raise ValueError('Files without variable information on their dimensions can not be parsed.')
+                except KeyError:
+                    _v = None
 
                 _d = self._f.dimensions[d_name]
                 dimension = Dimension()
