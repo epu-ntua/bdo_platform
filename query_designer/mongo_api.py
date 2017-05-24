@@ -49,7 +49,7 @@ def dataset_variable_properties(request, dataset_id, variable_id):
     variable = variables.find_one(_filter)
 
     # get variable's properties (again, filter by dataset)
-    dimensions = db.dimensions.find({'_id': {'$in': [ObjectId(d_id) for d_id in variable['dimension_ids']]}})
+    dimensions = db.dimensions.find({'name': {'$in': variable['dimensions']}})
 
     return MongoResponse([d for d in dimensions], safe=False)
 

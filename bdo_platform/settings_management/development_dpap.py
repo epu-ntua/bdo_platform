@@ -2,7 +2,7 @@ from bdo_platform.settings_management.development import *
 
 # use local mongo on dev
 DOCUMENT_STORE_URL = 'mongodb://localhost:27017/'
-DOCUMENT_STORE_DB = 'bdo'
+DOCUMENT_STORE_DB = 'bdo_platform'
 
 DATABASES = {
     'default': {
