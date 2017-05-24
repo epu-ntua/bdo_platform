@@ -243,71 +243,19 @@ class BaseConverter(object):
                 for datum in self.json_documents(variable=variable):
                     output.write(json.dumps(datum))
 
-    def write_to_mongo(self, db):
+    def store(self, target, stdout=None):
+        """
+        :param target: Either {'type': 'postgres', 'cursor': <Cursor>, 'withIndices': True|False} or
+                              {'type': 'mongo', 'db': <MongoClient>}
+        :param stdout: Optional output stream
+        :return: Inserts data to database
+        """
 
-        # insert dataset info
-        dataset_id = db.datasets.insert_one(self.dataset.to_json()).inserted_id
-
-        # add dimensions
-        dimension_docs = []
-        dimension_docs_by_name = {}
-        for d in self.dimensions:
-            dimension_doc = d.to_json()
-            dimension_doc['dataset_id'] = dataset_id
-            dimension_docs.append(dimension_doc)
-            dimension_docs_by_name[dimension_doc['name']] = dimension_doc
-
-        # bulk insert
-        dimension_ids = db.dimensions.insert_many(dimension_docs).inserted_ids
-        for idx, dimension_id in enumerate(dimension_ids):
-            dimension_docs[idx]['_id'] = dimension_id
-
-        # add variables
-        variable_docs = []
-        variable_docs_by_name = {}
-        for v in self.variables:
-            variable_doc = v.to_json()
-            variable_doc['dataset_id'] = dataset_id
-
-            # replace references to dimension names with dimension ObjectIDs
-            dims = variable_doc['dimensions'][:]
-            del variable_doc['dimensions']
-            variable_doc['dimension_ids'] = []
-            for dim in dims:
-                variable_doc['dimension_ids'].append(dimension_docs_by_name[dim]['_id'])
-
-            variable_docs.append(variable_doc)
-            variable_docs_by_name[variable_doc['name']] = variable_doc
-
-        # bulk insert
-        variable_ids = db.variables.insert_many(variable_docs).inserted_ids
-        for idx, variable_id in enumerate(variable_ids):
-            variable_docs[idx]['_id'] = variable_id
-
-        # add actual data
-        data_cache = []
-        for variable in self.variables:
-            v_id = variable_docs_by_name[variable.name]['_id']
-
-            for datum in self.json_documents(variable=variable):
-                # replace reference to variable name with variable ObjectIDs
-                datum['variable_id'] = v_id
-                del datum['variable']
-                datum['dataset_id'] = dataset_id
-
-                db.data.insert(datum)
-                # data_cache.append(datum)
-
-                # if data_cache.__len__() >= 100:
-                #     db.data.insert_many(data_cache)
-                #     data_cache = []
-
-        # insert any remaining docs
-        # if data_cache:
-        #     db.data.insert_many(data_cache)
-        #     data_cache = []
-
-    def write_to_postgres(self, conn, with_indices=True, stdout=None):
+        def insert(iv):
+            if target['type'] == 'postgres':
+                target['cursor'].execute('INSERT INTO %s VALUES %s;' % (agv.data_table_name, ','.join(iv)))
+            elif target['type'] == 'mongo':
+                target['db'][v.name].insert_many(iv)
 
         def db_serialize(val):
             if type(val) == datetime.datetime:
@@ -315,36 +263,57 @@ class BaseConverter(object):
             else:
                 return str(val)
 
+        if 'type' not in target:
+            raise ValueError('Target type is required')
+
+        if target['type'] not in ['postgres', 'mongo']:
+            raise ValueError('Unsupported store target type')
+
         agd = None
 
         try:
-            # add datasets, variables & their dimensions
-            agd = AgDataset.objects.create(title=self.dataset.title, source=self.dataset.source,
-                                           description=self.dataset.description, references=self.dataset.references)
+            if target['type'] == 'postgres':
+                # add datasets, variables & their dimensions
+                agd = AgDataset.objects.create(title=self.dataset.title, source=self.dataset.source,
+                                               description=self.dataset.description, references=self.dataset.references)
+            elif target['type'] == 'mongo':
+                agd = target['db'].datasets.insert(self.dataset.to_json())
 
             for v in self.variables:
                 print v.name
-                agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.unit,
-                                                scale_factor=v.scale_factor, add_offset=v.add_offset,
-                                                cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
-                                                dataset=agd)
+                if target['type'] == 'postgres':
+                    agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.unit,
+                                                    scale_factor=v.scale_factor, add_offset=v.add_offset,
+                                                    cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
+                                                    dataset=agd)
+                elif target['type'] == 'mongo':
+                    v_doc = v.to_json()
+                    v_doc['dataset_id'] = agd['_id']
+                    agv = target['db'].variables.insert(v_doc)
 
                 dimensions = []
                 for dimension_name in v.dimensions:
                     for d in self.dimensions:
                         if d.name == dimension_name:
-                            agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
-                                                               min=decimal.Decimal(str(d.min)),
-                                                               max=decimal.Decimal(str(d.max)),
-                                                               step=decimal.Decimal(str(d.step)) if d.step is not None else None,
-                                                               axis=d.axis,
-                                                               variable=agv)
+                            if target['type'] == 'postgres':
+                                agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
+                                                                   min=decimal.Decimal(str(d.min)),
+                                                                   max=decimal.Decimal(str(d.max)),
+                                                                   step=decimal.Decimal(str(d.step))
+                                                                   if d.step is not None else None,
+                                                                   axis=d.axis,
+                                                                   variable=agv)
+                            elif target['type'] == 'mongo':
+                                d_doc = d.to_json()
+                                d_doc['variable_id'] = agv['_id']
+                                agdim = target['db'].dimensions.insert(d_doc)
+
                             dimensions.append(agdim)
                             break
 
-                cursor = conn.cursor()
                 # create data table for variable
-                agv.create_data_table(cursor=cursor, with_indices=with_indices)
+                if target['type'] == 'postgres':
+                    agv.create_data_table(cursor=target['cursor'], with_indices=target['with_indices'])
 
                 # add data
                 data = self.data(v_name=v.name)
@@ -386,21 +355,29 @@ class BaseConverter(object):
                     if error:
                         continue
                     if str(dt) != '--':
-                        insert_values.append('(%s)' % ','.join([db_serialize(combi[1]) for combi in comb] + [str(dt) if str(dt) != '--' else 'null']))
+                        if target['type'] == 'postgres':
+                            insert_values.append('(%s)' % ','.join([db_serialize(combi[1]) for combi in comb] + [str(dt)]))
+                        elif target['type'] == 'mongo':
+                            val_doc = {}
+                            for idx, combi in comb:
+                                val_doc[self.dimensions[idx].name] = combi[1]
 
+                            val_doc['value'] = dt
+                            insert_values.append(val_doc)
                     if len(insert_values) == 1000:
                         if stdout:
                             stdout.write("\r Adding data... %d%%" % (progress * 100 / total), ending='')
                             stdout.flush()
-                        cursor.execute('INSERT INTO %s VALUES %s;' % (agv.data_table_name, ','.join(insert_values)))
+
+                        insert(insert_values)
                         insert_values = []
 
                 if insert_values:
-                    cursor.execute('INSERT INTO %s VALUES %s;' % (agv.data_table_name, ','.join(insert_values)))
+                    insert(insert_values)
                     insert_values = []
 
                 if stdout:
-                    stdout.write("\r Completed", ending='\n')
+                    stdout.write("\r Completed\t\t\t", ending='\n')
                     stdout.flush()
         except:
             if agd:

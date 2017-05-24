@@ -8,6 +8,7 @@ from aggregator.connectors.motu.client import motu_download
 from aggregator.converters.base import BaseConverter
 from aggregator.converters.netcdf4 import NetCDF4Converter
 from bdo_platform.settings_management.development_dpap import COPERNICUS_SERVER
+from mongo_client import get_mongo_db
 
 
 class Command(BaseCommand):
@@ -20,9 +21,29 @@ class Command(BaseCommand):
             help="Copernicus script",
             metavar="SCRIPT"
         ),
+        make_option(
+            "-t",
+            "--target",
+            dest="target",
+            help="Where data should be stored (either `postgres` or `mongo`)",
+            metavar="TARGET"
+        ),
     )
 
     def handle(self, *args, **options):
+        target = options['target']
+        target_dict = {
+            'type': 'postgres',
+            'cursor': connection.cursor(),
+            'with_indices': False
+        }
+
+        if target == 'mongo':
+            target_dict = {
+                'type': 'mongo',
+                'db': get_mongo_db()
+            }
+
         motu_args = (
             COPERNICUS_SERVER['USERNAME'],
             COPERNICUS_SERVER['PASSWORD'],
@@ -40,5 +61,5 @@ class Command(BaseCommand):
         print('Done.\n')
 
         cnv = NetCDF4Converter(motu_args[3])
-        cnv.write_to_postgres(conn=connection, with_indices=False, stdout=self.stdout)
+        cnv.store(target=target_dict, stdout=self.stdout)
 
