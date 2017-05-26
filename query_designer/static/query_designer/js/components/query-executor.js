@@ -196,15 +196,21 @@ QueryExecutor = function(qd) {
         // add query property
         var query = that.qd.workbench.query,
             queryDocument = undefined;
-        if (runConfig.extraFilters.length > 0 || runConfig.noPagination) {
+        if (runConfig.extraFilters !== undefined || runConfig.noPagination) {
             queryDocument = new DocumentBuilder(that.qd).getDocument();
         }
 
         // add extra filters
-        if (runConfig.extraFilters.length > 0) {
-            $.each(runConfig.extraFilters, function(idx, f) {
-                queryDocument.filters.push(f);
-            })
+        if (runConfig.extraFilters !== undefined) {
+            if (queryDocument.filters === undefined) {
+                queryDocument.filters = runConfig.extraFilters;
+            } else {
+                queryDocument.filters = {
+                    "a": JSON.parse(JSON.stringify(queryDocument.filters)),
+                    "op": "AND",
+                    "b": runConfig.extraFilters
+                }
+            }
         }
 
         if (runConfig.noPagination) {

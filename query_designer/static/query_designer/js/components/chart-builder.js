@@ -92,13 +92,28 @@ var ChartFilters = function(chartBuilder, filterColumns) {
 
     /* Responsible to return only data that should be shown according to current filters */
     this.getFilteredResults = function(callback) {
-        var extraFilters = [];
+        var extraFilters = undefined;
         $.each(that.filterColumns, function(idx, filter) {
             var value = filter.values[filter.activeFilterIdx];
             if (filter.quote !== undefined) {
                 value = filter.quote + value + filter.quote;
             }
-            extraFilters.push(filter.name + ' = ' + value);
+
+            var fObj = {
+                "a": filter.name,
+                "op": "EQ",
+                "b": value + ''
+            };
+
+            if (extraFilters === undefined) {
+                extraFilters = fObj
+            } else {
+                extraFilters = {
+                    "a": JSON.parse(JSON.stringify(extraFilters)),
+                    "op": "AND",
+                    "b": fObj
+                }
+            }
         });
 
         that.chartBuilder.qd.queryExecutor.run({

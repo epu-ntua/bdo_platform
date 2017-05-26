@@ -157,7 +157,7 @@ DocumentBuilder = function(qd) {
     document = {
         from: [],
         distinct: that.qd.options.isDistinct(),
-        filters: [],
+        filters: undefined,
         offset: that.qd.options.getOffset(),
         limit: that.qd.options.getLimit()
     };
@@ -191,12 +191,38 @@ DocumentBuilder = function(qd) {
                 var filterStr = property.filter_prototype,
                     name = that.propertyNames[idx][jdx];
 
+                console.log(filterStr)
+                filterStr = filterStr
+                    .replace(/\[/, '{')
+                    .replace(/\]/, '}');
+
                 for (var fId = 0; fId < property.filters.length; fId++) {
                     var f = property.filters[fId];
-                    filterStr = filterStr.replace('[' + fId + ']', '(' + name + ' ' + f.operator_label + ' ' + f.value + ')')
+                    filterStr = filterStr.replace('{' + fId + '}',
+                        '{"a": "' + name + '", "op": "' + f.operator + '", "b": "' + f.value + '"}');
                 }
 
-                document.filters.push(filterStr);
+                filterStr = filterStr
+                    .replace(/\(/, '{')
+                    .replace(/\)/, '}')
+                    .replace(/\s/, '')
+                    .replace(/&&\{/, ', "op": "AND", "b": {')
+                    .replace(/\|\|\{/, ', "op": "OR", "b": {');
+
+                //if (filterStr.indexOf('{"a"') == 0) {
+                //    filterStr = '{"a": ' + filterStr
+                //}
+
+                console.log(filterStr)
+                if (document.filters === undefined) {
+                    document.filters = JSON.parse(filterStr);
+                } else {
+                    document.filters = {
+                        "a": JSON.parse(JSON.stringify(document.filters)),
+                        "op": "AND",
+                        "b": JSON.parse(filterStr)
+                    }
+                }
             }
         });
     });

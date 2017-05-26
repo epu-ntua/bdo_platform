@@ -1,5 +1,6 @@
 import json
 
+from datetime import datetime
 from django.http import HttpResponse
 
 from bson import ObjectId
@@ -19,6 +20,8 @@ class MongoEncoder(JSONEncoder):
     def default(self, obj, **kwargs):
         if isinstance(obj, ObjectId):
             return str(obj)
+        elif isinstance(obj, datetime):
+            return obj.isoformat(sep='T')
         else:
             return JSONEncoder.default(self, obj, **kwargs)
 
