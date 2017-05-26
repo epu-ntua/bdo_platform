@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d1de3af5-5a60-4e6d-9dea-8b900466eed0" name="Default" comment="Fix in qd config">
+    <list default="true" id="d1de3af5-5a60-4e6d-9dea-8b900466eed0" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -1054,13 +1054,6 @@
       <option name="presentableId" value="Default" />
       <updated>1493817479723</updated>
     </task>
-    <task id="LOCAL-00006" summary="Minor updates in motu_api">
-      <created>1493892615817</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1493892615817</updated>
-    </task>
     <task id="LOCAL-00007" summary="Updated example">
       <created>1493892944818</created>
       <option name="number" value="00007" />
@@ -1397,7 +1390,14 @@
       <option name="project" value="LOCAL" />
       <updated>1495811346672</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="Remove workspace">
+      <created>1495811498336</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1495811498336</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1432,7 +1432,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Added filters to postgres query" />
     <MESSAGE value="Chart-specific data fetch (not completed)" />
     <MESSAGE value="Initially functional dimension-based data fetching in charts" />
     <MESSAGE value="Fixed pagination, playing" />
@@ -1457,7 +1456,8 @@
     <MESSAGE value="Progressing with mongo support, random data supplier" />
     <MESSAGE value="Minor updates in mongo_query" />
     <MESSAGE value="Changing filter representation, more improvements for mongo" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changing filter representation, more improvements for mongo" />
+    <MESSAGE value="Remove workspace" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove workspace" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
