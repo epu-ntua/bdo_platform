@@ -96,7 +96,7 @@ ENV/
 .ropeproject
 
 # PyCharm
-.idea
+.idea/*
 
 # BDO specific
 settings-loader.txt

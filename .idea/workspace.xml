@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d1de3af5-5a60-4e6d-9dea-8b900466eed0" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -59,11 +60,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="document-builder.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="document-builder.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/document-builder.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="119">
               <caret line="211" column="18" lean-forward="false" selection-start-line="211" selection-start-column="18" selection-end-line="211" selection-end-column="18" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="45">
+              <caret line="91" column="25" lean-forward="true" selection-start-line="91" selection-start-column="25" selection-end-line="91" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -95,22 +106,6 @@
             <state relative-caret-position="180">
               <caret line="145" column="79" lean-forward="false" selection-start-line="145" selection-start-column="75" selection-end-line="145" selection-end-column="79" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="postgres_query.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/postgres_query.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1057">
-              <caret line="100" column="0" lean-forward="true" selection-start-line="100" selection-start-column="0" selection-end-line="100" selection-end-column="0" />
-              <folding>
-                <element signature="e#0#11#0" expanded="true" />
-                <marker date="1495202060656" expanded="true" signature="2915:2973" ph="SELECT * FRO... missing_value" />
-                <marker date="1495202060656" expanded="true" signature="2997:3062" ph="SELECT COUNT... missing_value" />
-                <marker date="1495202060656" expanded="true" signature="4572:4609" ph="SELECT DISTI... missing_value" />
-                <marker date="1495202060656" expanded="true" signature="5307:5352" ph="SELECT MIN(m... missing_value" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -207,7 +202,6 @@
         <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/toolbar.js" />
         <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/arrows.js" />
         <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/property-select.js" />
-        <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/aggregator/management/commands/example.py" />
         <option value="$PROJECT_DIR$/bdo_main_app/views.py" />
         <option value="$PROJECT_DIR$/bdo_main_app/mongo_query.py" />
@@ -250,6 +244,7 @@
         <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/chart-builder.js" />
         <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/query-executor.js" />
         <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/document-builder.js" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -1054,13 +1049,6 @@
       <option name="presentableId" value="Default" />
       <updated>1493817479723</updated>
     </task>
-    <task id="LOCAL-00007" summary="Updated example">
-      <created>1493892944818</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1493892944818</updated>
-    </task>
     <task id="LOCAL-00008" summary="Old query designer merged (non-functional)">
       <created>1493899211816</created>
       <option name="number" value="00008" />
@@ -1397,7 +1385,14 @@
       <option name="project" value="LOCAL" />
       <updated>1495811498336</updated>
     </task>
-    <option name="localTasksCounter" value="56" />
+    <task id="LOCAL-00056" summary="Remove workspace (2)">
+      <created>1495811546643</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1495811546644</updated>
+    </task>
+    <option name="localTasksCounter" value="57" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -1432,7 +1427,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Chart-specific data fetch (not completed)" />
     <MESSAGE value="Initially functional dimension-based data fetching in charts" />
     <MESSAGE value="Fixed pagination, playing" />
     <MESSAGE value="Management commands" />
@@ -1457,7 +1451,8 @@
     <MESSAGE value="Minor updates in mongo_query" />
     <MESSAGE value="Changing filter representation, more improvements for mongo" />
     <MESSAGE value="Remove workspace" />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove workspace" />
+    <MESSAGE value="Remove workspace (2)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove workspace (2)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1466,16 +1461,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/bdo_main_app/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="0" lean-forward="true" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-          <folding>
-            <element signature="e#24#63#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/query_designer/urls.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
@@ -1875,6 +1860,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
           <caret line="211" column="18" lean-forward="false" selection-start-line="211" selection-start-column="18" selection-end-line="211" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="91" column="25" lean-forward="true" selection-start-line="91" selection-start-column="25" selection-end-line="91" selection-end-column="25" />
           <folding />
         </state>
       </provider>
