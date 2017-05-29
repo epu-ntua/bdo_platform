@@ -8,8 +8,11 @@ from aggregator.converters.base import *
 class RandomDataConverter(BaseConverter):
     _f = None
 
-    def __init__(self, dimensions, title='Random dataset'):
+    def __init__(self, v_name, dimensions, title=None):
+        self.v_name = v_name
         self.dataset_title = title
+        if self.dataset_title is None:
+            self.dataset_title = 'Random dataset for %s' % v_name
         self.dimension_config = dimensions
 
     @property
@@ -44,7 +47,7 @@ class RandomDataConverter(BaseConverter):
         if not self._variables:
             # rand var
             variable = Variable()
-            variable.name = 'rnd'
+            variable.name = self.v_name
             variable.title = 'Random variable'
             variable.unit = 'rands'
             variable.dimensions = [d.name for d in self.dimensions]

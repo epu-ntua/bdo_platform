@@ -14,6 +14,9 @@ class Dataset(Model):
     description = TextField()
     references = ArrayField(TextField())
 
+    class Meta:
+        ordering = ['-id']
+
     def to_json(self):
         return {
             '_id': str(self.pk),
@@ -81,16 +84,7 @@ class Dimension(BaseVariable):
         try:
             return type_mapping[self.name]
         except KeyError:
-            # max number of int digits
-            n_int = int(math.log10(self.max)) + 1
-
-            # max number of decimal digits
-            try:
-                n_decimal = str(self.step).split('.')[1].rstrip('0').__len__()
-            except IndexError:
-                n_decimal = 0
-
-            return 'numeric(%d,%d)' % (n_int + n_decimal, n_decimal)
+            return 'numeric'
 
 
 class Variable(BaseVariable):

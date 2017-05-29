@@ -315,6 +315,8 @@ class BaseConverter(object):
                     stdout.flush()
                 else:
                     print('completed')
+
+            return agd
         except:
             if agd and type(agd) == AgDataset:
                 agd.delete()
