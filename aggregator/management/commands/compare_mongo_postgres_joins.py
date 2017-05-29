@@ -31,12 +31,20 @@ class Command(BaseCommand):
             metavar="TARGET"
         ),
         make_option(
-            "-n",
+            "-N",
             "--no-joins",
             dest="no_joins",
             action="store_true",
-            help="Skip join queries",
+            help="Skip all join queries",
             metavar="NO_JOINS"
+        ),
+        make_option(
+            "-n",
+            "--no-mongo-joins",
+            dest="no_mongo_joins",
+            action="store_true",
+            help="Skip join queries for mongo",
+            metavar="NO_MONGO_JOINS"
         ),
     )
 
@@ -191,7 +199,10 @@ class Command(BaseCommand):
         return queries
 
     def handle(self, *args, **options):
+        skip_mongo_joins = options['no_mongo_joins'] or False
         skip_joins = options['no_joins'] or False
+        if skip_joins:
+            skip_mongo_joins = True
         v_name = 'rnd_%s' % ''.join([str(random.choice(range(1, 10))) for _ in range(1, 5)])
 
         # call for postgres
@@ -203,7 +214,7 @@ class Command(BaseCommand):
 
         # call for mongo
         md1, m_size, m_time = generate_dataset(target='mongo', variable=v_name + '_1', sizes=options['sizes'], stdout=self.stdout)
-        if not skip_joins:
+        if not skip_mongo_joins:
             md2, _, _ = generate_dataset(target='mongo', variable=v_name + '_2', sizes=options['sizes'], stdout=self.stdout)
         else:
             md2 = None
@@ -254,7 +265,7 @@ class Command(BaseCommand):
 
         # execute queries
         for q in queries:
-            if options['no_joins'] and q['type'] == 'join':
+            if skip_joins and q['type'] == 'join':
                 continue
 
             print('')
@@ -275,6 +286,8 @@ class Command(BaseCommand):
                 traceback.print_exc()
                 print ('\tPostgres failed')
 
+            if skip_mongo_joins and q['type'] == 'join':
+                continue
             try:
                 t1 = time.time()
                 f = get_mongo_db().get_collection(q['mongo']['collection'])
