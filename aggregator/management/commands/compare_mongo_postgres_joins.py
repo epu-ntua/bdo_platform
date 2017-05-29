@@ -60,18 +60,16 @@ class Command(BaseCommand):
                 SELECT * FROM (
                     SELECT <v1a>, <v2a>, <v3a>, value
                     FROM <t1>
-                    WHERE <v1a> >= -9 AND <v1a> <= -8
+                    WHERE <v1a> >= -9.8 AND <v1a> <= -9.6
                 ) AS Q1
                 ORDER BY value
-                LIMIT 1000
                 """,
 
                 'mongo': {
                     'collection': "<c1>",
                     'find': {
-                        'lat': {'$gte': -9, '$lte': -8},
+                        'lat': {'$gte': -9.8, '$lte': -9.6},
                     },
-                    'limit': 1000
                 }
             },
 
@@ -88,7 +86,6 @@ class Command(BaseCommand):
                     JOIN <t2> ON <v1a>=<v1b> AND <v2a>=<v2b> AND <v3a>=<v3b>
                 ) AS Q1
                 ORDER BY difv
-                LIMIT 1000
                 """,
 
                 'mongo': {
@@ -98,8 +95,8 @@ class Command(BaseCommand):
                             "$lookup":
                                 {
                                     "from": "<c2>",
-                                    "localField": "<v3>",
-                                    "foreignField": "<v3>",
+                                    "localField": "<v1>",
+                                    "foreignField": "<v1>",
                                     "as": "c2"
                                 }
                         }, {
@@ -109,6 +106,7 @@ class Command(BaseCommand):
                                 'lat': 1,
                                 'lng': 1,
                                 'time': 1,
+                                'isLatEqual': { "$eq" : [ "$lat", "$c2.lat" ] },
                                 'isLngEqual': { "$eq" : [ "$lng", "$c2.lng" ] },
                                 'isTimeEqual': { "$eq" : [ "$time", "$c2.time" ] },
                                 'diff': {'$subtract': ["$value", "$c2.value"]},
@@ -116,7 +114,6 @@ class Command(BaseCommand):
                         },
                         {"$match": {'isLngEqual': True, 'isTimeEqual': True}},
                         {"$sort": {'diff': 1}},
-                        {"$limit": 1000}
                     ]
                 }
             },
@@ -133,7 +130,6 @@ class Command(BaseCommand):
                     JOIN <t2> ON <v3a>=<v3b>
                 ) AS Q1
                 ORDER BY difv
-                LIMIT 1000
                 """,
 
                 'mongo': {
@@ -158,7 +154,6 @@ class Command(BaseCommand):
                             },
                         },
                         {"$sort": {'diff': 1}},
-                        {"$limit": 1000}
                     ]
                 }
             },
