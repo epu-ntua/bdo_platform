@@ -7,17 +7,18 @@ from aggregator.converters.random_cnv import RandomDataConverter
 from mongo_client import get_mongo_db
 
 
-def generate_dataset(target, variable, sizes, stdout=None):
+def generate_dataset(target, variable, sizes, index=False, stdout=None):
     target_dict = {
         'type': 'postgres',
         'cursor': connection.cursor(),
-        'with_indices': False
+        'with_indices': index
     }
 
     if target == 'mongo':
         target_dict = {
             'type': 'mongo',
             'db': get_mongo_db(),
+            'with_indices': index,
         }
 
     dimensions = {
@@ -76,10 +77,19 @@ class Command(BaseCommand):
             help="Where data should be stored (either `postgres` or `mongo`)",
             metavar="TARGET"
         ),
+        make_option(
+            "-i",
+            "--index",
+            dest="index",
+            action="store_true",
+            help="Add indices",
+            metavar="INDEX"
+        ),
     )
 
     def handle(self, *args, **options):
-        _, items, total_time = generate_dataset(options['target'], options['variable'], options['sizes'], self.stdout)
+        _, items, total_time = generate_dataset(options['target'], options['variable'], options['sizes'],
+                                                index=options['index'] or False, stdout=self.stdout)
 
         print('Type: %s' % options['target'])
         print('Number of items: %d (%s)' % (items, options['sizes']))

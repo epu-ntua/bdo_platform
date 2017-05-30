@@ -46,6 +46,14 @@ class Command(BaseCommand):
             help="Skip join queries for mongo",
             metavar="NO_MONGO_JOINS"
         ),
+        make_option(
+            "-i",
+            "--index",
+            dest="index",
+            action="store_true",
+            help="Add indices",
+            metavar="INDEX"
+        ),
     )
 
     def prepare_queries(self, pg_datasets, mongo_datasets):
@@ -195,22 +203,27 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         skip_mongo_joins = options['no_mongo_joins'] or False
+        index = options['index'] or False
         skip_joins = options['no_joins'] or False
         if skip_joins:
             skip_mongo_joins = True
         v_name = 'rnd_%s' % ''.join([str(random.choice(range(1, 10))) for _ in range(1, 5)])
 
         # call for postgres
-        pd1, p_size, p_time = generate_dataset(target='postgres', variable=v_name + '_1', sizes=options['sizes'], stdout=self.stdout)
+        pd1, p_size, p_time = generate_dataset(target='postgres', variable=v_name + '_1', sizes=options['sizes'],
+                                               index=index, stdout=self.stdout)
         if not skip_joins:
-            pd2, _, _ = generate_dataset(target='postgres', variable=v_name + '_2', sizes=options['sizes'], stdout=self.stdout)
+            pd2, _, _ = generate_dataset(target='postgres', variable=v_name + '_2', sizes=options['sizes'],
+                                         index=index, stdout=self.stdout)
         else:
             pd2 = None
 
         # call for mongo
-        md1, m_size, m_time = generate_dataset(target='mongo', variable=v_name + '_1', sizes=options['sizes'], stdout=self.stdout)
+        md1, m_size, m_time = generate_dataset(target='mongo', variable=v_name + '_1', sizes=options['sizes'],
+                                               index=index, stdout=self.stdout)
         if not skip_mongo_joins:
-            md2, _, _ = generate_dataset(target='mongo', variable=v_name + '_2', sizes=options['sizes'], stdout=self.stdout)
+            md2, _, _ = generate_dataset(target='mongo', variable=v_name + '_2', sizes=options['sizes'],
+                                         index=index, stdout=self.stdout)
         else:
             md2 = None
 
@@ -223,7 +236,8 @@ class Command(BaseCommand):
         print ('\tMongoDB\t\t%.3f sec\t\t%d' % (m_time, m_size))
 
         # print disk usage info
-        m_disk_size = get_mongo_db().command("collstats", v_name + '_1')['size'] / 1024.0 / 1024.0
+        stats = get_mongo_db().command("collstats", v_name + '_1')
+        m_disk_size = (stats['size'] + stats['totalIndexSize']) / 1024.0 / 1024.0
         cur = connection.cursor()
         cur.execute(
             """

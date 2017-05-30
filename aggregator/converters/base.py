@@ -8,6 +8,7 @@ import itertools
 import datetime
 import numpy
 from numpy.ma import MaskedArray
+from pymongo import ASCENDING
 
 from bdo_platform.settings import DATASET_DIR
 from aggregator.models import Dataset as AgDataset, Variable as AgVariable, Dimension as AgDimension
@@ -309,6 +310,11 @@ class BaseConverter(object):
                 if insert_values:
                     insert(insert_values)
                     insert_values = []
+
+                if target['type'] == 'mongo':
+                    if 'with_indices' in target and target['with_indices']:
+                        for d in dimensions:
+                            target['db'][v.name].create_index([(d.name, ASCENDING)])
 
                 if stdout:
                     stdout.write("\r Completed\t\t\t", ending='\n')
