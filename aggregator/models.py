@@ -125,12 +125,14 @@ class Variable(BaseVariable):
         cursor.execute('CREATE TABLE %s (%s);' %
                        (self.data_table_name, ','.join(columns)))
 
-        # add indices
         if with_indices:
-            for column in columns:
-                col_name = column.split(' ')[0]
-                cursor.execute('CREATE INDEX idx_%d_%s ON %s (%s);' %
-                               (self.pk, col_name, self.data_table_name, col_name))
+            self.create_indices(cursor=cursor)
+
+    def create_indices(self, cursor):
+        # add indices
+        for d in self.dimensions.all():
+            cursor.execute('CREATE INDEX idx_%d_%s ON %s (%s);' %
+                           (self.pk, d.data_column_name, self.data_table_name, d.data_column_name))
 
     def delete_data_table(self, cursor):
         # delete indeces

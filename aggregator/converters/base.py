@@ -254,7 +254,7 @@ class BaseConverter(object):
 
                 # create data table for variable
                 if target['type'] == 'postgres':
-                    agv.create_data_table(cursor=target['cursor'], with_indices=target['with_indices'])
+                    agv.create_data_table(cursor=target['cursor'], with_indices=False)
 
                 # add data
                 dim_values = []
@@ -315,6 +315,9 @@ class BaseConverter(object):
                     if 'with_indices' in target and target['with_indices']:
                         for d in dimensions:
                             target['db'][v.name].create_index([(d.name, ASCENDING)])
+                elif target['type'] == 'postgres':
+                    if 'with_indices' in target and target['with_indices']:
+                        agv.create_indices(cursor=target['cursor'])
 
                 if stdout:
                     stdout.write("\r Completed\t\t\t", ending='\n')

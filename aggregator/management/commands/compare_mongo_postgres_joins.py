@@ -81,6 +81,33 @@ class Command(BaseCommand):
                 }
             },
 
+            # paginated select/filter
+            {
+                'title': 'Paginated select/filter',
+                'type': 'filter',
+
+                'postgres':
+                    """
+                    SELECT * FROM (
+                        SELECT <v1a>, <v2a>, <v3a>, value
+                        FROM <t1>
+                        WHERE <v1a> >= -9.8 AND <v1a> <= -9.6
+                    ) AS Q1
+                    ORDER BY value
+                    LIMIT 10000000
+                    OFFSET 20000000
+                    """,
+
+                'mongo': {
+                    'collection': "<c1>",
+                    'find': {
+                        'lat': {'$gte': -9.8, '$lte': -9.6},
+                    },
+                    'limit': 10000000,
+                    'skip': 20000000
+                }
+            },
+
             # strict join
             {
                 'title': 'Value difference in exact location & time',
@@ -304,6 +331,8 @@ class Command(BaseCommand):
                     f = f.find(q['mongo']['find'])
                 if 'aggregates' in q['mongo']:
                     f = f.aggregate(q['mongo']['aggregates'])
+                if 'skip' in q['mongo']:
+                    f = f.limit(q['mongo']['skip'])
                 if 'limit' in q['mongo']:
                     f = f.limit(q['mongo']['limit'])
                 cnt = [x for x in f].__len__()
