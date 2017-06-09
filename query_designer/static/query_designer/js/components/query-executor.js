@@ -182,7 +182,7 @@ QueryExecutor = function(qd) {
         runConfig = $.extend({}, {
             scroll: true,
             callback: undefined,
-            extraFilters: [],
+            extraFilters: undefined,
             variable: undefined,
             dimensionValues: undefined,
             onlyHeaders: false,
@@ -204,7 +204,8 @@ QueryExecutor = function(qd) {
         if (runConfig.extraFilters !== undefined) {
             if (queryDocument.filters === undefined) {
                 queryDocument.filters = runConfig.extraFilters;
-            } else {
+            }
+            else if (runConfig.extraFilters !== undefined) {
                 queryDocument.filters = {
                     "a": JSON.parse(JSON.stringify(queryDocument.filters)),
                     "op": "AND",

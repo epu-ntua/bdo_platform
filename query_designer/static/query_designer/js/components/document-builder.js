@@ -193,8 +193,8 @@ DocumentBuilder = function(qd) {
 
                 console.log(filterStr)
                 filterStr = filterStr
-                    .replace(/\[/, '{')
-                    .replace(/\]/, '}');
+                    .replace(/\[/g, '{')
+                    .replace(/\]/g, '}');
 
                 for (var fId = 0; fId < property.filters.length; fId++) {
                     var f = property.filters[fId];
@@ -203,15 +203,15 @@ DocumentBuilder = function(qd) {
                 }
 
                 filterStr = filterStr
-                    .replace(/\(/, '{')
-                    .replace(/\)/, '}')
-                    .replace(/\s/, '')
-                    .replace(/&&\{/, ', "op": "AND", "b": {')
-                    .replace(/\|\|\{/, ', "op": "OR", "b": {');
+                    .replace(/\(/g, '{')
+                    .replace(/\)/g, '}')
+                    .replace(/\s/g, '')
+                    .replace(/&&\{/g, ', "op": "AND", "b": {')
+                    .replace(/\|\|\{/g, ', "op": "OR", "b": {');
 
-                //if (filterStr.indexOf('{"a"') == 0) {
-                //    filterStr = '{"a": ' + filterStr
-                //}
+                if (property.filters.length > 1) {
+                    filterStr = '{"a":' + filterStr + '}'
+                }
 
                 console.log(filterStr)
                 if (document.filters === undefined) {
@@ -223,6 +223,8 @@ DocumentBuilder = function(qd) {
                         "b": JSON.parse(filterStr)
                     }
                 }
+
+                console.log(document.filters)
             }
         });
     });

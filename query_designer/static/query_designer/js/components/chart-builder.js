@@ -104,7 +104,6 @@ var ChartFilters = function(chartBuilder, filterColumns) {
                 "op": "EQ",
                 "b": value + ''
             };
-
             if (extraFilters === undefined) {
                 extraFilters = fObj
             } else {
