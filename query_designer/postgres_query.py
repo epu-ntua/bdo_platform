@@ -21,6 +21,34 @@ class ResultEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+def operator_to_str(op):
+    return {
+        # comparison
+        'eq': '=',
+        'neq': '!=',
+        'gt': '>',
+        'gte': '>=',
+        'lt': '<',
+        'lte': '<=',
+        # boolean
+        '&&': 'AND',
+        'and': 'AND',
+        '||': 'OR',
+        'or': 'OR',
+        '!': 'NOT',
+        'not': 'NOT',
+    }[op.lower()]
+
+
+def process_filters(filters):
+    # end value
+    if type(filters) in [str, unicode]:
+        return filters
+
+    return '(%s) %s (%s)' % \
+           (process_filters(filters['a']), operator_to_str(filters['op']), process_filters(filters['b']))
+
+
 def execute_query(request):
     # get POST params
     query_document = json.loads(request.POST.get('query'), '')
@@ -68,10 +96,11 @@ def execute_query(request):
     from_clause = 'FROM ' + selects[selects.keys()[0]]['table'] + '\n'
 
     # where
-    where_clause = ' AND '.join(['(%s)' % f for f in query_document['filters']]) \
-        .replace(' && ', ' AND ') \
-        .replace(' || ', ' OR ') \
-        .replace('!', ' NOT ')
+    filters = query_document.get('filters', '')
+    if not filters:
+        where_clause = ''
+    else:
+        where_clause = process_filters(filters)
 
     if where_clause:
         where_clause = 'WHERE ' + where_clause + '\n'
