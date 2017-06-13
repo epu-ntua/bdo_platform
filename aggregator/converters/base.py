@@ -8,6 +8,7 @@ import itertools
 import datetime
 import numpy
 from numpy.ma import MaskedArray
+from numpy.ma.core import MaskedConstant
 from pymongo import ASCENDING
 
 from bdo_platform.settings import DATASET_DIR
@@ -140,11 +141,11 @@ class BaseConverter(object):
             except IndexError:
                 raise ValueError('Could not get value for this combination')
 
-        if str(value) == '--':
+        if type(value) is MaskedConstant:
             return None
 
-        import pdb;
-        pdb.set_trace()
+        if str(value) == '--':
+            return None
 
         return value
 

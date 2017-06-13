@@ -5,6 +5,7 @@ from aggregator.converters.base import *
 
 class NetCDF4Converter(BaseConverter):
     _f = None
+    _datas = {}
 
     def __init__(self, name):
         self.name = name
@@ -179,7 +180,11 @@ class NetCDF4Converter(BaseConverter):
         return self._variables
 
     def data(self, v_name):
-        return self._f.variables[v_name][:]
+        try:
+            return self._datas[v_name]
+        except KeyError:
+            self._datas[v_name] = self._f.variables[v_name][:]
+            return self._datas[v_name]
 
     def normalize(self, dimension, value):
         # time
