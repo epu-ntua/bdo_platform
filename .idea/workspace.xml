@@ -2,10 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d1de3af5-5a60-4e6d-9dea-8b900466eed0" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,11 +23,53 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="mongo_query.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/mongo_query.py">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/bdo_main_app/templates/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-122">
-              <caret line="92" column="18" lean-forward="false" selection-start-line="92" selection-start-column="13" selection-end-line="92" selection-end-column="18" />
+            <state relative-caret-position="463">
+              <caret line="50" column="113" lean-forward="false" selection-start-line="50" selection-start-column="113" selection-end-line="50" selection-end-column="113" />
+              <folding>
+                <element signature="e#309#331#0#HTML" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/query_designer/templates/query_designer/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="506">
+              <caret line="88" column="0" lean-forward="true" selection-start-line="88" selection-start-column="0" selection-end-line="88" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="style.css" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/css/style.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="123">
+              <caret line="30" column="19" lean-forward="true" selection-start-line="30" selection-start-column="19" selection-end-line="30" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="home.css" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/bdo_main_app/static/css/home.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="119">
+              <caret line="7" column="1" lean-forward="true" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/bdo_main_app/views.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="455">
+              <caret line="60" column="37" lean-forward="true" selection-start-line="60" selection-start-column="37" selection-end-line="60" selection-end-column="37" />
               <folding>
                 <element signature="e#24#63#0" expanded="true" />
               </folding>
@@ -37,94 +77,53 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="chart-builder.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="chart-builder.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/chart-builder.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="265">
-              <caret line="118" column="43" lean-forward="false" selection-start-line="118" selection-start-column="43" selection-end-line="118" selection-end-column="43" />
+            <state relative-caret-position="248">
+              <caret line="219" column="0" lean-forward="false" selection-start-line="219" selection-start-column="0" selection-end-line="219" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="query-executor.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/query-executor.js">
+      <file leaf-file-name="base.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/aggregator/converters/base.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="269">
-              <caret line="210" column="47" lean-forward="false" selection-start-line="210" selection-start-column="47" selection-end-line="210" selection-end-column="47" />
+            <state relative-caret-position="302">
+              <caret line="289" column="0" lean-forward="false" selection-start-line="289" selection-start-column="0" selection-end-line="289" selection-end-column="0" />
               <folding>
-                <marker date="1495808249621" expanded="true" signature="2046:2064" ph="..." />
-                <marker date="1495808249621" expanded="true" signature="2720:2752" ph="..." />
+                <marker date="1497359563502" expanded="true" signature="5035:5057" ph="INSERT INTO missing_value... " />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="document-builder.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/document-builder.js">
+      <file leaf-file-name="dataset-select.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/dataset-select.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="211" column="18" lean-forward="false" selection-start-line="211" selection-start-column="18" selection-end-line="211" selection-end-column="18" />
+            <state relative-caret-position="472">
+              <caret line="71" column="41" lean-forward="false" selection-start-line="71" selection-start-column="41" selection-end-line="71" selection-end-column="41" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/.gitignore">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="45">
-              <caret line="91" column="25" lean-forward="true" selection-start-line="91" selection-start-column="25" selection-end-line="91" selection-end-column="25" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="bdo-postgres.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/languages/bdo-postgres.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="14" column="2" lean-forward="true" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="bdo-mongo.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/languages/bdo-mongo.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
-              <caret line="9" column="22" lean-forward="false" selection-start-line="9" selection-start-column="22" selection-end-line="9" selection-end-column="22" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="filters.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/filters.js">
+      <file leaf-file-name="netcdf4.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/aggregator/converters/netcdf4.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="180">
-              <caret line="145" column="79" lean-forward="false" selection-start-line="145" selection-start-column="75" selection-end-line="145" selection-end-column="79" />
+              <caret line="185" column="62" lean-forward="true" selection-start-line="185" selection-start-column="62" selection-end-line="185" selection-end-column="62" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mongo_api.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/mongo_api.py">
+      <file leaf-file-name="colors.css" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/static/css/colors.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="51" column="118" lean-forward="false" selection-start-line="51" selection-start-column="118" selection-end-line="51" selection-end-column="118" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/query_designer/views.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+            <state relative-caret-position="514">
+              <caret line="40" column="1" lean-forward="false" selection-start-line="40" selection-start-column="1" selection-end-line="40" selection-end-column="1" />
               <folding />
             </state>
           </provider>
@@ -136,35 +135,14 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
-        <option value="CSS File" />
         <option value="JavaScript File" />
         <option value="Python Script" />
+        <option value="CSS File" />
       </list>
     </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>onFiltersUpdated</find>
-      <find>Variable</find>
-      <find>_parse_dimension</find>
-      <find>unit =</find>
-      <find>long_name</find>
-      <find>renderC</find>
-      <find>insert</find>
-      <find>[v.name]</find>
-      <find>mongo_serialize</find>
-      <find>MAX_DOCUMENT_SIZE</find>
-      <find>encode_doc</find>
-      <find>mongo_</find>
-      <find>normalize</find>
-      <find>.data</find>
-      <find>total</find>
-      <find>dt</find>
-      <find>get_value</find>
-      <find>def count</find>
-      <find>def normalize</find>
-      <find>import pd</find>
-      <find>headers</find>
       <find>q_time</find>
       <find>pages</find>
       <find>headers =</find>
@@ -174,6 +152,27 @@
       <find>quote</find>
       <find>variable.name</find>
       <find>extraFilters</find>
+      <find>.execute</find>
+      <find>execute</find>
+      <find>set_tr</find>
+      <find>get_coll</find>
+      <find>indices</find>
+      <find>limit</find>
+      <find>with_indices</find>
+      <find>index</find>
+      <find>with_ind</find>
+      <find>process_f</find>
+      <find>getRangeFromData</find>
+      <find>process_filters</find>
+      <find>filters</find>
+      <find>console.</find>
+      <find>.data</find>
+      <find>console.l</find>
+      <find>if limit</find>
+      <find>color:</find>
+      <find>get_value</find>
+      <find>def data</find>
+      <find>datas</find>
     </findStrings>
     <replaceStrings>
       <replace>/static/builder/</replace>
@@ -182,71 +181,6 @@
     <dirStrings>
       <dir>C:\Users\dimitris\Desktop\Projects\BDO\project\bdo_platform\query_designer</dir>
     </dirStrings>
-  </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="master" />
-      </map>
-    </option>
-  </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
-      <list>
-        <option value="$PROJECT_DIR$/query_designer/templates/builder_advanced/index.html" />
-        <option value="$PROJECT_DIR$/query_designer/static/builder/javascripts/resources/querybuilder.js" />
-        <option value="$PROJECT_DIR$/query_designer/static/css/main.css" />
-        <option value="$PROJECT_DIR$/query_designer/templates/query_designer/toolbar.html" />
-        <option value="$PROJECT_DIR$/bdo_platform/urls.py" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/toolbar.js" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/arrows.js" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/property-select.js" />
-        <option value="$PROJECT_DIR$/aggregator/management/commands/example.py" />
-        <option value="$PROJECT_DIR$/bdo_main_app/views.py" />
-        <option value="$PROJECT_DIR$/bdo_main_app/mongo_query.py" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/languages/bdo-postgres.js" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/editor.js" />
-        <option value="$PROJECT_DIR$/bdo_main_app/postgres_query.py" />
-        <option value="$PROJECT_DIR$/bdo_main_app/urls.py" />
-        <option value="$PROJECT_DIR$/query_designer/urls.py" />
-        <option value="$PROJECT_DIR$/templates/base.html" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/qd.js" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/designer-menu.js" />
-        <option value="$PROJECT_DIR$/static/css/style.css" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/query-options.js" />
-        <option value="$PROJECT_DIR$/static/css/material-dashboard.css" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/css/main.css" />
-        <option value="$PROJECT_DIR$/requirements.txt" />
-        <option value="$PROJECT_DIR$/bdo_platform/settings_management/development.py" />
-        <option value="$PROJECT_DIR$/bdo_platform/settings.py" />
-        <option value="$PROJECT_DIR$/query_designer/postgres_api.py" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/dataset-select.js" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/workbench.js" />
-        <option value="$PROJECT_DIR$/query_designer/templates/query_designer/index.html" />
-        <option value="$PROJECT_DIR$/bdo_platform/settings_management/base_settings.py" />
-        <option value="$PROJECT_DIR$/aggregator/models.py" />
-        <option value="$PROJECT_DIR$/aggregator/admin.py" />
-        <option value="$PROJECT_DIR$/bdo_main_app/templates/index.html" />
-        <option value="$PROJECT_DIR$/aggregator/management/commands/load_from_copernicus.py" />
-        <option value="$PROJECT_DIR$/aggregator/management/commands/load_from_nc.py" />
-        <option value="$PROJECT_DIR$/bdo_platform/settings_management/development_dpap.py" />
-        <option value="$PROJECT_DIR$/aggregator/converters/netcdf4.py" />
-        <option value="$PROJECT_DIR$/aggregator/converters/random.py" />
-        <option value="$PROJECT_DIR$/aggregator/converters/random_cnv.py" />
-        <option value="$PROJECT_DIR$/aggregator/converters/base.py" />
-        <option value="$PROJECT_DIR$/aggregator/example.py" />
-        <option value="$PROJECT_DIR$/mongo_client.py" />
-        <option value="$PROJECT_DIR$/query_designer/postgres_query.py" />
-        <option value="$PROJECT_DIR$/query_designer/mongo_query.py" />
-        <option value="$PROJECT_DIR$/query_designer/mongo_api.py" />
-        <option value="$PROJECT_DIR$/query_designer/views.py" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/chart-builder.js" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/query-executor.js" />
-        <option value="$PROJECT_DIR$/query_designer/static/query_designer/js/components/document-builder.js" />
-        <option value="$PROJECT_DIR$/.gitignore" />
-      </list>
-    </option>
   </component>
   <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
   <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
@@ -627,6 +561,28 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="bdo_main_app" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="static" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="css" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bdo_platform" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bdo_platform" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="aggregator" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -714,19 +670,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="nodejs_interpreter_path" value="C:/Program Files/nodejs/node" />
-    <property name="js.eslint.eslintPackage" value="" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
-    <property name="DefaultHtmlFileTemplate" value="HTML File" />
-    <property name="list.type.of.created.stylesheet" value="CSS" />
-  </component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\dimitris\Desktop\Projects\BDO\project\bdo_platform\query_designer" />
-    </key>
   </component>
   <component name="RunManager" selected="Django server.bdo_platform">
     <configuration default="false" name="base" type="PythonConfigurationType" factoryName="Python" temporary="true">
@@ -1042,402 +986,37 @@
     <option name="remove_strategy" value="false" />
   </component>
   <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="d1de3af5-5a60-4e6d-9dea-8b900466eed0" name="Default" comment="" />
-      <created>1493817479723</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1493817479723</updated>
-    </task>
-    <task id="LOCAL-00008" summary="Old query designer merged (non-functional)">
-      <created>1493899211816</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1493899211816</updated>
-    </task>
-    <task id="LOCAL-00009" summary="Basic QD toolbar functionality (choose dataset, search/paginate classes)">
-      <created>1493912461419</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1493912461419</updated>
-    </task>
-    <task id="LOCAL-00010" summary="Adding classes to QD">
-      <created>1493929080556</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1493929080557</updated>
-    </task>
-    <task id="LOCAL-00011" summary="Minor updates">
-      <created>1493929362983</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1493929362983</updated>
-    </task>
-    <task id="LOCAL-00012" summary="Added PyCharm files to gitignore">
-      <created>1493929434419</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1493929434419</updated>
-    </task>
-    <task id="LOCAL-00013" summary="Removed workspace file">
-      <created>1493929509053</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1493929509053</updated>
-    </task>
-    <task id="LOCAL-00014" summary="Adding ability to store to postgres">
-      <created>1494667060259</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1494667060259</updated>
-    </task>
-    <task id="LOCAL-00015" summary="Add data to postgres">
-      <created>1494684915987</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1494684915987</updated>
-    </task>
-    <task id="LOCAL-00016" summary="(Partial) Postgres integration">
-      <created>1494852207920</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1494852207920</updated>
-    </task>
-    <task id="LOCAL-00017" summary="Updated pg query">
-      <created>1494853461373</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1494853461373</updated>
-    </task>
-    <task id="LOCAL-00018" summary="Detect files with unlimited dimensions">
-      <created>1494858309864</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1494858309864</updated>
-    </task>
-    <task id="LOCAL-00019" summary="Formating datetimes, rendering results as a table">
-      <created>1494930404955</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1494930404955</updated>
-    </task>
-    <task id="LOCAL-00020" summary="Added toolbar, map visualization">
-      <created>1494947678972</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1494947678972</updated>
-    </task>
-    <task id="LOCAL-00021" summary="Updated favicon">
-      <created>1494949520391</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1494949520391</updated>
-    </task>
-    <task id="LOCAL-00022" summary="Added query options dialog">
-      <created>1495014530624</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1495014530624</updated>
-    </task>
-    <task id="LOCAL-00023" summary="Implemented pagination">
-      <created>1495017853664</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1495017853664</updated>
-    </task>
-    <task id="LOCAL-00024" summary="Fix in encoder">
-      <created>1495018821557</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1495018821557</updated>
-    </task>
-    <task id="LOCAL-00025" summary="Canvas-based map visualization">
-      <created>1495027246694</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1495027246694</updated>
-    </task>
-    <task id="LOCAL-00026" summary="Improved update logic for map canvas">
-      <created>1495028545549</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1495028545549</updated>
-    </task>
-    <task id="LOCAL-00027" summary="Implemented visualization filters">
-      <created>1495033906171</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1495033906171</updated>
-    </task>
-    <task id="LOCAL-00028" summary="Minor styling updates, execute query on options change">
-      <created>1495034704530</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1495034704530</updated>
-    </task>
-    <task id="LOCAL-00029" summary="Simple play functionality for dimensions">
-      <created>1495097509733</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1495097509733</updated>
-    </task>
-    <task id="LOCAL-00030" summary="Added filters to postgres query">
-      <created>1495139959265</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1495139959265</updated>
-    </task>
-    <task id="LOCAL-00031" summary="Chart-specific data fetch (not completed)">
-      <created>1495177946902</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1495177946902</updated>
-    </task>
-    <task id="LOCAL-00032" summary="Initially functional dimension-based data fetching in charts">
-      <created>1495190300627</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1495190300627</updated>
-    </task>
-    <task id="LOCAL-00033" summary="Fixed pagination, playing">
-      <created>1495197720083</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1495197720083</updated>
-    </task>
-    <task id="LOCAL-00034" summary="Management commands">
-      <created>1495202043795</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1495202043795</updated>
-    </task>
-    <task id="LOCAL-00035" summary="Minor fixes in settings">
-      <created>1495204213708</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1495204213708</updated>
-    </task>
-    <task id="LOCAL-00036" summary="Minor edge case fix">
-      <created>1495205976680</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1495205976680</updated>
-    </task>
-    <task id="LOCAL-00037" summary="Path fixes">
-      <created>1495206382679</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1495206382679</updated>
-    </task>
-    <task id="LOCAL-00038" summary="Minor fix in path settings">
-      <created>1495206684295</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1495206684295</updated>
-    </task>
-    <task id="LOCAL-00039" summary="Loading all datasets by default">
-      <created>1495207093231</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1495207093231</updated>
-    </task>
-    <task id="LOCAL-00040" summary="Added default ordering for variables">
-      <created>1495208479822</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1495208479822</updated>
-    </task>
-    <task id="LOCAL-00041" summary="Minor fix for units">
-      <created>1495214252553</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1495214252553</updated>
-    </task>
-    <task id="LOCAL-00042" summary="Another location fix">
-      <created>1495214778069</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1495214778069</updated>
-    </task>
-    <task id="LOCAL-00043" summary="Fix in qd config">
-      <created>1495215344856</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1495215344856</updated>
-    </task>
-    <task id="LOCAL-00044" summary="Added admin, minor settings fix">
-      <created>1495533414661</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1495533414661</updated>
-    </task>
-    <task id="LOCAL-00045" summary="Improvements in admin">
-      <created>1495533867786</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1495533867786</updated>
-    </task>
-    <task id="LOCAL-00046" summary="Always turn units to lowercase">
-      <created>1495534073627</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1495534073627</updated>
-    </task>
-    <task id="LOCAL-00047" summary="Fix in unit import">
-      <created>1495534169037</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1495534169037</updated>
-    </task>
-    <task id="LOCAL-00048" summary="Basic fixes for nester sample">
-      <created>1495536273964</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1495536273964</updated>
-    </task>
-    <task id="LOCAL-00049" summary="Fallback if visualization is not found">
-      <created>1495536698925</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1495536698925</updated>
-    </task>
-    <task id="LOCAL-00050" summary="Removed theme placeholders from home page">
-      <created>1495537076823</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1495537076823</updated>
-    </task>
-    <task id="LOCAL-00051" summary="Adding mongo support for flat value dicts">
-      <created>1495621524351</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1495621524352</updated>
-    </task>
-    <task id="LOCAL-00052" summary="Progressing with mongo support, random data supplier">
-      <created>1495639623668</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1495639623668</updated>
-    </task>
-    <task id="LOCAL-00053" summary="Minor updates in mongo_query">
-      <created>1495640569520</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1495640569520</updated>
-    </task>
-    <task id="LOCAL-00054" summary="Changing filter representation, more improvements for mongo">
-      <created>1495811346669</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1495811346672</updated>
-    </task>
-    <task id="LOCAL-00055" summary="Remove workspace">
-      <created>1495811498336</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1495811498336</updated>
-    </task>
-    <task id="LOCAL-00056" summary="Remove workspace (2)">
-      <created>1495811546643</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1495811546644</updated>
-    </task>
-    <option name="localTasksCounter" value="57" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="1938" height="1052" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20170757" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21664888" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="manage.py@bdo_platform" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32964602" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32964602" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32929516" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32964602" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33075222" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32964602" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="manage.py@bdo_platform" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32964602" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32964602" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
-  </component>
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="processedProjectFiles" value="true" />
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Initially functional dimension-based data fetching in charts" />
-    <MESSAGE value="Fixed pagination, playing" />
-    <MESSAGE value="Management commands" />
-    <MESSAGE value="Minor fixes in settings" />
-    <MESSAGE value="Minor edge case fix" />
-    <MESSAGE value="Path fixes" />
-    <MESSAGE value="Minor fix in path settings" />
-    <MESSAGE value="Loading all datasets by default" />
-    <MESSAGE value="Added default ordering for variables" />
-    <MESSAGE value="Minor fix for units" />
-    <MESSAGE value="Another location fix" />
     <MESSAGE value="Fix in qd config" />
     <MESSAGE value="Added admin, minor settings fix" />
     <MESSAGE value="Improvements in admin" />
@@ -1452,7 +1031,18 @@
     <MESSAGE value="Changing filter representation, more improvements for mongo" />
     <MESSAGE value="Remove workspace" />
     <MESSAGE value="Remove workspace (2)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove workspace (2)" />
+    <MESSAGE value="Gitignore fix" />
+    <MESSAGE value="Mongo vs. Postgres comparison command" />
+    <MESSAGE value="Added ability to skip mongo joins only" />
+    <MESSAGE value="Removed pagination from comparison script" />
+    <MESSAGE value="Added index tests" />
+    <MESSAGE value="Optimize creating indices after data insert" />
+    <MESSAGE value="Fixing document filters" />
+    <MESSAGE value="Filter processing in postgres" />
+    <MESSAGE value="Fixed mongo filters" />
+    <MESSAGE value="Home page func. mockup" />
+    <MESSAGE value="Speedup in data import" />
+    <option name="LAST_COMMIT_MESSAGE" value="Speedup in data import" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1461,114 +1051,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/query_designer/urls.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="25" lean-forward="false" selection-start-line="3" selection-start-column="25" selection-end-line="3" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bdo_main_app/urls.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/base.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="47" column="45" lean-forward="false" selection-start-line="47" selection-start-column="41" selection-end-line="47" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/property-select.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1819">
-          <caret line="185" column="44" lean-forward="false" selection-start-line="185" selection-start-column="44" selection-end-line="185" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/css/style.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="578">
-          <caret line="34" column="12" lean-forward="false" selection-start-line="34" selection-start-column="12" selection-end-line="34" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/designer-menu.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="482">
-          <caret line="30" column="39" lean-forward="true" selection-start-line="30" selection-start-column="39" selection-end-line="30" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/lib/JavaScriptLanguage.jar!/com/intellij/lang/javascript/index/predefined/EcmaScript.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/query-options.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="129">
-          <caret line="96" column="32" lean-forward="false" selection-start-line="96" selection-start-column="32" selection-end-line="96" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/css/material-dashboard.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="154">
-          <caret line="1505" column="1" lean-forward="false" selection-start-line="1505" selection-start-column="1" selection-end-line="1505" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/css/main.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-481">
-          <caret line="543" column="48" lean-forward="false" selection-start-line="543" selection-start-column="48" selection-end-line="543" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/BDODataAggregatorsEnv/Lib/site-packages/django/db/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="191">
-          <caret line="47" column="0" lean-forward="false" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Python27/Lib/argparse.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-370">
-          <caret line="1262" column="8" lean-forward="false" selection-start-line="1262" selection-start-column="8" selection-end-line="1262" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/requirements.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="17" lean-forward="false" selection-start-line="3" selection-start-column="17" selection-end-line="3" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/BDODataAggregatorsEnv/Lib/site-packages/django/core/management/base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1336">
-          <caret line="373" column="47" lean-forward="false" selection-start-line="373" selection-start-column="47" selection-end-line="373" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bdo_platform/settings_management/development.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="0" lean-forward="true" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/bdo_platform/settings_management/settings-loader.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1588,13 +1070,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="180">
           <caret line="155" column="26" lean-forward="false" selection-start-line="155" selection-start-column="11" selection-end-line="155" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/dataset-select.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="472">
-          <caret line="71" column="41" lean-forward="false" selection-start-line="71" selection-start-column="41" selection-end-line="71" selection-end-column="41" />
         </state>
       </provider>
     </entry>
@@ -1655,159 +1130,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bdo_main_app/templates/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" column="21" lean-forward="true" selection-start-line="11" selection-start-column="21" selection-end-line="11" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/templates/query_designer/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2040">
-          <caret line="120" column="45" lean-forward="false" selection-start-line="120" selection-start-column="45" selection-end-line="120" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/qd.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1530">
           <caret line="90" column="27" lean-forward="false" selection-start-line="90" selection-start-column="27" selection-end-line="90" selection-end-column="27" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/aggregator/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1632">
-          <caret line="103" column="26" lean-forward="false" selection-start-line="103" selection-start-column="26" selection-end-line="103" selection-end-column="26" />
-          <folding>
-            <marker date="1495533550122" expanded="true" signature="3915:3935" ph="CREATE TABLE... missing_value" />
-            <marker date="1495533550122" expanded="true" signature="4540:4561" ph="DROP TABLE I... " />
-            <marker date="1495533550122" expanded="true" signature="4651:4673" ph="SELECT COUNT... missing_value" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/bdo_platform/settings_management/development_dpap.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="33" lean-forward="false" selection-start-line="4" selection-start-column="33" selection-end-line="4" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/aggregator/management/commands/load_from_nc.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-242">
-          <caret line="3" column="0" lean-forward="false" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="32" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/aggregator/converters/netcdf4.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="183" column="17" lean-forward="false" selection-start-line="183" selection-start-column="4" selection-end-line="183" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#37#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/aggregator/converters/random_cnv.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
-          <caret line="49" column="67" lean-forward="false" selection-start-line="49" selection-start-column="67" selection-end-line="49" selection-end-column="67" />
-          <folding>
-            <element signature="e#0#25#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/aggregator/management/commands/load_from_copernicus.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="561">
-          <caret line="43" column="36" lean-forward="true" selection-start-line="43" selection-start-column="22" selection-end-line="43" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#32#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/aggregator/example.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="7" column="25" lean-forward="false" selection-start-line="7" selection-start-column="25" selection-end-line="7" selection-end-column="25" />
-          <folding>
-            <element signature="e#0#32#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/postgres_api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="11" column="16" lean-forward="false" selection-start-line="11" selection-start-column="16" selection-end-line="11" selection-end-column="16" />
-          <folding>
-            <element signature="e#24#63#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/aggregator/converters/base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="540">
-          <caret line="288" column="40" lean-forward="false" selection-start-line="288" selection-start-column="40" selection-end-line="288" selection-end-column="40" />
-          <folding>
-            <marker date="1495639243797" expanded="true" signature="4897:4919" ph="INSERT INTO missing_value... " />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/mongo_client.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="302">
-          <caret line="21" column="27" lean-forward="true" selection-start-line="21" selection-start-column="27" selection-end-line="21" selection-end-column="27" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/postgres_query.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1057">
-          <caret line="100" column="0" lean-forward="true" selection-start-line="100" selection-start-column="0" selection-end-line="100" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-            <marker date="1495202060656" expanded="true" signature="2915:2973" ph="SELECT * FRO... missing_value" />
-            <marker date="1495202060656" expanded="true" signature="2997:3062" ph="SELECT COUNT... missing_value" />
-            <marker date="1495202060656" expanded="true" signature="4572:4609" ph="SELECT DISTI... missing_value" />
-            <marker date="1495202060656" expanded="true" signature="5307:5352" ph="SELECT MIN(m... missing_value" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/mongo_api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="51" column="118" lean-forward="false" selection-start-line="51" selection-start-column="118" selection-end-line="51" selection-end-column="118" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/filters.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="145" column="79" lean-forward="false" selection-start-line="145" selection-start-column="75" selection-end-line="145" selection-end-column="79" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1815,17 +1141,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
           <caret line="14" column="2" lean-forward="true" selection-start-line="14" selection-start-column="2" selection-end-line="14" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/mongo_query.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-122">
-          <caret line="92" column="18" lean-forward="false" selection-start-line="92" selection-start-column="13" selection-end-line="92" selection-end-column="18" />
-          <folding>
-            <element signature="e#24#63#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1833,41 +1148,300 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
           <caret line="9" column="22" lean-forward="false" selection-start-line="9" selection-start-column="22" selection-end-line="9" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="261">
+          <caret line="84" column="4" lean-forward="true" selection-start-line="84" selection-start-column="4" selection-end-line="84" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bdo_platform/settings_management/development_dpap.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="3" column="0" lean-forward="false" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mongo_client.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" column="76" lean-forward="false" selection-start-line="10" selection-start-column="76" selection-end-line="10" selection-end-column="76" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aggregator/management/commands/load_from_copernicus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="11" column="0" lean-forward="true" selection-start-line="0" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aggregator/example.py" />
+    <entry file="file://$PROJECT_DIR$/aggregator/management/commands/load_from_nc.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="442">
+          <caret line="32" column="41" lean-forward="false" selection-start-line="32" selection-start-column="22" selection-end-line="32" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/BDODataAggregatorsEnv/Lib/site-packages/pymongo/database.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6987">
+          <caret line="429" column="33" lean-forward="false" selection-start-line="429" selection-start-column="24" selection-end-line="429" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/BDODataAggregatorsEnv/Lib/site-packages/pymongo/collection.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="290">
+          <caret line="1440" column="8" lean-forward="false" selection-start-line="1440" selection-start-column="8" selection-end-line="1440" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aggregator/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2159">
+          <caret line="134" column="97" lean-forward="false" selection-start-line="134" selection-start-column="97" selection-end-line="134" selection-end-column="97" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aggregator/management/commands/compare_mongo_postgres_joins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="24">
+          <caret line="110" column="25" lean-forward="true" selection-start-line="110" selection-start-column="25" selection-end-line="110" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/query-options.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="96" column="32" lean-forward="false" selection-start-line="96" selection-start-column="32" selection-end-line="96" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/query-executor.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3434">
+          <caret line="202" column="28" lean-forward="false" selection-start-line="202" selection-start-column="28" selection-end-line="202" selection-end-column="28" />
+          <folding>
+            <marker date="1496997478165" expanded="true" signature="2046:2064" ph="..." />
+            <marker date="1496997478165" expanded="true" signature="2720:2752" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/filters.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2907">
+          <caret line="171" column="80" lean-forward="false" selection-start-line="171" selection-start-column="80" selection-end-line="171" selection-end-column="80" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/document-builder.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3536">
+          <caret line="208" column="62" lean-forward="false" selection-start-line="208" selection-start-column="62" selection-end-line="208" selection-end-column="62" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bdo_main_app/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bdo_main_app/apps.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/postgres_api.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="11" column="16" lean-forward="false" selection-start-line="11" selection-start-column="16" selection-end-line="11" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/requirements.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="12" column="0" lean-forward="false" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/postgres_query.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="138" column="51" lean-forward="false" selection-start-line="138" selection-start-column="51" selection-end-line="138" selection-end-column="51" />
+          <folding>
+            <marker date="1496998961377" expanded="true" signature="3472:3530" ph="SELECT * FRO... missing_value" />
+            <marker date="1496998961377" expanded="true" signature="3554:3619" ph="SELECT COUNT... missing_value" />
+            <marker date="1496998961377" expanded="true" signature="5129:5166" ph="SELECT DISTI... missing_value" />
+            <marker date="1496998961377" expanded="true" signature="5864:5909" ph="SELECT MIN(m... missing_value" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="24" lean-forward="true" selection-start-line="14" selection-start-column="24" selection-end-line="14" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/mongo_api.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="728">
+          <caret line="65" column="0" lean-forward="false" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/mongo_query.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="235">
+          <caret line="160" column="72" lean-forward="false" selection-start-line="160" selection-start-column="72" selection-end-line="160" selection-end-column="72" />
+          <folding>
+            <element signature="e#24#63#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aggregator/converters/random_cnv.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="10" column="8" lean-forward="false" selection-start-line="10" selection-start-column="8" selection-end-line="10" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aggregator/management/commands/generate_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="45" column="33" lean-forward="true" selection-start-line="45" selection-start-column="33" selection-end-line="45" selection-end-column="33" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/css/material-dashboard.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="191">
+          <caret line="1236" column="27" lean-forward="false" selection-start-line="1236" selection-start-column="20" selection-end-line="1236" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/base.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="25" column="0" lean-forward="true" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/css/colors.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="514">
+          <caret line="40" column="1" lean-forward="false" selection-start-line="40" selection-start-column="1" selection-end-line="40" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bdo_main_app/static/css/home.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="1" lean-forward="true" selection-start-line="7" selection-start-column="1" selection-end-line="7" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/templates/query_designer/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="506">
+          <caret line="88" column="0" lean-forward="true" selection-start-line="88" selection-start-column="0" selection-end-line="88" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/css/style.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="123">
+          <caret line="30" column="19" lean-forward="true" selection-start-line="30" selection-start-column="19" selection-end-line="30" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bdo_main_app/templates/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="463">
+          <caret line="50" column="113" lean-forward="false" selection-start-line="50" selection-start-column="113" selection-end-line="50" selection-end-column="113" />
+          <folding>
+            <element signature="e#309#331#0#HTML" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bdo_main_app/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="455">
+          <caret line="60" column="37" lean-forward="true" selection-start-line="60" selection-start-column="37" selection-end-line="60" selection-end-column="37" />
+          <folding>
+            <element signature="e#24#63#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aggregator/converters/netcdf4.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="185" column="62" lean-forward="true" selection-start-line="185" selection-start-column="62" selection-end-line="185" selection-end-column="62" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/aggregator/converters/base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="289" column="0" lean-forward="false" selection-start-line="289" selection-start-column="0" selection-end-line="289" selection-end-column="0" />
+          <folding>
+            <marker date="1497359563502" expanded="true" signature="5035:5057" ph="INSERT INTO missing_value... " />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/dataset-select.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="472">
+          <caret line="71" column="41" lean-forward="false" selection-start-line="71" selection-start-column="41" selection-end-line="71" selection-end-column="41" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/chart-builder.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="265">
-          <caret line="118" column="43" lean-forward="false" selection-start-line="118" selection-start-column="43" selection-end-line="118" selection-end-column="43" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/query-executor.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="269">
-          <caret line="210" column="47" lean-forward="false" selection-start-line="210" selection-start-column="47" selection-end-line="210" selection-end-column="47" />
-          <folding>
-            <marker date="1495808249621" expanded="true" signature="2046:2064" ph="..." />
-            <marker date="1495808249621" expanded="true" signature="2720:2752" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/query_designer/static/query_designer/js/components/document-builder.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="211" column="18" lean-forward="false" selection-start-line="211" selection-start-column="18" selection-end-line="211" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="91" column="25" lean-forward="true" selection-start-line="91" selection-start-column="25" selection-end-line="91" selection-end-column="25" />
+        <state relative-caret-position="248">
+          <caret line="219" column="0" lean-forward="false" selection-start-line="219" selection-start-column="0" selection-end-line="219" selection-end-column="0" />
           <folding />
         </state>
       </provider>
