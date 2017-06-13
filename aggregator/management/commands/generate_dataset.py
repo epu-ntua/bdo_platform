@@ -29,7 +29,7 @@ def generate_dataset(target, variable, sizes, index=False, stdout=None):
         },
         'lat': {
             'unit': 'degree_east',
-            'min': -10,
+            'min': -30,
             'step': 0.2
         },
         'lng': {

@@ -100,6 +100,10 @@
                                     latProperty.name += '_latitude';
                                     longProperty.name += '_longitude';
 
+                                    // update titles
+                                    latProperty.title += ' (latitude)';
+                                    longProperty.title += ' (longitude)';
+
                                     // update IDs and types
                                     latProperty.type = property.type.split('(')[1].split(',')[0];
                                     longProperty.type = property.type.split('(')[1].split(',')[1].replace(')', '');

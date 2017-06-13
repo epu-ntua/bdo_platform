@@ -9,6 +9,7 @@ pymongo
 netCDF4==1.2.7
 numpy==1.12.1
 pytz==2017.2
+python-dateutil
 
 # deployment
 dj-config-url==0.1.1
