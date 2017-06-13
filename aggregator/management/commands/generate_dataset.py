@@ -29,7 +29,7 @@ def generate_dataset(target, variable, sizes, index=False, stdout=None):
         },
         'lat': {
             'unit': 'degree_east',
-            'min': -30,
+            'min': -50,
             'step': 0.2
         },
         'lng': {
@@ -45,7 +45,7 @@ def generate_dataset(target, variable, sizes, index=False, stdout=None):
         dimensions[d_name]['max'] = dimensions[d_name]['min'] + (n_of_steps - 1) * dimensions[d_name]['step']
         total_items *= n_of_steps
 
-    cnv = RandomDataConverter(v_name=variable, dimensions=dimensions)
+    cnv = RandomDataConverter(v_name=variable, dimensions=dimensions, title=variable)
     t1 = time.time()
     dataset = cnv.store(target=target_dict, stdout=stdout)
     t2 = time.time()

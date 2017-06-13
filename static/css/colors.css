@@ -1,0 +1,41 @@
+.o-blue {
+    color: #00bcd4;
+}
+
+.o-darkblue {
+    color: #125688;
+}
+
+.o-green {
+    color: #4caf50;
+}
+
+.o-red {
+    color: #f44336;
+}
+
+.o-orange {
+    color: #ff9800;
+}
+
+.o-purple {
+    color: #9c27b0;
+}
+
+.o-gray {
+    color: #777;
+}
+
+.o-darkgray {
+    color: #555;
+}
+
+.bg-color--midnight-blue {
+    background: #2c3e50;
+    color: #fff;
+}
+
+.bg-color--lightgray {
+    background: #eee;
+    color: #555;
+}

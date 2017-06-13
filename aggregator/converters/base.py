@@ -143,6 +143,9 @@ class BaseConverter(object):
         if str(value) == '--':
             return None
 
+        import pdb;
+        pdb.set_trace()
+
         return value
 
     def normalize(self, dimension, value):
@@ -283,6 +286,13 @@ class BaseConverter(object):
                         error = True
 
                     progress += 1
+                    if progress % 1000 == 0:
+                        if stdout:
+                            stdout.write("\r Adding data... %d%%" % (progress * 100 / total), ending='')
+                            stdout.flush()
+                        else:
+                            print('%d%%' % (progress * 100 / total))
+
                     if error or (value is None):
                         continue
 
@@ -298,12 +308,6 @@ class BaseConverter(object):
                         insert_values.append(encode_document(val_doc))
 
                     if len(insert_values) == 1000:
-                        if stdout:
-                            stdout.write("\r Adding data... %d%%" % (progress * 100 / total), ending='')
-                            stdout.flush()
-                        else:
-                            print('%d%%' % (progress * 100 / total))
-
                         insert(insert_values)
                         insert_values = []
 
