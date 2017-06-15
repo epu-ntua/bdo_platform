@@ -1,0 +1,15 @@
+/* Service tile */
+.service-tile .card-content {
+    min-height: 180px;
+}
+
+.service-tile label {
+    min-width: 80px;
+}
+
+.service-tile .moto {
+    margin-left: 10px;
+    padding-left: 10px;
+    border-left: 2px solid #aaa;
+    color: #aaa;
+}

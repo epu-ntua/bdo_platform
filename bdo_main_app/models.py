@@ -7,6 +7,12 @@ from django.utils.timezone import now
 
 SERVICE_TYPES = [
     {
+        'id': 'on_demand',
+        'icon': 'life-saver',
+        'title': 'On demand',
+        'color': 'orange',
+    },
+    {
         'id': 'dataset',
         'icon': 'database',
         'title': 'Dataset',
@@ -32,6 +38,15 @@ def get_service_type_by_id(id):
 
 
 SERVICES = [
+    {
+        'title': 'On Demand Services',
+        'updated': now() - timedelta(hours=2),
+        'service_type': get_service_type_by_id(id='on_demand'),
+        'provider': 'BigDataOcean',
+        'url': '/on-demand/create/',
+        'stats': {'increase': 78, 'period': 'week'},
+        'moto': '<b>Get in touch</b> with <b>BigDataOcean</b> scientists to provide fully customized services for your company <b>today</b>!',
+    },
     {
         'title': 'Vessel positions',
         'label': 'Realtime',

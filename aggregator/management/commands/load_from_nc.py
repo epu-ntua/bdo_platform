@@ -31,13 +31,14 @@ class Command(BaseCommand):
         target_dict = {
             'type': 'postgres',
             'cursor': connection.cursor(),
-            'with_indices': False
+            'with_indices': True
         }
 
         if target == 'mongo':
             target_dict = {
                 'type': 'mongo',
-                'db': get_mongo_db()
+                'db': get_mongo_db(),
+                'with_indices': True
             }
 
         cnv = NetCDF4Converter(options['file'])
