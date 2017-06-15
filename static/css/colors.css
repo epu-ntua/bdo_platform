@@ -22,6 +22,10 @@
     color: #9c27b0 !important;
 }
 
+.o-lightgray {
+    color: #a9afbb !important;
+}
+
 .o-gray {
     color: #777 !important;
 }
@@ -38,4 +42,8 @@
 .bg-color--lightgray {
     background: #eee !important;
     color: #555 !important;
+}
+
+.bg-color--blue {
+    background: #00bcd4 !important;
 }

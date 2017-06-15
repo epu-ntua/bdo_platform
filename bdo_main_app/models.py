@@ -43,7 +43,7 @@ SERVICES = [
         'updated': now() - timedelta(hours=2),
         'service_type': get_service_type_by_id(id='on_demand'),
         'provider': 'BigDataOcean',
-        'url': '/on-demand/create/',
+        'url': '/on-demand/',
         'stats': {'increase': 78, 'period': 'week'},
         'moto': '<b>Get in touch</b> with <b>BigDataOcean</b> scientists to provide fully customized services for your company <b>today</b>!',
     },

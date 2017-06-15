@@ -332,7 +332,7 @@ class BaseConverter(object):
 
             return agd
         except:
-            if agd and type(agd) == AgDataset:
-                agd.delete()
+            # if agd and type(agd) == AgDataset:
+            #     agd.delete()
 
             raise
