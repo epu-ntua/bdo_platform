@@ -374,3 +374,25 @@ body {
     left: 20px;
     top: -5px;
 }
+
+/* Images */
+.img-bg-container {
+    position: relative;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.img-bg-container.contain {
+    background-size: contain;
+}
+
+/* Buttons */
+.btn-group > .btn:not(:last-of-type) {
+    margin-right: 2px;
+}
+
+/* Tables */
+table.table > thead > tr > th {
+    padding: 13px 7px;
+}

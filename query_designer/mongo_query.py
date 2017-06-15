@@ -141,6 +141,7 @@ def execute_query(request):
             "$limit": limit
         })
 
+    # TODO fix only_headers not returning results
     documents = db.get_collection(v['name']).aggregate(aggregates)
 
     if not only_headers:

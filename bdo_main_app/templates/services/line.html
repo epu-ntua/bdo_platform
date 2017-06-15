@@ -1,0 +1,26 @@
+{% load humanize %}
+
+<div class="card margin-vertical-1">
+    <div class="card-content">
+        <div class="row">
+            <div class="col-xs-1 text-center">
+                <i class="fa fa-{{ service.service_type.icon }} o-{{ service.service_type.color }}" title="{{ service.service_type.title }}"
+                    style="margin-top: 8px; font-size: 1.5em;"
+                ></i>
+            </div>
+            <div class="col-xs-5">
+                <h4 style="margin: 8px 0;">{{ service.title }}</h4>
+            </div>
+            <div class="col-xs-2">
+                <a href="#" style="margin: 8px 0; display: block;">{{ service.provider }}</a>
+            </div>
+            <div class="col-xs-2">
+                <a href="#" style="margin: 8px 0; display: block;"><i class="fa fa-search margin-right-2" style="font-size: 1.25em;"></i> Explore data</a>
+            </div>
+            <div class="col-xs-2" style="font-size: 0.8em;">
+                <div><i class="fa fa-clock-o margin-right-2"></i> {{ service.updated|naturaltime }}</div>
+                <div><i class="fa fa-download margin-right-2"></i> 42</div>
+            </div>
+        </div>
+    </div>
+</div>

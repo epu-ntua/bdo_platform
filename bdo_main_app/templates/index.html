@@ -3,7 +3,6 @@
 {% load static %}
 
 {% block css %}
-    <!--  CSS for Demo Purpose, don't include it in your project     -->
     <link href="{% static 'css/home.css' %}" rel="stylesheet" />
 {% endblock %}
 
@@ -11,11 +10,11 @@
 
     <div class="row">
         <div class="text-center">
-            <h1 style="color: #00bcd4">BigDataOcean</h1>
+            <h1 class="o-blue">BigDataOcean</h1>
             <h5>Welcome to the greatest marketplace for maritime data and insights</h5>
-            <form class="home-search-form">
+            <form class="home-search-form" method="GET" action="{% url 'search' %}">
                 <div class="form-group  is-empty">
-                    <input type="text" class="form-control" placeholder="Search datasets, analytics, reports...">
+                    <input type="text" class="form-control" placeholder="Search datasets, analytics, reports..." name="q">
                     <span class="material-input"></span>
                     <button type="submit" class="btn btn-white btn-round btn-just-icon">
                         <i class="material-icons">search</i><div class="ripple-container"></div>
@@ -25,34 +24,9 @@
         </div>
     </div>
     <div class="row">
-        <h4 class="text-center o-blue margin-top-5 margin-bottom-3">Take a look at our most popular cases and get inspired</h4>
+        <h4 class="text-center o-blue" style="margin: 50px 0;">Take a look at our most popular cases and get inspired</h4>
         {% for service in services %}
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header text-center" data-background-color="{{ service.service_type.color }}">
-                        <i class="fa fa-4x fa-{{ service.service_type.icon }}"></i>
-                    </div>
-                    <div class="card-content">
-                        <h4 class="title">
-                            {{ service.title }}
-                            {% if service.label %}<span class="label label-warning">{{ service.label|upper }}</span>{% endif %}
-                        </h4>
-                        <p class="category padding-vertical-1"><span class="text-success"><i class="fa fa-long-arrow-up"></i> {{ service.stats.increase }}</span> users this {{ service.stats.period }}</p>
-                        <p class="category padding-vertical-1">Provider: <a href="#" class="margin-left-3">{{ service.provider }}</a></p>
-                        {% if service.coverage %}
-                            <p class="category padding-vertical-1">Coverage:
-                                {% if service.coverage.time %}<i class="fa fa-clock-o margin-left-3"></i>{{ service.coverage.time }}{% endif %}
-                                {% if service.coverage.location %}<i class="fa fa-map-marker margin-left-3"></i>{{ service.coverage.location }}{% endif %}
-                            </p>
-                        {% endif %}
-                    </div>
-                    <div class="card-footer">
-                        <div class="stats">
-                            <i class="material-icons">access_time</i> updated {{ service.updated|timesince }} ago
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include 'services/tile.html' %}
         {% endfor %}
     </div>
 

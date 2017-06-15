@@ -6,4 +6,8 @@ import bdo_main_app.views as views
 urlpatterns = [
     # home & signup
     url('^$', views.home, name='home'),
+    url('^search/$', views.search, name='search'),
+
+    # datasets
+    url('^datasets/(?P<slug>[\w-]+)/$', views.dataset, name='search'),
 ]

@@ -1,0 +1,26 @@
+<div class="col-md-4">
+    <div class="card">
+        <div class="card-header text-center" data-background-color="{{ service.service_type.color }}">
+            <i class="fa fa-4x fa-{{ service.service_type.icon }}"></i>
+        </div>
+        <div class="card-content">
+            <h4 class="title">
+                <a href="{{ service.url }}">{{ service.title }}</a>
+                {% if service.label %}<span class="label label-warning">{{ service.label|upper }}</span>{% endif %}
+            </h4>
+            <p class="category padding-vertical-1"><span class="text-success"><i class="fa fa-long-arrow-up"></i> {{ service.stats.increase }}</span> users this {{ service.stats.period }}</p>
+            <p class="category padding-vertical-1">Provider: <a href="#" class="margin-left-3">{{ service.provider }}</a></p>
+            {% if service.coverage %}
+                <p class="category padding-vertical-1">Coverage:
+                    {% if service.coverage.time %}<i class="fa fa-clock-o margin-left-3 margin-right-1"></i>{{ service.coverage.time }}{% endif %}
+                    {% if service.coverage.location %}<i class="fa fa-map-marker margin-left-3 margin-right-1"></i>{{ service.coverage.location }}{% endif %}
+                </p>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <div class="stats">
+                <i class="material-icons">access_time</i> updated {{ service.updated|timesince }} ago
+            </div>
+        </div>
+    </div>
+</div>
