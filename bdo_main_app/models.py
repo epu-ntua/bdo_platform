@@ -39,7 +39,7 @@ def get_service_type_by_id(id):
 
 SERVICES = [
     {
-        'title': 'On Demand Services',
+        'title': 'On Demand Data & Services',
         'updated': now() - timedelta(hours=2),
         'service_type': get_service_type_by_id(id='on_demand'),
         'provider': 'BigDataOcean',

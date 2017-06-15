@@ -9,5 +9,8 @@ urlpatterns = [
     url('^search/$', views.search, name='search'),
 
     # datasets
-    url('^datasets/(?P<slug>[\w-]+)/$', views.dataset, name='search'),
+    url('^datasets/(?P<slug>[\w-]+)/$', views.dataset, name='dataset-details'),
+
+    # on demand
+    url('^on-demand/create/$', views.on_demand_request, name='on-demand-request'),
 ]

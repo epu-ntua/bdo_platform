@@ -396,3 +396,13 @@ body {
 table.table > thead > tr > th {
     padding: 13px 7px;
 }
+
+/* Forms */
+.full-width {
+    width: 100% !important;
+}
+
+label.section-label {
+    font-weight: 600;
+    font-size: 1.2em;
+}

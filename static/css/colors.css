@@ -1,41 +1,41 @@
 .o-blue {
-    color: #00bcd4;
+    color: #00bcd4 !important;
 }
 
 .o-darkblue {
-    color: #125688;
+    color: #125688 !important;
 }
 
 .o-green {
-    color: #4caf50;
+    color: #4caf50 !important;
 }
 
 .o-red {
-    color: #f44336;
+    color: #f44336 !important;
 }
 
 .o-orange {
-    color: #ff9800;
+    color: #ff9800 !important;
 }
 
 .o-purple {
-    color: #9c27b0;
+    color: #9c27b0 !important;
 }
 
 .o-gray {
-    color: #777;
+    color: #777 !important;
 }
 
 .o-darkgray {
-    color: #555;
+    color: #555 !important;
 }
 
 .bg-color--midnight-blue {
-    background: #2c3e50;
-    color: #fff;
+    background: #2c3e50 !important;
+    color: #fff !important;
 }
 
 .bg-color--lightgray {
-    background: #eee;
-    color: #555;
+    background: #eee !important;
+    color: #555 !important;
 }

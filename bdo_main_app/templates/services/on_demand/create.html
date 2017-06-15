@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-push-3 col-md-6 col-sm-12">
+            <div class="card"><div class="card-content">
+            <h1 class="o-blue" style="font-size: 3em;">On Demand Data and Services</h1>
+
+            <form class="form">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="section-label o-blue">Service description</label>
+                            <div class="form-group label-floating is-empty">
+                                <label class="control-label"> Please provide a short description of the expected service and what data you need.</label>
+                                <textarea class="form-control full-width" rows="4"></textarea>
+                            <span class="material-input"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group label-floating is-empty">
+                            <label class="control-label">Keywords (optional, will help BigDataOcean analysts find your request faster)</label>
+                            <input type="text" class="form-control full-width">
+                            <span class="material-input"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="section-label o-blue">Pricing</label>
+                            <div class="form-group label-floating is-empty">
+                                <label class="control-label">Please enter the maximum budget you're willing to pay for this service (€)</label>
+                                <input type="text" class="form-control full-width">
+                            <span class="material-input"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="section-label o-blue">Contact details</label>
+                            <div class="row">
+                                <div class="col-xs-6">
+                                    <div class="form-group label-floating is-empty">
+                                        <label class="control-label"> Name</label>
+                                        <input type="text" class="form-control full-width">
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6">
+                                    <div class="form-group label-floating is-empty">
+                                        <label class="control-label"> Email</label>
+                                        <input type="email" class="form-control full-width">
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-12">
+                        <button type="submit" class="btn btn-success">Submit request</button>
+                    </div>
+                </div>
+            </form>
+        </div></div>
+        </div>
+    </div>
+{% endblock %}
