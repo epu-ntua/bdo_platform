@@ -406,3 +406,17 @@ label.section-label {
     font-weight: 600;
     font-size: 1.2em;
 }
+
+/* Slider */
+.slider-container {
+    padding: 40px;
+}
+
+.slider-container > .slider {
+    background: none;
+}
+
+.slider-container .slick-prev:before,
+.slider-container .slick-next:before {
+    color: black;
+}
