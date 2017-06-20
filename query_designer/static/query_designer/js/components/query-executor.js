@@ -219,6 +219,11 @@ QueryExecutor = function(qd) {
             queryDocument.offset = undefined;
         }
 
+        if (runConfig.pagination) {
+            queryDocument.limit = runConfig.pagination.limit;
+            queryDocument.offset = runConfig.pagination.offset;
+        }
+
         if (queryDocument !== undefined) {
             query = that.qd.config.language.parser(queryDocument).getQuery();
         }

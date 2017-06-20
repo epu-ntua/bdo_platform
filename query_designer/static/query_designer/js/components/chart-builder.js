@@ -91,8 +91,11 @@ var ChartFilters = function(chartBuilder, filterColumns) {
     };
 
     /* Responsible to return only data that should be shown according to current filters */
-    this.getFilteredResults = function(callback) {
+    this.getFilteredResults = function(callback, visualizationFilters) {
         var extraFilters = undefined;
+        visualizationFilters = visualizationFilters || [];
+
+        // add filters from visualizations
         $.each(that.filterColumns, function(idx, filter) {
             var value = filter.values[filter.activeFilterIdx];
             if (filter.quote !== undefined) {
@@ -115,6 +118,20 @@ var ChartFilters = function(chartBuilder, filterColumns) {
             }
         });
 
+        // add visualization drilldowns
+        $.each(visualizationFilters, function(idx, fObj) {
+            if (extraFilters === undefined) {
+                extraFilters = fObj
+            } else {
+                extraFilters = {
+                    "a": JSON.parse(JSON.stringify(extraFilters)),
+                    "op": "AND",
+                    "b": fObj
+                }
+            }
+        });
+
+        // execute the query
         that.chartBuilder.qd.queryExecutor.run({
             noPagination: true,
             extraFilters: extraFilters,
@@ -239,7 +256,8 @@ ChartBuilder = function(qd, destSelector, headers) {
             onHeadersLoaded = undefined,
             onFiltersUpdateStarted = undefined,
             onChartCreated = undefined,
-            onFiltersUpdated = undefined;
+            onFiltersUpdated = undefined,
+            defaultVisualizationFilters = [];
 
         // find variable(s)
         var variables = [];
@@ -289,7 +307,7 @@ ChartBuilder = function(qd, destSelector, headers) {
 
             var redrawCanvas = function(map) {
                 var zl = map.zoomLevel(),
-                    rad = zl * 0.175;
+                    rad = zl == 1?zl * 2:(zl <= 3?zl:zl*0.5);
 
                 var vRange = that.headers[variable.idx].range;
                 $.each(results, function(idx, r) {
@@ -298,7 +316,7 @@ ChartBuilder = function(qd, destSelector, headers) {
 
                     mapCtx.beginPath();
                     mapCtx.fillStyle = that.util.getColorForPercentage((v - vRange.min) / vRange.max);
-                    mapCtx.arc(loc.x + zl, loc.y, rad, 0, 2 * Math.PI);
+                    mapCtx.arc(loc.x, loc.y, rad, 0, 2 * Math.PI);
                     mapCtx.fill();
                 });
             };
@@ -343,13 +361,67 @@ ChartBuilder = function(qd, destSelector, headers) {
             onChartCreated = function() {
                 var map = that.ui.chart;
 
+                var getGranularity = function() {
+                    var granularity = 2.0;
+
+                    /* calculate granularity based on zoom level */
+                    for (var i=2; i<=map.zoomLevel(); i++) {
+                        granularity /= 2.0
+                    }
+
+                    return Math.max(granularity, 0.1);
+                };
+
                 map.addListener("positionChanged", function() {
                     var updateId = Date.now();
                     updateRequests.push(updateId);
                     clearCanvas();
 
-                    setTimeout(function() {if (updateRequests[updateRequests.length - 1] === updateId) {updateRequests = []; clearCanvas(); redrawCanvas(map)}}, 400);
+                    setTimeout(function() {
+                        if (updateRequests[updateRequests.length - 1] === updateId) {
+                            var zl = map.zoomLevel(),
+                                info = map.getDevInfo(),
+                                rect = {
+                                    lat: {
+                                        min: info.zoomLatitude - 90 / zl,
+                                        max: info.zoomLatitude + 90 / zl
+                                    },
+                                    lng: {
+                                        min: info.zoomLongitude - 180 / (zl * 0.75),
+                                        max: info.zoomLongitude + 180 / (zl * 0.75)
+                                    }
+                                };
+
+                            if (results === undefined) {
+                                clearCanvas();
+                                redrawCanvas(map);
+
+                                return
+                            }
+
+                            // update default visualization filters
+                            defaultVisualizationFilters[0].b = getGranularity();
+                            defaultVisualizationFilters[1].b = getGranularity();
+
+                            that.filters.getFilteredResults(function(res) {
+                                results = res;
+                                updateRequests = [];
+                                clearCanvas();
+                                redrawCanvas(map);
+                            }, [
+                                {"a": headers[coordinateCols.latIdx].name, "op": "gte", "b": rect.lat.min},
+                                {"a": headers[coordinateCols.latIdx].name, "op": "lte", "b": rect.lat.max},
+                                {"a": headers[coordinateCols.lngIdx].name, "op": "gte", "b": rect.lng.min},
+                                {"a": headers[coordinateCols.lngIdx].name, "op": "lte", "b": rect.lng.max},
+                                {"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()},
+                                {"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()}
+                            ]);
+                        }
+                    }, 400);
                 });
+
+                defaultVisualizationFilters.push({"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()});
+                defaultVisualizationFilters.push({"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()});
             };
 
             onFiltersUpdateStarted = function() {
@@ -365,7 +437,7 @@ ChartBuilder = function(qd, destSelector, headers) {
                     lngRange = that.getRangeFromData(results, coordinateCols.lngIdx);
 
                 // calculate default zoom level
-                var latDiff = Math.abs(latRange.max - latRange.min),
+                /*var latDiff = Math.abs(latRange.max - latRange.min),
                     lngDiff = Math.abs(lngRange.max - lngRange.min),
                     maxDiff = latDiff;
                 if (maxDiff < lngDiff) {
@@ -382,7 +454,7 @@ ChartBuilder = function(qd, destSelector, headers) {
                     map.dataProvider.zoomLatitude =  (latRange.min + latRange.max) / 2;
                     map.dataProvider.zoomLongitude = (lngRange.min + lngRange.max) / 2;
                     map.validateData();
-                }
+                }*/
 
                 // at start, draw canvas
                 clearCanvas();
@@ -400,15 +472,14 @@ ChartBuilder = function(qd, destSelector, headers) {
         }
 
         /* Default - inform user no visualization was found */
-
-
         return {
             nonVisualizedDimensions: nonVisualizedDimensions,
             variable: variable,
             onHeadersLoaded: onHeadersLoaded,
             onChartCreated: onChartCreated,
             onFiltersUpdateStarted: onFiltersUpdateStarted,
-            onFiltersUpdated: onFiltersUpdated
+            onFiltersUpdated: onFiltersUpdated,
+            defaultVisualizationFilters: defaultVisualizationFilters
         }
     };
 
@@ -454,7 +525,7 @@ ChartBuilder = function(qd, destSelector, headers) {
                     options.afterRedraw();
                 }
             });
-        });
+        }, that.directives.defaultVisualizationFilters);
     };
 
     // base rendering

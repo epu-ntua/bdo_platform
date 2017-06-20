@@ -30,6 +30,8 @@ def operator_to_str(op):
         'gte': '>=',
         'lt': '<',
         'lte': '<=',
+        'mod': '%',
+
         # boolean
         '&&': 'AND',
         'and': 'AND',
@@ -42,11 +44,16 @@ def operator_to_str(op):
 
 def process_filters(filters):
     # end value
-    if type(filters) in [str, unicode]:
+    if type(filters) in [str, unicode, int, float]:
         return filters
 
-    return '(%s) %s (%s)' % \
+    result = '(%s) %s (%s)' % \
            (process_filters(filters['a']), operator_to_str(filters['op']), process_filters(filters['b']))
+
+    if filters['op'].lower() == 'mod':
+        result += ' = 0'
+
+    return result
 
 
 def execute_query(request):
@@ -103,7 +110,7 @@ def execute_query(request):
         where_clause = process_filters(filters)
 
     if where_clause:
-        where_clause = 'WHERE ' + where_clause + '\n'
+        where_clause = 'WHERE ' + where_clause + ' \n'
 
     # offset & limit
     offset_clause = ''
@@ -171,10 +178,15 @@ def execute_query(request):
     # include dimension values if requested
     for d_name in dimension_values:
         hdx, header = [hi for hi in enumerate(headers) if hi[1]['name'] == d_name][0]
+        header['values'] = Dimension.objects.get(pk=selects[d_name]['column'].split('_')[-1]).values
+        """
         q_col_values = 'SELECT DISTINCT(%s) FROM %s ORDER BY %s' % \
             (selects[d_name]['column'], selects[d_name]['table'], selects[d_name]['column'])
 
+        print q_col_values
+        td = time.time()
         cursor.execute(q_col_values)
+        print '%s --> %d' % (d_name, int((time.time() - td) * 1000))
         header['values'] = []
         h_type = header_sql_types[hdx]
         for row in cursor.fetchall():
@@ -183,6 +195,7 @@ def execute_query(request):
                 header['values'].append(float(v))
             else:
                 header['values'].append(v)
+        """
 
     # include variable ranges if requested
     if variable:

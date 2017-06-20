@@ -7,6 +7,8 @@ from django.db import connection
 
 import math
 
+from netCDF4._netCDF4 import num2date
+
 
 class Dataset(Model):
     title = TextField()
@@ -85,6 +87,47 @@ class Dimension(BaseVariable):
             return type_mapping[self.name]
         except KeyError:
             return 'numeric'
+
+    def get_values_from_db(self):
+        q_col_values = 'SELECT DISTINCT(%s) FROM %s ORDER BY %s' % \
+                       (self.data_column_name, self.variable.data_table_name, self.data_column_name)
+
+        cursor = connection.cursor()
+        cursor.execute(q_col_values)
+        values = []
+        for row in cursor.fetchall():
+            v = row[0]
+            if (self.sql_type == 'numeric' or self.sql_type.startswith('numeric(')) and type(v) in [str, unicode]:
+                values.append(float(v))
+            else:
+                values.append(v)
+
+        return values
+
+    def normalize(self, value):
+        if self.unit and \
+                (self.unit.startswith('days since ') or
+                     self.unit.startswith('hours since ') or
+                     self.unit.startswith('minutes since ') or
+                     self.unit.startswith('seconds since ') or
+                     self.unit.startswith('milliseconds since ')
+                 ):
+            return num2date(value, units=self.unit, calendar=u'gregorian')
+
+        return value
+
+    @property
+    def values(self):
+        if self.min is None or self.max is None or self.step is None:
+            return self.get_values_from_db()
+
+        result = []
+        v = self.min
+        while v <= self.max:
+            result.append(self.normalize(v))
+            v += self.step
+
+        return result
 
 
 class Variable(BaseVariable):
