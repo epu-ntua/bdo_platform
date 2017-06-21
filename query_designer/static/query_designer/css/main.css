@@ -1035,3 +1035,7 @@ body.qd-body {
     font-size: 20px;
     margin: 0 25px 0 5px;
 }
+
+#query-results--visualization a[href="http://www.amcharts.com/javascript-maps/"] {
+    display: none !important
+}

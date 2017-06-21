@@ -158,6 +158,30 @@ var ChartFilters = function(chartBuilder, filterColumns) {
 };
 
 
+ChartLegend = function(legendValues) {
+    var that = this;
+
+    this.ui = {
+        $elem: undefined,
+
+        render: function() {
+            if (this.$elem === undefined) {
+                this.$elem = $('<div />')
+            }
+
+            this.$elem.empty();
+            $.each(legendValues, function(idx, legendValues) {
+
+            });
+        }
+    };
+
+    this.ui.render();
+
+    return this
+};
+
+
 ChartBuilder = function(qd, destSelector, headers) {
     var that = this;
     this.qd = qd;
@@ -337,17 +361,41 @@ ChartBuilder = function(qd, destSelector, headers) {
             };
 
             var redrawCanvas = function(map) {
-                var zl = map.zoomLevel(),
-                    rad = zl == 1?zl * 2:(zl <= 3?zl:zl*0.5);
+                var vDistribution = that.headers[variable.idx].distribution,
+                    latStep = 9999999,
+                    lngStep = 9999999;
 
-                var vDistribution = that.headers[variable.idx].distribution;
+                /* Find "typical" distance between two different points */
+                var p1 = results[0];
+                $.each(results, function(idx, r) {
+                    if (idx !== 0) {
+                        if (r[coordinateCols.latIdx] != p1[coordinateCols.latIdx]) {
+                            latStep = Math.min(Math.abs(r[coordinateCols.latIdx] - p1[coordinateCols.latIdx]) * 1.1, latStep);
+                        }
+
+                        if (r[coordinateCols.lngIdx] != p1[coordinateCols.lngIdx]) {
+                            lngStep = Math.min(Math.abs(r[coordinateCols.lngIdx] - p1[coordinateCols.lngIdx]) * 1.1, lngStep);
+                        }
+                    }
+                });
+
+                // update datapoint counter
+                $('#query-visualization--container')
+                    .parent()
+                    .find('> .datapoint-counter')
+                    .text(results.length.toLocaleString() + ' datapoints');
+
+                // redraw
                 $.each(results, function(idx, r) {
                     var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
+                        compLoc = map.coordinatesToStageXY(r[coordinateCols.lngIdx] + lngStep, r[coordinateCols.latIdx] + latStep),
+                        difX = compLoc.x - loc.x,
+                        difY = compLoc.y - loc.y,
                         v = r[variable.idx];
 
                     mapCtx.beginPath();
                     mapCtx.fillStyle = that.util.getColorFromDistribution(vDistribution, v);
-                    mapCtx.arc(loc.x, loc.y, rad, 0, 2 * Math.PI);
+                    mapCtx.rect(loc.x - difX / 2.0, loc.y - difY / 2.0, difX, difY);
                     mapCtx.fill();
                 });
             };
@@ -369,6 +417,15 @@ ChartBuilder = function(qd, destSelector, headers) {
 
                 // append map canvas
                 $c.parent().append($mapCanvas);
+
+                // add datapoint counter
+                $c.parent().append($('<div />')
+                    .addClass('datapoint-counter')
+                    .css('position', 'absolute')
+                    .css('right', '20px')
+                    .css('top', '67px')
+                    .css('color', '#aaa')
+                );
 
                 that.chartConfig = {
                     "type": "map",
@@ -393,14 +450,14 @@ ChartBuilder = function(qd, destSelector, headers) {
                 var map = that.ui.chart;
 
                 var getGranularity = function() {
-                    var granularity = 2.0;
+                    var granularity = Math.min(headers[coordinateCols.latIdx].step * 8 || 2.0, 2.0);
 
                     /* calculate granularity based on zoom level */
                     for (var i=2; i<=map.zoomLevel(); i++) {
                         granularity /= 2.0
                     }
 
-                    return Math.max(granularity, 0.1);
+                    return Math.max(granularity, headers[coordinateCols.latIdx].step || 0.01);
                 };
 
                 map.addListener("positionChanged", function() {
@@ -438,7 +495,7 @@ ChartBuilder = function(qd, destSelector, headers) {
                                 results = res;
                                 updateRequests = [];
                                 clearCanvas();
-                                redrawCanvas(map);
+                                redrawCanvas(map, getGranularity());
                             }, [
                                 {"a": headers[coordinateCols.latIdx].name, "op": "gte", "b": rect.lat.min},
                                 {"a": headers[coordinateCols.latIdx].name, "op": "lte", "b": rect.lat.max},

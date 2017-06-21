@@ -80,12 +80,14 @@ def execute_query(request):
             column_name = dimension.data_column_name
             column_unit = dimension.unit
             column_axis = dimension.axis
+            column_step = dimension.step
             sql_type = dimension.sql_type
 
         else:
             column_name = 'value'
             column_unit = 'VALUE'
             column_axis = None
+            column_step = None
             sql_type = 'double precision'
 
         header_sql_types.append(sql_type)
@@ -94,6 +96,7 @@ def execute_query(request):
             'title': s['title'],
             'name': s['name'],
             'unit': column_unit,
+            'step': column_step,
             'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
             'axis': column_axis,
         })
