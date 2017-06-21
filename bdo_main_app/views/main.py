@@ -5,13 +5,13 @@ from datetime import timedelta
 from django.shortcuts import render
 from django.utils.timezone import now
 
-from bdo_main_app.models import SERVICES
+from bdo_main_app.models import EXPOSED_SERVICES
 
 
 def home(request):
     return render(request, 'index.html', {
         'sidebar_active': 'products',
-        'services': SERVICES
+        'services': EXPOSED_SERVICES
     })
 
 
@@ -20,7 +20,7 @@ def search(request):
         'sidebar_active': 'products',
         'q': request.GET.get('q', ''),
         'facets': [],
-        'results': SERVICES,
+        'results': EXPOSED_SERVICES,
     })
 
 

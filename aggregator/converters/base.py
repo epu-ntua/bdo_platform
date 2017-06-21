@@ -321,6 +321,10 @@ class BaseConverter(object):
                         for d in dimensions:
                             target['db'][v.name].create_index([(d.name, ASCENDING)])
                 elif target['type'] == 'postgres':
+                    # update value distributions
+                    agv.update_distribution(cursor=target['cursor'])
+
+                    # create indices
                     if 'with_indices' in target and target['with_indices']:
                         agv.create_indices(cursor=target['cursor'])
 

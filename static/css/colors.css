@@ -47,3 +47,7 @@
 .bg-color--blue {
     background: #00bcd4 !important;
 }
+
+.bg-color--gray {
+    background: #777 !important;
+}

@@ -138,6 +138,9 @@ class Variable(BaseVariable):
     cell_methods = ArrayField(TextField())
     type_of_analysis = TextField(blank=True, null=True, default=None)
 
+    # {min, 10%, 25%, 50%, 75%, 90%, max}
+    distribution = ArrayField(FloatField(), size=7, blank=True, null=True, default=None)
+
     def __unicode__(self):
         return u'%s' % self.title
 
@@ -188,6 +191,20 @@ class Variable(BaseVariable):
     def count_values(self, cursor):
         cursor.execute('SELECT COUNT (*) FROM %s;' % self.data_table_name)
         return cursor.fetchone()[0]
+
+    def update_distribution(self, cursor):
+        cursor.execute("""
+            SELECT
+                MIN(value),
+                MAX(value),
+                percentile_cont(array[0.1, 0.25, 0.5, 0.75, 0.9])
+                    within group (order by value)
+            FROM %s
+        """ % self.data_table_name)
+
+        res = cursor.fetchone()
+        self.distribution = [res[0]] + res[2] + [res[1]]
+        self.save()
 
 
 # on variable delete, cleanup

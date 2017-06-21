@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue">Create a new analysis</h1>
+            <h5>What type of analysis do you want to create?</h5>
+            <form class="home-search-form" method="GET">
+                <div class="form-group  is-empty">
+                    <input type="text" class="form-control" name="q" autocomplete="off">
+                    <span class="material-input"></span>
+                    <button type="submit" class="btn btn-white btn-round btn-just-icon">
+                        <i class="material-icons">search</i><div class="ripple-container"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        {% for analysis in base_analytics %}
+            {% with service=analysis skip_icon=True show_price=True link_select=True %}
+                {% include 'services/tile.html' %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block js %}
+	<script src="{% static 'js/basic-analytics/pick-base-analysis.js' %}"></script>
+{% endblock %}

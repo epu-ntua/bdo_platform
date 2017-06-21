@@ -14,4 +14,7 @@ urlpatterns = [
     # on demand
     url('^on-demand/$', views.on_demand_search, name='on-demand'),
     url('^on-demand/create/$', views.on_demand_create, name='on-demand-create'),
+
+    # base analytics
+    url('^analytics/create/$', views.pick_base_analysis, name='basic-analytics-pick-base-analysis'),
 ]

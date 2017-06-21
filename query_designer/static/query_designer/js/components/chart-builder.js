@@ -165,14 +165,13 @@ ChartBuilder = function(qd, destSelector, headers) {
     this.chartConfig = undefined;
 
     this.util = {
-        getColorForPercentage: function(pct) {
+        getRGBForPercentage: function(pct, percentColors) {
             if (pct === undefined) {
                 return 'green';
             }
 
-            var percentColors = [
+            percentColors = percentColors || [
                 { pct: 0.0, color: { r: 0xff, g: 0x00, b: 0 } },
-                { pct: 0.5, color: { r: 0xff, g: 0xff, b: 0 } },
                 { pct: 1.0, color: { r: 0x00, g: 0xff, b: 0 } }];
 
             for (var i = 1; i < percentColors.length - 1; i++) {
@@ -186,12 +185,44 @@ ChartBuilder = function(qd, destSelector, headers) {
             var rangePct = (pct - lower.pct) / range;
             var pctLower = 1 - rangePct;
             var pctUpper = rangePct;
-            var color = {
+            return {
                 r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
                 g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
                 b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
             };
-            return 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
+        },
+
+        RGBToHex: function(rgbColor) {
+            return 'rgb(' + [rgbColor.r, rgbColor.g, rgbColor.b].join(',') + ')'
+        },
+
+        getColorForPercentage: function(pct) {
+            return this.RGBToHex( this.getRGBForPercentage(pct) );
+        },
+
+        getColorFromDistribution: function(distribution, v) {
+            var colors = [
+                this.getRGBForPercentage(0),
+                this.getRGBForPercentage(0.10),
+                this.getRGBForPercentage(0.25),
+                this.getRGBForPercentage(0.50),
+                this.getRGBForPercentage(0.75),
+                this.getRGBForPercentage(0.90),
+                this.getRGBForPercentage(1)
+            ];
+
+            // find the correct distribution segment & interpolate there
+            for (var i=0; i<distribution.length - 1; i++) {
+                if ((v >= distribution[i]) && (v < distribution[i + 1])) {
+                    var perc = (v -  distribution[i]) / (distribution[i + 1] - distribution[i]);
+                    return this.RGBToHex( this.getRGBForPercentage(perc, [
+                        { pct: 0.0, color: colors[i] },
+                        { pct: 1.0, color: colors[i + 1] }
+                    ]) );
+                }
+            }
+
+            return 'green'
         }
     };
 
@@ -309,13 +340,13 @@ ChartBuilder = function(qd, destSelector, headers) {
                 var zl = map.zoomLevel(),
                     rad = zl == 1?zl * 2:(zl <= 3?zl:zl*0.5);
 
-                var vRange = that.headers[variable.idx].range;
+                var vDistribution = that.headers[variable.idx].distribution;
                 $.each(results, function(idx, r) {
                     var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
                         v = r[variable.idx];
 
                     mapCtx.beginPath();
-                    mapCtx.fillStyle = that.util.getColorForPercentage((v - vRange.min) / vRange.max);
+                    mapCtx.fillStyle = that.util.getColorFromDistribution(vDistribution, v);
                     mapCtx.arc(loc.x, loc.y, rad, 0, 2 * Math.PI);
                     mapCtx.fill();
                 });

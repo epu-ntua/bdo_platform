@@ -200,16 +200,7 @@ def execute_query(request):
     # include variable ranges if requested
     if variable:
         vdx, v = [vi for vi in enumerate(headers) if vi[1]['name'] == variable][0]
-        v_col_name = selects[variable]['column']
-        q_var_values = 'SELECT MIN(%s) as minv, MAX(%s) as maxv FROM %s' % \
-                       (v_col_name, v_col_name, selects[variable]['table'])
-
-        cursor.execute(q_var_values)
-        res = cursor.fetchone()
-        v['range'] = {
-            'min': res[0],
-            'max': res[1],
-        }
+        v['distribution'] = Variable.objects.get(pk=selects[variable]['table'].split('_')[-1]).distribution
 
     if not only_headers:
         # monitor query duration
