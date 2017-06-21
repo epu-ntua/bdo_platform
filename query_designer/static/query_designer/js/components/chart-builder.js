@@ -95,6 +95,12 @@ var ChartFilters = function(chartBuilder, filterColumns) {
         var extraFilters = undefined;
         visualizationFilters = visualizationFilters || [];
 
+        // update datapoint counter
+        $('#query-visualization--container')
+            .parent()
+            .find('> .datapoint-counter')
+            .html('<i class="fa fa-spin fa-spinner"></i> Loading visualization data');
+
         // add filters from visualizations
         $.each(that.filterColumns, function(idx, filter) {
             var value = filter.values[filter.activeFilterIdx];
@@ -158,7 +164,10 @@ var ChartFilters = function(chartBuilder, filterColumns) {
 };
 
 
-ChartLegend = function(legendValues) {
+ChartLegend = function(title, unit, legendValues) {
+    /* Generates a legend given an array of legend value entries
+    * {color, min, max}
+    * */
     var that = this;
 
     this.ui = {
@@ -167,12 +176,34 @@ ChartLegend = function(legendValues) {
         render: function() {
             if (this.$elem === undefined) {
                 this.$elem = $('<div />')
+                    .addClass('visualization-legend');
             }
 
             this.$elem.empty();
-            $.each(legendValues, function(idx, legendValues) {
 
+            // add title
+            this.$elem.append($('<h5 />')
+                .addClass('o-blue')
+                .text(title + ((unit !== title)?' (' + unit + ')':''))
+            );
+
+            // add legend
+            var $contents = $('<div />')
+                .addClass('visualization-legend--contents');
+
+            $.each(legendValues, function(idx, legendValue) {
+                $contents.append($('<div />')
+                    .addClass('visualization-legend--item')
+                    .append($('<div />')
+                        .css('background', legendValue.color)
+                    )
+                    .append($('<span />')
+                        .text(legendValue.min + ' - ' + legendValue.max)
+                    )
+                );
             });
+
+            this.$elem.append($contents);
         }
     };
 
@@ -271,8 +302,25 @@ ChartBuilder = function(qd, destSelector, headers) {
             if (that.chartConfig !== undefined) {
                 this.chart = AmCharts.makeChart(this.containerId, that.chartConfig);
             } else {
-                $('#query-visualization--container').append($('<p>').text('Data can\'t be visualized'));
+                this.$elem.append($('<p>').text('Data can\'t be visualized'));
             }
+
+            // add legend
+            var v = that.headers[that.directives.variable.idx],
+                legendValues = [],
+                ps = [0.00, 0.10, 0.25, 0.5, 0.75, 0.90, 1.00];
+
+            $.each(ps, function(idx, p) {
+                if ((idx > 0) && (idx < ps.length - 1)) {
+                    legendValues.push({
+                        min: v.distribution[idx],
+                        max: v.distribution[idx + 1],
+                        color: that.util.getColorForPercentage(p)
+                    });
+                }
+            });
+            var legend = new ChartLegend(v.title, v.unit, legendValues);
+            this.$elem.parent().append(legend.ui.$elem);
 
             // run post-add action to add data
             that.directives.onChartCreated();
@@ -317,7 +365,7 @@ ChartBuilder = function(qd, destSelector, headers) {
         // find variable(s)
         var variables = [];
         $.each(headers, function(idx, col) {
-            if (col.unit === 'VALUE') {
+            if (col.isVariable) {
                 variables.push({
                     idx: idx,
                     name: col.name
@@ -395,6 +443,7 @@ ChartBuilder = function(qd, destSelector, headers) {
 
                     mapCtx.beginPath();
                     mapCtx.fillStyle = that.util.getColorFromDistribution(vDistribution, v);
+                    // mapCtx.arc(loc.x, loc.y, difX, 0, 2 * Math.PI);
                     mapCtx.rect(loc.x - difX / 2.0, loc.y - difY / 2.0, difX, difY);
                     mapCtx.fill();
                 });
@@ -501,15 +550,15 @@ ChartBuilder = function(qd, destSelector, headers) {
                                 {"a": headers[coordinateCols.latIdx].name, "op": "lte", "b": rect.lat.max},
                                 {"a": headers[coordinateCols.lngIdx].name, "op": "gte", "b": rect.lng.min},
                                 {"a": headers[coordinateCols.lngIdx].name, "op": "lte", "b": rect.lng.max},
-                                {"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()},
-                                {"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()}
+                                {"a": {"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()}, "op": "lte", b: headers[coordinateCols.latIdx].step},
+                                {"a": {"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()}, "op": "lte", b: headers[coordinateCols.latIdx].step}
                             ]);
                         }
                     }, 400);
                 });
 
-                defaultVisualizationFilters.push({"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()});
-                defaultVisualizationFilters.push({"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()});
+                defaultVisualizationFilters.push({"a": {"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()}, "op": "lte", b: headers[coordinateCols.latIdx].step});
+                defaultVisualizationFilters.push({"a": {"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()}, "op": "lte", b: headers[coordinateCols.latIdx].step});
             };
 
             onFiltersUpdateStarted = function() {

@@ -47,13 +47,8 @@ def process_filters(filters):
     if type(filters) in [str, unicode, int, float]:
         return filters
 
-    result = '(%s) %s (%s)' % \
+    return '(%s) %s (%s)' % \
            (process_filters(filters['a']), operator_to_str(filters['op']), process_filters(filters['b']))
-
-    if filters['op'].lower() == 'mod':
-        result += ' = 0'
-
-    return result
 
 
 def execute_query(request):
@@ -85,7 +80,7 @@ def execute_query(request):
 
         else:
             column_name = 'value'
-            column_unit = 'VALUE'
+            column_unit = v_obj.unit
             column_axis = None
             column_step = None
             sql_type = 'double precision'
@@ -98,6 +93,7 @@ def execute_query(request):
             'unit': column_unit,
             'step': column_step,
             'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
+            'isVariable': s['type'] == 'VALUE',
             'axis': column_axis,
         })
     select_clause = 'SELECT ' + ','.join('%s AS %s' % (selects[name]['column'], name) for name in selects.keys()) + '\n'

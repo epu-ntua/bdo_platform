@@ -1039,3 +1039,15 @@ body.qd-body {
 #query-results--visualization a[href="http://www.amcharts.com/javascript-maps/"] {
     display: none !important
 }
+
+.visualization-legend .visualization-legend--item > div {
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    margin-right: 20px;
+    box-shadow: 0 0 5px #aaa;
+}
+
+.visualization-legend .visualization-legend--item > span {
+    vertical-align: top;
+}
