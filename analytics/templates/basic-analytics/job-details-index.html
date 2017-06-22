@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="text-center">
+                <h1 class="o-blue">Analysis status</h1>
+                {% if job.status == 'PENDING' or job.status == 'STARTED' %}
+                    <div class="checkbox" id="email-notify-checkbox">
+                        <label>
+                            <input type="checkbox" name="notify_by_email" checked="checked">
+                            Notify me by email when the analysis finishes
+                        </label>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 col-md-push-3 col-xs-12">
+            <div class="card">
+                <div class="card-content">
+                    <div id="job-analysis--details">
+                        {% include 'basic-analytics/job-details.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+	<script src="{% static 'basic-analytics/job-details.js' %}"></script>
+{% endblock %}

@@ -9,3 +9,6 @@ DATABASES = {
 
 ALLOWED_HOSTS = ["*"]
 DEBUG = False
+
+# heroku server URL
+SERVER_URL = 'https://bigdataocea.herokuapp.com'

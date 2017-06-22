@@ -1,8 +1,5 @@
 from bdo_platform.settings_management.base_settings import *
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -13,3 +10,6 @@ DATABASES = {
 # No emails should be sent on development
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 CONTACT_EMAIL = 'dipapaspyros@gmail.com'
+
+# dev server URL
+SERVER_URL = 'http://127.0.0.1:8000'

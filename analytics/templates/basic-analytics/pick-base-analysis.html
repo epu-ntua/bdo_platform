@@ -26,7 +26,7 @@
     </div>
     <div class="row">
         {% for analysis in base_analytics %}
-            {% with service=analysis skip_icon=True show_price=True link_select=True %}
+            {% with service=analysis skip_icon=True show_price=True link_select=analysis.parametrize_url %}
                 {% include 'services/tile.html' %}
             {% endwith %}
         {% endfor %}
@@ -35,5 +35,5 @@
 {% endblock %}
 
 {% block js %}
-	<script src="{% static 'js/basic-analytics/pick-base-analysis.js' %}"></script>
+	<script src="{% static 'basic-analytics/pick-base-analysis.js' %}"></script>
 {% endblock %}

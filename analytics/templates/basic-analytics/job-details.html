@@ -1,0 +1,61 @@
+{% if job.status == 'FINISHED' %}
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="btn-group">
+                <a href="#" class="btn btn-success">Provide as a service</a>
+                <a href="#" class="btn btn-info">Create a report</a>
+                <a href="/analytics/create/" class="btn btn-info">Start a new analysis</a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<table class="table">
+    <tr>
+        <td style="width: 120px">Analysis type</td>
+        <td>{{ base_analysis.title }}</td>
+    </tr>
+    <tr>
+        <td class="status-cell" data-status="{{ job.status }}">Status</td>
+        <td>{{ job.get_status_display }}</td>
+    </tr>
+    <tr>
+        <td>Submitted</td>
+        <td>{{ job.submitted }}</td>
+    </tr>
+    <tr>
+        <td>Started</td>
+        <td>{{ job.started }}</td>
+    </tr>
+    {% if job.finished %}
+        <tr>
+            <td>Finished</td>
+            <td>{{ job.finished }}</td>
+        </tr>
+    {% endif %}
+    <tr>
+        <td>{% if job.arguments %}<b>{% endif %}Arguments{% if job.arguments %}</b>{% endif %}</td>
+        <td>{% if not job.arguments %}No arguments{% endif %}</td>
+    </tr>
+    {% for arg_name, value in job.arguments.items %}
+        <tr>
+            <td>{{ arg_name }}</td>
+            <td>{{ value }}</td>
+        </tr>
+    {% endfor %}
+    {% if job.results %}
+        <tr>
+            <td><b>Results</b></td>
+            <td></td>
+        </tr>
+        {% for res_name, value in job.results.items %}
+            <tr>
+                <td>{{ res_name }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+    {% endif %}
+</table>
+
+
+

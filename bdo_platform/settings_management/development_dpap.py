@@ -21,3 +21,6 @@ COPERNICUS_SERVER = {
     'USERNAME': 'dpapaspyros',
     'PASSWORD': 'DimitriosCMEMS2017',
 }
+
+# spark submit
+SPARK_SUBMIT_PATH = 'C:\\opt\\spark\\spark-2.1.1-bin-hadoop2.7\\bin\\spark-submit.cmd'

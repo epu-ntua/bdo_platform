@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue">Configure analysis</h1>
+            <h5>Please provide the following information that is required for this analysis to run</h5>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 col-md-push-3 col-xs-12">
+            <div class="card">
+                <div class="card-content">
+                    <form class="form" method="POST">
+                        {% csrf_token %}
+                        {% for argument in base_analysis.arguments %}
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div class="form-group label-floating is-empty">
+                                        <label class="control-label">{{ argument.title }}</label>
+                                        <input type="text" class="form-control full-width" name="{{ argument.name }}" autocomplete="off" value="{{ argument.default }}">
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p>This analysis requires no further input.</p>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary btn-success">Run analysis</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

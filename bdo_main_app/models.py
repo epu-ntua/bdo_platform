@@ -33,7 +33,7 @@ def get_service_type_by_id(id):
     return [st for st in SERVICE_TYPES if st['id'] == id][0]
 
 
-def get_base_analysis(pk, title, moto=''):
+def get_base_analysis(pk, title, moto='', args=None):
     base_analysis = {
         'pk': int(pk),
         'title': title,
@@ -42,6 +42,8 @@ def get_base_analysis(pk, title, moto=''):
         'extendable': True,
         'hide_from_search': True,
         'url': '/datasets/test-dataset/',
+        'parametrize_url': '/analytics/create/%d/config/' % int(pk),
+        'arguments': args if args else [],
         'provider': 'BigDataOcean',
         'stats': {'increase': randint(5, 50), 'period': 'week'}
     }
@@ -122,7 +124,12 @@ SERVICES = [
     get_base_analysis(7, 'Clustering',
                       'Automatically categorises data into various groups (<em>clusters</em>)'),
     get_base_analysis(8, 'Regression',
-                      'Helps you identify possible correlations between two or more different variables'),
+                      'Helps you identify possible correlations between two or more different variables',
+                      args=[
+                          {'name': 'query', 'type': 'QUERY', 'title': 'Query', 'default': '(SELECT * FROM (SELECT * FROM (SELECT vped_304.value AS i0_value, vtm10_303.value AS i1_value, time_914 AS i0_time,latitude_915 AS i0_location_latitude,longitude_916 AS i0_location_longitude FROM vped_304 JOIN vtm10_303 ON time_911 = time_914 AND latitude_915 = latitude_912 AND longitude_916 = longitude_913) AS SQ1) AS Q1 LIMIT 10000) AS Q'},
+                          {'name': 'x', 'type': 'COLUMN', 'title': 'Variable X', 'default': 'i0_value'},
+                          {'name': 'y', 'type': 'COLUMN', 'title': 'Variable Y', 'default': 'i1_value'},
+                      ]),
     get_base_analysis(9, 'Decision tree',
                       'Generates a tree model that will be used for classifying ' +
                       'your data base on a <em>training</em> dataset'),

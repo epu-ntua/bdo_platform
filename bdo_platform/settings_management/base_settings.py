@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'bdo_main_app',
     'aggregator',
     'query_designer',
+    'analytics',
 ]
 
 MIDDLEWARE_CLASSES = [
