@@ -10,7 +10,9 @@ try:
     from pyspark.ml.regression import LinearRegression
     from pyspark.mllib.regression import LabeledPoint
     from pyspark.ml.linalg import Vectors
+
     import psycopg2
+    import math
 
     spark = SparkSession \
         .builder \
@@ -23,13 +25,31 @@ try:
     cur.execute("""SELECT * from analytics_jobinstance WHERE id = %d""" % job_id)
     row = cur.fetchone()
     args = row[6]
+
+    print('-------------------------------------------')
+    # define query
+    query = '(SELECT * FROM (SELECT row_number() OVER () AS spark_part_id, ' \
+            '* FROM (%s) AS SPARKQ2) AS SPARKQ1) AS SPARKQ0' \
+            % args['query']
+
+    # first count to partition
+    cur.execute('SELECT COUNT(*) FROM (%s) AS SPARKQ2' % args['query'])
+    row = cur.fetchone()
+    cnt = row[0]
+    print(cnt)
+
+    # close custom connection
     conn.close()
 
-    print(args)
+    # get data
     dataframe2 = spark.read.format('jdbc').options(
         url="jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234",
         database='bdo_platform',
-        dbtable=args['query']
+        dbtable=query,
+        partitionColumn="spark_part_id",
+        lowerBound="1",
+        upperBound=str(cnt),
+        numPartitions=str(math.ceil(cnt / 10000.0))
     ).load()
 
     dataframe2.cache()  # Cache data for faster reuse

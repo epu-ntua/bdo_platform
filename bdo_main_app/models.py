@@ -126,7 +126,7 @@ SERVICES = [
     get_base_analysis(8, 'Regression',
                       'Helps you identify possible correlations between two or more different variables',
                       args=[
-                          {'name': 'query', 'type': 'QUERY', 'title': 'Query', 'default': '(SELECT * FROM (SELECT * FROM (SELECT vped_304.value AS i0_value, vtm10_303.value AS i1_value, time_914 AS i0_time,latitude_915 AS i0_location_latitude,longitude_916 AS i0_location_longitude FROM vped_304 JOIN vtm10_303 ON time_911 = time_914 AND latitude_915 = latitude_912 AND longitude_916 = longitude_913) AS SQ1) AS Q1 LIMIT 10000) AS Q'},
+                          {'name': 'query', 'type': 'QUERY', 'title': 'Query', 'default': 'SELECT * FROM (SELECT vped_304.value AS i0_value, vtm10_303.value AS i1_value, time_914 AS i0_time,latitude_915 AS i0_location_latitude,longitude_916 AS i0_location_longitude FROM vped_304 JOIN vtm10_303 ON time_911 = time_914 AND latitude_915 = latitude_912 AND longitude_916 = longitude_913) AS SQ1'},
                           {'name': 'x', 'type': 'COLUMN', 'title': 'Variable X', 'default': 'i0_value'},
                           {'name': 'y', 'type': 'COLUMN', 'title': 'Variable Y', 'default': 'i1_value'},
                       ]),
