@@ -24,54 +24,6 @@ DocumentBuilder = function(qd) {
             .toLowerCase();
     };
 
-    // forges foreign key relationships
-    this.createConnections = function(w) {
-        var conns = qd.arrows.connections;
-
-        for (var j=0; j<conns.length; j++) {
-            var fn = conns[j].f.split('_')[2],
-                tn = conns[j].t.split('_')[2]; //3rd part is the number #class_instance_1
-
-            this.propertyNames[tn][conns[j].tp] = this.propertyNames[fn][conns[j].fp];
-            w.instances[tn].selected_properties[conns[j].tp].name = this.propertyNames[tn][conns[j].tp];
-
-            /*if (w.instances[tn].selected_properties[conns[j].tp].uri == "VALUE") {
-                // if already renamed by another FK, we have a conflict we'll have to revisit
-                if (typeof(this.instanceNames[tn].from) !== "undefined") {
-                    this.conflicts.push({
-                        instance: tn,
-                        conflicting: {
-                            instance: fn,
-                            property: conns[j].fp
-                        }
-                    });
-                } else {
-                    this.instanceNames[tn].val = this.propertyNames[tn][conns[j].tp];
-                    this.instanceNames[tn].from = {instance: tn, property: conns[j].tp};
-                }
-            }*/
-        }
-    };
-
-    // resolve naming conflicts
-    this.resolveConflicts = function(w) {
-        for (var k=0; k<this.conflicts.length; k++) {
-            var c = this.conflicts[k];
-
-            var prevPropertyName = this.propertyNames[c.conflicting.instance][c.conflicting.property];
-            var replaceWith = this.instanceNames[c.instance].val;
-            for (var i=0; i<w.instances.length; i++) {
-                for (var j=0; j<this.propertyNames[i].length; j++) {
-                    if (this.propertyNames[i][j] == prevPropertyName) {
-                        this.propertyNames[i][j] = replaceWith;
-                    }
-                }
-            }
-        }
-
-        this.conflicts = [];
-    };
-
     // find the names of the properties & forge foreign keys
     this.findPropertyNames = function(w, i) {
         var inst = w.instances[i];
@@ -140,13 +92,6 @@ DocumentBuilder = function(qd) {
         for (var i=0; i<w.instances.length; i++) {
             this.findPropertyNames(w, i);
         }
-
-        // setup foreign key names
-        this.conflicts = [];
-        this.createConnections(w);
-
-        // resolve any naming issue conflicts
-        this.resolveConflicts(w);
     };
 
     this.getDocument = function() {
@@ -174,11 +119,20 @@ DocumentBuilder = function(qd) {
         };
 
         $.each(instance.selected_properties, function(jdx, property) {
-            fromObject.select.push({
+            var prop = {
                 type: property.uri,
                 name: that.propertyNames[idx][jdx],
                 title: property.label
-            })
+            };
+
+            $.each(qd.arrows.connections, function(_, connection) {
+                var tIdx = Number(connection.t.split('_')[2]);
+                if ((tIdx === idx) && (jdx === connection.tp)) {
+                    prop.joined = that.propertyNames[connection.f.split('_')[2]][connection.fp];
+                }
+            });
+
+            fromObject.select.push(prop);
         });
 
         document.from.push(fromObject);
@@ -191,7 +145,6 @@ DocumentBuilder = function(qd) {
                 var filterStr = property.filter_prototype,
                     name = that.propertyNames[idx][jdx];
 
-                console.log(filterStr)
                 filterStr = filterStr
                     .replace(/\[/g, '{')
                     .replace(/\]/g, '}');
@@ -213,7 +166,6 @@ DocumentBuilder = function(qd) {
                     filterStr = '{"a":' + filterStr + '}'
                 }
 
-                console.log(filterStr)
                 if (document.filters === undefined) {
                     document.filters = JSON.parse(filterStr);
                 } else {
@@ -223,8 +175,6 @@ DocumentBuilder = function(qd) {
                         "b": JSON.parse(filterStr)
                     }
                 }
-
-                console.log(document.filters)
             }
         });
     });

@@ -389,7 +389,7 @@ ChartBuilder = function(qd, destSelector, headers) {
         if ((coordinateCols.latIdx !== undefined) && (coordinateCols.lngIdx !== undefined)) {
             // we'll visualize map coords & value, all other dimensions are filterable
             $.each(headers, function(idx, col) {
-                if ((coordinateCols.latIdx !== idx) && (coordinateCols.lngIdx !== idx) && (variable.idx !== idx)) {
+                if ((coordinateCols.latIdx !== idx) && (coordinateCols.lngIdx !== idx) && (variable.idx !== idx) && (!col.isVariable)) {
                     nonVisualizedDimensions.push({
                         idx: idx,
                         name: col.name,

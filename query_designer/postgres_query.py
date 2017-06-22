@@ -67,39 +67,72 @@ def execute_query(request):
     headers = []
     header_sql_types = []
 
-    v_obj = Variable.objects.get(pk=query_document['from'][0]['type'])
-    for s in query_document['from'][0]['select']:
-        sql_type = None
-        if s['type'] != 'VALUE':
-            dimension = Dimension.objects.get(pk=s['type'])
-            column_name = dimension.data_column_name
-            column_unit = dimension.unit
-            column_axis = dimension.axis
-            column_step = dimension.step
-            sql_type = dimension.sql_type
+    aliases = []
+    for _from in query_document['from']:
+        v_obj = Variable.objects.get(pk=_from['type'])
 
-        else:
-            column_name = 'value'
-            column_unit = v_obj.unit
-            column_axis = None
-            column_step = None
-            sql_type = 'double precision'
+        for s in _from['select']:
+            sql_type = None
+            if s['type'] != 'VALUE':
+                dimension = Dimension.objects.get(pk=s['type'])
+                column_name = dimension.data_column_name
+                column_unit = dimension.unit
+                column_axis = dimension.axis
+                column_step = dimension.step
+                sql_type = dimension.sql_type
 
-        header_sql_types.append(sql_type)
-        selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
-        headers.append({
-            'title': s['title'],
-            'name': s['name'],
-            'unit': column_unit,
-            'step': column_step,
-            'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
-            'isVariable': s['type'] == 'VALUE',
-            'axis': column_axis,
-        })
-    select_clause = 'SELECT ' + ','.join('%s AS %s' % (selects[name]['column'], name) for name in selects.keys()) + '\n'
+            else:
+                column_name = 'value'
+                column_unit = v_obj.unit
+                column_axis = None
+                column_step = None
+                sql_type = 'double precision'
+
+            selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
+
+            if 'joined' not in s:
+                header_sql_types.append(sql_type)
+                headers.append({
+                    'title': s['title'],
+                    'name': s['name'],
+                    'unit': column_unit,
+                    'step': column_step,
+                    'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
+                    'isVariable': s['type'] == 'VALUE',
+                    'axis': column_axis,
+                })
+
+                # add fields to select clause
+                aliases.append('%s.%s AS %s' % (v_obj.data_table_name, selects[s['name']]['column'], s['name']))
+
+    # select
+    select_clause = 'SELECT ' + ','.join(aliases) + '\n'
 
     # from
     from_clause = 'FROM ' + selects[selects.keys()[0]]['table'] + '\n'
+
+    # join
+    join_clause = ''
+    for _from in query_document['from'][1:]:
+        joins = []
+        for s in _from['select']:
+            if 'joined' in s:
+                if s['name'].endswith('location_latitude'):
+                    js = [
+                        (s['name'], s['joined'] + '_latitude'),
+                        (s['name'].replace('_latitude', '_longitude'), s['joined'] + '_longitude'),
+                    ]
+                elif s['name'].endswith('location_longitude'):
+                    js = []
+                else:
+                    js = [(s['name'], s['joined'])]
+
+                for j in js:
+                    joins.append('%s=%s' %
+                                 (selects[j[0]]['column'],
+                                  selects[j[1]]['column']))
+
+        join_clause += 'JOIN %s ON %s\n' % (selects[_from['select'][0]['name']]['table'], ' AND '.join(joins))
 
     # where
     filters = query_document.get('filters', '')
@@ -125,8 +158,8 @@ def execute_query(request):
         limit_clause = 'LIMIT %d\n' % limit
 
     # organize into subquery
-    subquery = 'SELECT * FROM (' + select_clause + from_clause + ') AS SQ1\n'
-    subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + ') AS SQ1\n'
+    subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + ') AS SQ1\n'
+    subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + ') AS SQ1\n'
 
     # generate query
     q = subquery + \
