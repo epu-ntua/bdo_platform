@@ -28,9 +28,9 @@ try:
 
     print('-------------------------------------------')
     # define query
-    query = '(SELECT * FROM (SELECT row_number() OVER () AS spark_part_id, ' \
+    query = '(SELECT (%s, %s) FROM (SELECT row_number() OVER () AS spark_part_id, ' \
             '* FROM (%s) AS SPARKQ2) AS SPARKQ1) AS SPARKQ0' \
-            % args['query']
+            % (args['x'], args['y'], args['query'])
 
     # first count to partition
     cur.execute('SELECT COUNT(*) FROM (%s) AS SPARKQ2' % args['query'])
