@@ -1,31 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import json
-import decimal
-import datetime
-import time
-from collections import OrderedDict
-
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 
-from query_designer.models import Query
+from query_designer.models import *
 from django.http import JsonResponse
 
 from aggregator.models import *
-
-
-class ResultEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, decimal.Decimal):
-            return float(obj)
-        elif isinstance(obj, float):
-            return float(obj)
-        elif isinstance(obj, datetime.datetime):
-            return obj.isoformat()
-
-        return json.JSONEncoder.default(self, obj)
 
 
 def execute_query(request, pk=None):

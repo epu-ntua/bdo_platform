@@ -121,8 +121,8 @@ QueryExecutor = function(qd) {
             }
 
             // show message
-            this.$elem.find('li.page-info > span').text('Page ' + that.qd.options.pages.current +
-                                                        ' of ' + that.qd.options.pages.total);
+            this.$elem.find('li.page-info > span').text('Page ' + that.qd.options.pages.current.toLocaleString() +
+                                                        ' of ' + that.qd.options.pages.total.toLocaleString());
         },
 
         renderResults: function(data, updateChart, scroll) {
@@ -191,7 +191,8 @@ QueryExecutor = function(qd) {
         }, runConfig);
 
         var config = that.qd.config.endpoint,
-            requestParameters = jQuery.extend(true, {}, config.defaultParameters);
+            requestParameters = jQuery.extend(true, {}, config.defaultParameters),
+            runEndpointSuffix = '';
 
         // add query property
         var query = that.qd.workbench.query,
@@ -212,6 +213,8 @@ QueryExecutor = function(qd) {
                     "b": runConfig.extraFilters
                 }
             }
+        } else if (!runConfig.onlyHeaders) {
+            runEndpointSuffix = (that.qd.storage.pk !== undefined?that.qd.storage.pk + '/':'');
         }
 
         if (runConfig.noPagination) {
@@ -245,7 +248,7 @@ QueryExecutor = function(qd) {
         }
 
         $.ajax({
-            'url': config.url,
+            'url': config.url + runEndpointSuffix,
             'type': config.type,
             'data': requestParameters,
             success: function(data) {

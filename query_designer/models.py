@@ -1,14 +1,29 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
+import decimal
+import datetime
+import time
 from collections import OrderedDict
 
-import time
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.db.models import *
 
 from aggregator.models import *
+
+
+class ResultEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            return float(obj)
+        elif isinstance(obj, float):
+            return float(obj)
+        elif isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+
+        return json.JSONEncoder.default(self, obj)
 
 
 class Query(Model):
@@ -20,6 +35,9 @@ class Query(Model):
     design = JSONField(blank=True, null=True, default=None)
     count = IntegerField(blank=True, null=True, default=None)
     headers = JSONField(blank=True, null=True, default=None)
+
+    def __unicode__(self):
+        return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
 
     @staticmethod
     def operator_to_str(op):
@@ -48,10 +66,15 @@ class Query(Model):
         if type(filters) in [str, unicode, int, float]:
             return filters
 
-        return '(%s) %s (%s)' % \
+        result = '(%s) %s (%s)' % \
                (Query.process_filters(filters['a']),
                 Query.operator_to_str(filters['op']),
                 Query.process_filters(filters['b']))
+
+        if filters['op'].lower() == 'mod':
+            result = '@ (%s)' % result
+
+        return result
 
     def execute(self, dimension_values='', variable='', only_headers='', commit=True):
         if dimension_values:
@@ -249,7 +272,7 @@ class Query(Model):
         response['headers']['columns'] = headers
 
         # store headers
-        self.headers = headers
+        self.headers = ResultEncoder().encode(headers)
         if self.pk and commit:
             self.save()
 

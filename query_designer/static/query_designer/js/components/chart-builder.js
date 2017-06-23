@@ -91,9 +91,8 @@ var ChartFilters = function(chartBuilder, filterColumns) {
     };
 
     /* Responsible to return only data that should be shown according to current filters */
-    this.getFilteredResults = function(callback, visualizationFilters) {
+    this.getFilteredResults = function(callback) {
         var extraFilters = undefined;
-        visualizationFilters = visualizationFilters || [];
 
         // update datapoint counter
         $('#query-visualization--container')
@@ -125,7 +124,7 @@ var ChartFilters = function(chartBuilder, filterColumns) {
         });
 
         // add visualization drilldowns
-        $.each(visualizationFilters, function(idx, fObj) {
+        $.each(that.chartBuilder.directives.getVisualizationFilters(), function(idx, fObj) {
             if (extraFilters === undefined) {
                 extraFilters = fObj
             } else {
@@ -360,7 +359,7 @@ ChartBuilder = function(qd, destSelector, headers) {
             onFiltersUpdateStarted = undefined,
             onChartCreated = undefined,
             onFiltersUpdated = undefined,
-            defaultVisualizationFilters = [];
+            getVisualizationFilters = undefined;
 
         // find variable(s)
         var variables = [];
@@ -509,6 +508,45 @@ ChartBuilder = function(qd, destSelector, headers) {
                     return Math.max(granularity, headers[coordinateCols.latIdx].step || 0.01);
                 };
 
+                that.directives.getVisualizationFilters = function() {
+                    var gLat = {
+                            "a": {"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()},
+                            "op": "lte",
+                            b: headers[coordinateCols.latIdx].step
+                        },
+                        gLng =  {
+                            "a": {"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()},
+                            "op": "lte",
+                            b: headers[coordinateCols.latIdx].step
+                        };
+
+                    try {
+                        var zl = map.zoomLevel(),
+                            info = map.getDevInfo(),
+                            rect = {
+                                lat: {
+                                    min: info.zoomLatitude - 90 / zl,
+                                    max: info.zoomLatitude + 90 / zl
+                                },
+                                lng: {
+                                    min: info.zoomLongitude - 180 / (zl * 0.75),
+                                    max: info.zoomLongitude + 180 / (zl * 0.75)
+                                }
+                            };
+
+                        return [
+                            {"a": headers[coordinateCols.latIdx].name, "op": "gte", "b": rect.lat.min},
+                            {"a": headers[coordinateCols.latIdx].name, "op": "lte", "b": rect.lat.max},
+                            {"a": headers[coordinateCols.lngIdx].name, "op": "gte", "b": rect.lng.min},
+                            {"a": headers[coordinateCols.lngIdx].name, "op": "lte", "b": rect.lng.max},
+                            gLat,
+                            gLng
+                        ]
+                    } catch (e) {
+                        return [gLat, gLng]
+                    }
+                };
+
                 map.addListener("positionChanged", function() {
                     var updateId = Date.now();
                     updateRequests.push(updateId);
@@ -516,19 +554,6 @@ ChartBuilder = function(qd, destSelector, headers) {
 
                     setTimeout(function() {
                         if (updateRequests[updateRequests.length - 1] === updateId) {
-                            var zl = map.zoomLevel(),
-                                info = map.getDevInfo(),
-                                rect = {
-                                    lat: {
-                                        min: info.zoomLatitude - 90 / zl,
-                                        max: info.zoomLatitude + 90 / zl
-                                    },
-                                    lng: {
-                                        min: info.zoomLongitude - 180 / (zl * 0.75),
-                                        max: info.zoomLongitude + 180 / (zl * 0.75)
-                                    }
-                                };
-
                             if (results === undefined) {
                                 clearCanvas();
                                 redrawCanvas(map);
@@ -537,28 +562,15 @@ ChartBuilder = function(qd, destSelector, headers) {
                             }
 
                             // update default visualization filters
-                            defaultVisualizationFilters[0].b = getGranularity();
-                            defaultVisualizationFilters[1].b = getGranularity();
-
                             that.filters.getFilteredResults(function(res) {
                                 results = res;
                                 updateRequests = [];
                                 clearCanvas();
                                 redrawCanvas(map, getGranularity());
-                            }, [
-                                {"a": headers[coordinateCols.latIdx].name, "op": "gte", "b": rect.lat.min},
-                                {"a": headers[coordinateCols.latIdx].name, "op": "lte", "b": rect.lat.max},
-                                {"a": headers[coordinateCols.lngIdx].name, "op": "gte", "b": rect.lng.min},
-                                {"a": headers[coordinateCols.lngIdx].name, "op": "lte", "b": rect.lng.max},
-                                {"a": {"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()}, "op": "lte", b: headers[coordinateCols.latIdx].step},
-                                {"a": {"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()}, "op": "lte", b: headers[coordinateCols.latIdx].step}
-                            ]);
+                            });
                         }
                     }, 400);
                 });
-
-                defaultVisualizationFilters.push({"a": {"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()}, "op": "lte", b: headers[coordinateCols.latIdx].step});
-                defaultVisualizationFilters.push({"a": {"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()}, "op": "lte", b: headers[coordinateCols.latIdx].step});
             };
 
             onFiltersUpdateStarted = function() {
@@ -606,6 +618,7 @@ ChartBuilder = function(qd, destSelector, headers) {
             onChartCreated = function() {};
             onFiltersUpdateStarted = function() {};
             onFiltersUpdated = function() {};
+            getVisualizationFilters = function() {return []};
         }
 
         /* Default - inform user no visualization was found */
@@ -616,7 +629,7 @@ ChartBuilder = function(qd, destSelector, headers) {
             onChartCreated: onChartCreated,
             onFiltersUpdateStarted: onFiltersUpdateStarted,
             onFiltersUpdated: onFiltersUpdated,
-            defaultVisualizationFilters: defaultVisualizationFilters
+            getVisualizationFilters: getVisualizationFilters
         }
     };
 
@@ -662,7 +675,7 @@ ChartBuilder = function(qd, destSelector, headers) {
                     options.afterRedraw();
                 }
             });
-        }, that.directives.defaultVisualizationFilters);
+        });
     };
 
     // base rendering
