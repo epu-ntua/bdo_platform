@@ -13,8 +13,10 @@ else:
         for settings_file in settings_files:
             if settings_file == 'development_dpap':
                 from bdo_platform.settings_management.development_dpap import *
-            if settings_file == 'development_gtsapelas':
+            elif settings_file == 'development_gtsapelas':
                 from bdo_platform.settings_management.development_gtsapelas import *
+            elif settings_file == 'development_bdodev':
+                from bdo_platform.settings_management.development_bdodev import *
             elif settings_file == 'development':
                 from bdo_platform.settings_management.development import *
     except IOError:
