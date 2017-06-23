@@ -49,8 +49,9 @@ class JobInstance(Model):
             SERVER_URL
         ]
         print ' '.join(command)
-        # TODO call spark-submit
-        # subprocess.call(command)
+
+        # TODO fix in windows
+        subprocess.Popen(command)
 
     def update(self, results, error_msg=''):
         # mark as finished and save results
