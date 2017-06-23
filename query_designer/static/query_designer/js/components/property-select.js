@@ -49,7 +49,17 @@ function PropertySelect(qd, instance) {
                     that.properties.push(o);
 
                     // add to instance by default
-                    that.qd.workbench.builder.add_property(that.c.id, o.uri, o.label, o.info);
+                    var found = false
+                    $.each(that.qd.workbench.builder.instances[that.c.id].selected_properties, function(idx, prop) {
+                        if (prop.uri === o.uri) {
+                            found = true;
+                            return false;
+                        }
+                    });
+
+                    if (!found) {
+                        that.qd.workbench.builder.add_property(that.c.id, o.uri, o.label, o.info);
+                    }
                 }
 
                 that.repeating_pages = 0;

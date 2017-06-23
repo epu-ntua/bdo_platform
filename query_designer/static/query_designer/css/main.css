@@ -392,6 +392,7 @@ body.qd-body {
     float: right;
     font-size: 0.8em;
     margin-top: 10px;
+    top: -13px;
     max-width: 200px;
     max-height: 1.4em;
     overflow: hidden;
@@ -399,7 +400,7 @@ body.qd-body {
 }
 
 #builder_workspace .class-instance .title button.delete {
-    padding: 0 5px;
+    padding: 0 0 0 5px;
 }
 
 #builder_workspace .class-instance .title button.delete i {

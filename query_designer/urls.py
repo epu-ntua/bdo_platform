@@ -12,6 +12,14 @@ urlpatterns = [
 
     # execute
     url('execute/$', views.execute_query, name='execute-query'),
+    url('execute/(?P<pk>\d+)/$', views.execute_query, name='execute-query'),
+
+    # load
+    url('load/(?P<pk>\d+)/$', views.load_query, name='load-query'),
+
+    # save
+    url('save/$', views.save_query, name='save-query'),
+    url('save/(?P<pk>\d+)/$', views.save_query, name='save-query'),
 
     # basic page
     url('$', views.index, name='home'),

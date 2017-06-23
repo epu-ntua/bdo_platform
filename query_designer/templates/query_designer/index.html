@@ -35,6 +35,7 @@
     <script src="{% static 'query_designer/js/components/document-builder.js' %}"></script>
     <script src="{% static 'query_designer/js/components/chart-builder.js' %}"></script>
     <script src="{% static 'query_designer/js/components/query-executor.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/storage.js' %}"></script>
     <script src="{% static 'query_designer/js/components/workbench.js' %}"></script>
 
     <script src="{% static 'query_designer/js/languages/bdo-mongo.js' %}"></script>
@@ -43,6 +44,7 @@
     <script>
         $(function() {
             $('#query-designer-container').qd({
+                pk: Number(window.location.pathname.split('/')[window.location.pathname.split('/').length - 2]) || undefined,
                 properties: {
                     pack: function(properties) {
                         var resultProperties = [],

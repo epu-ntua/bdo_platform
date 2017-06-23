@@ -21,3 +21,53 @@ def index(request):
     })
 
 
+def load_query(request, pk):
+    q = Query.objects.get(pk=pk)
+
+    return JsonResponse({
+        'pk': q.pk,
+        'title': q.title,
+        'design': q.design,
+    })
+
+
+@csrf_exempt
+def save_query(request, pk=None):
+    # create or update
+    if not pk:
+        q = Query(user=User.objects.get(username='dpap'))
+    else:
+        q = Query.objects.get(pk=pk)
+
+    # document
+    if 'document' in request.POST:
+        try:
+            doc = json.loads(request.POST.get('document', ''))
+        except ValueError:
+            return JsonResponse({'error': 'Invalid query document'}, status=400)
+
+        q.document = doc
+
+    # design
+    if 'design' in request.POST:
+        try:
+            design = json.loads(request.POST.get('design', ''))
+        except ValueError:
+            return JsonResponse({'error': 'Invalid design'}, status=400)
+
+        q.design = design
+    else:
+        q.design = None
+
+    # title
+    if 'title' in request.POST:
+        q.title = request.POST.get('title', 'Untitled query')
+
+    # save
+    q.save()
+
+    # return OK response
+    return JsonResponse({
+        'pk': q.pk,
+        'title': q.title
+    })

@@ -104,6 +104,9 @@ var QueryDesigner = function($container, params) {
     // setup query executor
     this.queryExecutor = QueryExecutor(this);
 
+    // setup storage
+    this.storage = QueryStorage(this, params.pk);
+
     return this;
 };
 

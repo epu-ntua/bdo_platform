@@ -28,7 +28,7 @@ try:
 
     print('-------------------------------------------')
     # define query
-    query = '(SELECT (%s, %s) FROM (SELECT row_number() OVER () AS spark_part_id, ' \
+    query = '(SELECT spark_part_id, %s, %s FROM (SELECT row_number() OVER () AS spark_part_id, ' \
             '* FROM (%s) AS SPARKQ2) AS SPARKQ1) AS SPARKQ0' \
             % (args['x'], args['y'], args['query'])
 
@@ -36,7 +36,6 @@ try:
     cur.execute('SELECT COUNT(*) FROM (%s) AS SPARKQ2' % args['query'])
     row = cur.fetchone()
     cnt = row[0]
-    print(cnt)
 
     # close custom connection
     conn.close()
@@ -49,7 +48,7 @@ try:
         partitionColumn="spark_part_id",
         lowerBound="1",
         upperBound=str(cnt),
-        numPartitions=str(math.ceil(cnt / 10000.0))
+        numPartitions=str(math.ceil(cnt / 20000.0))
     ).load()
 
     dataframe2.cache()  # Cache data for faster reuse

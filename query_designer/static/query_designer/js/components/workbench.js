@@ -116,11 +116,6 @@
                     self.add_property(new_id, 'VALUE'); //add URI by default
                 }
 
-                $(".property-table").sortable({ //make properties sortable
-                    items: ".property-row",
-                    stop: self.update_orders
-                });
-
                 if (default_properties) {
                     for (var k = 0; k < default_properties.length; k++) {  //for each saved property
                         if (typeof default_properties[k] == 'string') { //property uri as input
@@ -130,11 +125,11 @@
                             if (default_properties[k].name_from_user) {
                                 pname = PropertyOptions.property_name_printable_from_string(new_id, default_properties[k].uri, default_properties[k].name);
                             } else {
-                                pname = uri_to_label(default_properties[k].uri)
+                                pname = default_properties[k].label
                             }
                             self.add_property(new_id, default_properties[k].uri, pname);
 
-                            inst.selected_properties[k] = jQuery.extend(true, {}, default_properties[k]); //clone the property object
+                            // inst.selected_properties[k] = jQuery.extend(true, {}, default_properties[k]); //clone the property object
                             var sel = "#class_instance_" + new_id + " .property-row:nth-of-type(" + (k + 2) + ") ";
                             if (!inst.selected_properties[k].show) { //show
                                 $(sel + "span:nth-of-type(1) input").prop('checked', false)
@@ -152,6 +147,11 @@
                         }
                     }
                 }
+
+                $(".property-table").sortable({ //make properties sortable
+                    items: ".property-row",
+                    stop: self.update_orders
+                });
 
                 that.builder.reset_height($("#class_instance_" + new_id));
                 that.builder.reset();
@@ -275,41 +275,50 @@
                 that.builder.reset();
             },
 
-            from_json: function (data) { //re-construct a query design from a json object
+            fromJson: function (data) { //re-construct a query design from a json object
                 for (var i = 0; i < data.instances.length; i++) { //foreach instance
                     var inst = data.instances[i];
 
-                    var endpoint = this.name_to_endpoint(inst.dt_name) || inst.dt_name;
+                    var endpoint = inst.dt_name;
+
+                    // reset instance reference
+                    $.each(inst.selected_properties, function(idx, sp) {
+                        sp.instance = inst;
+                    });
+
                     this.add_instance(endpoint, inst.uri, inst.label, inst.position.x, inst.position.y, inst.selected_properties);
-                    sub_Q.set_subquery(i, data.instances[i].subquery);
+                    // sub_Q.set_subquery(i, data.instances[i].subquery);
                 }
 
-                arrows.connections = data.connections; //restore the connections
-                arrows.paths = data.paths; //restore connection paths
+                that.qd.arrows.connections = data.connections; //restore the connections
+                that.qd.arrows.paths = data.paths; //restore connection paths
 
-                builder.options.pattern = data.pattern;
-                if (typeof(builder.options.pattern) == "undefined") {
-                    builder.options.pattern = "";
+                that.builder.options = that.builder.options || {};
+                that.builder.options.pattern = data.pattern;
+                if (typeof(that.builder.options.pattern) == "undefined") {
+                    that.builder.options.pattern = "";
                 }
-                builder.options.distinct = data.distinct;
-                builder.options.limit = data.limit;
-                builder.options.offset = data.offset;
-                builder.options.variables = data.variables;
+                that.builder.options.distinct = data.distinct;
+                that.builder.options.limit = data.limit;
+                that.builder.options.offset = data.offset;
+                that.builder.options.variables = data.variables;
 
                 that.qd.arrows.draw();
                 that.builder.reset();
             },
 
-            to_json: function () { //export the design to a json object
-                data = {
+            toJson: function () { //export the design to a json object
+                that.builder.options = that.builder.options || {};
+
+                var data = {
                     instances: [],
-                    connections: arrows.connections,
-                    paths: arrows.paths,
-                    pattern: builder.options.pattern,
-                    distinct: builder.options.distinct,
-                    limit: builder.options.limit,
-                    offset: builder.options.offset,
-                    variables: builder.options.variables
+                    connections: that.qd.arrows.connections,
+                    paths: that.qd.arrows.paths,
+                    pattern: that.builder.options.pattern,
+                    distinct: that.builder.options.distinct,
+                    limit: that.builder.options.limit,
+                    offset: that.builder.options.offset,
+                    variables: that.builder.options.variables
                 };
 
                 for (var i = 0; i < this.instances.length; i++) { //foreach instance
@@ -320,12 +329,18 @@
                             x: $("#class_instance_" + i).offset().left - $("#builder_workspace").offset().left,
                             y: $("#class_instance_" + i).offset().top - $("#builder_workspace").offset().top,
                         },
-
+                        label: this.instances[i].label,
                         selected_properties: this.instances[i].selected_properties,
                         subquery: this.instances[i].subquery
                     };
+
+                    // remove instance ref from selected_properties
+                    $.each(data.instances[i].selected_properties, function(idx, sp) {
+                        sp.instance = null;
+                    });
                 }
 
+                console.log(data);
                 return data;
             }
         };

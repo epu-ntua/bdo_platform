@@ -31,6 +31,19 @@ DesignerMenu = function(qd) {
                 that.qd.queryExecutor.run();
             });
 
+            this.$elem.find('.save-query').on('click', function() {
+                that.qd.storage.save();
+            });
+
+            document.addEventListener("keydown", function(e) {
+                if (e.keyCode == 83 && e.ctrlKey) { //Ctrl+S key pressed
+                    that.qd.storage.save();
+
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, false);
+
             this.$elem.find('.show-query-options').on('click', function() {
                 that.qd.options.ui.open();
             });
