@@ -5,7 +5,7 @@ QueryOptions = function(qd) {
     var that = this;
     this.qd = qd;
     this.pages = {
-        current: 0,
+        current: 1,
         total: 0
     };
 

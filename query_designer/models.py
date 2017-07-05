@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import json
 import decimal
 import datetime
+import copy
 import time
 from collections import OrderedDict
 
@@ -71,12 +72,9 @@ class Query(Model):
                 Query.operator_to_str(filters['op']),
                 Query.process_filters(filters['b']))
 
-        if filters['op'].lower() == 'mod':
-            result = '@ (%s)' % result
-
         return result
 
-    def execute(self, dimension_values='', variable='', only_headers='', commit=True):
+    def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
         if dimension_values:
             dimension_values = dimension_values.split(',')
         else:
@@ -193,20 +191,38 @@ class Query(Model):
         if not only_headers:
             # execute query & return results
             t1 = time.time()
-            cursor.execute(q)
 
-            # we have to convert numeric results to float
-            # by default they're returned as strings to prevent loss of precision
+            # apply granularity
+            try:
+                granularity = int(self.document.get('granularity', 0))
+            except ValueError:
+                granularity = 0
+
+            if granularity > 1:
+                q = """
+                    SELECT * FROM (
+                        SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
+                    ) AS GQ_C
+                    WHERE (row_id %% %d = 0)
+                """ % (q, granularity)
+
             results = []
-            for row in cursor.fetchall():
-                res_row = []
-                for idx, h_type in enumerate(header_sql_types):
-                    if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:
-                        res_row.append(float(row[idx]))
-                    else:
-                        res_row.append(row[idx])
+            if execute:
+                cursor.execute(q)
 
-                results.append(res_row)
+                # we have to convert numeric results to float
+                # by default they're returned as strings to prevent loss of precision
+
+                for row in cursor.fetchall():
+                    res_row = []
+                    for idx, h_type in enumerate(header_sql_types):
+                        pos = idx if not granularity > 1 else idx + 1
+                        if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[pos]) in [str, unicode]:
+                            res_row.append(float(row[pos]))
+                        else:
+                            res_row.append(row[pos])
+
+                    results.append(res_row)
 
             # count pages
             if limit is not None:
@@ -226,29 +242,12 @@ class Query(Model):
 
                 cursor.execute(q_pages)
                 self.count = cursor.fetchone()[0]
-                pages['total'] = (self.count - 1) / 1000 + 1
+                pages['total'] = (self.count - 1) / limit + 1
 
         # include dimension values if requested
         for d_name in dimension_values:
             hdx, header = [hi for hi in enumerate(headers) if hi[1]['name'] == d_name][0]
             header['values'] = Dimension.objects.get(pk=selects[d_name]['column'].split('_')[-1]).values
-            """
-            q_col_values = 'SELECT DISTINCT(%s) FROM %s ORDER BY %s' % \
-                (selects[d_name]['column'], selects[d_name]['table'], selects[d_name]['column'])
-
-            print q_col_values
-            td = time.time()
-            cursor.execute(q_col_values)
-            print '%s --> %d' % (d_name, int((time.time() - td) * 1000))
-            header['values'] = []
-            h_type = header_sql_types[hdx]
-            for row in cursor.fetchall():
-                v = row[0]
-                if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(v) in [str, unicode]:
-                    header['values'].append(float(v))
-                else:
-                    header['values'].append(v)
-            """
 
         # include variable ranges if requested
         if variable:
@@ -271,9 +270,32 @@ class Query(Model):
             response = {'headers': {}}
         response['headers']['columns'] = headers
 
+        if raw_query:
+            response['raw_query'] = q
+
         # store headers
         self.headers = ResultEncoder().encode(headers)
         if self.pk and commit:
             self.save()
 
         return response
+
+    def execute(self, dimension_values='', variable='', only_headers=False, commit=True):
+        return self.process(dimension_values, variable, only_headers, commit, execute=True)
+
+    @property
+    def raw_query(self):
+        # remove several keys from query
+        doc = copy.deepcopy(self.document)
+        for key in ['limit', 'offset', 'granularity']:
+            if key in self.document:
+                del self.document[key]
+
+        # get raw query
+        res = self.process(dimension_values='', variable='', only_headers=False, commit=False,
+                           execute=False, raw_query=True)
+
+        # restore initial doc
+        self.document = doc
+
+        return res['raw_query']

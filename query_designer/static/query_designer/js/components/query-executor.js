@@ -156,8 +156,10 @@ QueryExecutor = function(qd) {
                     return false;
                 }
 
-                var $tr = $('<tr />');
-                $tr.append($('<td />').text(idx + 1));
+                var $tr = $('<tr />'),
+                    rowIdx = (that.qd.options.pages.current - 1) * that.qd.options.getLimit() + idx + 1;
+
+                $tr.append($('<td />').text(rowIdx));
                 $.each(result, function(idx, resultValue) {
                     $tr.append($('<td />').text(resultValue));
                 });
@@ -187,7 +189,8 @@ QueryExecutor = function(qd) {
             dimensionValues: undefined,
             onlyHeaders: false,
             noPagination: false,
-            updateChart: true
+            updateChart: true,
+            granularity: null
         }, runConfig);
 
         var config = that.qd.config.endpoint,
@@ -215,6 +218,10 @@ QueryExecutor = function(qd) {
             }
         } else if (!runConfig.onlyHeaders) {
             runEndpointSuffix = (that.qd.storage.pk !== undefined?that.qd.storage.pk + '/':'');
+        }
+
+        if (runConfig.granularity !== null) {
+            queryDocument.granularity = runConfig.granularity;
         }
 
         if (runConfig.noPagination) {

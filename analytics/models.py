@@ -51,7 +51,10 @@ class JobInstance(Model):
         print ' '.join(command)
 
         # TODO fix in windows
-        subprocess.Popen(command)
+        try:
+            subprocess.Popen(command)
+        except:
+            pass
 
     def update(self, results, error_msg=''):
         # mark as finished and save results

@@ -130,7 +130,7 @@ QueryStorage = function(qd, pk) {
         };
 
         // ask for title for new queries
-        if (pk === undefined) {
+        if (this.pk === undefined) {
             this.ui.open(_save);
         } else {
             _save();

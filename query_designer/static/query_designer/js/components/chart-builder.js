@@ -140,6 +140,7 @@ var ChartFilters = function(chartBuilder, filterColumns) {
         that.chartBuilder.qd.queryExecutor.run({
             noPagination: true,
             extraFilters: extraFilters,
+            granularity: that.chartBuilder.directives.getGranularity(),
             callback: function(data) {
                 callback(data.results);
             }
@@ -359,6 +360,7 @@ ChartBuilder = function(qd, destSelector, headers) {
             onFiltersUpdateStarted = undefined,
             onChartCreated = undefined,
             onFiltersUpdated = undefined,
+            getGranularity = function() {return null},
             getVisualizationFilters = undefined;
 
         // find variable(s)
@@ -497,29 +499,11 @@ ChartBuilder = function(qd, destSelector, headers) {
             onChartCreated = function() {
                 var map = that.ui.chart;
 
-                var getGranularity = function() {
-                    var granularity = Math.min(headers[coordinateCols.latIdx].step * 8 || 2.0, 2.0);
-
-                    /* calculate granularity based on zoom level */
-                    for (var i=2; i<=map.zoomLevel(); i++) {
-                        granularity /= 2.0
-                    }
-
-                    return Math.max(granularity, headers[coordinateCols.latIdx].step || 0.01);
+                that.directives.getGranularity = function() {
+                    return Math.round(Math.max(8 - map.zoomLevel(), 1));
                 };
 
                 that.directives.getVisualizationFilters = function() {
-                    var gLat = {
-                            "a": {"a": headers[coordinateCols.latIdx].name, "op": "mod", "b": getGranularity()},
-                            "op": "lte",
-                            b: headers[coordinateCols.latIdx].step
-                        },
-                        gLng =  {
-                            "a": {"a": headers[coordinateCols.lngIdx].name, "op": "mod", "b": getGranularity()},
-                            "op": "lte",
-                            b: headers[coordinateCols.latIdx].step
-                        };
-
                     try {
                         var zl = map.zoomLevel(),
                             info = map.getDevInfo(),
@@ -539,11 +523,9 @@ ChartBuilder = function(qd, destSelector, headers) {
                             {"a": headers[coordinateCols.latIdx].name, "op": "lte", "b": rect.lat.max},
                             {"a": headers[coordinateCols.lngIdx].name, "op": "gte", "b": rect.lng.min},
                             {"a": headers[coordinateCols.lngIdx].name, "op": "lte", "b": rect.lng.max},
-                            gLat,
-                            gLng
                         ]
                     } catch (e) {
-                        return [gLat, gLng]
+                        return []
                     }
                 };
 
@@ -629,6 +611,7 @@ ChartBuilder = function(qd, destSelector, headers) {
             onChartCreated: onChartCreated,
             onFiltersUpdateStarted: onFiltersUpdateStarted,
             onFiltersUpdated: onFiltersUpdated,
+            getGranularity: getGranularity,
             getVisualizationFilters: getVisualizationFilters
         }
     };
