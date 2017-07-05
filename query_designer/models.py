@@ -121,10 +121,10 @@ class Query(Model):
                     })
 
                     # add fields to select clause
-                    aliases.append('%s.%s AS %s' % (v_obj.data_table_name, selects[s['name']]['column'], s['name']))
+                    aliases.append(('%s.%s' % (v_obj.data_table_name, selects[s['name']]['column']), '%s' % s['name']))
 
         # select
-        select_clause = 'SELECT ' + ','.join(aliases) + '\n'
+        select_clause = 'SELECT ' + ','.join(['%s AS %s' % a for a in aliases]) + '\n'
 
         # from
         from_clause = 'FROM ' + selects[selects.keys()[0]]['table'] + '\n'
@@ -185,8 +185,6 @@ class Query(Model):
             offset_clause + \
             limit_clause
 
-        print q
-
         cursor = connection.cursor()
         if not only_headers:
             # execute query & return results
@@ -200,11 +198,13 @@ class Query(Model):
 
             if granularity > 1:
                 q = """
-                    SELECT * FROM (
+                    SELECT %s FROM (
                         SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
                     ) AS GQ_C
                     WHERE (row_id %% %d = 0)
-                """ % (q, granularity)
+                """ % (','.join([a[1] for a in aliases]), q, granularity)
+
+            print q
 
             results = []
             if execute:
@@ -216,11 +216,10 @@ class Query(Model):
                 for row in cursor.fetchall():
                     res_row = []
                     for idx, h_type in enumerate(header_sql_types):
-                        pos = idx if not granularity > 1 else idx + 1
-                        if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[pos]) in [str, unicode]:
-                            res_row.append(float(row[pos]))
+                        if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:
+                            res_row.append(float(row[idx]))
                         else:
-                            res_row.append(row[pos])
+                            res_row.append(row[idx])
 
                     results.append(res_row)
 
