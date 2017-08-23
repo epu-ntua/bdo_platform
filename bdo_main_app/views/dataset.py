@@ -5,13 +5,13 @@ from datetime import timedelta
 from django.shortcuts import render
 from django.utils.timezone import now
 
-from bdo_main_app.models import SERVICES
+from bdo_main_app.models import Service
 
 
 def dataset(request, slug):
     return render(request, 'services/datasets/index.html', {
         'sidebar_active': 'products',
-        'dataset': SERVICES[1],
+        'dataset': Service.objects.get(pk=1),
     })
 
 

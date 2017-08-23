@@ -35,7 +35,7 @@ def load_query(request, pk):
 def save_query(request, pk=None):
     # create or update
     if not pk:
-        q = Query(user=User.objects.get(username='dpap'))
+        q = Query(user=User.objects.get(username='BigDataOcean'))
     else:
         q = Query.objects.get(pk=pk)
 

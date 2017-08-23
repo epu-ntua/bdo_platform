@@ -7,6 +7,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db.models import *
 from django.utils.timezone import now
 
+from bdo_main_app.models import Service
 from bdo_platform.settings import BASE_DIR, SERVER_URL, SPARK_SUBMIT_PATH
 
 
@@ -25,7 +26,7 @@ class JobInstance(Model):
         ('STOPPED', 'Stopped'),
         ('FAILED', 'Failed'),
     ), default='PENDING')
-    service_id = IntegerField()  # to be turned to Foreign Key once services turn into a model
+    base_analysis = ForeignKey(Service)
     arguments = JSONField()  # json representation of arguments passed to the analysis
     message = TextField(blank=True, null=True, default=None)  # some progress or error message
     results = JSONField(blank=True, null=True, default=None)  # the results of this job
@@ -66,3 +67,6 @@ class JobInstance(Model):
 
     def get_absolute_url(self):
         return '/analytics/jobs/%d/' % self.pk
+
+    def __unicode__(self):
+        return '%s -> %s' % (self.user.username, str(self.base_analysis))

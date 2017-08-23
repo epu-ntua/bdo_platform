@@ -9,18 +9,18 @@ from analytics.models import *
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
-from bdo_main_app.models import EXTENDABLE_SERVICES, get_service_by_id
+from bdo_main_app.models import Service
 
 
 def pick_base_analysis(request):
     return render(request, 'basic-analytics/pick-base-analysis.html', {
         'sidebar_active': 'products',
-        'base_analytics': EXTENDABLE_SERVICES,
+        'base_analytics': Service.objects.filter(service_type='analysis', info__extendable=True),
     })
 
 
 def config_base_analysis(request, base_analysis_id):
-    base_analysis = get_service_by_id(int(base_analysis_id))
+    base_analysis = Service.objects.get(pk=int(base_analysis_id))
 
     if request.method == 'GET':
         return render(request, 'basic-analytics/config-analysis.html', {
@@ -30,7 +30,7 @@ def config_base_analysis(request, base_analysis_id):
     else:
         # gather arguments
         arguments = {}
-        for argument in base_analysis['arguments']:
+        for argument in base_analysis.info['arguments']:
             arguments[argument['name']] = request.POST.get(argument['name'],
                                                            argument['default'] if 'default' in argument else '')
 
@@ -38,8 +38,8 @@ def config_base_analysis(request, base_analysis_id):
         # TODO validate arguments
 
         # create job
-        user = User.objects.get(username='dpap')
-        job = JobInstance.objects.create(user=user, service_id=base_analysis['pk'], arguments=arguments)
+        user = User.objects.get(username='BigDataOcean')
+        job = JobInstance.objects.create(user=user, base_analysis=base_analysis, arguments=arguments)
 
         # submit the job
         job.submit()
@@ -61,7 +61,7 @@ def view_job_details(request, pk):
     return render(request, template, {
         'sidebar_active': 'products',
         'job': job,
-        'base_analysis': get_service_by_id(int(job.service_id))
+        'base_analysis': job.base_analysis
     })
 
 

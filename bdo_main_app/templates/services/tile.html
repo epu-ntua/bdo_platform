@@ -1,8 +1,8 @@
 <div class="col-md-4 service-tile">
     <div class="card">
         {% if not skip_icon %}
-            <div class="card-header text-center" data-background-color="{{ service.service_type.color }}">
-                <i class="fa fa-4x fa-{{ service.service_type.icon }}"></i>
+            <div class="card-header text-center" data-background-color="{{ service.service_type_info.color }}">
+                <i class="fa fa-4x fa-{{ service.service_type_info.icon }}"></i>
             </div>
         {% endif %}
         <div class="card-content">

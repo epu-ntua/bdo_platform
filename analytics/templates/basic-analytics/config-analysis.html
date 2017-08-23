@@ -23,7 +23,7 @@
                 <div class="card-content">
                     <form class="form" method="POST">
                         {% csrf_token %}
-                        {% for argument in base_analysis.arguments %}
+                        {% for argument in base_analysis.info.arguments %}
                             <div class="row">
                                 <div class="col-xs-12">
                                     <div class="form-group label-floating is-empty">
