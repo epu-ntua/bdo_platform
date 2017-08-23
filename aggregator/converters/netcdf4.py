@@ -96,6 +96,7 @@ class NetCDF4Converter(BaseConverter):
         try:
             v = self._f.variables[target.name]
             d_data = v[:]
+
             target.min = d_data[0]
             target.max = d_data[d_data.__len__() - 1]
 

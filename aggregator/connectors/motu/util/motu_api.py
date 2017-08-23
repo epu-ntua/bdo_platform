@@ -36,6 +36,8 @@ import socket
 from xml.dom import minidom
 
 # Import project libraries
+from django.utils.timezone import now
+
 import utils_log
 import utils_unit
 import utils_stream
@@ -339,7 +341,38 @@ def wait_till_finished(reqUrlCAS, **options):
     stopWatch = stop_watch.localThreadStopWatch()    
     start_time = datetime.datetime.now()
 
-    
+
+class MotuRequestProgress:
+    """"
+    An object to report progress of requests to the Motu server
+    """
+
+    def __init__(self, size_total):
+        self.finished_at = None
+        self.started_at = now()
+        self.size_total = size_total
+        self.size_read = 0
+
+    def update(self, size_read):
+        self.size_read = size_read
+
+    @property
+    def percentage(self):
+        return (self.size_read + 0.0) / self.size_total * 100
+
+    @property
+    def speed(self):
+        # measured in Kbps
+
+        try:
+            return (self.size_read + 0.0) / ((self.finished_at if self.finished_at else now()) - self.started_at).total_seconds() / 1000
+        except ZeroDivisionError:
+            return None
+
+    def __str__(self):
+        return '%.1f%% (%d Kbps)' % (self.percentage, self.speed)
+
+
 def dl_2_file(dl_url, fh, block_size = 65535, isADownloadRequest = None, **options):
     """ Download the file with the main url (of Motu) file.
      
@@ -399,11 +432,13 @@ def dl_2_file(dl_url, fh, block_size = 65535, isADownloadRequest = None, **optio
         
             # performs the download           
             log.info( 'Downloading file %s' % os.path.abspath(fh) )
-        
+
+            # create a progress instance
+            progress = MotuRequestProgress(size_total=size)
+
             def progress_function(sizeRead):
-                percent = sizeRead*100./size
-                log.info( "- %s (%.1f%%)", utils_unit.convert_bytes(size).rjust(8), percent )
-                td = datetime.datetime.now()- start_time;           
+                progress.update(size_read=sizeRead)
+                print '\r%s' % str(progress)
         
             def none_function(sizeRead):
                 percent = 100

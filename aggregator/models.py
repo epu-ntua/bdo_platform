@@ -203,7 +203,12 @@ class Variable(BaseVariable):
         """ % self.data_table_name)
 
         res = cursor.fetchone()
-        self.distribution = [res[0]] + res[2] + [res[1]]
+
+        if res[0] is None and res[1] is None and res[2] is None:
+            self.distribution = [0, 0, 0, 0, 0, 0, 0]
+        else:
+            self.distribution = [res[0]] + res[2] + [res[1]]
+
         self.save()
 
 

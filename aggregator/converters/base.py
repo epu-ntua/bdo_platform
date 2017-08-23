@@ -266,7 +266,8 @@ class BaseConverter(object):
                     vv = []
                     x = dimension.min
                     idx = 0
-                    while x <= dimension.max:
+                    while (dimension.step < 0 and x >= dimension.max) or \
+                            ((dimension.step >= 0 or dimension.step is None) and x <= dimension.max):
                         vv.append((idx, self.normalize(dimension, x)))
                         if dimension.step is None:
                             break
