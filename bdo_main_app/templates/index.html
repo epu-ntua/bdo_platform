@@ -5,6 +5,23 @@
 {% block css %}
     <link href="{% static 'css/main.css' %}" rel="stylesheet" />
     <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <style>
+        .landing-page-tile > .card{
+            background-size: cover;
+        }
+
+        .landing-page-tile .card-content {
+            min-height: 180px;
+        }
+
+        .landing-page-tile h4 {
+            margin-bottom: 20px;
+        }
+
+        .landing-page-tile h4 > a {
+            font-size: 20px;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -25,9 +42,9 @@
         </div>
     </div>
     <div class="row">
-        <h4 class="text-center o-blue" style="margin: 50px 0; font-size: 1.65em;">Take a look at our most popular cases and get inspired</h4>
-        {% for service in services %}
-            {% include 'services/tile.html' %}
+        <h4 class="text-center o-blue" style="margin: 5px 0 20px 0; font-size: 1.65em;">Find out how we can help stakeholders in the maritime domain</h4>
+        {% for item in items %}
+            {% include 'landing_page_items/tile.html' %}
         {% endfor %}
     </div>
 

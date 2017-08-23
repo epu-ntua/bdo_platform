@@ -69,7 +69,7 @@ class Service(Model):
 
     @property
     def service_type_info(self):
-        return [s for s in SERVICE_TYPES if s['id'] == self.service_type][0]
+        return [si for si in SERVICE_TYPES if si['id'] == self.service_type][0]
 
     def __unicode__(self):
         return self.title

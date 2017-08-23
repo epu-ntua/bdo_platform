@@ -1,0 +1,16 @@
+<div class="col-md-4 landing-page-tile">
+    <div class="card" style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(/static/img/landing_page_items/{{ item.image }});">
+        <div class="card-content">
+            <h4 class="title">
+                <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>
+                {% if item.label %}<span class="label label-warning">{{ item.label|upper }}</span>{% endif %}
+            </h4>
+            {% if item.description %}
+                <p style="color: white;">{{ item.description|safe }}</p>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>
+        </div>
+    </div>
+</div>
