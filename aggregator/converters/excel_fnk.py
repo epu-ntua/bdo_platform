@@ -1,5 +1,6 @@
 from random import random
 
+import time
 import xlrd
 from fractions import gcd
 
@@ -10,11 +11,15 @@ from aggregator.converters.base import *
 
 class ExcelFnkDataConverter(BaseConverter):
     _f = None
+    _max_rows = None
+    _sheet_data = None
     header_row = 3
+    data_row = 5
 
     def __init__(self, name):
         self.name = name
-        self.sheet = xlrd.open_workbook(BaseConverter.full_input_path(name)).sheet_by_index(0)
+        workbook = xlrd.open_workbook(BaseConverter.full_input_path(name))
+        sheet = workbook.sheet_by_index(0)
         self.dataset_title = '.'.join(name.split('.')[:-1])
 
         # set up possible variables
@@ -29,10 +34,10 @@ class ExcelFnkDataConverter(BaseConverter):
 
         # set up possible dimensions
         self.available_dimensions = {
-            'eosp date': {'unit': 'timestamp'},
+            #'eosp date': {'unit': 'timestamp'},
             'latitude': {'unit': 'degree_north',
                          'transform': 'coordinates'},
-            'lontitude': {'unit': 'degree_east', 'step': 0.01, 'min': -180, 'max': 180,
+            'lontitude': {'unit': 'degree_east',
                           'transform': 'coordinates'},
             'voyage no': {'unit': '', 'title': 'Voyage No'}
         }
@@ -41,8 +46,32 @@ class ExcelFnkDataConverter(BaseConverter):
         for d_name in self.available_dimensions.keys():
             self.available_dimensions[d_name]['idx'] = None
 
-        if self.sheet.cell_value(self.header_row, 0) != 'DATE':
+        if sheet.cell_value(self.header_row, 0) != 'DATE':
             raise ValueError('Invalid excel format - can not be interpreted as FNK export')
+
+        # load sheet data
+        self._sheet_data = []
+        row_idx = 0
+        while True:
+            row_data = []
+            col_idx = 0
+            while True:
+                try:
+                    row_data.append(sheet.cell_value(row_idx, col_idx))
+                    col_idx += 1
+                except IndexError:
+                    break
+
+            if not row_data:
+                break
+            self._sheet_data.append(row_data)
+            row_idx += 1
+
+        # cleanup
+        # TODO cleanup
+
+    def cell_value(self, r, c):
+        return self._sheet_data[r][c]
 
     @property
     def dataset(self):
@@ -79,7 +108,7 @@ class ExcelFnkDataConverter(BaseConverter):
             idx = 0
             while True:
                 try:
-                    d_name = self.sheet.cell_value(self.header_row, idx).lower()
+                    d_name = self.cell_value(self.header_row, idx).lower()
 
                     d_name = d_name.replace('\n', ' ')
 
@@ -104,7 +133,7 @@ class ExcelFnkDataConverter(BaseConverter):
                             dimension.step = self.available_dimensions[d_name]['step']
                         except KeyError:
                             values = []
-                            rdx = self.header_row + 2
+                            rdx = self.data_row
                             while True:
                                 try:
                                     v = self.get_value_from_sheet(self.available_dimensions[d_name], rdx)
@@ -125,6 +154,7 @@ class ExcelFnkDataConverter(BaseConverter):
                                                         [s for s in
                                                          [abs(norm(values[i + 1] - values[i])) for i in range(0, len(values) - 1)]
                                                          if gt_zero(s)]))), type(values[0]))
+                            dimension.values = list(set(values))
 
                         # add to dimensions
                         self._dimensions.append(dimension)
@@ -142,67 +172,122 @@ class ExcelFnkDataConverter(BaseConverter):
 
             idx = 0
             while True:
-                v_name = self.sheet.cell_value(self.header_row, idx).lower()
+                try:
+                    v_name = self.cell_value(self.header_row, idx).lower()
 
-                if not v_name:
+                    v_name = v_name.replace('\n', ' ')
+
+                    if v_name in self.available_variables.keys():
+                        # store column for data reference
+                        self.available_variables[v_name]['idx'] = idx
+
+                        # rand var
+                        variable = Variable()
+                        variable.name = v_name
+                        try:
+                            variable.title = self.available_variables[v_name]['title']
+                        except KeyError:
+                            variable.title = v_name.replace('_', ' ').title()
+
+                        try:
+                            variable.unit = self.available_variables[v_name]['units']
+                        except KeyError:
+                            variable.unit = ''
+
+                        variable.dimensions = [d.name for d in self.dimensions]
+
+                        self._variables.append(variable)
+
+                    idx += 1
+                except IndexError:
                     break
-
-                v_name = v_name.replace('\n', ' ')
-
-                if v_name in self.available_variables.keys():
-                    # store column for data reference
-                    self.available_variables[v_name]['idx'] = idx
-
-                    # rand var
-                    variable = Variable()
-                    variable.name = v_name
-                    try:
-                        variable.title = self.available_variables[v_name]['title']
-                    except KeyError:
-                        variable.title = v_name.replace('_', ' ').title()
-
-                    try:
-                        variable.unit = self.available_variables[v_name]['units']
-                    except KeyError:
-                        variable.unit = ''
-
-                    variable.dimensions = [d.name for d in self.dimensions]
-
-                    self._variables.append(variable)
-
-                idx += 1
 
         return self._variables
 
     def data(self, v_name):
         return None
 
-    def count(self, v_name):
-        total_size = 1
-        for d in self.dimensions:
-            total_size *= int(((d.max - d.min)/d.step)) + 1
+    @property
+    def max_rows(self):
+        if self._max_rows is None:
+            rdx = self.data_row
+            while True:
+                try:
+                    self.cell_value(rdx, 0)
+                    rdx += 1
+                except IndexError:
+                    break
 
-        return total_size
+            self._max_rows = rdx - self.data_row + 1
+
+        return self._max_rows
+
+    def variable_iter(self, v_name):
+        combinations = []
+        rdx = self.data_row
+        v = self.get_variable(v_name)
+        while True:
+            try:
+                combination = []
+                for d_name in v.dimensions:
+                    combination.append((rdx - self.data_row,
+                                        self.normalize(self.get_dimension(d_name),
+                                                       self.get_value_from_sheet(self.available_dimensions[d_name], rdx))))
+
+                combinations.append(combination)
+                rdx += 1
+            except IndexError:
+                break
+
+        return combinations
+
+    def count(self, v_name):
+        try:
+            return len(self.variable_iter(v_name))
+        except NotImplementedError:
+            total_size = 1
+            for d in self.dimensions:
+                if d.values:
+                    total_size *= len(d.values)
+                else:
+                    total_size *= int(((d.max - d.min)/d.step)) + 1
+
+            return total_size
 
     def get_value(self, v_name, comb):
-        return round(random(), 4)
+        v = self.get_variable(v_name)
+        rdx = self.data_row
+        while True:
+            try:
+                for idx, combi in enumerate(comb):
+                    if self.normalize(self.get_dimension(v.dimensions[idx]),
+                                      self.get_value_from_sheet(self.available_dimensions[v.dimensions[idx]], rdx)) != combi[1]:
+                        break
+                else:
+                    return self.get_value_from_sheet(self.available_variables[v_name], rdx)
+
+                rdx += 1
+            except IndexError:
+                break
+
+        return None
 
     def get_value_from_sheet(self, param, row_idx):
-        v = self.sheet.cell_value(row_idx, param['idx'])
+        v = self.cell_value(row_idx, param['idx'])
         if v is None or v == '':
             return v
 
         # special parse cases
         if 'transform' in param.keys():
             if param['transform'] == 'coordinates':
-                v_next = self.sheet.cell_value(row_idx, param['idx'] + 1)
+                v_next = self.cell_value(row_idx, param['idx'] + 1)
                 v = Decimal('%d.%02d' % (v, v_next))
 
         return v
 
     def normalize(self, dimension, value):
         # time
-        if dimension.unit == 'timestamp':
-            return datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        if dimension.unit == 'timestamp' and type(value) in [str, unicode]:
+            return time.mktime(datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S').timetuple())
 
         return value

@@ -32,6 +32,7 @@ class Dimension(BaseVariable):
     min = None
     max = None
     step = 1
+    values = None
     axis = None
 
     def to_json(self):
@@ -41,6 +42,7 @@ class Dimension(BaseVariable):
             'min': self.min,
             'max': self.max,
             'step': self.step,
+            'values': self.values,
             'axis': self.axis,
         })
 
@@ -117,6 +119,9 @@ class BaseConverter(object):
     @property
     def dimensions(self):
         raise NotImplementedError('`dimensions` getter was not implemented')
+
+    def variable_iter(self, v_name):
+        raise NotImplementedError('`variable_iter` optional method is not implemented')
 
     def data(self, v_name):
         raise NotImplementedError('variable data getter was not implemented')
@@ -261,25 +266,35 @@ class BaseConverter(object):
                     agv.create_data_table(cursor=target['cursor'], with_indices=False)
 
                 # add data
-                dim_values = []
-                for dimension in dimensions:
-                    vv = []
-                    x = dimension.min
-                    idx = 0
-                    while (dimension.step < 0 and x >= dimension.max) or \
-                            ((dimension.step >= 0 or dimension.step is None) and x <= dimension.max):
-                        vv.append((idx, self.normalize(dimension, x)))
-                        if dimension.step is None:
-                            break
-                        idx += 1
-                        x += dimension.step
-                    dim_values.append(vv)
+                try:
+                    _iter = self.variable_iter(v.name)
+                except NotImplementedError:
+
+                    dim_values = []
+                    for dimension in dimensions:
+                        if dimension.values:
+                            dim_values.append([(k, x) for k, x in enumerate(dimension.values)])
+                            continue
+
+                        vv = []
+                        x = dimension.min
+                        idx = 0
+                        while (dimension.step < 0 and x >= dimension.max) or \
+                                ((dimension.step >= 0 or dimension.step is None) and x <= dimension.max):
+                            vv.append((idx, self.normalize(dimension, x)))
+                            if dimension.step is None:
+                                break
+                            idx += 1
+                            x += dimension.step
+                        dim_values.append(vv)
+
+                    _iter = itertools.product(*dim_values)
 
                 insert_values = []
                 progress = 0
                 total = self.count(v_name=v.name)
 
-                for comb in itertools.product(*dim_values):
+                for comb in _iter:
                     error = False
                     value = None
                     try:
