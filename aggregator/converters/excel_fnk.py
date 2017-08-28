@@ -1,6 +1,9 @@
 from random import random
 
 import xlrd
+from fractions import gcd
+
+from decimal import Decimal
 
 from aggregator.converters.base import *
 
@@ -27,8 +30,10 @@ class ExcelFnkDataConverter(BaseConverter):
         # set up possible dimensions
         self.available_dimensions = {
             'eosp date': {'unit': 'timestamp'},
-            'latitude': {'unit': 'degree_north', 'step': 0.01, 'min': -90, 'max': 90},
-            'lontitude': {'unit': 'degree_east', 'step': 0.01, 'min': -180, 'max': 180},
+            'latitude': {'unit': 'degree_north',
+                         'transform': 'coordinates'},
+            'lontitude': {'unit': 'degree_east', 'step': 0.01, 'min': -180, 'max': 180,
+                          'transform': 'coordinates'},
             'voyage no': {'unit': '', 'title': 'Voyage No'}
         }
 
@@ -49,54 +54,82 @@ class ExcelFnkDataConverter(BaseConverter):
 
     @property
     def dimensions(self):
+
+        def gt_zero(x):
+            if type(x) == datetime.timedelta:
+                return x > datetime.timedelta()
+
+            return x > 0
+
+        def norm(x):
+            if type(x) == datetime.timedelta:
+                return x.total_seconds()
+
+            return x
+
+        def denorm(x, tp):
+            if tp == datetime.datetime:
+                return datetime.timedelta(seconds=x)
+
+            return x
+
         if not self._dimensions:
             self._dimensions = []
 
             idx = 0
             while True:
-                d_name = self.sheet.cell_value(self.header_row, idx).lower()
+                try:
+                    d_name = self.sheet.cell_value(self.header_row, idx).lower()
 
-                if not d_name:
+                    d_name = d_name.replace('\n', ' ')
+
+                    if d_name in self.available_dimensions.keys():
+
+                        # store column for data reference
+                        self.available_dimensions[d_name]['idx'] = idx
+
+                        dimension = Dimension()
+                        dimension.name = d_name
+
+                        try:
+                            dimension.title = self.available_dimensions[d_name]['title']
+                        except KeyError:
+                            dimension.title = d_name.replace(' ', '_').title()
+
+                        dimension.unit = self.available_dimensions[d_name]['unit']
+
+                        try:
+                            dimension.min = self.available_dimensions[d_name]['min']
+                            dimension.max = self.available_dimensions[d_name]['max']
+                            dimension.step = self.available_dimensions[d_name]['step']
+                        except KeyError:
+                            values = []
+                            rdx = self.header_row + 2
+                            while True:
+                                try:
+                                    v = self.get_value_from_sheet(self.available_dimensions[d_name], rdx)
+                                    if v is None or v == '':
+                                        break
+
+                                    values.append(self.normalize(dimension, v))
+                                    rdx += 1
+                                except IndexError:
+                                    break
+
+                            values.sort()
+
+                            dimension.min = values[0]
+                            dimension.max = values[-1]
+                            dimension.step = denorm(reduce(gcd,
+                                                    list(set(
+                                                        [s for s in
+                                                         [abs(norm(values[i + 1] - values[i])) for i in range(0, len(values) - 1)]
+                                                         if gt_zero(s)]))), type(values[0]))
+
+                        # add to dimensions
+                        self._dimensions.append(dimension)
+                except IndexError:
                     break
-
-                d_name = d_name.replace('\n', ' ')
-
-                if d_name in self.available_dimensions.keys():
-
-                    # store column for data reference
-                    self.available_dimensions[d_name]['idx'] = idx
-
-                    dimension = Dimension()
-                    dimension.name = d_name
-
-                    try:
-                        dimension.title = self.available_dimensions[d_name]['title']
-                    except KeyError:
-                        dimension.title = d_name.replace(' ', '_').title()
-
-                    dimension.unit = self.available_dimensions[d_name]['unit']
-
-                    try:
-                        dimension.min = self.available_dimensions[d_name]['min']
-                        dimension.max = self.available_dimensions[d_name]['max']
-                        dimension.step = self.available_dimensions[d_name]['step']
-                    except KeyError:
-                        values = []
-                        rdx = self.header_row + 1
-                        while True:
-                            v = self.sheet.cell_value(rdx, idx)
-                            if v is None or v == '':
-                                break
-
-                            values.append(self.normalize(dimension, v))
-
-                        values.sort()
-                        dimension.min = values[0]
-                        dimension.max = values[-1]
-                        dimension.step = min([values[i + 1] - values[i] for i in range(0, len(values) - 1)])
-
-                    # add to dimensions
-                    self._dimensions.append(dimension)
 
                 idx += 1
 
@@ -153,6 +186,19 @@ class ExcelFnkDataConverter(BaseConverter):
 
     def get_value(self, v_name, comb):
         return round(random(), 4)
+
+    def get_value_from_sheet(self, param, row_idx):
+        v = self.sheet.cell_value(row_idx, param['idx'])
+        if v is None or v == '':
+            return v
+
+        # special parse cases
+        if 'transform' in param.keys():
+            if param['transform'] == 'coordinates':
+                v_next = self.sheet.cell_value(row_idx, param['idx'] + 1)
+                v = Decimal('%d.%02d' % (v, v_next))
+
+        return v
 
     def normalize(self, dimension, value):
         # time
