@@ -1,6 +1,9 @@
 # django
 Django==1.9
 
+# authentication
+django-allauth
+
 # database access
 psycopg2==2.7.1
 pymongo

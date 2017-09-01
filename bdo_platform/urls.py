@@ -17,11 +17,18 @@ from django.conf.urls import url, include
 from django.contrib import admin
 
 urlpatterns = [
+    # admin
     url(r'^admin/', admin.site.urls),
+
+    # authentication
+    url(r'^accounts/', include('allauth.urls')),
 
     # main app
     url(r'^', include('bdo_main_app.urls')),
 
     # query designer
     url(r'^queries', include('query_designer.urls')),
+
+    # analytics
+    url(r'^analytics', include('analytics.urls')),
 ]
