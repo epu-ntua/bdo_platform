@@ -1,0 +1,37 @@
+{% if form.non_field_errors %}
+    {% for err in form.non_field_errors %}
+        <div class="o-orange padding-vertical-3">
+            <i class="fa fa-exclamation-triangle "></i>
+            {{ err }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% for field in form %}
+    <div class="row">
+        <div class="{% if not full_row %}col-lg-6 {% endif %}col-xs-12 {% if centered %}col-lg-push-3{% endif %}">
+            <div class="form-group label-floating{% if not field.value %} is-empty{% endif %}">
+                <label class="control-label">
+                    {{ field.label }}
+
+                    {% if field.field.required %}
+                        <span class="o-red">*</span>
+                    {% endif %}
+                </label>
+
+
+                {{ field }}
+                <span class="material-input"></span>
+
+                {% if field.errors %}
+                    {% for err in field.errors %}
+                        <div class="o-orange padding-bottom-2">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            {{ err }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endfor %}

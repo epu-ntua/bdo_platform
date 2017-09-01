@@ -128,10 +128,18 @@
 								</ul>
 							</li>
 							<li>
-								<a href="#pablo" class="dropdown-toggle" data-toggle="dropdown">
-	 							   <i class="material-icons">person</i>
-	 							   <p class="hidden-lg hidden-md">Profile</p>
-		 						</a>
+                                {% if request.user.is_authenticated %}
+                                    <a href="/" class="dropdown-toggle" data-toggle="dropdown">
+                                       <i class="material-icons">person</i>
+                                       <p class="hidden-lg hidden-md">Profile</p>
+                                    </a>
+                                    <ul class="dropdown-menu" style="text-align: right;">
+                                        <li style="padding: 10px 20px;">Welcome <b>{{ request.user.username }}</b></li>
+                                        <li style="padding: 10px 20px;"><p><a href="/accounts/logout/">Logout</a></p></li>
+                                    </ul>
+                                {% else %}
+                                    <a href="/accounts/login/">Login or Signup</a>
+                                {% endif %}
 							</li>
 						</ul>
 
@@ -196,6 +204,9 @@
 
 	<!-- Material Dashboard javascript methods -->
 	<script src="{% static 'js/material-dashboard.js' %}"></script>
+
+    <!-- Form setup -->
+	<script src="{% static 'js/form.js' %}"></script>
 
 	{% block js %}
     {% endblock %}
