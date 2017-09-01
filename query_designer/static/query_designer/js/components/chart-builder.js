@@ -442,7 +442,6 @@ ChartBuilder = function(qd, destSelector, headers) {
                         difY = Math.max(Math.min(compLoc.y - loc.y, 10), -10),
                         v = r[variable.idx];
 
-                    console.log(difX + ' ' + difY);
                     mapCtx.beginPath();
                     mapCtx.fillStyle = that.util.getColorFromDistribution(vDistribution, v);
                     // mapCtx.arc(loc.x, loc.y, difX, 0, 2 * Math.PI);
