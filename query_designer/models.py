@@ -15,6 +15,11 @@ from django.db.models import *
 from aggregator.models import *
 
 
+# if there are less results than `GRANULARITY_MIN_PAGES`
+# any granularity requests are ignored
+GRANULARITY_MIN_PAGES = 10000
+
+
 class ResultEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, decimal.Decimal):
@@ -190,19 +195,40 @@ class Query(Model):
             # execute query & return results
             t1 = time.time()
 
-            # apply granularity
-            try:
-                granularity = int(self.document.get('granularity', 0))
-            except ValueError:
-                granularity = 0
+            # count pages
+            if limit is not None:
+                pages = {
+                    'current': (offset / limit) + 1,
+                    'total': 1
+                }
+            else:
+                pages = {
+                    'current': 1,
+                    'total': 1
+                }
 
-            if granularity > 1:
-                q = """
-                    SELECT %s FROM (
-                        SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
-                    ) AS GQ_C
-                    WHERE (row_id %% %d = 0)
-                """ % (','.join([a[1] for a in aliases]), q, granularity)
+            q_pages = subquery_cnt + where_clause
+
+            cursor.execute(q_pages)
+            self.count = cursor.fetchone()[0]
+
+            if limit is not None:
+                pages['total'] = (self.count - 1) / limit + 1
+
+            # apply granularity
+            if self.count >= GRANULARITY_MIN_PAGES:
+                try:
+                    granularity = int(self.document.get('granularity', 0))
+                except ValueError:
+                    granularity = 0
+
+                if granularity > 1:
+                    q = """
+                        SELECT %s FROM (
+                            SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
+                        ) AS GQ_C
+                        WHERE (row_id %% %d = 0)
+                    """ % (','.join([a[1] for a in aliases]), q, granularity)
 
             print q
 
@@ -222,26 +248,6 @@ class Query(Model):
                             res_row.append(row[idx])
 
                     results.append(res_row)
-
-            # count pages
-            if limit is not None:
-                pages = {
-                    'current': (offset / limit) + 1,
-                    'total': 1
-                }
-            else:
-                pages = {
-                    'current': 1,
-                    'total': 1
-                }
-
-            if len(results) == limit:
-                q_pages = subquery_cnt + \
-                          where_clause
-
-                cursor.execute(q_pages)
-                self.count = cursor.fetchone()[0]
-                pages['total'] = (self.count - 1) / limit + 1
 
         # include dimension values if requested
         for d_name in dimension_values:

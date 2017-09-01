@@ -438,10 +438,11 @@ ChartBuilder = function(qd, destSelector, headers) {
                 $.each(results, function(idx, r) {
                     var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
                         compLoc = map.coordinatesToStageXY(r[coordinateCols.lngIdx] + lngStep, r[coordinateCols.latIdx] + latStep),
-                        difX = compLoc.x - loc.x,
-                        difY = compLoc.y - loc.y,
+                        difX = Math.max(Math.min(compLoc.x - loc.x, 10), -10),
+                        difY = Math.max(Math.min(compLoc.y - loc.y, 10), -10),
                         v = r[variable.idx];
 
+                    console.log(difX + ' ' + difY);
                     mapCtx.beginPath();
                     mapCtx.fillStyle = that.util.getColorFromDistribution(vDistribution, v);
                     // mapCtx.arc(loc.x, loc.y, difX, 0, 2 * Math.PI);
