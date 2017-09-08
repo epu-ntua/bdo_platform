@@ -27,8 +27,8 @@ urlpatterns = [
     url(r'^', include('bdo_main_app.urls')),
 
     # query designer
-    url(r'^queries', include('query_designer.urls')),
+    url(r'^queries/', include('query_designer.urls')),
 
     # analytics
-    url(r'^analytics', include('analytics.urls')),
+    url(r'^analytics/', include('analytics.urls')),
 ]
