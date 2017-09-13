@@ -32,3 +32,4 @@ urlpatterns = [
     # analytics
     url(r'^analytics/', include('analytics.urls')),
 ]
+
