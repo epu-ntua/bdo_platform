@@ -124,7 +124,9 @@ DocumentBuilder = function(qd) {
             var prop = {
                 type: property.uri,
                 name: that.propertyNames[idx][jdx],
-                title: property.label
+                title: property.label,
+                aggregate: property.aggregate || '',
+                groupBy: property.groupBy || false
             };
 
             $.each(qd.arrows.connections, function(_, connection) {

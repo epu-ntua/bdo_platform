@@ -62,6 +62,10 @@ var PropertyOptions = function(qd) {
                 that.save();
                 qd.workbench.builder.reset();
             });
+        },
+
+        setTitle: function(newTitle) {
+            this.$elem.parent().find('.ui-dialog-title').text(newTitle);
         }
     };
 
@@ -72,7 +76,7 @@ var PropertyOptions = function(qd) {
         this.property = this.instance.selected_properties[p];
 
         // set dialog title
-        $("#ui-id-3").html(this.property.name + " - property options");
+        this.ui.setTitle('Property options (' + this.property.name + ')');
 
         // uri
         if (this.property.uri == 'URI') {
@@ -86,7 +90,7 @@ var PropertyOptions = function(qd) {
         this.ui.$elem.find('.property-name').val(this.property.name);
 
         // group by
-        this.ui.$elem.find('.property-group-by').attr('checked', this.property.group_by === true);
+        this.ui.$elem.find('.property-group-by').attr('checked', this.property.groupBy === true);
 
         // aggregate
         if (this.property.aggregate !== undefined) {
@@ -126,7 +130,7 @@ var PropertyOptions = function(qd) {
             $("#class_instance_" + this.i + " .property-row:nth-of-type(" + (this.p+2) + ") span:nth-of-type(2)").html(this.getCurrentProperty());
         }
 
-        this.property.group_by = this.ui.$elem.find('.property-group-by').is(":checked");
+        this.property.groupBy = this.ui.$elem.find('.property-group-by').is(":checked");
         this.property.aggregate = this.ui.$elem.find('.property-aggregate').val();
         if (this.property.aggregate === "") {
             this.property.aggregate = undefined;
