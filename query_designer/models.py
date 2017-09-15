@@ -7,6 +7,7 @@ import datetime
 import copy
 import time
 from collections import OrderedDict
+from threading import Thread
 
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
@@ -78,6 +79,43 @@ class Query(Model):
                 Query.process_filters(filters['b']))
 
         return result
+
+    @staticmethod
+    def threaded_fetchall(conn, query, count):
+
+        def fetch_data_page(results, offset=0, limit=100):
+            cur = conn.cursor()
+            cur.execute(query + ' OFFSET %d LIMIT %d' % (offset, limit))
+            results.extend(cur.fetchall())
+
+        # try threaded fetch
+        unlimited_results_page_size = 50000
+        workers = 5
+        current_offset = 0
+        all_rows = []
+
+        while current_offset <= count:
+            print current_offset
+            threads = []
+            for w in range(0, workers):
+                if current_offset + w * unlimited_results_page_size > count:
+                    break
+
+                thread = Thread(target=fetch_data_page,
+                                args=(all_rows,
+                                      current_offset + w * unlimited_results_page_size,
+                                      unlimited_results_page_size))
+                thread.start()
+                threads.append(thread)
+
+            # wait for all to finish
+            for k, thread in enumerate(threads):
+                print 'waiting %d' % (k+1)
+                thread.join()
+
+            current_offset += unlimited_results_page_size * workers
+
+        return all_rows
 
     def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
         if dimension_values:
@@ -235,11 +273,12 @@ class Query(Model):
             results = []
             if execute:
                 cursor.execute(q)
+                all_rows = cursor.fetchall()
+                # all_rows = Query.threaded_fetchall(connection, q, self.count)
 
                 # we have to convert numeric results to float
                 # by default they're returned as strings to prevent loss of precision
-
-                for row in cursor.fetchall():
+                for row in all_rows:
                     res_row = []
                     for idx, h_type in enumerate(header_sql_types):
                         if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:

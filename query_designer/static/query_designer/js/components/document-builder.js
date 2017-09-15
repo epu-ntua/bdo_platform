@@ -16,6 +16,8 @@ DocumentBuilder = function(qd) {
             .replace(/-/g, '_')
             .replace(/,/g, '_')
             .replace(/\//g, '_')
+            .replace(/\+/g, '_')
+            .replace(/-/g, '_')
             .replace(/\\/g, '_')
             .replace(/\./g, '_')
 		    .replace(/\(/g, '_')

@@ -414,6 +414,9 @@ body.qd-body {
 #builder_workspace .class-instance .title h3 {
     font-size: 16px;
     max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 #builder_workspace .class-instance .title span.delete {
@@ -1005,6 +1008,10 @@ body.qd-body {
 
 #query-results--container ul.paginator li.disabled i {
     color: #ddd;
+}
+
+#query-results--container table th {
+    max-width: 300px;
 }
 
 /* Visualizations */

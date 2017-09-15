@@ -75,6 +75,9 @@
                 $(new_instance).find(".properties").html('<div class="property-table"><div class="header-row"><div></div><span>Show</span><span>Property</span><span>Optional</span><span>Order by</span><span>Filters</span><span>Foreign</span></div></div>');
                 $(new_instance).find(".properties").append('<div class="property-control"></div>');
 
+                // set title popup as whole variable name might not fit
+                $(new_instance).find('.title > h3').attr('title', label);
+
                 //add property selector
                 instance_object.property_select = new PropertySelect(that.qd, instance_object);
 
@@ -113,7 +116,7 @@
                 }
 
                 if (!has_URI) {
-                    self.add_property(new_id, 'VALUE'); //add URI by default
+                    self.add_property(new_id, 'VALUE', label); //add URI by default
                 }
 
                 if (default_properties) {
