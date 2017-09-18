@@ -128,7 +128,8 @@ class Query(Model):
         headers = []
         header_sql_types = []
 
-        aliases = []
+        columns = []
+        groups = []
         for _from in self.document['from']:
             v_obj = Variable.objects.get(pk=_from['type'])
 
@@ -164,10 +165,19 @@ class Query(Model):
                     })
 
                     # add fields to select clause
-                    aliases.append(('%s.%s' % (v_obj.data_table_name, selects[s['name']]['column']), '%s' % s['name']))
+                    c_name = '%s.%s' % (v_obj.data_table_name, selects[s['name']]['column'])
+                    if s.get('exclude', '').lower() != 'false':
+                        if s.get('aggregate', '') != '':
+                            c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+
+                        columns.append((c_name, '%s' % s['name']))
+
+                    # add fields to grouping
+                    if s.get('groupBy', ''):
+                        groups.append(c_name)
 
         # select
-        select_clause = 'SELECT ' + ','.join(['%s AS %s' % a for a in aliases]) + '\n'
+        select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
 
         # from
         from_clause = 'FROM ' + selects[selects.keys()[0]]['table'] + '\n'
@@ -205,6 +215,11 @@ class Query(Model):
         if where_clause:
             where_clause = 'WHERE ' + where_clause + ' \n'
 
+        # grouping
+        group_clause = ''
+        if groups:
+            group_clause = 'GROUP BY %s\n' % ','.join(groups)
+
         # offset & limit
         offset_clause = ''
         offset = 0
@@ -219,8 +234,8 @@ class Query(Model):
             limit_clause = 'LIMIT %d\n' % limit
 
         # organize into subquery
-        subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + ') AS SQ1\n'
-        subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + ') AS SQ1\n'
+        subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
+        subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
 
         # generate query
         q = subquery + \
@@ -228,6 +243,7 @@ class Query(Model):
             offset_clause + \
             limit_clause
 
+        print q
         cursor = connection.cursor()
         if not only_headers:
             # execute query & return results
@@ -267,8 +283,6 @@ class Query(Model):
                         ) AS GQ_C
                         WHERE (row_id %% %d = 0)
                     """ % (','.join([a[1] for a in aliases]), q, granularity)
-
-            print q
 
             results = []
             if execute:

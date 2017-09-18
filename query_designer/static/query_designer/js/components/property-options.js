@@ -39,8 +39,6 @@ var PropertyOptions = function(qd) {
                             '<option value="avg">Average</option>' +
                             '<option value="min">Minimum</option>' +
                             '<option value="max">Maximum</option>' +
-                            '<option value="group_concat">Group concat</option>' +
-                            '<option value="sample">Sample</option>' +
                         '</select>' +
                     '</div>' +
                     '<button class="btn btn-sm pull-right btn-success options-save">OK</button>' +
