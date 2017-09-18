@@ -134,7 +134,6 @@ class Query(Model):
             v_obj = Variable.objects.get(pk=_from['type'])
 
             for s in _from['select']:
-                sql_type = None
                 if s['type'] != 'VALUE':
                     dimension = Dimension.objects.get(pk=s['type'])
                     column_name = dimension.data_column_name
@@ -153,27 +152,27 @@ class Query(Model):
                 selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
 
                 if 'joined' not in s:
-                    header_sql_types.append(sql_type)
-                    headers.append({
-                        'title': s['title'],
-                        'name': s['name'],
-                        'unit': column_unit,
-                        'step': column_step,
-                        'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
-                        'isVariable': s['type'] == 'VALUE',
-                        'axis': column_axis,
-                    })
-
-                    # add fields to select clause
                     c_name = '%s.%s' % (v_obj.data_table_name, selects[s['name']]['column'])
-                    if s.get('exclude', '').lower() != 'false':
-                        if s.get('aggregate', '') != '':
-                            c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+                    if s.get('aggregate', '') != '':
+                        c_name = '%s(%s)' % (s.get('aggregate'), c_name)
 
+                    if not s.get('exclude', False):
+                        header_sql_types.append(sql_type)
+                        headers.append({
+                            'title': s['title'],
+                            'name': s['name'],
+                            'unit': column_unit,
+                            'step': column_step,
+                            'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
+                            'isVariable': s['type'] == 'VALUE',
+                            'axis': column_axis,
+                        })
+
+                        # add fields to select clause
                         columns.append((c_name, '%s' % s['name']))
 
                     # add fields to grouping
-                    if s.get('groupBy', ''):
+                    if s.get('groupBy', False):
                         groups.append(c_name)
 
         # select
@@ -220,6 +219,12 @@ class Query(Model):
         if groups:
             group_clause = 'GROUP BY %s\n' % ','.join(groups)
 
+        # ordering
+        order_by_clause = ''
+        orderings = self.document.get('orderings', [])
+        if orderings:
+            order_by_clause = 'ORDER BY %s\n' % ','.join([(o['name'] + ' ' + o['type']) for o in orderings])
+
         # offset & limit
         offset_clause = ''
         offset = 0
@@ -240,6 +245,7 @@ class Query(Model):
         # generate query
         q = subquery + \
             where_clause + \
+            order_by_clause + \
             offset_clause + \
             limit_clause
 
@@ -282,7 +288,7 @@ class Query(Model):
                             SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
                         ) AS GQ_C
                         WHERE (row_id %% %d = 0)
-                    """ % (','.join([a[1] for a in aliases]), q, granularity)
+                    """ % (','.join([c[1] for c in columns]), q, granularity)
 
             results = []
             if execute:

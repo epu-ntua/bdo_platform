@@ -84,10 +84,12 @@ var PropertyOptions = function(qd) {
         }
 
         // name
+        console.log(this.property);
         this.prev_name = this.property.name;
         this.ui.$elem.find('.property-name').val(this.property.name);
 
         // group by
+        this.ui.$elem.find('.property-group-by').prop('checked', this.property.groupBy === true);
         this.ui.$elem.find('.property-group-by').attr('checked', this.property.groupBy === true);
 
         // aggregate

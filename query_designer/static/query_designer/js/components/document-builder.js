@@ -126,7 +126,8 @@ DocumentBuilder = function(qd) {
                 name: that.propertyNames[idx][jdx],
                 title: property.label,
                 aggregate: property.aggregate || '',
-                groupBy: property.groupBy || false
+                groupBy: property.groupBy || false,
+                exclude: !property.show
             };
 
             $.each(qd.arrows.connections, function(_, connection) {
@@ -183,8 +184,27 @@ DocumentBuilder = function(qd) {
         });
     });
 
-    // add joins
-    // TODO add joins
+    // add ordering
+    // TODO examine correct order
+    document.orderings = [];
+    $.each(qd.workbench.builder.instances, function(idx, instance) {
+        $.each(instance.selected_properties, function (jdx, property) {
+            var orderBy = (property.orderBy || '').toLowerCase();
+
+            if (orderBy === 'asc') {
+                document.orderings.push({
+                    'name': that.propertyNames[idx][jdx],
+                    'type': 'ASC'
+                })
+            }
+            else if (orderBy === 'desc') {
+                document.orderings.push({
+                    'name': that.propertyNames[idx][jdx],
+                    'type': 'DESC'
+                })
+            }
+        })
+    });
 
     // unpack
     that.qd.config.properties.unpack(document);

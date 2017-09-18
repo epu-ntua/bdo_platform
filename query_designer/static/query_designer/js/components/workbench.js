@@ -140,8 +140,8 @@
                             if (inst.selected_properties[k].optional) { //optional
                                 $(sel + "span:nth-of-type(3) input").prop('checked', true)
                             }
-                            if (inst.selected_properties[k].order_by) { //order by
-                                $(sel + "span:nth-of-type(4) select").val(inst.selected_properties[k].order_by);
+                            if (inst.selected_properties[k].orderBy) { //order by
+                                $(sel + "span:nth-of-type(4) select").val(inst.selected_properties[k].orderBy);
                             }
 
                             if (that.builder.has_filters(inst.selected_properties[k].filters)) { //add the filters tick
@@ -247,7 +247,7 @@
                     n: instance.selected_properties.length,
                     optional: false,
                     show: true,
-                    order_by: undefined,
+                    orderBy: undefined,
                     filters: [],
                     info: info
                 };
@@ -423,7 +423,7 @@
 
         /*Order by*/
         $("body").on('change', '.property-row span:nth-of-type(4) select', function (e) {
-            that.builder.instances[$(this).parent().parent().data('i')].selected_properties[$(this).parent().parent().data('n')].order_by = $(this).val();
+            that.builder.instances[$(this).parent().parent().data('i')].selected_properties[$(this).parent().parent().data('n')].orderBy = $(this).val();
             that.builder.reset();
         });
 
