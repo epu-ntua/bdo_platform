@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from bson import ObjectId
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from mongo_client import get_mongo_db, MongoResponse
@@ -35,7 +35,11 @@ def load_query(request, pk):
 def save_query(request, pk=None):
     # create or update
     if not pk:
-        q = Query(user=User.objects.get(username='BigDataOcean'))
+        current_user = request.user
+        if current_user.is_authenticated():
+            q = Query(user=current_user)
+        else:
+            q = Query(user=User.objects.get(username='BigDataOcean'))
     else:
         q = Query.objects.get(pk=pk)
 
@@ -71,3 +75,19 @@ def save_query(request, pk=None):
         'pk': q.pk,
         'title': q.title
     })
+
+
+def get_query_variables(request, pk):
+    # get the query
+    q = Query.objects.get(pk=pk)
+    # find the query's SELECT variables formatted as: 'variable's column name': 'variable's name'
+    variables = dict()
+    for var in q.document['from']:
+        value_name = ''
+        for col_name in var['select']:
+            if col_name['type'] == 'VALUE':
+                value_name = col_name['name']
+        variables[value_name] = var['name']
+
+    # return the found variables
+    return HttpResponse(json.dumps(variables), content_type="application/json")
