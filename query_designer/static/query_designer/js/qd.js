@@ -87,10 +87,11 @@ var QueryDesigner = function($container, params) {
     // render
     this.ui.render();
 
-    // setup toolbar, menu & query options
+    // setup toolbar, menu, query & property options
     this.menu = new DesignerMenu(this);
     this.toolbar = new Toolbar(this);
     this.options = new QueryOptions(this);
+    this.propertyOptions = new PropertyOptions(this);
 
     // setup workbench
     this.workbench = new BuilderWorkbench(this);

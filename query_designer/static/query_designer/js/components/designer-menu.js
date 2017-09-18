@@ -19,7 +19,7 @@ DesignerMenu = function(qd) {
                     '<div class="pull-right">' +
                         '<span class="query-title"></span>' +
                         '<div class="btn-group">' +
-                            '<button class="btn btn-sm bg-color--lightgray view-code"><i class="material-icons text-gray">code</i> View Code</button>' +
+                            '<button class="btn btn-sm bg-color--lightgray view-code hidden"><i class="material-icons text-gray">code</i> View Code</button>' +
                             '<button class="btn btn-sm bg-color--lightgray show-query-options"><i class="material-icons text-gray">settings</i> Options</button>' +
                         '</div>' +
                     '</div>' +

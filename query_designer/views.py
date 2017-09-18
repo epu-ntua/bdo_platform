@@ -73,7 +73,7 @@ def save_query(request, pk=None):
     # return OK response
     return JsonResponse({
         'pk': q.pk,
-        'title': q.title
+        'title': q.title,
     })
 
 

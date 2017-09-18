@@ -75,6 +75,9 @@
                 $(new_instance).find(".properties").html('<div class="property-table"><div class="header-row"><div></div><span>Show</span><span>Property</span><span>Optional</span><span>Order by</span><span>Filters</span><span>Foreign</span></div></div>');
                 $(new_instance).find(".properties").append('<div class="property-control"></div>');
 
+                // set title popup as whole variable name might not fit
+                $(new_instance).find('.title > h3').attr('title', label);
+
                 //add property selector
                 instance_object.property_select = new PropertySelect(that.qd, instance_object);
 
@@ -113,7 +116,7 @@
                 }
 
                 if (!has_URI) {
-                    self.add_property(new_id, 'VALUE'); //add URI by default
+                    self.add_property(new_id, 'VALUE', label); //add URI by default
                 }
 
                 if (default_properties) {
@@ -123,7 +126,7 @@
                         } else { //property object as input
                             var pname = '';
                             if (default_properties[k].name_from_user) {
-                                pname = PropertyOptions.property_name_printable_from_string(new_id, default_properties[k].uri, default_properties[k].name);
+                                pname = that.qd.propertyOptions.propertyNameFromString(new_id, default_properties[k].uri, default_properties[k].name);
                             } else {
                                 pname = default_properties[k].label
                             }
@@ -264,7 +267,7 @@
 
                 // title is Label followed by type, if available
                 var property_object_str = '<div class="property-row" ' + data_i_n + '>' + delete_property + '<span class="property-show"><input type="checkbox" checked="checked"/></span><span>';
-                var order_select = '<select><option value=""></option><option value="ASC">ASC</option><option value="DESC">DESC</option><option value="NUMBER_ASC">ASC (number)</option><option value="NUMBER_DESC">DESC (number)</option><option value="DATE_ASC">ASC (date)</option>><option value="DATE_DESC">DESC (date)</option></select>'
+                var order_select = '<select><option value=""></option><option value="ASC">ASC</option><option value="DESC">DESC</option></select>';
                 property_object_str += label + '</span><span class="property-optional"><input  type="checkbox" ' + optional_disabled + ' /></span><span class="property-order-by">' + order_select + '</span><span>Edit</span><span>+Add</span></div>';
                 var property_object = $.parseHTML(property_object_str);
 
@@ -577,10 +580,9 @@
             selector: '.property-table .property-row',
             callback: function (key, options) {
                 var id = options.$trigger.attr('id');
-                var url;
 
                 if (key == "Options") {
-                    PropertyOptions.show($(options.$trigger).data('i'), $(options.$trigger).data('n'));
+                    that.qd.propertyOptions.show($(options.$trigger).data('i'), $(options.$trigger).data('n'));
                 }
                 else if (key == "Move up") {
                     var prev = $(options.$trigger).prev();
