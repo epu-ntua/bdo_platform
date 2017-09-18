@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
 from bdo_main_app.models import Service
+from query_designer.models import Query
 
 
 def pick_base_analysis(request):
@@ -23,9 +24,15 @@ def config_base_analysis(request, base_analysis_id):
     base_analysis = Service.objects.get(pk=int(base_analysis_id))
 
     if request.method == 'GET':
+        user = request.user
+        if request.user.is_authenticated():
+            saved_queries = Query.objects.filter(user=user)
+        else:
+            saved_queries = []
         return render(request, 'basic-analytics/config-analysis.html', {
             'sidebar_active': 'products',
             'base_analysis': base_analysis,
+            'saved_queries': saved_queries,
         })
     else:
         # gather arguments

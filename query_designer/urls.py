@@ -21,6 +21,9 @@ urlpatterns = [
     url('save/$', views.save_query, name='save-query'),
     url('save/(?P<pk>\d+)/$', views.save_query, name='save-query'),
 
+    # get select variables
+    url('get_query_variables/(?P<pk>\d+)/$', views.get_query_variables, name='get-query-variables'),
+
     # basic page
     url('$', views.index, name='home'),
 ]
