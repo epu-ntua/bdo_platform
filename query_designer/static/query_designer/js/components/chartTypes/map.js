@@ -2,11 +2,7 @@
  * Created by dimitris on 19/9/2017.
  */
 MapChart = function(refChart, nonVisualizedDimensions, config) {
-    var onHeadersLoaded = undefined,
-        onFiltersUpdateStarted = undefined,
-        onChartCreated = undefined,
-        onFiltersUpdated = undefined,
-        getGranularity = function() {return null},
+    var getGranularity = function() {return null},
         getVisualizationFilters = undefined,
         coordinateCols = config.coordinateCols,
         headers = config.headers,
