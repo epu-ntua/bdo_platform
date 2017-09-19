@@ -2,8 +2,10 @@ import sys
 import requests
 import json
 
-from .conf import db
-
+db = {
+    'psycopg': "dbname='bdo_platform' user='postgres' host='localhost' password='bdo!'",
+    'jdbc': "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234",
+}
 
 job_id = int(sys.argv[1])
 server_url = sys.argv[2]
