@@ -438,8 +438,8 @@ ChartBuilder = function(qd, destSelector, headers) {
                 $.each(results, function(idx, r) {
                     var loc = map.coordinatesToStageXY(r[coordinateCols.lngIdx], r[coordinateCols.latIdx]),
                         compLoc = map.coordinatesToStageXY(r[coordinateCols.lngIdx] + lngStep, r[coordinateCols.latIdx] + latStep),
-                        difX = Math.max(Math.min(compLoc.x - loc.x, 10), -10),
-                        difY = Math.max(Math.min(compLoc.y - loc.y, 10), -10),
+                        difX = Math.max(Math.min(compLoc.x - loc.x, 10), 5),
+                        difY = Math.max(Math.min(compLoc.y - loc.y, 10), 5),
                         v = r[variable.idx];
 
                     mapCtx.beginPath();
@@ -561,31 +561,15 @@ ChartBuilder = function(qd, destSelector, headers) {
 
             onFiltersUpdated = function(res, resetView, callback) {
                 resetView = resetView || false;
-
                 results = res;
-                var map = that.ui.chart,
-                    latRange = that.getRangeFromData(results, coordinateCols.latIdx),
-                    lngRange = that.getRangeFromData(results, coordinateCols.lngIdx);
 
-                // calculate default zoom level
-                /*var latDiff = Math.abs(latRange.max - latRange.min),
-                    lngDiff = Math.abs(lngRange.max - lngRange.min),
-                    maxDiff = latDiff;
-                if (maxDiff < lngDiff) {
-                    maxDiff = lngDiff;
+                // no data
+                var map = that.ui.chart;
+
+                if (res.length > 0) {
+                    var latRange = that.getRangeFromData(results, coordinateCols.latIdx),
+                        lngRange = that.getRangeFromData(results, coordinateCols.lngIdx);
                 }
-
-                var zoomLevel = 120.0 / maxDiff;
-                if (zoomLevel > 15) {
-                    zoomLevel = 15;
-                }
-
-                if (resetView) {
-                    map.dataProvider.zoomLevel = zoomLevel;
-                    map.dataProvider.zoomLatitude =  (latRange.min + latRange.max) / 2;
-                    map.dataProvider.zoomLongitude = (lngRange.min + lngRange.max) / 2;
-                    map.validateData();
-                }*/
 
                 // at start, draw canvas
                 clearCanvas();
@@ -669,9 +653,14 @@ ChartBuilder = function(qd, destSelector, headers) {
         this.directives.onHeadersLoaded();
 
         // update non visualized dimensions
+        var vDimensions = [];
         $.each(this.directives.nonVisualizedDimensions, function(idx, dim) {
             dim.values = that.headers[dim.idx].values;
+            if (dim.values !== undefined) {
+                vDimensions.push(dim);
+            }
         });
+        this.directives.nonVisualizedDimensions = vDimensions;
 
         // setup filters
         this.filters = new ChartFilters(this, this.directives.nonVisualizedDimensions);

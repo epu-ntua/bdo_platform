@@ -311,7 +311,9 @@ class Query(Model):
         # include dimension values if requested
         for d_name in dimension_values:
             hdx, header = [hi for hi in enumerate(headers) if hi[1]['name'] == d_name][0]
-            header['values'] = Dimension.objects.get(pk=selects[d_name]['column'].split('_')[-1]).values
+            d = Dimension.objects.get(pk=selects[d_name]['column'].split('_')[-1])
+            if not d.non_filterable:
+                header['values'] = d.values
 
         # include variable ranges if requested
         if variable:

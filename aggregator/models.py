@@ -49,6 +49,7 @@ class Dimension(BaseVariable):
     max = DecimalField(blank=True, null=True, default=None, max_digits=100, decimal_places=50)
     step = DecimalField(blank=True, null=True, default=None, max_digits=100, decimal_places=50)
     axis = TextField(blank=True, null=True, default=None)
+    non_filterable = BooleanField(default=False)
 
     class Meta:
         ordering = ['pk']
@@ -80,7 +81,8 @@ class Dimension(BaseVariable):
                 self.unit.startswith('hours since ') or \
                 self.unit.startswith('minutes since ') or \
                 self.unit.startswith('seconds since ') or \
-                self.unit.startswith('milliseconds since '):
+                self.unit.startswith('milliseconds since ') or \
+                self.unit == 'timestamp':
             return 'TIMESTAMP'
 
         try:
@@ -126,6 +128,8 @@ class Dimension(BaseVariable):
         while v <= self.max:
             result.append(self.normalize(v))
             v += self.step
+            if v - self.min >= 100:
+                break
 
         return result
 
