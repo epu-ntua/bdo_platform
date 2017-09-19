@@ -2,6 +2,8 @@ import sys
 import requests
 import json
 
+from .conf import db
+
 job_id = int(sys.argv[1])
 server_url = sys.argv[2]
 
@@ -23,7 +25,7 @@ try:
     appID = spark.sparkContext.applicationId
 
     # connect to BDO platform db to get job details
-    conn = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='1234'")
+    conn = psycopg2.connect(db['psycopg'])
     cur = conn.cursor()
     cur.execute("""SELECT * from analytics_jobinstance WHERE id = %d""" % job_id)
     row = cur.fetchone()
@@ -52,7 +54,7 @@ try:
     print(query)
     # get data
     raw_df = spark.read.format('jdbc').options(
-        url="jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234",
+        url=db['jdbc'],
         database='bdo_platform',
         dbtable=query,
         partitionColumn="spark_part_id",
