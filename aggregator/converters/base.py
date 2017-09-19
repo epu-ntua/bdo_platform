@@ -246,8 +246,8 @@ class BaseConverter(object):
                         if d.name == dimension_name:
                             if target['type'] == 'postgres':
                                 agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
-                                                                   min=decimal.Decimal(str(d.min)),
-                                                                   max=decimal.Decimal(str(d.max)),
+                                                                   min=decimal.Decimal(str(d.min)) if d.min is not None else None,
+                                                                   max=decimal.Decimal(str(d.max)) if d.max is not None else None,
                                                                    step=decimal.Decimal(str(d.step))
                                                                    if d.step is not None else None,
                                                                    axis=d.axis,
@@ -297,10 +297,17 @@ class BaseConverter(object):
                 for comb in _iter:
                     error = False
                     value = None
+
                     try:
-                        value = self.get_value(v_name=v.name, comb=comb)
+                        if comb[-1][1] != 'V':
+                            raise ValueError()
+                        value = comb[-1][0]
+                        comb = comb[:-1]
                     except ValueError:
-                        error = True
+                        try:
+                            value = self.get_value(v_name=v.name, comb=comb)
+                        except ValueError:
+                            error = True
 
                     progress += 1
                     if progress % 1000 == 0:

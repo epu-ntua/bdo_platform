@@ -39,8 +39,6 @@ var PropertyOptions = function(qd) {
                             '<option value="avg">Average</option>' +
                             '<option value="min">Minimum</option>' +
                             '<option value="max">Maximum</option>' +
-                            '<option value="group_concat">Group concat</option>' +
-                            '<option value="sample">Sample</option>' +
                         '</select>' +
                     '</div>' +
                     '<button class="btn btn-sm pull-right btn-success options-save">OK</button>' +
@@ -86,10 +84,12 @@ var PropertyOptions = function(qd) {
         }
 
         // name
+        console.log(this.property);
         this.prev_name = this.property.name;
         this.ui.$elem.find('.property-name').val(this.property.name);
 
         // group by
+        this.ui.$elem.find('.property-group-by').prop('checked', this.property.groupBy === true);
         this.ui.$elem.find('.property-group-by').attr('checked', this.property.groupBy === true);
 
         // aggregate

@@ -128,12 +128,12 @@ class Query(Model):
         headers = []
         header_sql_types = []
 
-        aliases = []
+        columns = []
+        groups = []
         for _from in self.document['from']:
             v_obj = Variable.objects.get(pk=_from['type'])
 
             for s in _from['select']:
-                sql_type = None
                 if s['type'] != 'VALUE':
                     dimension = Dimension.objects.get(pk=s['type'])
                     column_name = dimension.data_column_name
@@ -152,22 +152,31 @@ class Query(Model):
                 selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
 
                 if 'joined' not in s:
-                    header_sql_types.append(sql_type)
-                    headers.append({
-                        'title': s['title'],
-                        'name': s['name'],
-                        'unit': column_unit,
-                        'step': column_step,
-                        'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
-                        'isVariable': s['type'] == 'VALUE',
-                        'axis': column_axis,
-                    })
+                    c_name = '%s.%s' % (v_obj.data_table_name, selects[s['name']]['column'])
+                    if s.get('aggregate', '') != '':
+                        c_name = '%s(%s)' % (s.get('aggregate'), c_name)
 
-                    # add fields to select clause
-                    aliases.append(('%s.%s' % (v_obj.data_table_name, selects[s['name']]['column']), '%s' % s['name']))
+                    if not s.get('exclude', False):
+                        header_sql_types.append(sql_type)
+                        headers.append({
+                            'title': s['title'],
+                            'name': s['name'],
+                            'unit': column_unit,
+                            'step': column_step,
+                            'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
+                            'isVariable': s['type'] == 'VALUE',
+                            'axis': column_axis,
+                        })
+
+                        # add fields to select clause
+                        columns.append((c_name, '%s' % s['name']))
+
+                    # add fields to grouping
+                    if s.get('groupBy', False):
+                        groups.append(c_name)
 
         # select
-        select_clause = 'SELECT ' + ','.join(['%s AS %s' % a for a in aliases]) + '\n'
+        select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
 
         # from
         from_clause = 'FROM ' + selects[selects.keys()[0]]['table'] + '\n'
@@ -205,6 +214,17 @@ class Query(Model):
         if where_clause:
             where_clause = 'WHERE ' + where_clause + ' \n'
 
+        # grouping
+        group_clause = ''
+        if groups:
+            group_clause = 'GROUP BY %s\n' % ','.join(groups)
+
+        # ordering
+        order_by_clause = ''
+        orderings = self.document.get('orderings', [])
+        if orderings:
+            order_by_clause = 'ORDER BY %s\n' % ','.join([(o['name'] + ' ' + o['type']) for o in orderings])
+
         # offset & limit
         offset_clause = ''
         offset = 0
@@ -219,15 +239,17 @@ class Query(Model):
             limit_clause = 'LIMIT %d\n' % limit
 
         # organize into subquery
-        subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + ') AS SQ1\n'
-        subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + ') AS SQ1\n'
+        subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
+        subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
 
         # generate query
         q = subquery + \
             where_clause + \
+            order_by_clause + \
             offset_clause + \
             limit_clause
 
+        print q
         cursor = connection.cursor()
         if not only_headers:
             # execute query & return results
@@ -266,9 +288,7 @@ class Query(Model):
                             SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
                         ) AS GQ_C
                         WHERE (row_id %% %d = 0)
-                    """ % (','.join([a[1] for a in aliases]), q, granularity)
-
-            print q
+                    """ % (','.join([c[1] for c in columns]), q, granularity)
 
             results = []
             if execute:
@@ -291,7 +311,9 @@ class Query(Model):
         # include dimension values if requested
         for d_name in dimension_values:
             hdx, header = [hi for hi in enumerate(headers) if hi[1]['name'] == d_name][0]
-            header['values'] = Dimension.objects.get(pk=selects[d_name]['column'].split('_')[-1]).values
+            d = Dimension.objects.get(pk=selects[d_name]['column'].split('_')[-1])
+            if not d.non_filterable:
+                header['values'] = d.values
 
         # include variable ranges if requested
         if variable:
