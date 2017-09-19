@@ -33,7 +33,7 @@ class JobInstance(Model):
 
     @property
     def job_source(self):
-        return 'linear_regression'
+        return self.base_analysis.job_name
 
     def submit(self):
         # mark as started
@@ -47,15 +47,21 @@ class JobInstance(Model):
             '--driver-class-path=%s' % os.path.join(os.path.join(BASE_DIR, 'drivers'), 'postgresql-42.1.1.jre7.jar'),
             os.path.join(os.path.join(os.path.join(BASE_DIR, 'analytics'), 'jobs'), self.job_source + '.py'),
             str(self.pk),
-            SERVER_URL
+            SERVER_URL,
         ]
         print ' '.join(command)
 
         # TODO fix in windows
         try:
-            subprocess.Popen(command)
-        except:
-            pass
+            subprocess.Popen(command, shell=True)
+            # subprocess.call(command, shell=True)
+        except Exception as e:
+            print('ERROR')
+            print e
+            # mark as failed
+            self.status = 'FAILED'
+            self.finished = now()
+            self.save()
 
     def update(self, results, error_msg=''):
         # mark as finished and save results

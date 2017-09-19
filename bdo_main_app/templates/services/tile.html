@@ -10,7 +10,7 @@
                 <div class="clearfix">
             {% endif %}
             <h4 class="title{% if show_price %} pull-left{% endif %}">
-                <a href="{{ service.url }}">{{ service.title }}</a>
+                <a href="{{ link_select }}">{{ service.title }}</a>
                 {% if service.label %}<span class="label label-warning">{{ service.label|upper }}</span>{% endif %}
             </h4>
             {% if show_price %}
@@ -35,7 +35,9 @@
             </div>
 
             {% if link_select %}
-                <a href="{{ link_select }}" class="btn btn-sm bg-color--blue pull-right select-link">Select</a>
+                <div>
+                    <a href="{{ link_select }}" class="btn btn-sm bg-color--blue pull-right select-link">Select</a>
+                </div>
             {% endif %}
         </div>
     </div>

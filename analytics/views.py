@@ -16,7 +16,7 @@ from query_designer.models import Query
 def pick_base_analysis(request):
     return render(request, 'basic-analytics/pick-base-analysis.html', {
         'sidebar_active': 'products',
-        'base_analytics': Service.objects.filter(service_type='analysis', info__extendable=True),
+        'base_analytics': Service.objects.filter(service_type='analysis', info__extendable=True).order_by('id'),
     })
 
 

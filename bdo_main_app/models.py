@@ -46,6 +46,7 @@ class Service(Model):
         }
     """
     info = JSONField(default=dict())
+    job_name = CharField(max_length=100)
 
     @property
     def tags(self):
