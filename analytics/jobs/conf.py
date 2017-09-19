@@ -1,4 +1,4 @@
 db = {
     'psycopg': "dbname='bdo_platform' user='postgres' host='localhost' password='bdo!'",
-    'jdbc': "dbname='bdo_platform' user='postgres' host='localhost' password='1234'",
+    'jdbc': "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234",
 }
