@@ -35,8 +35,8 @@ class CSVMarineTrafficConverter(BaseConverter):
 
         # set up possible dimensions
         self.available_dimensions = {
-            'lon': {'unit': 'degree_north'},
-            'lat': {'unit': 'degree_east'},
+            'lon': {'unit': 'degree_east'},
+            'lat': {'unit': 'degree_north'},
             'ship_id': {'unit': 'mt_vessel_id', 'title': 'Ship ID'},
             'timestamp': {'unit': 'timestamp', }
         }
