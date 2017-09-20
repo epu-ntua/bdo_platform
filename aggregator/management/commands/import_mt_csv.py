@@ -37,7 +37,8 @@ class Command(BaseCommand):
                 'type': 'postgres',
                 'cursor': connection.cursor(),
                 'with_indices': True
-            }
+            },
+            'stdout': self.stdout,
         }
 
         # if already uploaded, update existing dataset
