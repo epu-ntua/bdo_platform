@@ -16,18 +16,23 @@ class CSVMarineTrafficConverter(BaseConverter):
     header_row = 2
     data_row = 4
 
-    def __init__(self, name):
+    def __init__(self, name, title='', selected_variables="*"):
         self.name = name
         self.csv_file = open(BaseConverter.full_input_path(name), 'r')
-        self.dataset_title = '.'.join(name.split('.')[:-1])
+        self.dataset_title = title if title else '.'.join(name.split('.')[:-1])
 
         # set up possible variables
         self.available_variables = {
             'speed': {'unit': 'mph'},
             'course': {'unit': 'rpm'},
             'heading': {'unit': 'rpm'},
-            # 'SHIP_ID': {'unit': 'rpm'},
         }
+
+        # exclude some variables
+        if selected_variables != '*':
+            for v in self.available_variables.keys():
+                if v not in selected_variables.split(','):
+                    self.available_variables.pop(v)
 
         # initially we don't know the position of the dimension name in the csv
         for v_name in self.available_variables.keys():
