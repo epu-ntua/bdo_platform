@@ -329,10 +329,8 @@ body.qd-body {
 #builder_workspace span.n-of-instances {
     font-size: 12px;
     color: #999;
-    margin-left: 10px;
     vertical-align: top;
-    margin-bottom: 10px;
-    display: inline-block;
+    display: block;
 }
 
 #builder_workspace .class-instance .subquery-selector {

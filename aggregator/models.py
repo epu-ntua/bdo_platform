@@ -193,7 +193,7 @@ class Variable(BaseVariable):
         cursor.execute('DROP TABLE IF EXISTS %s;' % self.data_table_name)
 
     def count_values(self, cursor):
-        cursor.execute('SELECT COUNT (*) FROM %s;' % self.data_table_name)
+        cursor.execute("SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='%s'" % self.data_table_name)
         return cursor.fetchone()[0]
 
     def update_distribution(self, cursor):
