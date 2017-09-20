@@ -32,10 +32,11 @@
                                             <select id="query-select" class="form-control full-width" name="{{ argument.name }}">
                                                 <option disabled selected>-- select one of the saved queries --</option>
                                                 {% for query in saved_queries %}
-                                                    <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+                                                    <option id="{{ query.id }}" value="{{ query.raw_query }}++{{ query.document }}">{{ query.title }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <a href="/queries/"> + New query </a>
+                                            <a href="#" id="new_query_link"> + or create a new query </a>
+                                            <input  id="new_query_doc" type="text" value=""/>
                                         {% elif argument.type == 'COLUMN' %}
                                             <select class="form-control full-width variable-select" name="{{ argument.name }}" autocomplete="off">
                                                 <option disabled selected value>-- select variable --</option>
@@ -64,12 +65,18 @@
 {% block js %}
     <script src="{% static 'basic-analytics/analytics_config.js' %}"></script>
     <script type="text/javascript">
-        $('#query-select').on('change', function() {
+        function updateVariables(element) {
             $('.variable-select').find('option').remove().end();
             $('.variable-select').append($("<option disabled selected>-- select variable --</option>"));
-            var new_query_id = $(this).children(":selected").attr("id");
+            var new_query_id = $(element).children(":selected").attr("id");
+            var new_query_doc = $('#new_query_doc').val();
             $.ajax({
-                url: '/queries/get_query_variables/'+new_query_id+'/',
+                url: '/queries/get_query_variables/',
+                data: {
+                    id: new_query_id,
+                    document: new_query_doc
+                    },
+                type: 'GET',
                 success: function(variables){
                     $.each(variables, function(k, v) {
                         $('.variable-select').append($("<option></option>")
@@ -78,11 +85,29 @@
                     });
                 }
             });
+        }
+
+        $('#query-select').on('change', function() {
+            updateVariables(this);
         })
+
+        function addNewQuery(title, raw_query, document) {
+            $("#query-select option[id='-1']").remove().end();
+            $('#query-select').append($("<option selected id='-1' value='"+raw_query+"'>"+title+"</option>"));
+            $('#new_query_doc').val(document);
+            updateVariables($('#query-select'));
+        }
     </script>
 
 
-
+    <script type="text/javascript">
+        $('a#new_query_link').click(function(){
+            var left  = ($(window).width()/2)-(900/2);
+            var top   = ($(window).height()/2)-(600/2);
+            window.open('/queries/', 'window name', 'width=900, height=600, top='+top+', left='+left);
+            return false;
+        });
+    </script>
 
 
 

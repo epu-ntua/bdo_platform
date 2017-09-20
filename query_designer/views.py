@@ -77,17 +77,62 @@ def save_query(request, pk=None):
     })
 
 
-def get_query_variables(request, pk):
-    # get the query
-    q = Query.objects.get(pk=pk)
-    # find the query's SELECT variables formatted as: 'variable's column name': 'variable's name'
-    variables = dict()
-    for var in q.document['from']:
-        value_name = ''
-        for col_name in var['select']:
-            if col_name['type'] == 'VALUE':
-                value_name = col_name['name']
-        variables[value_name] = var['name']
+def get_query_variables(request):
+    if 'id' in request.GET:
+        id = int(request.GET.get('id'))
+        doc = None
+        # existing saved query
+        if id >= 0:
+            # get the query
+            q = Query.objects.get(pk=id)
+            # get the document
+            doc = q.document
+        # new query
+        else:
+            if 'document' in request.GET:
+                try:
+                    doc = json.loads(request.GET.get('document', ''))
+                except ValueError:
+                    return JsonResponse({'error': 'Invalid query document'}, status=400)
 
-    # return the found variables
-    return HttpResponse(json.dumps(variables), content_type="application/json")
+        # find the query's SELECT variables formatted as: 'variable's column name': 'variable's name'
+        variables = dict()
+        for var in doc['from']:
+            value_name = ''
+            for col_name in var['select']:
+                if col_name['type'] == 'VALUE':
+                    value_name = col_name['name']
+            variables[value_name] = var['name']
+
+        # return the found variables
+        return HttpResponse(json.dumps(variables), content_type="application/json")
+
+    else:
+        return JsonResponse({'error': 'Invalid query document'}, status=400)
+
+
+def load_to_analysis(request):
+    current_user = request.user
+    if current_user.is_authenticated():
+        q = Query(user=current_user)
+    else:
+        q = Query(user=User.objects.get(username='BigDataOcean'))
+
+    # document
+    if 'document' in request.GET:
+        try:
+            doc = json.loads(request.GET.get('document', ''))
+        except ValueError:
+            return JsonResponse({'error': 'Invalid query document'}, status=400)
+
+        q.document = doc
+
+    # title
+    if 'title' in request.GET:
+        q.title = request.GET.get('title', 'Untitled query')
+
+    # return OK response
+    return JsonResponse({
+        'raw_query': q.raw_query,
+        'title': q.title,
+    })
