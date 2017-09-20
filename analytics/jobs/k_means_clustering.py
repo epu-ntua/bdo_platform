@@ -2,7 +2,7 @@ import sys
 import requests
 import json
 
-from .conf import db
+from conf import db
 
 job_id = int(sys.argv[1])
 server_url = sys.argv[2]
