@@ -316,8 +316,8 @@ var Arrows = function(qb) {
             }
 
 
-            var headerHeightFrom = $(c.f).find('> .title').outerHeight() + $(c.f).find('header-row').outerHeight() || 100,
-                headerHeightTo = $(c.t).find('> .title').outerHeight() + $(c.t).find('header-row').outerHeight() || 100,
+            var headerHeightFrom = $(c.f).find('> .title').outerHeight() + $(c.f).find('header-row').outerHeight() || 110,
+                headerHeightTo = $(c.t).find('> .title').outerHeight() + $(c.t).find('header-row').outerHeight() || 110,
                 rowHeight = $(c.t).find('.property-row').outerHeight() || 30;
 
             var p1 = {x: $(c.f).position().left, y: $(c.f).position().top + headerHeightFrom + c.fp*rowHeight, w: $(c.f).width()};

@@ -192,11 +192,12 @@ class BaseConverter(object):
 
         return os.path.join(dist_path, filename)
 
-    def store(self, target, stdout=None):
+    def store(self, target, stdout=None, update_dataset=None):
         """
         :param target: Either {'type': 'postgres', 'cursor': <Cursor>, 'withIndices': True|False} or
                               {'type': 'mongo', 'db': <MongoClient>}
         :param stdout: Optional output stream
+        :param update_dataset: Existing dataset to update
         :return: Inserts data to database
         """
 
@@ -220,9 +221,13 @@ class BaseConverter(object):
 
         agd = None
 
+        # add datasets, variables & their dimensions
         try:
-            if target['type'] == 'postgres':
-                # add datasets, variables & their dimensions
+            # get or create dataset
+            if update_dataset is not None:
+                agd = update_dataset
+            elif target['type'] == 'postgres':
+
                 agd = AgDataset.objects.create(title=self.dataset.title, source=self.dataset.source,
                                                description=self.dataset.description, references=self.dataset.references)
             elif target['type'] == 'mongo':
@@ -230,28 +235,39 @@ class BaseConverter(object):
 
             for v in self.variables:
                 print v.name
+
+                v_existed = False
+                # get or create variable
                 if target['type'] == 'postgres':
-                    agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.unit,
-                                                    scale_factor=v.scale_factor, add_offset=v.add_offset,
-                                                    cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
-                                                    dataset=agd)
+                    try:
+                        agv = AgVariable.objects.get(name=v.name, dataset=agd)
+                        v_existed = True
+                    except AgVariable.DoesNotExist:
+                        agv = AgVariable.objects.create(name=v.name, title=v.title, unit=v.unit,
+                                                        scale_factor=v.scale_factor, add_offset=v.add_offset,
+                                                        cell_methods=v.cell_methods, type_of_analysis=v.type_of_analysis,
+                                                        dataset=agd)
                 elif target['type'] == 'mongo':
                     v_doc = v.to_json()
                     v_doc['dataset_id'] = agd
                     agv = target['db'].variables.insert(v_doc)
+                    # TODO get variable for updating dataset
 
                 dimensions = []
                 for dimension_name in v.dimensions:
                     for d in self.dimensions:
                         if d.name == dimension_name:
                             if target['type'] == 'postgres':
-                                agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
-                                                                   min=decimal.Decimal(str(d.min)) if d.min is not None else None,
-                                                                   max=decimal.Decimal(str(d.max)) if d.max is not None else None,
-                                                                   step=decimal.Decimal(str(d.step))
-                                                                   if d.step is not None else None,
-                                                                   axis=d.axis,
-                                                                   variable=agv)
+                                try:
+                                    agdim = AgDimension.objects.get(name=d.name, variable=agv)
+                                except AgDimension.DoesNotExist:
+                                    agdim = AgDimension.objects.create(name=d.name, title=d.title, unit=d.unit,
+                                                                       min=decimal.Decimal(str(d.min)) if d.min is not None else None,
+                                                                       max=decimal.Decimal(str(d.max)) if d.max is not None else None,
+                                                                       step=decimal.Decimal(str(d.step))
+                                                                       if d.step is not None else None,
+                                                                       axis=d.axis,
+                                                                       variable=agv)
 
                             elif target['type'] == 'mongo':
                                 d_doc = d.to_json()
@@ -262,8 +278,9 @@ class BaseConverter(object):
                             break
 
                 # create data table for variable
-                if target['type'] == 'postgres':
-                    agv.create_data_table(cursor=target['cursor'], with_indices=False)
+                if not v_existed:
+                    if target['type'] == 'postgres':
+                        agv.create_data_table(cursor=target['cursor'], with_indices=False)
 
                 # add data
                 try:
@@ -348,7 +365,7 @@ class BaseConverter(object):
                     agv.update_distribution(cursor=target['cursor'])
 
                     # create indices
-                    if 'with_indices' in target and target['with_indices']:
+                    if 'with_indices' in target and target['with_indices'] and not v_existed:
                         agv.create_indices(cursor=target['cursor'])
 
                 if stdout:

@@ -51,10 +51,8 @@ class JobInstance(Model):
         ]
         print ' '.join(command)
 
-        # TODO fix in windows
         try:
-            subprocess.Popen(command, shell=True)
-            # subprocess.call(command, shell=True)
+            subprocess.call(command)
         except Exception as e:
             print('ERROR')
             print e
