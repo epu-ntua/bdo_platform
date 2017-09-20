@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
 
 import json
+from threading import Thread
 
 from django.http import JsonResponse
 
@@ -49,7 +50,7 @@ def config_base_analysis(request, base_analysis_id):
         job = JobInstance.objects.create(user=user, base_analysis=base_analysis, arguments=arguments)
 
         # submit the job
-        job.submit()
+        Thread(job.submit, ()).start()
 
         # redirect to job's page
         return redirect(job.get_absolute_url())
