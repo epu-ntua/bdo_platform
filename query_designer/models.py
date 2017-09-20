@@ -200,9 +200,9 @@ class Query(Model):
 
                     for j in js:
                         joins.append('%s.%s=%s.%s' %
-                                     (self.document['from'][0]['name'],
+                                     (_from['name'],
                                       selects[j[0]]['column'],
-                                      _from['name'],
+                                      self.document['from'][0]['name'],
                                       selects[j[1]]['column']))
 
             join_clause += 'JOIN %s AS %s ON %s\n' % \
