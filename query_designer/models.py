@@ -152,7 +152,7 @@ class Query(Model):
                 selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
 
                 if 'joined' not in s:
-                    c_name = '%s.%s' % (v_obj.data_table_name, selects[s['name']]['column'])
+                    c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
                     if s.get('aggregate', '') != '':
                         c_name = '%s(%s)' % (s.get('aggregate'), c_name)
 
@@ -179,7 +179,8 @@ class Query(Model):
         select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
 
         # from
-        from_clause = 'FROM ' + selects[selects.keys()[0]]['table'] + '\n'
+        from_clause = 'FROM %s AS %s\n' % \
+                      (selects[selects.keys()[0]]['table'], self.document['from'][0]['name'])
 
         # join
         join_clause = ''
@@ -198,11 +199,16 @@ class Query(Model):
                         js = [(s['name'], s['joined'])]
 
                     for j in js:
-                        joins.append('%s=%s' %
-                                     (selects[j[0]]['column'],
+                        joins.append('%s.%s=%s.%s' %
+                                     (self.document['from'][0]['name'],
+                                      selects[j[0]]['column'],
+                                      _from['name'],
                                       selects[j[1]]['column']))
 
-            join_clause += 'JOIN %s ON %s\n' % (selects[_from['select'][0]['name']]['table'], ' AND '.join(joins))
+            join_clause += 'JOIN %s AS %s ON %s\n' % \
+                           (selects[_from['select'][0]['name']]['table'],
+                            _from['name'],
+                            ' AND '.join(joins))
 
         # where
         filters = self.document.get('filters', '')
