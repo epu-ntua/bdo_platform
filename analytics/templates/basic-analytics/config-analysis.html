@@ -36,7 +36,7 @@
                                                 {% endfor %}
                                             </select>
                                             <a href="#" id="new_query_link"> + or create a new query </a>
-                                            <input  id="new_query_doc" type="text" value=""/>
+                                            <input hidden id="new_query_doc" type="text" value=""/>
                                         {% elif argument.type == 'COLUMN' %}
                                             <select class="form-control full-width variable-select" name="{{ argument.name }}" autocomplete="off">
                                                 <option disabled selected value>-- select variable --</option>
