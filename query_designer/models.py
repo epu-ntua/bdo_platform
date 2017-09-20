@@ -364,7 +364,7 @@ class Query(Model):
                 del self.document[key]
 
         # get raw query
-        res = self.process(dimension_values='', variable='', only_headers=False, commit=False,
+        res = self.process(dimension_values='', variable='', only_headers=True, commit=False,
                            execute=False, raw_query=True)
 
         # restore initial doc
