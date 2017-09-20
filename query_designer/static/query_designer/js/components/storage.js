@@ -148,7 +148,6 @@ QueryStorage = function(qd, pk) {
             data: data,
             type: 'GET',
             success: function(qObj) {
-                // TODO load new query to analysis
                 opener.addNewQuery(qObj.title, qObj.raw_query, document);
                 close();
             },
