@@ -17,73 +17,89 @@ var ChartFilters = function(chartBuilder, filterColumns) {
 
                 var selectName = 'visualization-filter--' + fc.name,
                     $label = $('<label />').attr('for', selectName).text(fc.title),
-                    $select = $('<select />').attr('name', selectName),
+                    $inp,
+                    $play = undefined;
+
+                if (fc.values.min !== undefined) {
+                    $inp = $('<input />')
+                        .attr('type', 'number')
+                        .attr('min', fc.values.min)
+                        .attr('max', fc.values.max)
+                        .css('margin', '0 10px 10px 0')
+                        .css('vertical-align', 'top')
+                        .css('top', '-5px')
+                        .css('position', 'relative');
+                } else {
+                    $inp = $('<select />').attr('name', selectName);
+                    $.each(fc.values, function(jdx, filter) {
+                        var $option = $('<option />')
+                            .attr('value', jdx)
+                            .text(filter);
+
+                        if (jdx === fc.activeFilterIdx) {
+                            $option.attr('selected', 'selected');
+                        }
+
+                        $inp.append($option);
+                    });
+
                     $play = $('<i />').addClass('material-icons text-green').text('play_arrow');
 
-                $.each(fc.values, function(jdx, filter) {
-                    var $option = $('<option />')
-                        .attr('value', jdx)
-                        .text(filter);
+                    // on play/pause click
+                    $play.on('click', function() {
+                        var stopPlaying = function() {
+                            clearTimeout(fc.playingTimer);
+                            fc.playingTimer = null;
+                            $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
+                        };
 
-                    if (jdx === fc.activeFilterIdx) {
-                        $option.attr('selected', 'selected');
-                    }
+                        if (fc.playingTimer !== null) {
+                            $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
+                        } else {
+                            $play.text('pause_arrow').removeClass('text-green').addClass('text-orange');
+                        }
 
-                    $select.append($option);
-                });
+                        if (fc.playingTimer === null) {
+                            var fn = function() {
+                                that.chartBuilder.onFiltersUpdated({
+                                    ignoreOnStarted: true,
+                                    afterRedraw: function() {
+                                        $inp.get(0).selectedIndex = fc.activeFilterIdx;
+
+                                        // detect if stopped in the mean time
+                                        if (fc.playingTimer === null) {
+                                            return
+                                        }
+
+                                        if (fc.activeFilterIdx + 1 >= fc.values.length) {
+                                            stopPlaying();
+                                        } else {
+                                            fc.activeFilterIdx++;
+                                            fc.playingTimer = setTimeout(fn, 1000);
+                                        }
+                                    }
+                                });
+                            };
+
+                            fc.activeFilterIdx = 0;
+                            fc.playingTimer = setTimeout(fn, 10);
+                        } else {
+                            stopPlaying();
+                        }
+                    });
+                }
 
                 // on filter change
-                $select.on('change', function() {
+                $inp.on('change', function() {
                     fc.activeFilterIdx = Number($(this).val());
                     that.chartBuilder.onFiltersUpdated();
                 });
 
-                // on play/pause click
-                $play.on('click', function() {
-                    var stopPlaying = function() {
-                        clearTimeout(fc.playingTimer);
-                        fc.playingTimer = null;
-                        $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
-                    };
-
-                    if (fc.playingTimer !== null) {
-                        $play.text('play_arrow').removeClass('text-orange').addClass('text-green');
-                    } else {
-                        $play.text('pause_arrow').removeClass('text-green').addClass('text-orange');
-                    }
-
-                    if (fc.playingTimer === null) {
-                        var fn = function() {
-                            that.chartBuilder.onFiltersUpdated({
-                                ignoreOnStarted: true,
-                                afterRedraw: function() {
-                                    $select.get(0).selectedIndex = fc.activeFilterIdx;
-
-                                    // detect if stopped in the mean time
-                                    if (fc.playingTimer === null) {
-                                        return
-                                    }
-
-                                    if (fc.activeFilterIdx + 1 >= fc.values.length) {
-                                        stopPlaying();
-                                    } else {
-                                        fc.activeFilterIdx++;
-                                        fc.playingTimer = setTimeout(fn, 1000);
-                                    }
-                                }
-                            });
-                        };
-
-                        fc.activeFilterIdx = 0;
-                        fc.playingTimer = setTimeout(fn, 10);
-                    } else {
-                        stopPlaying();
-                    }
-                });
-
                 that.ui.$elem.append($label);
-                that.ui.$elem.append($select);
-                that.ui.$elem.append($play)
+                that.ui.$elem.append($inp);
+                if ($play !== undefined) {
+                    that.ui.$elem.append($play);
+                }
             });
 
             $('#query-visualization--container').parent().prepend(this.$elem);
@@ -103,6 +119,9 @@ var ChartFilters = function(chartBuilder, filterColumns) {
         // add filters from visualizations
         $.each(that.filterColumns, function(idx, filter) {
             var value = filter.values[filter.activeFilterIdx];
+            if (value === undefined) {
+                value = filter.activeFilterIdx;
+            }
             if (filter.quote !== undefined) {
                 value = filter.quote + value + filter.quote;
             }
@@ -149,7 +168,7 @@ var ChartFilters = function(chartBuilder, filterColumns) {
 
     this.initializeFilters = function() {
         $.each(that.filterColumns, function(idx, fc) {
-            fc.activeFilterIdx = 0;
+            fc.activeFilterIdx = fc.values.min || 0;
             fc.playingTimer = null;
         });
     };

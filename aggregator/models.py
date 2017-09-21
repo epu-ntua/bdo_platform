@@ -123,6 +123,12 @@ class Dimension(BaseVariable):
         if self.min is None or self.max is None or self.step is None:
             return self.get_values_from_db()
 
+        if self.step == 0:
+            return {
+                'min': self.min,
+                'max': self.max,
+            }
+
         result = []
         v = self.min
         while v <= self.max:

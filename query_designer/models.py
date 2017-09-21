@@ -255,7 +255,7 @@ class Query(Model):
             offset_clause + \
             limit_clause
 
-        # print q
+        print q
         cursor = connection.cursor()
         if not only_headers:
             # execute query & return results
