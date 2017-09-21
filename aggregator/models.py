@@ -67,6 +67,7 @@ class Dimension(BaseVariable):
             'max': self.max,
             'step': self.step,
             'axis': self.axis,
+            'is_numeric': self.sql_type == 'numeric',
         }
 
     @property
@@ -164,6 +165,7 @@ class Variable(BaseVariable):
             'add_offset': self.add_offset,
             'cell_methods': self.cell_methods,
             'type_of_analysis': self.type_of_analysis,
+            'is_numeric': True,
         }
 
     @property

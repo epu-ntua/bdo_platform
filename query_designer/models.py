@@ -73,6 +73,23 @@ class Query(Model):
         if type(filters) in [str, unicode, int, float]:
             return filters
 
+        # Special case: parsing location filters
+        # inside_rect|outside_rect <<lat_south,lng_west>,<lat_north,lng_east>>
+
+        if filters['op'] in ['inside_rect', 'outside_rect', ]:
+            rect_start = filters['b'].split('<')[2].split('>,')[0].split(',')
+            rect_end = filters['b'].split('>,<')[1].split('>')[0].split(',')
+
+            lat = filters['a'] + '_latitude'
+            lng = filters['a'] + '_longitude'
+            result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
+            result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
+
+            if filters['op'] == 'outside_rect':
+                result = 'NOT(%s)' % result
+
+            return result
+
         result = '(%s) %s (%s)' % \
                (Query.process_filters(filters['a']),
                 Query.operator_to_str(filters['op']),

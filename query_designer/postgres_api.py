@@ -32,9 +32,10 @@ def dataset_variables(request, dataset_id):
 
 
 def dataset_variable_properties(request, dataset_id, variable_id):
+    property_info = [d.to_json() for d in Dimension.objects.filter(variable_id=variable_id)]
+    response = [Variable.objects.get(pk=variable_id).to_json()] + property_info
 
-    return JsonResponse([d.to_json() for d in Dimension.objects.filter(variable_id=variable_id)],
-                        safe=False)
+    return JsonResponse(response, safe=False)
 
 
 def count_variable_values(request, dataset_id, variable_id):
