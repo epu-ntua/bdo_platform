@@ -292,9 +292,18 @@ class Query(Model):
 
             q_pages = subquery_cnt + where_clause
 
-            cursor.execute(q_pages)
-            self.count = cursor.fetchone()[0]
+            def _count():
+                cursor.execute(q_pages)
+                self.count = cursor.fetchone()[0]
 
+            self.count = None
+            t = Thread(target=_count, args=[])
+            t.start()
+            t.join(timeout=5)
+
+            if self.count is None:
+                self.count = 10000000
+                
             if limit is not None:
                 pages['total'] = (self.count - 1) / limit + 1
 
