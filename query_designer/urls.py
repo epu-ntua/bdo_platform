@@ -22,7 +22,10 @@ urlpatterns = [
     url('save/(?P<pk>\d+)/$', views.save_query, name='save-query'),
 
     # get select variables
-    url('get_query_variables/(?P<pk>\d+)/$', views.get_query_variables, name='get-query-variables'),
+    url('get_query_variables/$', views.get_query_variables, name='get-query-variables'),
+
+    # load new query to analysis
+    url('load_to_analysis/$', views.load_to_analysis, name='load-to-analysis'),
 
     # basic page
     url('$', views.index, name='home'),

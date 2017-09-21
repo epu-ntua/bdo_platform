@@ -137,6 +137,27 @@ QueryStorage = function(qd, pk) {
         }
     };
 
+    this.load_to_analysis = function() {
+        var document = JSON.stringify(new DocumentBuilder(that.qd).getDocument());
+        var data = {
+            document: document,
+            title: 'New query'
+        };
+        $.ajax({
+            url: '/queries/load_to_analysis/',
+            data: data,
+            type: 'GET',
+            success: function(qObj) {
+                opener.addNewQuery(qObj.title, qObj.raw_query, document);
+                close();
+            },
+            error: function () {
+                alert('New query could not be loaded to the analysis');
+                // TODO maybe use alert modal
+            }
+        })
+    };
+
     this.ui.render();
 
     if (this.pk !== undefined) {
