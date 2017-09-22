@@ -100,6 +100,8 @@ QueryExecutor = function(qd) {
                     .append($('<p />').text('Loading...'));
             }
 
+            that.qd.menu.ui.setRunning();
+
             this.$elem
                 .find('#query-results--data table')
                 .empty()
@@ -265,6 +267,7 @@ QueryExecutor = function(qd) {
                     return runConfig.callback(data);
                 }
 
+                that.qd.menu.ui.setRunComplete();
                 that.ui.renderResults(data, runConfig.updateChart, runConfig.scroll);
 
                 // update query options with page info

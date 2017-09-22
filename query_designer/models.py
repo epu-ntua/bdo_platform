@@ -73,6 +73,23 @@ class Query(Model):
         if type(filters) in [str, unicode, int, float]:
             return filters
 
+        # Special case: parsing location filters
+        # inside_rect|outside_rect <<lat_south,lng_west>,<lat_north,lng_east>>
+
+        if filters['op'] in ['inside_rect', 'outside_rect', ]:
+            rect_start = filters['b'].split('<')[2].split('>,')[0].split(',')
+            rect_end = filters['b'].split('>,<')[1].split('>')[0].split(',')
+
+            lat = filters['a'] + '_latitude'
+            lng = filters['a'] + '_longitude'
+            result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
+            result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
+
+            if filters['op'] == 'outside_rect':
+                result = 'NOT(%s)' % result
+
+            return result
+
         result = '(%s) %s (%s)' % \
                (Query.process_filters(filters['a']),
                 Query.operator_to_str(filters['op']),
@@ -255,7 +272,7 @@ class Query(Model):
             offset_clause + \
             limit_clause
 
-        # print q
+        print q
         cursor = connection.cursor()
         if not only_headers:
             # execute query & return results
@@ -275,14 +292,25 @@ class Query(Model):
 
             q_pages = subquery_cnt + where_clause
 
-            cursor.execute(q_pages)
-            self.count = cursor.fetchone()[0]
+            def _count():
+                cursor.execute(q_pages)
+                self.count = cursor.fetchone()[0]
+
+            self.count = None
+            count_failed = False
+            t = Thread(target=_count, args=[])
+            t.start()
+            t.join(timeout=5)
+
+            if self.count is None:
+                count_failed = True
+                self.count = 10000000
 
             if limit is not None:
                 pages['total'] = (self.count - 1) / limit + 1
 
             # apply granularity
-            if self.count >= GRANULARITY_MIN_PAGES:
+            if self.count >= GRANULARITY_MIN_PAGES and (not count_failed):
                 try:
                     granularity = int(self.document.get('granularity', 0))
                 except ValueError:

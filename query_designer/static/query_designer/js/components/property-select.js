@@ -36,21 +36,26 @@ function PropertySelect(qd, instance) {
                     that.started_loading = true;
                 }
 
+                // fill URI properties
+                var instance = that.qd.workbench.builder.instances[that.c.id],
+                    variableData = data[0];
+
+                instance.selected_properties[0].info = variableData;
+
                 // pack some properties
-                data = that.qd.config.properties.pack(data);
+                data = that.qd.config.properties.pack(data.slice(1));
 
                 // add the properties
                 for (var i=0; i<data.length; i++) {
                     // properties found from the vocabulary are not certain to exist in the data source
-                    var o = {'uri': data[i]._id, 'label': data[i].title, 'uncertain': false, info: data};
-
+                    var o = {'uri': data[i]._id, 'label': data[i].title, 'uncertain': false, info: data[i]};
                     o.frequence = undefined;
 
                     that.properties.push(o);
 
                     // add to instance by default
-                    var found = false
-                    $.each(that.qd.workbench.builder.instances[that.c.id].selected_properties, function(idx, prop) {
+                    var found = false;
+                    $.each(instance.selected_properties, function(idx, prop) {
                         if (prop.uri === o.uri) {
                             found = true;
                             return false;

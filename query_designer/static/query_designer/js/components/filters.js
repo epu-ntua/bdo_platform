@@ -21,59 +21,7 @@ BuilderWorkbenchFilters = function(qb) {
                     '<div id="all-filters">' +
                     '</div>' +
                     '<div class="select-filter-type">' +
-                        '<span>Select filter type:</span>' +
-                        '<select>' +
-                            '<option value=""></option>' +
-                            '<option value="str">String</option>' +
-                            '<option value="num">Number</option>' +
-                            '<option value="date">Date</option>' +
-                            '<option value="value">URL</option>' +
-                        '</select>' +
                         '<span id="filters-clear" class="btn btn-sm pull-right">Clear filters</span>' +
-                    '</div>' +
-                    '<div class="filter-type filter-type-str">' +
-                        '<span>Value </span>' +
-                        '<select>' +
-                            '<option value="contains">contains</option>' +
-                            '<option value="eq">is equal to</option>' +
-                            '<option value="neq">not equal to</option>' +
-                            '<option value="starts">starts with</option>' +
-                            '<option value="ends">ends with</option>' +
-                            '<option value="language">in language (if given): </option>' +
-                            '<option value="regex">follows the regular expression:</option>' +
-                        '</select>' +
-                        '<input type="text" placeholder="value"/>' +
-                        '<div class="right control-case-sensitive">' +
-                            '<input type="checkbox" id="case-sensitive" default="false" />' +
-                            '<label for="case-sensitive">Case sensitive</label>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="filter-type filter-type-num">' +
-                        '<span>Value </span>' +
-                        '<select>' +
-                            '<option value="eq">=</option>' +
-                            '<option value="neq">!=</option>' +
-                            '<option value="lt">&lt;</option>' +
-                            '<option value="lte">&lt;=</option>' +
-                            '<option value="gt">&gt;</option>' +
-                            '<option value="gte">&gt;=</option>' +
-                        '</select>' +
-                        '<input type="number" placeholder="value"/>' +
-                    '</div>' +
-                    '<div class="filter-type filter-type-date">' +
-                        '<span>Value </span>' +
-                        '<select>' +
-                            '<option value="eq">=</option>' +
-                            '<option value="neq">!=</option>' +
-                            '<option value="lt">&lt;</option>' +
-                            '<option value="lte">&lt;=</option>' +
-                            '<option value="gt">&gt;</option>' +
-                            '<option value="gte">&gt;=</option>' +
-                        '</select>' +
-                        '<input type="date" placeholder="value"/>' +
-                    '</div>' +
-                    '<div class="filter-type filter-type-value">' +
-                        '<input type="url" placeholder="search for an entity">' +
                     '</div>' +
                     '<div class="clearfix">' +
                         '<span class="add-filter btn btn-sm btn-success pull-left">+Add filter</span>' +
@@ -143,17 +91,13 @@ BuilderWorkbenchFilters = function(qb) {
             this.$elem.find(".add-filter").click(function() {
                 //create the new filter object
                 var nf = {};
-                nf.type = $("#property-filters .select-filter-type select").val();
-                nf.operator = $(".filter-type-" + nf.type + " select").val();
-                nf.operator_label = $(".filter-type-" + nf.type + " select option:selected").text();
-                nf.value = $(".filter-type-" + nf.type + " input").val();
-                if (nf.type == "str") {
-                    nf.case_sensitive = $("#case-sensitive").is(':checked');
-                }
+                nf.operator = that.ui.$elem.find('.select-filter-type select').val();
+                nf.operator_label = that.ui.$elem.find('.select-filter-type select option:selected').text();
+                nf.value = that.ui.$elem.find('.select-filter-type input').val();
 
-                //save the new filter and refresh
+                // save the new filter and refresh
                 that.qb.workbench.builder.property_selection.filters.push(nf);
-                $(".filter-type-" + nf.type + " input").val('');
+                that.ui.$elem.find('.select-filter-type input').val('');
                 that.show();
             });
 
@@ -285,9 +229,114 @@ BuilderWorkbenchFilters = function(qb) {
                     }
                 }
 
-                //show the clear filters button
+                // show the clear filters button
                 $('#filters-clear').css('display', 'inline-block');
             }
+
+            // show appropriate filter widget
+            var $opSelect = $('<select />'),
+                $inp = $('<input />'),
+                $extra = undefined;
+
+            if (p.info.unit === 'degrees') {
+                $opSelect.append($('<option />')
+                    .attr('value', 'inside_rect')
+                    .attr('selected', 'selected')
+                    .text('inside')
+                );
+                $opSelect.append($('<option />')
+                    .attr('value', 'outside_rect')
+                    .text('outside of')
+                );
+
+                $inp.css('display', 'none');
+
+                $extra = $('<div />')
+                    .append($('<input />')
+                        .attr('type', 'number')
+                        .attr('min', -90)
+                        .attr('max', 90)
+                        .attr('step', 0.01)
+                        .val(-90)
+                        .attr('placeholder', 'lat south')
+                    )
+                    .append($('<input />')
+                        .attr('type', 'number')
+                        .attr('min', -180)
+                        .attr('max', 180)
+                        .attr('step', 0.01)
+                        .val(-180)
+                        .attr('placeholder', 'lon west')
+                    )
+                    .append($('<input />')
+                        .attr('type', 'number')
+                        .attr('min', -90)
+                        .attr('max', 90)
+                        .attr('step', 0.01)
+                        .val(90)
+                        .attr('placeholder', 'lat north')
+                    )
+                    .append($('<input />')
+                        .attr('type', 'number')
+                        .attr('min', -180)
+                        .attr('max', 180)
+                        .attr('step', 0.01)
+                        .val(180)
+                        .attr('placeholder', 'lon east')
+                    );
+
+                $extra.on('change', 'input', function() {
+                    var ls = $extra.find('input[placeholder="lat south"]').val(),
+                        lw = $extra.find('input[placeholder="lon west"]').val(),
+                        ln = $extra.find('input[placeholder="lat north"]').val(),
+                        le = $extra.find('input[placeholder="lon east"]').val();
+
+                    // set main input
+                    $inp.val('rect<<' + ls + ',' + lw + '>,<' + ln + ',' + le + '>>');
+                });
+            }
+            else if (p.info.is_numeric === true) {
+                $opSelect
+                    .append($('<option />')
+                        .attr('value', 'eq')
+                        .attr('selected', 'selected')
+                        .text('=')
+                    )
+                    .append($('<option />')
+                        .attr('value', 'neq')
+                        .text('!=')
+                    )
+                    .append($('<option />')
+                        .attr('value', 'lt')
+                        .text('<')
+                    )
+                    .append($('<option />')
+                        .attr('value', 'lte')
+                        .text('<=')
+                    )
+                    .append($('<option />')
+                        .attr('value', 'gt')
+                        .text('>')
+                    )
+                    .append($('<option />')
+                        .attr('value', 'gte')
+                        .text('>=')
+                    )
+            }
+            else {
+                // default
+                $opSelect.append($('<option />')
+                    .attr('value', 'eq')
+                    .attr('selected', 'selected')
+                    .text('=')
+                );
+            }
+
+            this.ui.$elem.find('.select-filter-type')
+                .empty()
+                .append($opSelect)
+                .append($inp)
+                .append($extra);
 
             /*Find specific value autocomplete*/
             if (this.qb.workbench.builder.property_selection.uri == "URI") {

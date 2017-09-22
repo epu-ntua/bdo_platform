@@ -67,6 +67,7 @@ class Dimension(BaseVariable):
             'max': self.max,
             'step': self.step,
             'axis': self.axis,
+            'is_numeric': self.sql_type == 'numeric',
         }
 
     @property
@@ -123,6 +124,12 @@ class Dimension(BaseVariable):
         if self.min is None or self.max is None or self.step is None:
             return self.get_values_from_db()
 
+        if self.step == 0:
+            return {
+                'min': self.min,
+                'max': self.max,
+            }
+
         result = []
         v = self.min
         while v <= self.max:
@@ -158,6 +165,7 @@ class Variable(BaseVariable):
             'add_offset': self.add_offset,
             'cell_methods': self.cell_methods,
             'type_of_analysis': self.type_of_analysis,
+            'is_numeric': True,
         }
 
     @property
