@@ -48,6 +48,18 @@ DesignerMenu = function(qd) {
 
             // add menu to designer
             that.qd.$container.prepend(this.$elem);
+        },
+
+        setRunning: function() {
+            this.$elem.find('.execute-query')
+                .html('<i class="material-icons text-green">play_arrow</i> Running...')
+                .attr('disabled', 'disabled');
+        },
+
+        setRunComplete: function() {
+            this.$elem.find('.execute-query')
+                .html('<i class="material-icons text-green">play_arrow</i> Run(F9)')
+                .removeAttr('disabled');
         }
     };
 
