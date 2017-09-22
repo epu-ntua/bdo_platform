@@ -297,18 +297,20 @@ class Query(Model):
                 self.count = cursor.fetchone()[0]
 
             self.count = None
+            count_failed = False
             t = Thread(target=_count, args=[])
             t.start()
             t.join(timeout=5)
 
             if self.count is None:
+                count_failed = True
                 self.count = 10000000
-                
+
             if limit is not None:
                 pages['total'] = (self.count - 1) / limit + 1
 
             # apply granularity
-            if self.count >= GRANULARITY_MIN_PAGES:
+            if self.count >= GRANULARITY_MIN_PAGES and (not count_failed):
                 try:
                     granularity = int(self.document.get('granularity', 0))
                 except ValueError:
