@@ -15,6 +15,8 @@ else:
                 from bdo_platform.settings_management.development_dpap import *
             elif settings_file == 'development_gtsapelas':
                 from bdo_platform.settings_management.development_gtsapelas import *
+            elif settings_file == 'development_smouzakitis':
+                from bdo_platform.settings_management.development_smouzakitis import *
             elif settings_file == 'development_bdodev':
                 from bdo_platform.settings_management.development_bdodev import *
             elif settings_file == 'development':

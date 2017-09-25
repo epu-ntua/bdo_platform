@@ -7,13 +7,14 @@ from django.db import migrations
 def update_services(apps, schema_editor):
 
     Service = apps.get_model('bdo_main_app', 'Service')
-    clustering = Service.objects.get(pk=1)
+    clustering = Service.objects.get(title='Regression')
     clustering.info = {u'extendable': True, u'arguments': [{u'type': u'QUERY', u'name': u'query', u'title': u'Query'}, {u'type': u'COLUMN', u'name': u'feat_1', u'title': u'Feature 1'}, {u'type': u'COLUMN', u'name': u'feat_2', u'title': u'Feature 2'}]}
     clustering.save()
 
-    quantile_discr = Service.objects.get(pk=7)
+    quantile_discr = Service.objects.get(title='Clustering')
     quantile_discr.info = {u'extendable': True, u'arguments': [{u'type': u'QUERY', u'name': u'query', u'title': u'Query'}, {u'type': u'COLUMN', u'name': u'feat_1', u'title': u'Feature 1'}]}
     quantile_discr.save()
+
 
 class Migration(migrations.Migration):
 
