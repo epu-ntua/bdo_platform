@@ -80,8 +80,6 @@ try:
 
     # ********************************************* #
 
-    # points_dataframe2 = dataframe2.select(args['feat_1'], args['feat_2']).rdd.map(lambda r: ('null', Vectors.dense([r[0], r[1]]))).toDF(
-    #     ['label', 'features'])
     assembler = VectorAssembler(inputCols=[args['feat_1'], args['feat_2']],
                                 outputCol="features")
 
@@ -103,7 +101,6 @@ try:
     print("Cluster Centers: ")
     for center in centers:
         print(center)
-
 
     result = dict()
     result['centers'] = list(centers)

@@ -1,108 +1,153 @@
 import sys
 import requests
 import json
+from conf import db, get_job_arguments_and_info, get_spark_query
 
-db = {
-    'psycopg': "dbname='bdo_platform' user='postgres' host='localhost' password='1234'",
-    'jdbc': "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234",
-}
 
 job_id = int(sys.argv[1])
 server_url = sys.argv[2]
 
+
 try:
     from pyspark.sql import SparkSession
-    from pyspark.ml.regression import LinearRegression
-    from pyspark.mllib.regression import LabeledPoint
-    from pyspark.ml.linalg import Vectors
+    from pyspark.ml.feature import VectorAssembler
 
-    import psycopg2
+    import importlib
     import math
 
+    # collect the job's arguments
+    args, info = get_job_arguments_and_info(job_id)
+    print('-------------------------------------------')
+
+    # get the SPARK query and the number of selected data per node
+    query, total_data = get_spark_query(args, info)
+    print("query:")
+    print(query)
+
+    # create a new SPARK session
     spark = SparkSession \
         .builder \
         .appName("Python Spark - Read from Postgres DB") \
         .getOrCreate()
 
-    # connect to BDO platform db to get job details
-    conn = psycopg2.connect(db['psycopg'])
-    cur = conn.cursor()
-    cur.execute("""SELECT * from analytics_jobinstance WHERE id = %d""" % job_id)
-    row = cur.fetchone()
-    args = row[5]
-    print(args)
-    print('-------------------------------------------')
-    # define query
-    query = '(SELECT spark_part_id, %s, %s FROM (SELECT row_number() OVER () AS spark_part_id, ' \
-            '* FROM (%s LIMIT 100) AS SPARKQ2) AS SPARKQ1) AS SPARKQ0' \
-            % (args['x'], args['y'], args['query'])
-
-    # =========> JOHN REMOVE THE LIMIT 100
-
-    # first count to partition
-    print('executing query')
-    cur.execute('SELECT COUNT(*) FROM (%s) AS SPARKQ2' % args['query'])
-    print('query succeeded')
-    row = cur.fetchone()
-    cnt = row[0]
-    print('fetched data')
-    print(cnt)
-    # close custom connection
-    conn.close()
-
-    print("query:")
-    print(query)
-    # get data
-    dataframe2 = spark.read.format('jdbc').options(
+    # Get data and load them into a dataframe
+    raw_df = spark.read.format('jdbc').options(
         url=db['jdbc'],
         database='bdo_platform',
         dbtable=query,
         partitionColumn="spark_part_id",
         lowerBound="1",
-        upperBound=str(cnt),
-        numPartitions=str(int(math.ceil(cnt / 20000.0)))
+        upperBound=str(total_data),
+        numPartitions=str(int(math.ceil(total_data / 20000.0)))
     ).load()
     print('dataframe loaded')
-    dataframe2.cache()  # Cache data for faster reuse
-    dataframe2 = dataframe2.dropna()  # drop rows with missing values
 
-    dataframe2.show()
+    raw_df.cache()  # Cache data for faster reuse
+    raw_df = raw_df.dropna()  # drop rows with missing values
 
-    dataframe2.printSchema()
-
-    dataframe2.select(args['x']).show()
-
-    # dataframe2.drop("time_1")
-    # dataframe2.drop("lon_3")
+    raw_df.show()
+    raw_df.printSchema()
 
     # ********************************************* #
+    # Create the analysis object dynamically
+    anal1 = getattr(importlib.import_module(info['package']), info['class'])
+    anal1_obj = anal1()
+    # Depending on the arguments format required by the analysis do the following
+    # if info['arg_format'] == 'Feature-Label':
+    #     # Gather all the features into the "features" column
+    #     feat_cols = [args[feat] for feat in args.keys() if 'feat' in feat]
+    #     assembler = VectorAssembler(inputCols=feat_cols, outputCol="features")
+    #     analysis_df = assembler.transform(raw_df)
+    #     # Set the "label" column
+    #     anal1_obj.setLabelCol(args['label'])
+    # elif info['arg_format'] == 'Features':
+    #     # Gather all the features into the "features" column
+    #     feat_cols = [args[feat] for feat in args.keys() if 'feat' in feat]
+    #     assembler = VectorAssembler(inputCols=feat_cols, outputCol="features")
+    #     analysis_df = assembler.transform(raw_df)
+    # elif info['arg_format'] == 'Input-Output':
+    #     # Set the input and output columns
+    #     analysis_df = raw_df
+    #     anal1_obj.setInputCol(args['feat'])
+    #     anal1_obj.setOutputCol(args['feat'] + "transformed")
+    # else:
+    #     # TODO: add the other formats
+    #     pass
 
-    points_dataframe2 = dataframe2.select(args['x'], args['y']).rdd.map(lambda r: (r[0], Vectors.dense([r[1]]))).toDF(
-        ['label', 'features'])
-    points_dataframe2.show()
+    # Set the features column if neeeded
+    if info['needs_feat_assembling'] == "True":
+        # Gather all the features into the "features" column
+        feat_cols = [args[feat] for feat in args.keys() if 'feat' in feat]
+        assembler = VectorAssembler(inputCols=feat_cols, outputCol="features")
+        analysis_df = assembler.transform(raw_df)
+    else:
+        analysis_df = raw_df
+    # Set the other type of columns if needed
+    for arg in info['arguments']:
+        if arg['type'] == 'COLUMN' and 'feat' not in arg['name']:
+            setter = getattr(anal1_obj, 'set' + str(arg['name'][0]).capitalize() + str(arg['name'][1:]))
+            setter(args[arg['name']])
 
-    # def parsePoint(line):
-    #    values = [float(x) for x in line.split(',')]
-    #    return (values[1], Vectors.dense([values[0]]))
+    # ********************************************* #
+    # Add the parameters
+    print("Adding the parameters")
+    for param in info['parameters']:
+        setter = getattr(anal1_obj, 'set'+str(param['name'][0]).capitalize()+str(param['name'][1:]))
+        if param['type'] == "INT":
+            value = int(args[param['name']])
+        elif param['type'] == "FLOAT":
+            value = float(args[param['name']])
+        elif param['type'] == "BOOLEAN":
+            value = bool(args[param['name']])
+        elif param['type'] == "STRING":
+            value = str(args[param['name']])
+        elif param['type'] == "FLOAT-LIST":
+            value = [float(x) for x in str(args[param['name']]).split(" ")]
+            if 'required_start' in param:
+                value = [-float("inf")] + value
+            if 'required_end' in param:
+                value = value + [float("inf")]
+        setter(value)
+        # Print the set parameters for validation
+        getter = getattr(anal1_obj, 'get' + str(param['name'][0]).capitalize() + str(param['name'][1:]))
+        print(getter())
+    # ********************************************* #
 
-    # points_dataframe2 = dataframe2.rdd.map(parsePoint).toDF(['label','features'])
+    # Select the model's actions depending on its type (Estimator, Transformer, Estimator-Transformer, other?)
+    if info['type'] == 'Estimator':
+        # Fit the model
+        anal1_model = anal1_obj.fit(analysis_df)
 
-    lr = LinearRegression(maxIter=10, regParam=0.3, elasticNetParam=0.8)
+        # Get the model and/or training results
+        result = dict()
+        for output in info['output']:
+            value = getattr(anal1_model, output['name'])
+            if output['type'] == 'method':
+                value = value()
+            # if 'DenseVector' in str(value.__class__):
+            if output['tolist'] == "1":
+                value = [v for v in value]
+            elif output['tolist'] == "2":
+                value = [list(v) for v in value]
+            result[output['title']] = value
 
-    # Fit the model
-    lrModel = lr.fit(points_dataframe2)
+        print(result)
 
-    # Summarize the model over the training set and print out some metrics
-    trainingSummary = lrModel.summary
+    elif info['type'] == 'Estimator-Transformer':
+        # Fit the model
+        analysis_df = anal1_obj.fit(analysis_df).transform(analysis_df)
+        result = dict()
+        result['result'] = 'successfully transformed'
+        analysis_df.show()
 
-    result = {}
-    result['coefficients'] = list(lrModel.coefficients)
-    result['intercept'] = lrModel.intercept
-    result['RMSE'] = trainingSummary.rootMeanSquaredError
-    result['r2'] = trainingSummary.r2
+    elif info['type'] == 'Transformer':
+        # Fit the model
+        analysis_df = anal1_obj.transform(analysis_df)
+        result = dict()
+        result['result'] = 'successfully transformed'
+        analysis_df.show()
 
-    print(result)
-
+    # Finally, return the resutls
     requests.post('%s/analytics/jobs/%d/update/' % (server_url, job_id), data={
         'success': 'true',
         'results': json.dumps(result),

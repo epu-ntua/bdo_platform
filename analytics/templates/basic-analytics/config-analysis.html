@@ -49,7 +49,29 @@
                                 </div>
                             </div>
                         {% empty %}
-                            <p>This analysis requires no further input.</p>
+                            <p>This analysis requires no further arguments.</p>
+                        {% endfor %}
+
+                        {% for parameter in base_analysis.info.parameters %}
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div class="form-group label-floating is-empty">
+                                        <label class="control-label">{{ parameter.title }}</label>
+                                        {% if parameter.type == 'INT' %}
+                                            <input type="number" class="form-control full-width" name="{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
+                                        {% elif parameter.type == 'FLOAT' %}
+                                            <input type="number" step="0.00001" class="form-control full-width" name="{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
+                                        {% elif parameter.type == 'STRING' %}
+                                            <input type="test" class="form-control full-width" name="{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
+                                        {% elif parameter.type == 'FLOAT-LIST' %}
+                                            <input type="text" class="form-control full-width" name="{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
+                                        {% endif %}
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p>This analysis requires no further parameters.</p>
                         {% endfor %}
                         <button type="submit" class="btn btn-primary btn-success">Run analysis</button>
                     </form>

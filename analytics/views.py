@@ -18,7 +18,7 @@ from query_designer.models import Query
 def pick_base_analysis(request):
     return render(request, 'basic-analytics/pick-base-analysis.html', {
         'sidebar_active': 'products',
-        'base_analytics': Service.objects.filter(service_type='analysis', info__extendable=True).order_by('id'),
+        'base_analytics': Service.objects.filter(service_type='analysis', info__extendable='True').order_by('id'),
     })
 
 
@@ -42,11 +42,16 @@ def config_base_analysis(request, base_analysis_id):
         for argument in base_analysis.info['arguments']:
             arguments[argument['name']] = request.POST.get(argument['name'],
                                                            argument['default'] if 'default' in argument else '')
+        for parameter in base_analysis.info['parameters']:
+            arguments[parameter['name']] = request.POST.get(parameter['name'],
+                                                            parameter['default'] if 'default' in parameter else '')
 
+        print arguments
         # validate arguments
         # TODO validate arguments
 
         # create job
+        # TODO: put the logged in user
         user = User.objects.get(username='BigDataOcean')
         job = JobInstance.objects.create(user=user, base_analysis=base_analysis, arguments=arguments)
 
