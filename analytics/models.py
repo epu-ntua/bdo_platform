@@ -52,7 +52,7 @@ class JobInstance(Model):
         print ' '.join(command)
 
         try:
-            subprocess.call(command)
+            subprocess.Popen(command, shell=True)
         except Exception as e:
             print('ERROR')
             print e
