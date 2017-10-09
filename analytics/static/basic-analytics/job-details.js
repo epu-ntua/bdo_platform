@@ -2,7 +2,7 @@
  * Created by dimitris on 22/6/2017.
  */
 $(function() {
-    /* Temporarily using long polling, we'll switch to sockets */
+    /* TODO: Temporarily using long polling, we'll switch to sockets */
     var checkAndPoll = function() {
         var $jobContainer = $('#job-analysis--details'),
             status = $jobContainer.find('.status-cell').data('status');
@@ -22,7 +22,7 @@ $(function() {
                     checkAndPoll();
                 }
             })
-        }, 2000);
+        }, 10000);
     };
 
     // start polling
