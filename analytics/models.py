@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
-import os
-import subprocess
+import os, subprocess
+from datetime import datetime
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.db.models import *
@@ -43,7 +43,7 @@ class JobInstance(Model):
 
         # submit to spark cluster
         command = [
-            'spark-submit',  # SPARK_SUBMIT_PATH,
+            SPARK_SUBMIT_PATH,  # SPARK_SUBMIT_PATH,
             '--driver-class-path=%s' % os.path.join(os.path.join(BASE_DIR, 'drivers'), 'postgresql-42.1.1.jre7.jar'),
             os.path.join(os.path.join(os.path.join(BASE_DIR, 'analytics'), 'jobs'), self.job_source + '.py'),
             str(self.pk),
@@ -52,7 +52,15 @@ class JobInstance(Model):
         print ' '.join(command)
 
         try:
-            subprocess.Popen(command, shell=True)
+            if 'bdo-dev' in SERVER_URL:
+                today = datetime.today()
+                if not os.path.exists(os.path.join(os.path.join(os.path.join(BASE_DIR, 'analytics'), 'logs'), str(today.month)+'-'+str(today.year))):
+                    os.makedirs(os.path.join(os.path.join(os.path.join(BASE_DIR, 'analytics'), 'logs'), str(today.month)+'-'+str(today.year)))
+                logs_dir = os.path.join(os.path.join(os.path.join(BASE_DIR, 'analytics'), 'logs'), str(today.month)+'-'+str(today.year))
+                with open(os.path.join(logs_dir, "logfile_analysis_"+str(self.pk)), 'w+') as f:
+                    subprocess.Popen(command, shell=True, stdout=f, stderr=f)
+            else:
+                subprocess.Popen(command, shell=True)
         except Exception as e:
             print('ERROR')
             print e
