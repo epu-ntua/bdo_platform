@@ -42,13 +42,12 @@ class JobInstance(Model):
         self.save()
 
         # submit to spark cluster
-        command = [
-            SPARK_SUBMIT_PATH,  # SPARK_SUBMIT_PATH,
-            '--driver-class-path=%s' % os.path.join(os.path.join(BASE_DIR, 'drivers'), 'postgresql-42.1.1.jre7.jar'),
-            os.path.join(os.path.join(os.path.join(BASE_DIR, 'analytics'), 'jobs'), self.job_source + '.py'),
-            str(self.pk),
-            SERVER_URL,
-        ]
+        command = SPARK_SUBMIT_PATH + ' '  # SPARK_SUBMIT_PATH,
+        command += '--driver-class-path=%s ' % os.path.join(os.path.join(BASE_DIR, 'drivers'), 'postgresql-42.1.1.jre7.jar')
+        command += ' ' + os.path.join(os.path.join(os.path.join(BASE_DIR, 'analytics'), 'jobs'), self.job_source + '.py')
+        command += ' ' + str(self.pk) + ' '
+        command += SERVER_URL
+
         print ' '.join(command)
 
         try:
