@@ -26,14 +26,15 @@ class JobInstance(Model):
         ('STOPPED', 'Stopped'),
         ('FAILED', 'Failed'),
     ), default='PENDING')
-    base_analysis = ForeignKey(Service)
+    analysis_flow = JSONField()  # json representation of the process of the
     arguments = JSONField()  # json representation of arguments passed to the analysis
     message = TextField(blank=True, null=True, default=None)  # some progress or error message
     results = JSONField(blank=True, null=True, default=None)  # the results of this job
 
     @property
     def job_source(self):
-        return self.base_analysis.job_name
+        # TODO: maybe to be configured dynamically
+        return 'service_building'
 
     def submit(self):
         # mark as started

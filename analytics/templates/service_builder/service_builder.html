@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/vis-network.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'service_builder/css/basic.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue">Service Builder</h1>
+            <h5>Create a new service by using the provided analytical components.</h5>
+        </div>
+    </div>
+
+
+    <div class="col-sm-6">
+        <div id="query-container">
+            <label for="query">Select the analysis data</label>
+            <select id="query-select" class="form-control" name="query">
+                <option disabled selected>-- select one of the saved queries --</option>
+                {% for query in saved_queries %}
+                    <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+                {% endfor %}
+            </select>
+            <div><a href="#" id="new_query_link"> + or create a new query </a></div>
+            <input id="new_query_doc" type="hidden" value=""/>
+        </div>
+
+
+        <div id="components-container">
+            <label for="components-list-group">Select the analytical components</label>
+            <ul class="list-group" id="components-list-group">
+                {% for component in components %}
+                    <li class="list-group-item">
+                        <div><strong>{{ component.title }}</strong> - {{ component.moto }}</div>
+                        <btn class="btn btn-default btn-sm addNodeBtn"
+                             data-component-id="{{ component.id }}"
+                             data-component-title="{{ component.title }}">
+                            Add
+                        </btn>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <btn class="btn btn-primary btn-sm">Remove Last</btn>
+    </div>
+
+    <div class="col-sm-6"><h4>Created Service:</h4></div>
+    <div class="col-sm-6" id="dynamic_service"></div>
+
+
+    <button style="display: none;" id="modalbtn" type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
+    <div class="row">
+        <form class="form" id="config-service-form" method="POST">
+            {% csrf_token %}
+            <input id="analysis_flow" value="{}" name="analysis_flow"/>
+            <input id="query" value="" name="query"/>
+
+            <input type="submit" value="Run Service"/>
+        </form>
+    </div>
+
+{% endblock %}
+
+
+{% block modal %}
+    <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Configure Analysis</h4>
+                    <h5></h5>
+                </div>
+                <div class="modal-body">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-args-btn">Submit</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-args-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+
+    <!-- viz.js Network methods -->
+	<script src="{% static 'js/vis-network.min.js' %}"></script>
+
+    <script type="text/javascript">
+      var numOfNodes;
+      var analysis_flow = {};
+      var newOutputColumns = [];
+
+      var x = 0;
+      var y = -200;
+
+      // create an array with nodes
+      var nodes = new vis.DataSet([]);
+      // create an array with edges
+      var edges = new vis.DataSet();
+
+      // create a network
+      var container = document.getElementById('dynamic_service');
+      var data = {
+        nodes: nodes,
+        edges: edges
+      };
+      var options = {
+          physics: {
+              enabled: false
+          }
+      };
+      $('document').ready(function(){
+        var network = new vis.Network(container, data, options);
+        numOfNodes = 0;
+        nodes.add({
+              id: 0,
+              label: "Start",
+              x: x,
+              y: y
+        })
+      });
+
+      $('.addNodeBtn').on('click', function() {
+          y += 70;
+          nodes.add({
+              id: numOfNodes+1,
+              label: this.getAttribute("data-component-title"),
+              shape: 'box',
+              widthConstraint: {
+                  minimum: 50
+              },
+              x: x,
+              y: y
+        });
+
+        edges.add({
+            id: numOfNodes+1,
+            from: numOfNodes,
+            to: numOfNodes+1,
+            arrows:'to'
+        });
+
+        numOfNodes++;
+        add_analysis_form_fields(this);
+{#        $('#myModal').modal('show');#}
+
+      });
+
+      function add_analysis_form_fields(element) {
+          var component_id = element.getAttribute('data-component-id');
+          $.ajax({
+                url: '/analytics/get-analysis-form-fields/',
+                data: {
+                    id: parseInt(component_id),
+                    order: numOfNodes
+                    },
+                type: 'GET',
+                success: function(form_fields){
+                    $('#myModal').find('.modal-body').html(form_fields);
+                    $('#myModal').find('h5').html(element.getAttribute('data-component-title'));
+                    updateVariables($('#query-select'));
+                    $( "#modalbtn" ).trigger( "click" );
+                }
+            });
+      }
+
+
+      function updateAnalysisFlow(component_id) {
+          analysis_flow[numOfNodes.toString()] = component_id;
+          $('#analysis_flow').val(JSON.stringify(analysis_flow));
+      }
+
+
+      $('#submit-args-btn').on('click', function() {
+          var submitted_args = $('#myModal').find('.modal-body').clone();
+          var selects = $('#myModal').find('.modal-body').find("select");
+          $(selects).each(function(i) {
+            var select = this;
+            $(submitted_args).find("select").eq(i).val($(select).val());
+          });
+
+          var newOutputCols = $(submitted_args).find("input[name*='outputCol']");
+          $(newOutputCols).each(function(i) {
+              newOutputColumns.push($(this).val()+' (derived)');
+              $(submitted_args).find("input[name*='outputCol']").eq(i).val($(this).val()+' (derived)');
+          });
+
+{#          $('#config-service-form').append('<fieldset id="fieldset'+numOfNodes+' name=fieldset'+numOfNodes+'">' + '</fieldset>');#}
+{#          var newFieldset = '#fieldset'+numOfNodes;#}
+          $('#config-service-form').append(submitted_args);
+
+          var component_id = $('#myModal').find('input[name="anal_id"]').val();
+          updateAnalysisFlow(component_id);
+
+      });
+
+      $('#dismiss-args-btn').on('click', function() {
+          alert("Remove the last inserted component");
+      });
+
+    </script>
+
+
+    <script type="text/javascript">
+        function updateVariables(element) {
+            $('#myModal .variable-select').find('option').remove().end();
+            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+            var new_query_id = $(element).children(":selected").attr("id");
+            var new_query_doc = $('#new_query_doc').val();
+            $.ajax({
+                url: '/queries/get_query_variables/',
+                data: {
+                    id: new_query_id,
+                    document: new_query_doc
+                    },
+                type: 'GET',
+                success: function(variables){
+                    $.each(variables, function(k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", k)
+                            .text(v));
+                    });
+                    $.each(newOutputColumns, function() {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", this)
+                            .text(this));
+                    });
+                }
+            });
+        }
+
+        function addQueryToForm(raw_query){
+            $('#config-service-form #query').val(raw_query);
+        }
+
+        $('#query-select').on('change', function() {
+            updateVariables(this);
+            addQueryToForm(this.options[this.selectedIndex].value.replace(/\n/g, " "));
+            alert("JOHN, when the query is changed all the service must be reset!")
+        });
+
+        function addNewQuery(title, raw_query, document) {
+            $("#query-select option[id='-1']").remove().end();
+            $('#query-select').append($("<option selected id='-1' value='"+raw_query+"'>"+title+"</option>"));
+            $('#new_query_doc').val(document);
+            updateVariables($('#query-select'));
+            addQueryToForm(raw_query)
+        }
+    </script>
+
+    <script type="text/javascript">
+        $('a#new_query_link').click(function(){
+            var left  = ($(window).width()/2)-(900/2);
+            var top   = ($(window).height()/2)-(600/2);
+            window.open('/queries/', 'window name', 'width=900, height=600, top='+top+', left='+left);
+            return false;
+        });
+    </script>
+
+{% endblock %}
