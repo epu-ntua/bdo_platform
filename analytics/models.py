@@ -81,4 +81,4 @@ class JobInstance(Model):
         return '/analytics/jobs/%d/' % self.pk
 
     def __unicode__(self):
-        return '%s -> %s' % (self.user.username, str(self.base_analysis))
+        return '%s -> %s' % (self.user.username, str(self.analysis_flow))

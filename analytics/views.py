@@ -120,12 +120,13 @@ def build_dynamic_service(request):
         # submit the job
         Thread(target=job.submit, args=[]).start()
 
-        #TODO: this is temporal, modify the job details!
-        return render(request, 'service_builder/service_builder.html', {
-            'sidebar_active': 'products',
-            'saved_queries': [],
-            'components': Service.objects.filter(service_type='analysis').order_by('id'),
-        })
+        # #TODO: this is temporal, modify the job details!
+        # return render(request, 'service_builder/service_builder.html', {
+        #     'sidebar_active': 'products',
+        #     'saved_queries': [],
+        #     'components': Service.objects.filter(service_type='analysis').order_by('id'),
+        # })
+
         # redirect to job's page
         return redirect(job.get_absolute_url())
 
@@ -143,7 +144,7 @@ def view_job_details(request, pk):
     return render(request, template, {
         'sidebar_active': 'products',
         'job': job,
-        'base_analysis': job.base_analysis
+        'analysis_flow': sorted(job.analysis_flow.iteritems())
     })
 
 
