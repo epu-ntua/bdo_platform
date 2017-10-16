@@ -45,7 +45,7 @@
                 {% endfor %}
             </ul>
         </div>
-        <btn class="btn btn-primary btn-sm">Remove Last</btn>
+        <btn class="btn btn-primary btn-sm" id="removeLastBtn">Remove Last</btn>
     </div>
 
     <div class="col-sm-6"><h4>Created Service:</h4></div>
@@ -202,8 +202,34 @@
       });
 
       $('#dismiss-args-btn').on('click', function() {
-          alert("Remove the last inserted component");
+          edges.remove(numOfNodes);
+          nodes.remove(numOfNodes);
+          y -= 70;
+          numOfNodes--;
       });
+
+      $('#removeLastBtn').on('click', function(){
+          if(numOfNodes>0) {
+{#              alert("remove last");#}
+              edges.remove(numOfNodes);
+              nodes.remove(numOfNodes);
+              y -= 70;
+              var findStr = numOfNodes + "+++fieldset";
+{#              alert(findStr);#}
+{#              $(findStr).empty();#}
+              var results = $('#config-service-form').find('fieldset');
+
+              $(results).each(function () {
+                  if (this.getAttribute("name") == findStr) {
+                      $(this).remove();
+                  }
+              });
+              delete analysis_flow[numOfNodes];
+              $('#analysis_flow').val(JSON.stringify(analysis_flow));
+
+              numOfNodes--;
+          }
+      })
 
     </script>
 

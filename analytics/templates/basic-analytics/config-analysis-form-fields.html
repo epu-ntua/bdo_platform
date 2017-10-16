@@ -1,45 +1,47 @@
 
-<input id="{{ order }}+++anal_id" type="number" class="form-control full-width variable-select" name="anal_id"  value="{{ anal_id }}">
+<fieldset name="{{ order }}+++fieldset">
+    <input id="{{ order }}+++anal_id" type="number" class="form-control full-width variable-select" name="anal_id"  value="{{ anal_id }}">
 
-{% for argument in info.arguments %}
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="form-group label-floating is-empty">
-                <label class="control-label">{{ argument.title }}</label>
-                {% if argument.type == 'QUERY' %}
-                {% elif argument.type == 'COLUMN' %}
-                    <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}" >
-                        <option disabled selected value>-- select variable --</option>
-                    </select>
-                {% else %}
-                    <input id="{{ order }}+++{{ argument.name }}" type="text" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}"  value="{{ argument.default }}">
-                {% endif %}
-                <span class="material-input"></span>
+    {% for argument in info.arguments %}
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="form-group label-floating is-empty">
+                    <label class="control-label">{{ argument.title }}</label>
+                    {% if argument.type == 'QUERY' %}
+                    {% elif argument.type == 'COLUMN' %}
+                        <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}" >
+                            <option disabled selected value>-- select variable --</option>
+                        </select>
+                    {% else %}
+                        <input id="{{ order }}+++{{ argument.name }}" type="text" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}"  value="{{ argument.default }}">
+                    {% endif %}
+                    <span class="material-input"></span>
+                </div>
             </div>
         </div>
-    </div>
-{% empty %}
-    <p>This analysis requires no further arguments.</p>
-{% endfor %}
+    {% empty %}
+        <p>This analysis requires no further arguments.</p>
+    {% endfor %}
 
-{% for parameter in info.parameters %}
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="form-group label-floating is-empty">
-                <label class="control-label">{{ parameter.title }}</label>
-                {% if parameter.type == 'INT' %}
-                    <input id="{{ order }}+++{{ parameter.name }}" type="number" class="form-control full-width" name="{{ order }}+++{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
-                {% elif parameter.type == 'FLOAT' %}
-                    <input id="{{ order }}+++{{ parameter.name }}" type="number" step="0.00001" class="form-control full-width" name="{{ order }}+++{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
-                {% elif parameter.type == 'STRING' %}
-                    <input id="{{ order }}+++{{ parameter.name }}" type="test" class="form-control full-width" name="{{ order }}+++{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
-                {% elif parameter.type == 'FLOAT-LIST' %}
-                    <input id="{{ order }}+++{{ parameter.name }}" type="text" class="form-control full-width" name="{{ order }}+++{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
-                {% endif %}
-                <span class="material-input"></span>
+    {% for parameter in info.parameters %}
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="form-group label-floating is-empty">
+                    <label class="control-label">{{ parameter.title }}</label>
+                    {% if parameter.type == 'INT' %}
+                        <input id="{{ order }}+++{{ parameter.name }}" type="number" class="form-control full-width" name="{{ order }}+++{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
+                    {% elif parameter.type == 'FLOAT' %}
+                        <input id="{{ order }}+++{{ parameter.name }}" type="number" step="0.00001" class="form-control full-width" name="{{ order }}+++{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
+                    {% elif parameter.type == 'STRING' %}
+                        <input id="{{ order }}+++{{ parameter.name }}" type="test" class="form-control full-width" name="{{ order }}+++{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
+                    {% elif parameter.type == 'FLOAT-LIST' %}
+                        <input id="{{ order }}+++{{ parameter.name }}" type="text" class="form-control full-width" name="{{ order }}+++{{ parameter.name }}" autocomplete="off" value="{{ parameter.default }}">
+                    {% endif %}
+                    <span class="material-input"></span>
+                </div>
             </div>
         </div>
-    </div>
-{% empty %}
-    <p>This analysis requires no further parameters.</p>
-{% endfor %}
+    {% empty %}
+        <p>This analysis requires no further parameters.</p>
+    {% endfor %}
+</fieldset>
