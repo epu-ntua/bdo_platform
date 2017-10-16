@@ -56,10 +56,10 @@
     <div class="row">
         <form class="form" id="config-service-form" method="POST">
             {% csrf_token %}
-            <input id="analysis_flow" value="{}" name="analysis_flow"/>
-            <input id="query" value="" name="query"/>
+            <input id="analysis_flow" value="{}" name="analysis_flow" type="hidden"/>
+            <input id="query" value="" name="query" type="hidden"/>
 
-            <input type="submit" value="Run Service"/>
+            <input type="submit" class="btn btn-success" value="Run Service"/>
         </form>
     </div>
 
@@ -269,7 +269,7 @@
         $('#query-select').on('change', function() {
             updateVariables(this);
             addQueryToForm(this.options[this.selectedIndex].value.replace(/\n/g, " "));
-            alert("JOHN, when the query is changed all the service must be reset!")
+{#          TODO: JOHN, when the query is changed all the service must be reset!#}
         });
 
         function addNewQuery(title, raw_query, document) {

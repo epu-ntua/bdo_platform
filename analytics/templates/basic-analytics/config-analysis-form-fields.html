@@ -1,12 +1,14 @@
 
 <fieldset name="{{ order }}+++fieldset">
-    <input id="{{ order }}+++anal_id" type="number" class="form-control full-width variable-select" name="anal_id"  value="{{ anal_id }}">
+    <input id="{{ order }}+++anal_id" type="hidden" class="form-control full-width variable-select" name="anal_id"  value="{{ anal_id }}">
 
     {% for argument in info.arguments %}
         <div class="row">
             <div class="col-xs-12">
                 <div class="form-group label-floating is-empty">
-                    <label class="control-label">{{ argument.title }}</label>
+                    {% if argument.type != 'QUERY' %}
+                        <label class="control-label">{{ argument.title }}</label>
+                    {% endif %}
                     {% if argument.type == 'QUERY' %}
                     {% elif argument.type == 'COLUMN' %}
                         <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}" >
