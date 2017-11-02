@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load leaflet_tags %}
+
+{% block css %}
+    {% leaflet_css %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
+
+
+{% endblock %}
+
+{% block content %}
+
+{#    <div id="mapid" style="height: 500px;"></div>#}
+    {% leaflet_map "mymap" %}
+
+{% endblock %}
+
+
+
+{% block js %}
+    {% leaflet_js %}
+
+
+    <script src="{% static 'js/leaflet-heat.js' %}"></script>
+
+
+    <script type="text/javascript">
+        window.addEventListener("map:init", function (event) {
+            var mymap = event.detail.map;
+            mymap.setView([51.505, -0.09], 13);
+
+            L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+                attribution: 'Map data &copy; ' +
+                '<a href="http://openstreetmap.org">OpenStreetMap</a> ' +
+                'contributors, ' +
+                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+                'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox.satellite',
+                accessToken: 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+            }).addTo(mymap);
+
+            var points = [
+                    [35.1555 , -106.591838 , "<img src='http://farm8.staticflickr.com/7153/6831137393_fa38634fd7_m.jpg'>"],
+                    [35.0931 , -106.664177 , "<img src='http://farm3.staticflickr.com/2167/2479129916_0d861b2600.jpg'>"],
+                    [35.1143 , -106.577991 , "<img src='http://farm2.staticflickr.com/1416/908720823_e390a242f4.jpg'>"]];
+
+            var heat = L.heatLayer(points).addTo(mymap);
+        });
+    </script>
+
+{% endblock %}

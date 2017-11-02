@@ -46,11 +46,15 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
 
+    # maps
+    'leaflet',
+
     # apps
     'bdo_main_app',
     'aggregator',
     'query_designer',
     'analytics',
+    'visualizer',
 ]
 
 AUTHENTICATION_BACKENDS = (

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load leaflet_tags %}
+
+
+{% block css %}
+    {% leaflet_css %}
+
+    {% for css in css_all %}
+        {% autoescape off %}
+            {{ css }}
+        {% endautoescape %}
+    {% endfor %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
+
+{% endblock %}
+
+{% block content %}
+
+    {% leaflet_map map_id %}
+{#    <div id="{{ map_id }}" style="height: 500px;"></div>#}
+{% endblock %}
+
+
+
+{% block js %}
+
+    {% leaflet_js %}
+{#    <script src="{% static 'js/leaflet-heat.js' %}"></script>#}
+
+    {% for js in js_all %}
+        {% autoescape off %}
+            {{ js }}
+        {% endautoescape %}
+    {% endfor %}
+
+{% endblock %}

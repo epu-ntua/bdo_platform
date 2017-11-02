@@ -31,5 +31,8 @@ urlpatterns = [
 
     # analytics
     url(r'^analytics/', include('analytics.urls')),
+
+    # visualizations
+    url(r'^visualizations/', include('visualizer.urls')),
 ]
 
