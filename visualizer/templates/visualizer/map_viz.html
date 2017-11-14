@@ -1,17 +1,14 @@
-{% extends 'base.html' %}
+{% extends 'visualizer/viz_base.html' %}
 
 {% load static %}
 {% load leaflet_tags %}
 
 {% block css %}
     {% leaflet_css %}
-
     <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
-
-
 {% endblock %}
 
-{% block content %}
+{% block viz_content %}
 
 {#    <div id="mapid" style="height: 500px;"></div>#}
     {% leaflet_map "mymap" %}

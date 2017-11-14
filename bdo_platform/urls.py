@@ -34,5 +34,8 @@ urlpatterns = [
 
     # visualizations
     url(r'^visualizations/', include('visualizer.urls')),
+
+    # dashboards
+    url(r'^dashboards/', include('dashboard_builder.urls')),
 ]
 

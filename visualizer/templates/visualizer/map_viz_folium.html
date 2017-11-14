@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'visualizer/viz_base.html' %}
 
 {% load static %}
 {% load leaflet_tags %}
@@ -17,7 +17,7 @@
 
 {% endblock %}
 
-{% block content %}
+{% block viz_content %}
 
     {% leaflet_map map_id %}
 {#    <div id="{{ map_id }}" style="height: 500px;"></div>#}

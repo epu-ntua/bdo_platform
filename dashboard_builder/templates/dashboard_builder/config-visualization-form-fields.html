@@ -1,0 +1,28 @@
+
+<fieldset name="{{ order }}+++fieldset">
+    <input id="{{ order }}+++viz_id" type="hidden" class="form-control full-width variable-select" name="viz_id"  value="{{ viz_id }}">
+
+    {% for argument in info.arguments %}
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="form-group label-floating is-empty">
+                    {% if argument.type != 'QUERY' %}
+                        <label class="control-label">{{ argument.title }}</label>
+                    {% endif %}
+                    {% if argument.type == 'QUERY' %}
+                    {% elif argument.type == 'COLUMN' %}
+                        <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}" >
+                            <option disabled selected value>-- select variable --</option>
+                        </select>
+                    {% else %}
+                        <input id="{{ order }}+++{{ argument.name }}" type="text" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}"  value="{{ argument.default }}">
+                    {% endif %}
+                    <span class="material-input"></span>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p>This visualization requires no further arguments.</p>
+    {% endfor %}
+
+</fieldset>
