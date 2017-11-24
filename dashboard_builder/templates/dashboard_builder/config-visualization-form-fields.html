@@ -14,6 +14,10 @@
                         <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}" >
                             <option disabled selected value>-- select variable --</option>
                         </select>
+                    {% elif argument.type == 'INT' %}
+                        <input id="{{ order }}+++{{ argument.name }}" type="number" step="0.00001" class="form-control full-width" name="{{ order }}+++{{ argument.name }}" autocomplete="off" value="{{ argument.default }}">
+                    {% elif argument.type == 'FLOAT' %}
+                        <input id="{{ order }}+++{{ argument.name }}" type="number" step="0.00001" class="form-control full-width" name="{{ order }}+++{{ argument.name }}" autocomplete="off" value="{{ argument.default }}">
                     {% else %}
                         <input id="{{ order }}+++{{ argument.name }}" type="text" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}"  value="{{ argument.default }}">
                     {% endif %}

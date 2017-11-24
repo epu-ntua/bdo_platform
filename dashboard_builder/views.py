@@ -25,5 +25,8 @@ def get_visualization_form_fields(request):
     viz_id = request.GET.get('id')
     order = request.GET.get('order')
     visualization = Visualization.objects.get(pk=viz_id)
-    html = render_to_string('dashboard_builder/config-visualization-form-fields.html', {'order': order, 'viz_id': viz_id, 'info': visualization.info})
+    html = render_to_string('dashboard_builder/config-visualization-form-fields.html', {'order': order,
+                                                                                        'viz_id': viz_id,
+                                                                                        'info': visualization.info,
+                                                                                        'action': visualization.view_name})
     return HttpResponse(html)

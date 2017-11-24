@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
 from PIL import Image, ImageChops
+from django.http.response import HttpResponseNotFound
 from django.shortcuts import render
 from bs4 import BeautifulSoup
 import folium
-from folium import GeoJson
+from folium import GeoJson, WmsTileLayer, FeatureGroup, Marker
 import folium.plugins as plugins
 import numpy as np
 import branca.colormap as cm
@@ -21,6 +22,7 @@ from scipy.ndimage import imread
 from math import floor, ceil
 from matplotlib.mlab import griddata
 from utils import *
+from visualizer.models import Visualization
 
 
 def test_request_include(request):
@@ -32,10 +34,6 @@ def test_request(request):
 
 
 def get_map_simple(request):
-    return render(request, 'visualizer/map_viz.html', {})
-
-
-def get_map_contour(request):
     return render(request, 'visualizer/map_viz.html', {})
 
 
@@ -123,82 +121,122 @@ def map_viz_folium(request):
 
 
 def map_viz_folium_contour(request):
-    # Create a leaflet map using folium
-    m = create_folium_map(location=[0,0], zoom_start=2, max_zoom=5)
-    # Perform a query and get data
-    data = get_test_data()
+    try:
+        # Gather the arguments
+        n_contours = int(request.GET.get('n_contours', 20))
+        step = float(request.GET.get('step', 0.1))
+        variable = request.GET.get('feat_1', '')
+        query_id = int(request.GET.get('query', ''))
 
-    # Select only data with the same depth and time
-    # TODO: this should be configurable
-    data_temp = [(float(d[3]), float(d[4]), float(d[0]), str(d[1]), float(d[2])) for d in data]
-    time_selected = data_temp[0][3]
-    depth_selected = data_temp[0][4]
-    data = list()
-    for d in data_temp:
-        if time_selected == d[3] and depth_selected == d[4]:
-            data.append((d[0], d[1], d[2]))
+        # Create a leaflet map using folium
+        m = create_folium_map(location=[0,0], zoom_start=2, max_zoom=10)
+        # Perform a query and get data
+        headers, data = get_test_data(query_id)
+        other_dims = list()
+        for idx, col in enumerate(headers['columns']):
+            if col['isVariable'] == True:
+                if str(col['title']) == variable:
+                    print 'found'
+                    var_col = idx
+            else:
+                if str(col['name']).find('latitude') != -1:
+                    lat_col = idx
+                elif str(col['name']).find('longitude') != -1:
+                    lon_col = idx
+                else:
+                    other_dims.append(idx)
+        other_dims_first_vals = list()
+        for d in other_dims:
+            other_dims_first_vals.append(str(data[0][d]))
 
-    # Aggregate data into bins
-    step = 0.1
-    lats = np.array(sorted(list(set([float(item[0]) for item in data]))))
-    lats_bins = create_bins(lats, step)
-    lons = np.array(sorted(list(set([float(item[1]) for item in data]))))
-    lons_bins = create_bins(lons, step)
+        print other_dims
+        print other_dims_first_vals
+        # Select only data with the same (first) value on any other dimensions except lat/lon
+        data = [(float(d[lat_col]), float(d[lon_col]), float(d[var_col])) for d in data if filter_data(d, other_dims, other_dims_first_vals) == 0]
+        print data
+        # Aggregate data into bins
+        lats = np.array(sorted(list(set([float(item[0]) for item in data]))))
+        lats_bins = create_bins(lats, step)
+        lons = np.array(sorted(list(set([float(item[1]) for item in data]))))
+        lons_bins = create_bins(lons, step)
 
-    # create meshgrids of the 2 dimensions neede for the contour plot
-    Lats, Lons = np.meshgrid(lats_bins, lons_bins)
+        # create meshgrids of the 2 dimensions neede for the contour plot
+        Lats, Lons = np.meshgrid(lats_bins, lons_bins)
 
-    # Create grid data needed for the contour plot
-    final_data = create_grid_data(lats_bins, lons_bins, data)
+        # Create grid data needed for the contour plot
+        final_data = create_grid_data(lats_bins, lons_bins, data)
 
-    # Set the intervals for each contour
-    n_contours = 20
-    min_val = min([float(item[2]) for item in data])
-    max_val = max([float(item[2]) for item in data])
-    levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+        print Lats
+        print Lons
+        print final_data
 
-    # Create a contour plot plot from grid (lat, lon) data
-    fig = plt.figure(frameon=False)
-    ax = fig.add_subplot(111)
-    plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
-    plt.axis('off')
-    extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-    plt.savefig('map.png', bbox_inches=extent, transparent=True, pad_inches=0)
+        # Set the intervals for each contour
+        min_val = min([float(item[2]) for item in data])
+        max_val = max([float(item[2]) for item in data])
+        levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
 
-    # read in png file to numpy array
-    data = Image.open("map.png")
-    data = trim(data)
-    data = imrotate(data, 180)
+        # Create a contour plot plot from grid (lat, lon) data
+        fig = plt.figure(frameon=False)
+        ax = fig.add_subplot(111)
+        plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
+        plt.axis('off')
+        extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+        plt.savefig('map.png', bbox_inches=extent, transparent=True, pad_inches=0)
+        # plt.savefig('map.png', bbox_inches='tight', edgecolor='black', pad_inches=0)
 
-    # Overlay the image
-    contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max()-0.09, lons_bins.max()]])
-    contour_layer.layer_name = 'Contour'
-    m.add_child(contour_layer)
-    # Overlay an extra coastline field (to be removed
-    folium.GeoJson(open('ne_50m_land.geojson').read(),
-                   style_function=lambda feature: {'fillColor': 'none', 'color': '#AEEE00', 'weight': 2})\
-        .add_to(m)\
-        .layer_name='Coastline'
-    # Add layer contorl
-    folium.LayerControl().add_to(m)
+        # read in png file to numpy array
+        data = Image.open("map.png")
+        data = trim(data)
+        data = imrotate(data, 180)
 
-    # Create the map visualization and render it
-    m.save('templates/map.html')
-    map_html = open('templates/map.html', 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    # print map_id
-    js_all = soup.findAll('script')
-    # print(js_all)
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-    # print(js_all)
-    css_all = soup.findAll('link')
-    if len(css_all) > 3:
-        css_all = [css.prettify() for css in css_all[3:]]
-    # print js
-    # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+        # Overlay the image
+        contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True, bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
+        contour_layer.layer_name = 'Contour'
+        m.add_child(contour_layer)
+        # TODO: add other dimensions' names and values used for the contour along with colorbar
+
+        # Overlay an extra coastline field (to be removed
+        folium.GeoJson(open('ne_50m_land.geojson').read(),
+                       style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3})\
+            .add_to(m)\
+            .layer_name='Coastline'
+
+        # WmsTileLayer(url="http://demo.opengeo.org/geoserver/wms", layers='maps:ne_50m_land', overlay=True, name='wms', zindex=2).add_to(m)
+        # url = 'http://gmrt.marine-geo.org/cgi-bin/mapserv?map=/public/mgg/web/gmrt.marine-geo.org/htdocs/services/map/wms_merc.map'
+        # url = "http://sedac.ciesin.columbia.edu/geoserver/wms"
+        # wms = folium.features.WmsTileLayer(url,
+        #                                    name='GMRT',
+        #                                    format='image/png',
+        #                                    layers='gpw-v3:gpw-v3-population-density_2000',
+        #                                    transparent='True',
+        #                                    zindex=3)
+        # wms.add_to(m)
+        # m.add_layers_to_map()
+
+        # Add layer contorl
+        folium.LayerControl().add_to(m)
+
+        # Create the map visualization and render it
+        m.save('templates/map.html')
+        map_html = open('templates/map.html', 'r').read()
+        soup = BeautifulSoup(map_html, 'html.parser')
+        map_id = soup.find("div", {"class": "folium-map"}).get('id')
+        # print map_id
+        js_all = soup.findAll('script')
+        # print(js_all)
+        if len(js_all) > 5:
+            js_all = [js.prettify() for js in js_all[5:]]
+        # print(js_all)
+        css_all = soup.findAll('link')
+        if len(css_all) > 3:
+            css_all = [css.prettify() for css in css_all[3:]]
+        # print js
+        # os.remove('templates/map.html')
+        return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+    except HttpResponseNotFound:
+        return HttpResponseNotFound
+    except Exception:
+        return HttpResponseNotFound
 
 
 def make_map(bbox):

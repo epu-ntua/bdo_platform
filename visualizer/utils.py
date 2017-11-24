@@ -4,11 +4,51 @@ from math import floor, ceil
 import folium.plugins as plugins
 import folium
 from PIL import Image, ImageChops
+import numpy as np
 
 
-def get_test_data():
-    q = Query.objects.get(pk=6)
-    return q.execute()['results']
+def fig2data(fig):
+    """
+    @brief Convert a Matplotlib figure to a 4D numpy array with RGBA channels and return it
+    @param fig a matplotlib figure
+    @return a numpy 3D array of RGBA values
+    """
+    # draw the renderer
+    fig.canvas.draw()
+
+    # Get the RGBA buffer from the figure
+    w, h = fig.canvas.get_width_height()
+    buf = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8)
+    buf.shape = (w, h, 4)
+
+    # canvas.tostring_argb give pixmap in ARGB mode. Roll the ALPHA channel to have it in RGBA mode
+    buf = np.roll(buf, 3, axis=2)
+    return buf
+
+
+def fig2img ( fig ):
+    """
+    @brief Convert a Matplotlib figure to a PIL Image in RGBA format and return it
+    @param fig a matplotlib figure
+    @return a Python Imaging Library ( PIL ) image
+    """
+    # put the figure pixmap into a numpy array
+    buf = fig2data ( fig )
+    w, h, d = buf.shape
+    return Image.fromstring( "RGBA", ( w ,h ), buf.tostring( ) )
+
+
+def get_test_data(query_id):
+    q = Query.objects.get(pk=query_id)
+    result_json = q.execute()
+    return result_json['headers'], result_json['results']
+
+
+def filter_data(d, other_dims, other_dims_first_vals):
+    for dim, val in zip(other_dims, other_dims_first_vals):
+        if str(d[dim]) != val:
+            return 1
+    return 0
 
 
 def trim(img):
@@ -76,7 +116,8 @@ def create_folium_map(location=[0,0], zoom_start=2, max_zoom=13):
                    zoom_start=zoom_start,
                    max_zoom=max_zoom,
                    tiles=tiles_str + token_str,
-                   attr=attr_str)
+                   attr=attr_str,
+                   control_scale=True)
 
     # folium.TileLayer('openstreetmap').add_to(m)
 

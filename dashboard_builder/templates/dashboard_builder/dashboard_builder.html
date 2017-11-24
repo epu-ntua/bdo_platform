@@ -7,7 +7,7 @@
     <link href="{% static 'visualizer/css/basic_viz.css' %}" rel="stylesheet" />
     <style>
         #loadImg{position:absolute;z-index:999;}
-        #loadImg {display:table-cell;width:90%;height:100%;background:#fff;text-align:center;vertical-align:middle;}
+        #loadImg {display:table-cell;width:100%;height:100%;background:#fff;text-align:center;vertical-align:middle;}
     </style>
 {% endblock %}
 
@@ -20,7 +20,7 @@
     </div>
 
 
-    <div class="col-sm-6">
+    <div class="col-sm-3">
         <div id="query-container">
             <label for="query">Select data</label>
             <select id="query-select" class="form-control" name="query">
@@ -51,8 +51,8 @@
         </div>
     </div>
 
-    <div class="col-sm-6"><h4>Created Dashboard</h4></div>
-    <div class="col-sm-6" id="dynamic_dashboard"></div>
+    <div class="col-sm-9"><h4>Created Dashboard</h4></div>
+    <div class="col-sm-9" id="dynamic_dashboard"></div>
 
 
     <button style="display: none;" id="modalbtn" type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
@@ -108,7 +108,12 @@
       }
 
       $('#submit-args-btn').on('click', function() {
-          var submitted_args = $('#myModal').find('.modal-body').clone();
+          addToDashboard(component_id);
+          var submitted_args = $('#myModal').find('.modal-body');
+          submitted_args.each(function( index ) {
+              alert($( this ).val() );
+            });
+
           var selects = $('#myModal').find('.modal-body').find("select");
           $(selects).each(function(i) {
             var select = this;
@@ -119,13 +124,17 @@
 {#          $('#config-service-form').append(submitted_args);#}
 {##}
           var component_id = $('#myModal').find('input[name="viz_id"]').val();
-          addToDashboard(component_id);
+
 
       });
 
       function addToDashboard(component_id) {
-        $("#dynamic_dashboard").append('<iframe class="resizable" ' +
-                'src="{% url 'get_map_contour' %}" frameborder="0" allowfullscreen="" '+
+          $("#dynamic_dashboard").append('<div id="viz_container">\n' +
+                              '                <div id="loadImg" style="display: none"><img src="{% static 'img/loading.gif' %}" width="70" height="70" /></div>\n' +
+                              '            </div>');
+          $('#loadImg').show();
+          $("#viz_container").append('<iframe class="resizable" ' +
+                'src="" frameborder="0" allowfullscreen="" '+
                 'onload="document.getElementById(\'loadImg\').style.display=\'none\';"></iframe>');
       }
 
