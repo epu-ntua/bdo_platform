@@ -1,3 +1,7 @@
+import json
+
+from django.contrib.auth.models import User
+
 from query_designer.models import Query
 import numpy as np
 from math import floor, ceil
@@ -38,10 +42,20 @@ def fig2img ( fig ):
     return Image.fromstring( "RGBA", ( w ,h ), buf.tostring( ) )
 
 
-def get_test_data(query_id):
-    q = Query.objects.get(pk=query_id)
-    result_json = q.execute()
-    return result_json['headers'], result_json['results']
+def get_test_data(query, user):
+    if str(query).isdigit():
+        q = Query.objects.get(pk=int(query))
+        result_json = q.execute()
+        return result_json['headers'], result_json['results']
+    else:
+        print 'het'
+        print query
+        q = Query(user=User.objects.get(username='BigDataOcean'), document=json.loads(str(query).replace('%20', ' ')))
+        # q = Query(user=User.objects.get(username='BigDataOcean'))
+        # doc = json.loads(request.POST.get('document', ''))
+        print q
+        result_json = q.execute()
+        return result_json['headers'], result_json['results']
 
 
 def filter_data(d, other_dims, other_dims_first_vals):

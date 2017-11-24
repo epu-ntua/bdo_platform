@@ -19,6 +19,11 @@
         </div>
     </div>
 
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form">
+{#            <input id="query" value="" name="query" type="hidden"/>#}
+        </form>
+    </div>
 
     <div class="col-sm-3">
         <div id="query-container">
@@ -108,33 +113,42 @@
       }
 
       $('#submit-args-btn').on('click', function() {
-          addToDashboard(component_id);
-          var submitted_args = $('#myModal').find('.modal-body');
-          submitted_args.each(function( index ) {
-              alert($( this ).val() );
-            });
+          var viz_request = "http://localhost:8000/visualizations/";
+          viz_request += $('#myModal').find('.modal-body').find('#action').val();
 
+          alert(viz_request);
+
+          var submitted_args = $('#myModal').find('.modal-body').clone();
           var selects = $('#myModal').find('.modal-body').find("select");
           $(selects).each(function(i) {
             var select = this;
             $(submitted_args).find("select").eq(i).val($(select).val());
+{#            $('#config-viz-form').append(select);#}
           });
+          $('#config-viz-form').append(submitted_args);
 
 
-{#          $('#config-service-form').append(submitted_args);#}
-{##}
-          var component_id = $('#myModal').find('input[name="viz_id"]').val();
+          var myData = $("#config-viz-form").serialize();
+
+          viz_request += '?';
+          viz_request += myData;
+          viz_request += '&query=' + $('#query-select').children(":selected").attr("id");
+
+          addToDashboard(viz_request);
+
+
+{#          var component_id = $('#myModal').find('input[name="viz_id"]').val();#}
 
 
       });
 
-      function addToDashboard(component_id) {
+      function addToDashboard(viz_request) {
           $("#dynamic_dashboard").append('<div id="viz_container">\n' +
                               '                <div id="loadImg" style="display: none"><img src="{% static 'img/loading.gif' %}" width="70" height="70" /></div>\n' +
                               '            </div>');
           $('#loadImg').show();
           $("#viz_container").append('<iframe class="resizable" ' +
-                'src="" frameborder="0" allowfullscreen="" '+
+                'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
                 'onload="document.getElementById(\'loadImg\').style.display=\'none\';"></iframe>');
       }
 
@@ -160,17 +174,12 @@
                             .attr("value", k)
                             .text(v));
                     });
-                    $.each(newOutputColumns, function() {
-                        $('#myModal .variable-select').append($("<option></option>")
-                            .attr("value", this)
-                            .text(this));
-                    });
                 }
             });
         }
 
         function addQueryToForm(raw_query){
-            $('#config-service-form #query').val(raw_query);
+            $('#config-viz-form #query').val(raw_query);
         }
 
         $('#query-select').on('change', function() {

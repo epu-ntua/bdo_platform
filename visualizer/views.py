@@ -125,17 +125,17 @@ def map_viz_folium_contour(request):
         # Gather the arguments
         n_contours = int(request.GET.get('n_contours', 20))
         step = float(request.GET.get('step', 0.1))
-        variable = request.GET.get('feat_1', '')
-        query_id = int(request.GET.get('query', ''))
+        variable = str(request.GET.get('feat_1', ''))
+        query = str(request.GET.get('query', ''))
 
         # Create a leaflet map using folium
-        m = create_folium_map(location=[0,0], zoom_start=2, max_zoom=10)
+        m = create_folium_map(location=[0,0], zoom_start=3, max_zoom=10)
         # Perform a query and get data
-        headers, data = get_test_data(query_id)
+        headers, data = get_test_data(query, request.user)
         other_dims = list()
         for idx, col in enumerate(headers['columns']):
             if col['isVariable'] == True:
-                if str(col['title']) == variable:
+                if str(col['name']) == variable:
                     print 'found'
                     var_col = idx
             else:
