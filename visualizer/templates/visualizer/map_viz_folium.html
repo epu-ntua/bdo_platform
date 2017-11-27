@@ -7,6 +7,12 @@
 {% block css %}
     {% leaflet_css %}
 
+    # icons
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
+    <link rel="stylesheet" href="{% static 'css/leaflet.awesome-markers.css' %}">
+    <link rel="stylesheet" href="{% static 'css/MarkerCluster.css' %}">
+
+
     {% for css in css_all %}
         {% autoescape off %}
             {{ css }}
@@ -29,11 +35,16 @@
 
     {% leaflet_js %}
 {#    <script src="{% static 'js/leaflet-heat.js' %}"></script>#}
+    <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>
+
+    <script src="{% static 'js/leaflet.markercluster.js'%}"></script>
 
     {% for js in js_all %}
         {% autoescape off %}
             {{ js }}
         {% endautoescape %}
     {% endfor %}
+
+
 
 {% endblock %}

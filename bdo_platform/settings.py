@@ -19,6 +19,8 @@ else:
                 from bdo_platform.settings_management.development_smouzakitis import *
             elif settings_file == 'development_bdodev':
                 from bdo_platform.settings_management.development_bdodev import *
+            elif settings_file == 'development_tfyts':
+                from bdo_platform.settings_management.development_tfyts import *
             elif settings_file == 'development':
                 from bdo_platform.settings_management.development import *
     except IOError:
