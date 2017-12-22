@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'visualizer/viz_base.html' %}
 
 {% load static %}
 {% load leaflet_tags %}
@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="{% static 'css/leaflet.awesome-markers.css' %}">
     <link rel="stylesheet" href="{% static 'css/MarkerCluster.css' %}">
 
-
     {% for css in css_all %}
         {% autoescape off %}
             {{ css }}
@@ -23,7 +22,7 @@
 
 {% endblock %}
 
-{% block content %}
+{% block viz_content %}
 
     {% leaflet_map map_id %}
 {#    <div id="{{ map_id }}" style="height: 500px;"></div>#}
@@ -33,11 +32,13 @@
 
 {% block js %}
 
+
     {% leaflet_js %}
 {#    <script src="{% static 'js/leaflet-heat.js' %}"></script>#}
     <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>
 
     <script src="{% static 'js/leaflet.markercluster.js'%}"></script>
+
 
     {% for js in js_all %}
         {% autoescape off %}

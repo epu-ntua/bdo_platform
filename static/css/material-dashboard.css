@@ -638,9 +638,9 @@ h2.title {
 .main-panel {
   position: relative;
   z-index: 2;
-  float: right;
+  /*float: right;*/
   overflow: auto;
-  width: calc(100% - 260px);
+  /*width: calc(100% - 260px);*/
   min-height: 100%;
   -webkit-transform: translate3d(0px, 0, 0);
   -moz-transform: translate3d(0px, 0, 0);

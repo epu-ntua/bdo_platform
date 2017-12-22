@@ -77,6 +77,7 @@ class Migration(migrations.Migration):
                 ('service_type', models.CharField(choices=[('dataset', 'Dataset'), ('analysis', 'Analysis'), ('analysis', 'Analysis')], max_length=32)),
                 ('hidden', models.BooleanField(default=False)),
                 ('info', django.contrib.postgres.fields.jsonb.JSONField(default={})),
+                ('job_name', models.CharField(blank=True, default='', max_length=100)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='services', to=settings.AUTH_USER_MODEL)),
             ],
         ),

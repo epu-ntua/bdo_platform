@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'query_designer',
     'analytics',
     'visualizer',
+    'dashboard_builder',
 ]
 
 AUTHENTICATION_BACKENDS = (

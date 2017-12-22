@@ -1,17 +1,34 @@
 from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
-
+from django.http.response import HttpResponseNotFound
 from django.shortcuts import render
 from bs4 import BeautifulSoup
-import folium
-import folium.plugins as plugins
-import numpy as np
+
 from datetime import datetime, timedelta
-import os
+
+from scipy.misc import imrotate
+
+import matplotlib.pyplot as plt
+
+from utils import *
+from visualizer.models import Visualization
+
+
+def test_request_include(request):
+    return render(request, 'visualizer/test_request_include.html', {})
+
+
+def test_request(request):
+    return render(request, 'visualizer/test_request.html', {})
+
+
+def get_map_simple(request):
+    return render(request, 'visualizer/map_viz.html', {})
 
 from folium import CustomIcon
 from folium.plugins import HeatMap
 from rest_framework.views import APIView
+
 
 from tests import *
 from forms import MapForm
@@ -88,19 +105,15 @@ def map_viz_folium(request):
             maxyear = 2017
 
     else:
-        line = request.GET.get("line", False)
+        line = request.GET.get("line", 'no')
         markersum = int(request.GET.get("markers", 50))
         ship = request.GET.get("ship", "all")
         minyear = int(request.POST.get("min_year", 2000))
         maxyear = int(request.POST.get("max_year", 2017))
 
-    data = get_test_data(markersum, ship, minyear, maxyear)
+    data = get_data(markersum, ship, minyear, maxyear)
 
-    #length = len(result) - 1
-    #data = []
-    #for index in range(0, length):
-        #d = result[index]
-        #data.append((np.array([float(d[3]), float(d[4]), int(d[1])]) * np.array([1, 1, 1])).tolist())
+
     for index in range(0, len(data)):
         d = data[index]
         lat = d[0]
@@ -123,7 +136,7 @@ def map_viz_folium(request):
             popup=message
         ).add_to(marker_cluster)
 
-    if line:
+    if line != 'no':
 
         course = []
         currboat = data[0][2]
@@ -162,8 +175,6 @@ def map_viz_folium(request):
             attributes=attr,
         ).add_to(m)
 
-    #
-
     m.save('templates/map.html')
     map_html = open('templates/map.html', 'r').read()
     soup = BeautifulSoup(map_html, 'html.parser')
@@ -181,6 +192,89 @@ def map_viz_folium(request):
     # os.remove('templates/map.html')
     return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
 
+def valid_entry(entry, ship, minyear, maxyear):
+    entryship = entry[2]
+    entrydate = entry[3]
+    year = entrydate.split('-')
+    year = int(year[0])
+
+    if ship != "all":
+        ship = int(ship)
+        if entryship != ship:
+            return False
+    if year < minyear or year > maxyear:
+        return False
+    return True
+
+def map_course(request):
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    location = [0, 0]
+    zoom_start = 2
+    max_zoom = 30
+    min_zoom = 2,
+
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str + token_str,
+                   attr=attr_str)
+
+    plugins.Fullscreen(
+        position='topright',
+        title='Expand me',
+        title_cancel='Exit me',
+        force_separate_button=True).add_to(m)
+
+    if request.method == "GET":
+        markersum = int(request.GET.get("markers", 500))
+        ship = request.GET.get("ship", "all")
+        minyear = int(request.POST.get("min_year", 2000))
+        maxyear = int(request.POST.get("max_year", 2017))
+
+    #import pdb;pdb.set_trace()
+
+    data = get_data(markersum, ship, minyear, maxyear)
+
+    jsonobj = []
+    currboat = data[0][2]
+    for index in range(0, len(data)-1):
+        d = data[index]
+
+        if valid_entry(d, currboat, minyear, maxyear):
+            lat = d[0]
+            lon = d[1]
+            date = d[3]
+            ship = d[2]
+            speed = d[4]
+            colour = 'blue'
+            if speed > 75.0:
+                colour = 'red'
+            jsonobj.append({'ship': ship, 'lat': lat, 'lon': lon, 'date': date, 'colour': colour, 'speed': speed})
+    jsonobj = json.dumps(jsonobj)
+
+
+    m.save('templates/map.html')
+    map_html = open('templates/map.html', 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    # print map_id
+    js_all = soup.findAll('script')
+    # print(js_all)
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # print js
+    # os.remove('templates/map.html')
+    return render(request, 'visualizer/map_wjs.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': jsonobj})
 
 def map_heatmap(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
@@ -222,7 +316,7 @@ def map_heatmap(request):
         minyear = int(request.POST.get("min_year", 2000))
         maxyear = int(request.POST.get("max_year", 2017))
 
-    data = get_test_data(markersum, ship, minyear, maxyear)
+    data = get_data(markersum, ship, minyear, maxyear)
     heat = []
     for d in data:
         heat.append((np.array([float(d[0]), float(d[1])]) * np.array([1, 1])).tolist())
@@ -250,6 +344,130 @@ def map_heatmap(request):
     # print js
     # os.remove('templates/map.html')
     return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
+def map_viz_folium_contour(request):
+    try:
+        # Gather the arguments
+        n_contours = int(request.GET.get('n_contours', 20))
+        step = float(request.GET.get('step', 0.1))
+        variable = str(request.GET.get('feat_1', ''))
+        query = str(request.GET.get('query', ''))
+
+        # Create a leaflet map using folium
+        m = create_folium_map(location=[0,0], zoom_start=3, max_zoom=10)
+        # Perform a query and get data
+        headers, data = get_test_data(query, request.user)
+        other_dims = list()
+        for idx, col in enumerate(headers['columns']):
+            if col['isVariable'] == True:
+                if str(col['name']) == variable:
+                    print 'found'
+                    var_col = idx
+            else:
+                if str(col['name']).find('latitude') != -1:
+                    lat_col = idx
+                elif str(col['name']).find('longitude') != -1:
+                    lon_col = idx
+                else:
+                    other_dims.append(idx)
+        other_dims_first_vals = list()
+        for d in other_dims:
+            other_dims_first_vals.append(str(data[0][d]))
+
+        print other_dims
+        print other_dims_first_vals
+        # Select only data with the same (first) value on any other dimensions except lat/lon
+        data = [(float(d[lat_col]), float(d[lon_col]), float(d[var_col])) for d in data if filter_data(d, other_dims, other_dims_first_vals) == 0]
+        print data
+        # Aggregate data into bins
+        lats = np.array(sorted(list(set([float(item[0]) for item in data]))))
+        lats_bins = create_bins(lats, step)
+        lons = np.array(sorted(list(set([float(item[1]) for item in data]))))
+        lons_bins = create_bins(lons, step)
+
+        # create meshgrids of the 2 dimensions neede for the contour plot
+        Lats, Lons = np.meshgrid(lats_bins, lons_bins)
+
+        # Create grid data needed for the contour plot
+        final_data = create_grid_data(lats_bins, lons_bins, data)
+
+        print Lats
+        print Lons
+        print final_data
+
+        # Set the intervals for each contour
+        min_val = min([float(item[2]) for item in data])
+        max_val = max([float(item[2]) for item in data])
+        levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+
+        # Create a contour plot plot from grid (lat, lon) data
+        fig = plt.figure(frameon=False)
+        ax = fig.add_subplot(111)
+        plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
+        plt.axis('off')
+        extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+        plt.savefig('map.png', bbox_inches=extent, transparent=True, pad_inches=0)
+        # plt.savefig('map.png', bbox_inches='tight', edgecolor='black', pad_inches=0)
+
+        # read in png file to numpy array
+        data = Image.open("map.png")
+        data = trim(data)
+        data = imrotate(data, 180)
+
+        # Overlay the image
+        contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True, bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
+        contour_layer.layer_name = 'Contour'
+        m.add_child(contour_layer)
+        # TODO: add other dimensions' names and values used for the contour along with colorbar
+
+        # Overlay an extra coastline field (to be removed
+        folium.GeoJson(open('ne_50m_land.geojson').read(),
+                       style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3})\
+            .add_to(m)\
+            .layer_name='Coastline'
+
+        # WmsTileLayer(url="http://demo.opengeo.org/geoserver/wms", layers='maps:ne_50m_land', overlay=True, name='wms', zindex=2).add_to(m)
+        # url = 'http://gmrt.marine-geo.org/cgi-bin/mapserv?map=/public/mgg/web/gmrt.marine-geo.org/htdocs/services/map/wms_merc.map'
+        # url = "http://sedac.ciesin.columbia.edu/geoserver/wms"
+        # wms = folium.features.WmsTileLayer(url,
+        #                                    name='GMRT',
+        #                                    format='image/png',
+        #                                    layers='gpw-v3:gpw-v3-population-density_2000',
+        #                                    transparent='True',
+        #                                    zindex=3)
+        # wms.add_to(m)
+        # m.add_layers_to_map()
+
+        # Add layer contorl
+        folium.LayerControl().add_to(m)
+
+        # Create the map visualization and render it
+        m.save('templates/map.html')
+        map_html = open('templates/map.html', 'r').read()
+        soup = BeautifulSoup(map_html, 'html.parser')
+        map_id = soup.find("div", {"class": "folium-map"}).get('id')
+        # print map_id
+        js_all = soup.findAll('script')
+        # print(js_all)
+        if len(js_all) > 5:
+            js_all = [js.prettify() for js in js_all[5:]]
+        # print(js_all)
+        css_all = soup.findAll('link')
+        if len(css_all) > 3:
+            css_all = [css.prettify() for css in css_all[3:]]
+        # print js
+        # os.remove('templates/map.html')
+        return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+    except HttpResponseNotFound:
+        return HttpResponseNotFound
+    except Exception:
+        return HttpResponseNotFound
+
+def make_map(bbox):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    # ax.set_extent(bbox)
+    ax.coastlines(resolution='50m')
+    return fig, ax
 
 def map_viz_folium_heatmap(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='

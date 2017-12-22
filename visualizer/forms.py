@@ -1,5 +1,4 @@
 from django import forms
-from django.forms import NumberInput
 
 from query_designer.models import Query
 
@@ -53,9 +52,16 @@ class MapForm(forms.Form):
 
     }
 
-    year_choices = populate('year')
+    ships = (
+        ('all', 'All Ships'),
+    )
 
-    ship = forms.ChoiceField(label='Ship Id ', required=False, choices=populate('ship'))
+    year_choices = (
+        ('2005', 2005),
+        ('2015', 2015),
+    )
+
+    ship = forms.ChoiceField(label='Ship Id ', required=False, choices=ships)
     markers = forms.ChoiceField(label='Markers ', choices=choices, initial='50')
     line = forms.BooleanField(label='Display Course ', initial=True, required=False)
     min_year = forms.IntegerField(label='Min Year', required=False, initial=year_choices[0])

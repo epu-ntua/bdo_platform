@@ -47,49 +47,6 @@
 
 	<div class="wrapper">
 
-	    <div class="sidebar" data-color="blue" data-image="{% static 'img/sidebar-1.jpg' %}">
-			<div class="logo">
-				<a href="/" class="simple-text">
-					<img src="{% static 'img/logo.png' %}" style="width: 110px; height: auto;">
-				</a>
-			</div>
-
-	    	<div class="sidebar-wrapper">
-	            <ul class="nav">
-                    <li{% if sidebar_active == 'products' or not sidebar_active %} class="active"{% endif %}>
-	                    <a href="/">
-	                        <i class="material-icons">directions_boat</i>
-	                        <p>Products</p>
-	                    </a>
-	                </li>
-	                <li>
-	                    <a href="#">
-	                        <i class="material-icons">person</i>
-	                        <p>Providers</p>
-	                    </a>
-	                </li>
-                    <li{% if sidebar_active == 'dashboard'%} class="active"{% endif %}>
-	                    <a href="#">
-	                        <i class="material-icons">dashboard</i>
-	                        <p>Dashboard</p>
-	                    </a>
-	                </li>
-	                <li{% if sidebar_active == 'queries' %} class="active"{% endif %}>
-	                    <a href="/queries">
-	                        <i class="fa fa-database"></i>
-	                        <p>Explore data</p>
-	                    </a>
-	                </li>
-	                <li>
-	                    <a href="#">
-	                        <i class="material-icons text-gray">notifications</i>
-	                        <p>Notifications</p>
-	                    </a>
-	                </li>
-	            </ul>
-	    	</div>
-	    </div>
-
 	    <div class="main-panel">
 			<nav class="navbar navbar-transparent navbar-absolute">
 				<div class="container-fluid">
