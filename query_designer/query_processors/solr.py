@@ -107,7 +107,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     if not filters:
         where_clause = ''
     else:
-        where_clause = self.process_filters(filters)
+        where_clause = self.process_filters(filters, mode='solr')
 
     if where_clause:
         where_clause = 'WHERE ' + where_clause + ' \n'

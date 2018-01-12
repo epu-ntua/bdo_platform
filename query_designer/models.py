@@ -30,28 +30,28 @@ class Query(Model):
         return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
 
     @staticmethod
-    def operator_to_str(op):
+    def operator_to_str(op, mode='postgres'):
         return {
             # comparison
-            'eq': '=',
-            'neq': '!=',
-            'gt': '>',
-            'gte': '>=',
-            'lt': '<',
-            'lte': '<=',
-            'mod': '%',
+            'eq': ('=', ':'),
+            'neq': ('!=', None),
+            'gt': ('>', None),
+            'gte': ('>=', None),
+            'lt': ('<', None),
+            'lte': ('<=', None),
+            'mod': ('%', None),
 
             # boolean
-            '&&': 'AND',
-            'and': 'AND',
-            '||': 'OR',
-            'or': 'OR',
-            '!': 'NOT',
-            'not': 'NOT',
-        }[op.lower()]
+            '&&': ('AND', 'AND'),
+            'and': ('AND', 'AND'),
+            '||': ('OR', 'OR'),
+            'or': ('OR', 'OR'),
+            '!': ('NOT', None),
+            'not': ('NOT', None),
+        }[op.lower()][0 if mode == 'postgres' else 1]
 
     @staticmethod
-    def process_filters(filters):
+    def process_filters(filters, mode='postgres'):
         # end value
         if type(filters) in [str, unicode, int, float]:
             return filters
@@ -65,18 +65,39 @@ class Query(Model):
 
             lat = filters['a'] + '_latitude'
             lng = filters['a'] + '_longitude'
-            result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
-            result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
+            if mode == 'postgres':
+                result = '%s:[%s TO %s]' % (lat, rect_start[0], rect_end[0])
+                result += ' AND %s:[%s TO %s]' % (lng, rect_start[1], rect_end[1])
+            else:
+                result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
+                result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
 
             if filters['op'] == 'outside_rect':
-                result = 'NOT(%s)' % result
+                if mode == 'postgres':
+                    result = 'NOT(%s)' % result
+                else:
+                    result = '-(%s)' % result
 
             return result
 
-        result = '(%s) %s (%s)' % \
-               (Query.process_filters(filters['a']),
-                Query.operator_to_str(filters['op']),
-                Query.process_filters(filters['b']))
+        result = ''
+        if mode == 'solr' and filters['op'] in ['neq', 'gt', 'gte', 'lt', 'lte', 'mod', '!', 'not']:
+            if filters['op'] == 'neq':
+                result = '-%s:%s' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
+            elif filters['op'] in ['gt', 'gte']:
+                result = '%s:[%s TO *]' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
+            elif filters['op'] in ['lt', 'lte']:
+                result = '%s:[* TO %s]' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
+            elif filters['op'] == 'mod':
+                result = 'mod(%s, %s)' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
+            elif filters['op'] in ['!', 'not']:
+                raise NotImplementedError('TODO fix missing NOT operator in solr')
+
+        else:
+            result = '(%s) %s (%s)' % \
+                   (Query.process_filters(filters['a']),
+                    Query.operator_to_str(filters['op'], mode=mode),
+                    Query.process_filters(filters['b']))
 
         return result
 
