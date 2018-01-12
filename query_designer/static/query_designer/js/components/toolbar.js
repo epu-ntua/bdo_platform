@@ -211,7 +211,7 @@ var Toolbar = function(qd) {
             $(this).addClass('selected');
 
             $('.class-instance .delete').click();
-            
+
             var builder = that.qd.workbench.builder;
 
             builder.selection = {
