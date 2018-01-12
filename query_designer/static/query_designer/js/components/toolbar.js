@@ -104,7 +104,7 @@ var Toolbar = function(qd) {
                     if (!isFull) {
                         var typeClass = this.allClassesProperties[i].type;
                         var dataStr = 'data-id="' + this.allClassesProperties[i].item._id + '" data-type="' + typeClass+ '"';
-                        var newButton = '<div class="class_button button btn btn-sm ' + typeClass + '" ' + dataStr + '>' + this.allClassesProperties[i].item.title + '</div>';
+                        var newButton = '<div class="class_button ' + typeClass + '" ' + dataStr + '>' + this.allClassesProperties[i].item.title + '</div>';
                         $toolbar.find('.active-classes .classes-container').append(newButton);
                     }
 
@@ -203,14 +203,31 @@ var Toolbar = function(qd) {
     // on class start drag
     $("body").on('mousedown', '.class_button', function(e) {
         if (e.which == 1) { // only for left click
-            that.qd.workbench.builder.selection = {
+            if ($(this).hasClass('selected')) {
+                return
+            }
+
+            $('.class_button').removeClass('selected');
+            $(this).addClass('selected');
+
+            $('.class-instance .delete').click();
+            
+            var builder = that.qd.workbench.builder;
+
+            builder.selection = {
                 'type': $(this).data("type"),
                 'uri': $(this).data("id"),
                 'label': $(this).text(),
                 'dt_name': $toolbar.find(' > select').val()
             };
 
-            $('#builder_workspace').addClass("accepting-instance");
+            // auto-select
+            builder.add_instance(builder.selection.dt_name, builder.selection.uri, builder.selection.label, 10, 10);
+
+            builder.selection = undefined;
+
+            // $('#builder_workspace').addClass("accepting-instance");
+
             e.preventDefault();
             e.stopPropagation();
         }

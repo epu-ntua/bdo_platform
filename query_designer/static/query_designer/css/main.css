@@ -55,10 +55,16 @@ body.qd-body {
 
 .toolbar {
     padding: 10px;
+    height: 865px;
 }
 
 .toolbar-container {
     background: #eee;
+    border: 1px solid #ddd;
+    border-top: none;
+    width: 300px;
+    display: inline-block;
+    height: 885px;
 }
 
 .toolbar-container > * {
@@ -66,19 +72,29 @@ body.qd-body {
 }
 
 .toolbar .active-classes {
-    display: inline;
-    padding: 10px;
+    display: block;
+    padding: 5px 10px;
+    font-size: 13px;
+    /* max-width: 200px; */
+    /* text-overflow: ellipsis; */
+    /* overflow: hidden; */
+    /* white-space: nowrap; */
 }
 
 .toolbar .active-classes .classes-container {
-    display: inline;
+    display: block;
 }
 
 .toolbar .active-classes .button {
-    margin: 0 5px 5px 5px;
-    background: #b2b2b2;
+    margin: 0;
+    background: none;
     border-radius: 2px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
     text-transform: none;
+    max-width: 240px;
+    display: block;
 }
 
 .toolbar .prev-next-classes-button {
@@ -106,6 +122,10 @@ body.qd-body {
     cursor: -webkit-grab;
 }
 
+.toolbar .class_button.selected {
+    font-weight: 600;
+}
+
 .toolbar .class_button:active, #tree_toolbar .class-wrapper .class:active {
     cursor: grabbing;
     cursor: -o-grabbing;
@@ -118,8 +138,14 @@ body.qd-body {
     background: #1E8BC3;
 }
 
+.toolbar .class_button.class {
+    margin: 5px 0;
+    color: #555;
+}
+
 .toolbar .class_button.class:hover {
-    background: #26C281;
+    cursor: pointer;
+    color: #333;
 }
 
 .toolbar select {
@@ -237,11 +263,23 @@ body.qd-body {
     cursor: pointer;
 }
 
+#query-results--container {
+    display: inline-block;
+    width: calc(100% - 285px);
+    vertical-align:top;
+    background: #eee;
+    height: 885px;
+}
+
+#query-results--container h3 {
+    display: none;
+}
+
 #builder_workspace {
-    width: 100%;
+    display: none;
     height: 600px;
     position: relative;
-        background: #fff;
+    background: #fff;
     border: 1px solid #ddd;
 }
 
@@ -823,6 +861,13 @@ body.qd-body {
 
 .toolbar input[type="search"] {
     vertical-align: top;
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.toolbar input[type="search"]:focus {
+
 }
 
 .chosen-container .chosen-single {
