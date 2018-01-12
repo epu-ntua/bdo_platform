@@ -16,6 +16,6 @@ class ResultEncoder(json.JSONEncoder):
         elif isinstance(obj, float):
             return float(obj)
         elif isinstance(obj, datetime.datetime):
-            return obj.isoformat()
+            return obj.isoformat() + 'Z'  # TODO fix for PostgreSQL
 
         return json.JSONEncoder.default(self, obj)

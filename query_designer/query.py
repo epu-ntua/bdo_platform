@@ -8,6 +8,7 @@ from query_designer.models import *
 from django.http import JsonResponse
 
 from aggregator.models import *
+from query_designer.query_processors.utils import ResultEncoder
 
 
 def execute_query(request, pk=None):

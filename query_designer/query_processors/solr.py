@@ -3,10 +3,15 @@ from collections import OrderedDict
 import time
 from threading import Thread
 
+import requests
 from django.db import connection
 
 from aggregator.models import Variable, Dimension
 from .utils import GRANULARITY_MIN_PAGES, ResultEncoder
+
+
+def query_string_from_params(params):
+    return '?%s' % ('&'.join(['%s=%s' % (key, params[key]) for key in params.keys()]))
 
 
 def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
@@ -14,6 +19,9 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         dimension_values = dimension_values.split(',')
     else:
         dimension_values = []
+
+    # all params
+    request_params = {}
 
     # select
     selects = OrderedDict()
@@ -26,27 +34,30 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         v_obj = Variable.objects.get(pk=_from['type'])
 
         for s in _from['select']:
+            obj = None
             if s['type'] != 'VALUE':
                 dimension = Dimension.objects.get(pk=s['type'])
-                column_name = dimension.data_column_name
+                obj = dimension
+                column_name = dimension.name
                 column_unit = dimension.unit
                 column_axis = dimension.axis
                 column_step = dimension.step
                 sql_type = dimension.sql_type
 
             else:
-                column_name = 'value'
+                obj = v_obj
+                column_name = v_obj.name
                 column_unit = v_obj.unit
                 column_axis = None
                 column_step = None
                 sql_type = 'double precision'
 
-            selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
+            selects[s['name']] = {'field': column_name, 'obj': obj}
 
             if 'joined' not in s:
-                c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
+                c_name = column_name
                 if s.get('aggregate', '') != '':
-                    c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+                    c_name = '%s(%s)' % (s.get('aggregate'), column_name)
 
                 if not s.get('exclude', False):
                     header_sql_types.append(sql_type)
@@ -55,100 +66,55 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                         'name': s['name'],
                         'unit': column_unit,
                         'step': column_step,
-                        'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
+                        'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else '"',
                         'isVariable': s['type'] == 'VALUE',
                         'axis': column_axis,
                     })
 
                     # add fields to select clause
-                    columns.append((c_name, '%s' % s['name']))
+                    columns.append((c_name, s['name']))
 
                 # add fields to grouping
                 if s.get('groupBy', False):
                     groups.append(c_name)
 
     # select
-    select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
-
-    # from
-    from_clause = 'FROM %s AS %s\n' % \
-                  (selects[selects.keys()[0]]['table'], self.document['from'][0]['name'])
-
-    # join
-    join_clause = ''
-    for _from in self.document['from'][1:]:
-        joins = []
-        for s in _from['select']:
-            if 'joined' in s:
-                if s['name'].endswith('location_latitude'):
-                    js = [
-                        (s['name'], s['joined'] + '_latitude'),
-                        (s['name'].replace('_latitude', '_longitude'), s['joined'] + '_longitude'),
-                    ]
-                elif s['name'].endswith('location_longitude'):
-                    js = []
-                else:
-                    js = [(s['name'], s['joined'])]
-
-                for j in js:
-                    joins.append('%s.%s=%s.%s' %
-                                 (_from['name'],
-                                  selects[j[0]]['column'],
-                                  self.document['from'][0]['name'],
-                                  selects[j[1]]['column']))
-
-        join_clause += 'JOIN %s AS %s ON %s\n' % \
-                       (selects[_from['select'][0]['name']]['table'],
-                        _from['name'],
-                        ' AND '.join(joins))
+    select_clause = ','.join(['%s:%s' % (c[1], c[0]) for c in columns])
+    request_params['fl'] = select_clause
 
     # where
     filters = self.document.get('filters', '')
     if not filters:
-        where_clause = ''
+        where_clause = '*:*'
     else:
         where_clause = self.process_filters(filters, mode='solr')
-
-    if where_clause:
-        where_clause = 'WHERE ' + where_clause + ' \n'
+    request_params['q'] = where_clause
 
     # grouping
-    group_clause = ''
     if groups:
-        group_clause = 'GROUP BY %s\n' % ','.join(groups)
+        request_params['group'] = 'true'
+        for group_field in groups:
+            request_params['group.field'] = group_field
 
     # ordering
-    order_by_clause = ''
     orderings = self.document.get('orderings', [])
     if orderings:
-        order_by_clause = 'ORDER BY %s\n' % ','.join([(o['name'] + ' ' + o['type']) for o in orderings])
+        order_by_clause = ','.join([('%s %s' % (o['name'], o['type'])) for o in orderings])
+        request_params['sort'] = order_by_clause
 
     # offset & limit
-    offset_clause = ''
     offset = 0
-    limit_clause = ''
     limit = None
     if 'offset' in self.document and self.document['offset']:
         offset = int(self.document['offset'])
-        offset_clause = 'OFFSET %d\n' % offset
+        request_params['start'] = offset
 
     if 'limit' in self.document and self.document['limit']:
         limit = int(self.document['limit'])
-        limit_clause = 'LIMIT %d\n' % limit
+        request_params['rows'] = offset
 
-    # organize into subquery
-    subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
-    subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
+    print(query_string_from_params(request_params))
 
-    # generate query
-    q = subquery + \
-        where_clause + \
-        order_by_clause + \
-        offset_clause + \
-        limit_clause
-
-    print q
-    cursor = connection.cursor()
     if not only_headers:
         # execute query & return results
         t1 = time.time()
@@ -165,69 +131,41 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                 'total': 1
             }
 
-        q_pages = subquery_cnt + where_clause
+        if not execute:
+            # only count
+            request_params['rows'] = 0
 
-        def _count():
-            cursor.execute(q_pages)
-            self.count = cursor.fetchone()[0]
-
-        self.count = None
-        count_failed = False
-        t = Thread(target=_count, args=[])
-        t.start()
-        t.join(timeout=5)
-
-        if self.count is None:
-            count_failed = True
-            self.count = 10000000
+        resp = requests.get('http://212.101.173.50:8983/solr/bdo/select%s' %
+                            query_string_from_params(request_params)).json()
+        self.count = resp['response']['numFound']
 
         if limit is not None:
             pages['total'] = (self.count - 1) / limit + 1
 
-        # apply granularity
-        if self.count >= GRANULARITY_MIN_PAGES and (not count_failed):
-            try:
-                granularity = int(self.document.get('granularity', 0))
-            except ValueError:
-                granularity = 0
-
-            if granularity > 1:
-                q = """
-                    SELECT %s FROM (
-                        SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
-                    ) AS GQ_C
-                    WHERE (row_id %% %d = 0)
-                """ % (','.join([c[1] for c in columns]), q, granularity)
-
         results = []
         if execute:
-            cursor.execute(q)
-            all_rows = cursor.fetchall()
-            # all_rows = Query.threaded_fetchall(connection, q, self.count)
+            all_rows = resp['response']['docs']
 
             # we have to convert numeric results to float
             # by default they're returned as strings to prevent loss of precision
             for row in all_rows:
                 res_row = []
-                for idx, h_type in enumerate(header_sql_types):
-                    if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:
-                        res_row.append(float(row[idx]))
-                    else:
-                        res_row.append(row[idx])
+                for field_alias, field in request_params['fl']:
+                    res_row.append(row[field_alias])
 
                 results.append(res_row)
 
     # include dimension values if requested
     for d_name in dimension_values:
         hdx, header = [hi for hi in enumerate(headers) if hi[1]['name'] == d_name][0]
-        d = Dimension.objects.get(pk=selects[d_name]['column'].split('_')[-1])
+        d = selects[d_name]['obj']
         if not d.non_filterable:
             header['values'] = d.values
 
     # include variable ranges if requested
     if variable:
         vdx, v = [vi for vi in enumerate(headers) if vi[1]['name'] == variable][0]
-        v['distribution'] = Variable.objects.get(pk=selects[variable]['table'].split('_')[-1]).distribution
+        v['distribution'] = selects[variable]['obj'].distribution
 
     if not only_headers:
         # monitor query duration
@@ -246,7 +184,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     response['headers']['columns'] = headers
 
     if raw_query:
-        response['raw_query'] = q
+        response['raw_query'] = query_string_from_params(request_params)
 
     # store headers
     self.headers = ResultEncoder().encode(headers)

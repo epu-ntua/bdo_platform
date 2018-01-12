@@ -94,10 +94,13 @@ class Query(Model):
                 raise NotImplementedError('TODO fix missing NOT operator in solr')
 
         else:
-            result = '(%s) %s (%s)' % \
-                   (Query.process_filters(filters['a']),
+            _a = Query.process_filters(filters['a'])
+            _b = Query.process_filters(filters['b'])
+
+            result = '%s %s %s' % \
+                   (('(%s)' % _a) if type(_a) not in [str, unicode] else _a,
                     Query.operator_to_str(filters['op'], mode=mode),
-                    Query.process_filters(filters['b']))
+                    ('(%s)' % _b) if type(_b) not in [str, unicode] else _b)
 
         return result
 
@@ -144,9 +147,9 @@ class Query(Model):
         else:
             from query_designer.query_processors.solr import process as q_process
 
-        q_process(dimension_values=dimension_values, variable=variable,
-                  only_headers=only_headers, commit=commit,
-                  execute=execute, raw_query=raw_query)
+        return q_process(self, dimension_values=dimension_values, variable=variable,
+                         only_headers=only_headers, commit=commit,
+                         execute=execute, raw_query=raw_query)
 
     def execute(self, dimension_values='', variable='', only_headers=False, commit=True):
         return self.process(dimension_values, variable, only_headers, commit, execute=True)
