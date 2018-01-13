@@ -275,12 +275,21 @@ body.qd-body {
     display: none;
 }
 
+#query-designer-container.expanded {
+    padding-bottom: 600px;
+}
+
 #builder_workspace {
     display: none;
     height: 600px;
-    position: relative;
+    position: absolute;
+    width: calc(100% - 60px);
     background: #fff;
     border: 1px solid #ddd;
+}
+
+#query-designer-container.expanded #builder_workspace {
+    display: block;
 }
 
 #builder_workspace > span {

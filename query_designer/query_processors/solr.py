@@ -120,7 +120,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
 
     if 'limit' in self.document and self.document['limit']:
         limit = int(self.document['limit'])
-        request_params['rows'] = offset
+        request_params['rows'] = limit
 
     print(query_string_from_params(request_params))
 
