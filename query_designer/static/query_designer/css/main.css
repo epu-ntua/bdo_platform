@@ -71,6 +71,16 @@ body.qd-body {
     vertical-align: top;
 }
 
+#query-results--data thead,
+#query-results--data tbody {
+    display: block;
+}
+
+#query-results--data tbody {
+    height: 500px;
+    overflow-y: auto;
+}
+
 .toolbar .active-classes {
     display: block;
     padding: 5px 10px;

@@ -22,7 +22,7 @@ DesignerMenu = function(qd) {
                         '<span class="query-title"></span>' +
                         '<div class="btn-group">' +
                         '<button class="btn btn-sm bg-color--lightgray view-code hidden"><i class="material-icons text-gray">code</i> View Code</button>' +
-                        '<button class="btn btn-sm bg-color--lightgray advanced-view"><i class="material-icons text-gray">code</i> Advanced view</button>' +
+                        '<button class="btn btn-sm bg-color--lightgray advanced-view"><i class="material-icons text-gray">code</i> <span>Advanced view off</span></button>' +
                         '<button class="btn btn-sm bg-color--lightgray show-query-options"><i class="material-icons text-gray">settings</i> Options</button>' +
                         '</div>' +
                         '</div>' +
@@ -49,6 +49,34 @@ DesignerMenu = function(qd) {
 
             this.$elem.find('.advanced-view').on('click', function() {
                 that.qd.$container.toggleClass('expanded');
+
+                if (that.qd.$container.hasClass('expanded')) {
+                    $(this)
+                        .removeClass('bg-color--lightgray')
+                        .addClass('bg-color--blue');
+
+                    $(this)
+                        .find('> span')
+                        .text('Advanced view on');
+
+                    $(this)
+                        .find('> i')
+                        .removeClass('text-gray')
+                        .addClass('text-white');
+                } else {
+                    $(this)
+                        .removeClass('bg-color--blue')
+                        .addClass('bg-color--lightgray');
+
+                    $(this)
+                        .find('> span')
+                        .text('Advanced view off');
+
+                    $(this)
+                        .find('> i')
+                        .removeClass('text-white')
+                        .addClass('text-gray');
+                }
             });
 
             // add menu to designer
