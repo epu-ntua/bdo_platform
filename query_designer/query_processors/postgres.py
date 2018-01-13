@@ -249,7 +249,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         response['raw_query'] = q
 
     # store headers
-    self.headers = ResultEncoder().encode(headers)
+    self.headers = ResultEncoder(mode='postgres').encode(headers)
     if self.pk and commit:
         self.save()
 

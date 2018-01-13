@@ -88,6 +88,9 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         where_clause = '*:*'
     else:
         where_clause = self.process_filters(filters, mode='solr')
+        for column_name, field_name in columns:
+            where_clause = where_clause.replace(field_name, column_name)
+
     request_params['q'] = where_clause
 
     # grouping
@@ -150,7 +153,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             # by default they're returned as strings to prevent loss of precision
             for row in all_rows:
                 res_row = []
-                for field_alias, field in request_params['fl']:
+                for _, field_alias in columns:
                     res_row.append(row[field_alias])
 
                 results.append(res_row)
@@ -187,7 +190,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         response['raw_query'] = query_string_from_params(request_params)
 
     # store headers
-    self.headers = ResultEncoder().encode(headers)
+    self.headers = ResultEncoder(mode='solr').encode(headers)
     if self.pk and commit:
         self.save()
 

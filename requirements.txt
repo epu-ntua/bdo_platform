@@ -1,3 +1,4 @@
+requests
 # django
 Django==1.9
 

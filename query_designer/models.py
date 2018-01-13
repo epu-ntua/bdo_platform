@@ -14,6 +14,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db.models import *
 
 from aggregator.models import *
+from query_designer.query_processors.utils import SolrResultEncoder, PostgresResultEncoder
 
 
 class Query(Model):
@@ -65,7 +66,8 @@ class Query(Model):
 
             lat = filters['a'] + '_latitude'
             lng = filters['a'] + '_longitude'
-            if mode == 'postgres':
+
+            if mode == 'solr':
                 result = '%s:[%s TO %s]' % (lat, rect_start[0], rect_end[0])
                 result += ' AND %s:[%s TO %s]' % (lng, rect_start[1], rect_end[1])
             else:
@@ -81,26 +83,27 @@ class Query(Model):
             return result
 
         result = ''
-        if mode == 'solr' and filters['op'] in ['neq', 'gt', 'gte', 'lt', 'lte', 'mod', '!', 'not']:
-            if filters['op'] == 'neq':
+        _op = filters['op'].lower()
+        if mode == 'solr' and _op in ['neq', 'gt', 'gte', 'lt', 'lte', 'mod', '!', 'not']:
+            if _op == 'neq':
                 result = '-%s:%s' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
-            elif filters['op'] in ['gt', 'gte']:
+            elif _op in ['gt', 'gte']:
                 result = '%s:[%s TO *]' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
-            elif filters['op'] in ['lt', 'lte']:
+            elif _op in ['lt', 'lte']:
                 result = '%s:[* TO %s]' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
-            elif filters['op'] == 'mod':
+            elif _op == 'mod':
                 result = 'mod(%s, %s)' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
-            elif filters['op'] in ['!', 'not']:
+            elif _op in ['!', 'not']:
                 raise NotImplementedError('TODO fix missing NOT operator in solr')
 
         else:
-            _a = Query.process_filters(filters['a'])
-            _b = Query.process_filters(filters['b'])
+            _a = Query.process_filters(filters['a'], mode=mode)
+            _b = Query.process_filters(filters['b'], mode=mode)
 
             result = '%s %s %s' % \
-                   (('(%s)' % _a) if type(_a) not in [str, unicode] else _a,
+                   (('(%s)' % _a) if type(_a) not in [str, unicode, int, float] else _a,
                     Query.operator_to_str(filters['op'], mode=mode),
-                    ('(%s)' % _b) if type(_b) not in [str, unicode] else _b)
+                    ('(%s)' % _b) if type(_b) not in [str, unicode, int, float] else _b)
 
         return result
 
@@ -144,12 +147,16 @@ class Query(Model):
     def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
         if 'POSTGRES' in Variable.objects.get(pk=self.document['from'][0]['type']).dataset.stored_at:
             from query_designer.query_processors.postgres import process as q_process
+            encoder = PostgresResultEncoder
         else:
             from query_designer.query_processors.solr import process as q_process
+            encoder = SolrResultEncoder
 
-        return q_process(self, dimension_values=dimension_values, variable=variable,
+        data = q_process(self, dimension_values=dimension_values, variable=variable,
                          only_headers=only_headers, commit=commit,
                          execute=execute, raw_query=raw_query)
+
+        return data, encoder
 
     def execute(self, dimension_values='', variable='', only_headers=False, commit=True):
         return self.process(dimension_values, variable, only_headers, commit, execute=True)
