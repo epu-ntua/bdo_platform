@@ -30,6 +30,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
 
     columns = []
     groups = []
+    v_names = []
     for _from in self.document['from']:
         v_obj = Variable.objects.get(pk=_from['type'])
 
@@ -47,6 +48,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             else:
                 obj = v_obj
                 column_name = v_obj.name
+                v_names.append(column_name)
                 column_unit = v_obj.unit
                 column_axis = None
                 column_step = None
@@ -84,12 +86,16 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
 
     # where
     filters = self.document.get('filters', '')
-    if not filters:
-        where_clause = '*:*'
-    else:
-        where_clause = self.process_filters(filters, mode='solr')
-        for column_name, field_name in columns:
-            where_clause = where_clause.replace(field_name, column_name)
+    for v_name in v_names:
+        filters = {
+            'a': {'a': v_name, 'op': 'gt', 'b': '0'},
+            'op': 'AND',
+            'b': filters.copy() if filters else {'a': '*', 'op': 'EQ', 'b': '*'}
+        }
+
+    where_clause = self.process_filters(filters, mode='solr')
+    for column_name, field_name in columns:
+        where_clause = where_clause.replace(field_name, column_name)
 
     request_params['q'] = where_clause
 
