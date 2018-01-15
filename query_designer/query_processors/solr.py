@@ -109,6 +109,8 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     orderings = self.document.get('orderings', [])
     if orderings:
         order_by_clause = ','.join([('%s %s' % (o['name'], o['type'])) for o in orderings])
+        for column_name, field_name in columns:
+            order_by_clause = order_by_clause.replace(field_name, column_name)
         request_params['sort'] = order_by_clause
 
     # offset & limit

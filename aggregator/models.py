@@ -142,8 +142,10 @@ class Dimension(BaseVariable):
         while v <= self.max:
             result.append(self.normalize(v))
             v += self.step
-            if v - self.min >= 100:
-                break
+
+            # TODO investigate the reason for the following line
+            # if v - self.min >= 100:
+            #     break
 
         return result
 
