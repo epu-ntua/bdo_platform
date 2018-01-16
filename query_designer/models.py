@@ -52,10 +52,16 @@ class Query(Model):
         }[op.lower()][0 if mode == 'postgres' else 1]
 
     @staticmethod
-    def process_filters(filters, mode='postgres'):
+    def process_filters(filters, mode='postgres', quote=False):
         # end value
-        if type(filters) in [str, unicode, int, float]:
+        if type(filters) in [int, float]:
             return filters
+
+        if type(filters) in [str, unicode]:
+            if quote and (mode == 'solr') and filters.strip() != '*' and (not filters.startswith('"')) and filters:
+                return '"%s"' % filters
+            else:
+                return filters
 
         # Special case: parsing location filters
         # inside_rect|outside_rect <<lat_south,lng_west>,<lat_north,lng_east>>
@@ -98,7 +104,7 @@ class Query(Model):
 
         else:
             _a = Query.process_filters(filters['a'], mode=mode)
-            _b = Query.process_filters(filters['b'], mode=mode)
+            _b = Query.process_filters(filters['b'], mode=mode, quote=True)
 
             result = '%s %s %s' % \
                    (('(%s)' % _a) if type(_a) not in [str, unicode, int, float] else _a,
