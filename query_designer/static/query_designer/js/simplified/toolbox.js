@@ -680,7 +680,6 @@ $(function () {
                 "orderings": []
             };
 
-            
             return result;
             return {
                 "from": [
