@@ -1,6 +1,6 @@
 $(function () {
     /* `QueryToolbox` is the object responsible for the behaviour of the Toolbox Charts component */
-    QueryToolbox = {
+    var QueryToolbox = {
         objects: [],
 
         current: function () {
@@ -159,6 +159,10 @@ $(function () {
                     $option.data('type', choice.type);
                     $option.attr('data-type', choice.type);
                 }
+                if (typeof(choice.forVariable) !== 'undefined') {
+                    $option.data('forvariable', choice.forVariable);
+                    $option.attr('data-forvariable', choice.forVariable);
+                }
 
                 $fieldSelect.append($option);
             });
@@ -261,7 +265,7 @@ $(function () {
                 $btnContainer.append('<div class="add-value-field add-value-field btn btn-default btn-sm pull-left"><i class="fa fa-plus"></i> Add value</div>')
             }
 
-            $btnContainer.append('<div class="btn btn-primary pull-right fetch-graph-data"><i class="fa fa-line-chart"></i> Draw</div>');
+            $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data"><i class="fa fa-line-chart"></i> Draw</div>');
             $controlList.append($btnContainer);
 
             // show filters button & apply plugin
@@ -671,75 +675,73 @@ $(function () {
             var info = this._getChartInfo();
 
             var result = {
-                from: [{
-                    select: []
-                }],
+                from: [],
                 distinct: false,
                 offset: 0,
                 "limit": 100,
                 "orderings": []
             };
 
-            return result;
-            return {
-                "from": [
-                    {
-                        "type": 581,
-                        "name": "speed",
-                        "select": [
-                            {
-                                "type": "VALUE",
-                                "name": "i0_speed",
-                                "title": "Speed",
-                                "aggregate": "",
-                                "groupBy": false,
-                                "exclude": false
-                            },
-                            {
-                                "type": "1787",
-                                "name": "i0_ship_id",
-                                "title": "Ship ID",
-                                "aggregate": "",
-                                "groupBy": false,
-                                "exclude": false
-                            },
-                            {
-                                "type": "1790",
-                                "name": "i0_timestamp",
-                                "title": "Timestamp",
-                                "aggregate": "",
-                                "groupBy": false,
-                                "exclude": false
-                            },
-                            {
-                                "type": "1789",
-                                "name": "i0_location_latitude",
-                                "title": "Location (latitude)",
-                                "aggregate": "",
-                                "groupBy": false,
-                                "exclude": false
-                            },
-                            {
-                                "type": "1788",
-                                "name": "i0_location_longitude",
-                                "title": "Location (longitude)",
-                                "aggregate": "",
-                                "groupBy": false,
-                                "exclude": false
+            // for each variable
+            $.each(info.values, function(idx, value) {
+                var _from = {
+                    type: value.type,
+                    name: value.name + '_' + String(idx),
+                    select: []
+                };
+
+                // push main value
+                _from.select.push({
+                   type: 'VALUE',
+                   name: 'i' + String(idx) + '_' + value.name,
+                   title: value.name,
+                   aggregate: value.aggregate,
+                   groupBy: false,
+                   exclude: false
+                });
+
+                // push dimensions
+                $.each($('select[name="category"] > option[data-forvariable="' + value.type + '"]'), function(jdx, opt) {
+                    var name = $(opt).attr('value');
+
+                    var dimension = {
+                        type: $(opt).data('type'),
+                        name: 'i' + String(idx) + '_' + name,
+                        title: $(opt).text(),
+                        groupBy: $(opt).attr('value') === $('select[name="category"]').val(),
+                        exclude: true
+                    };
+
+                    // check if joined
+                    if (idx > 0) {
+                        $.each(result.from[0].select, function(kdx, dim) {
+                            var dimName = dim.name.split('_').slice(1).join('_');
+
+                            if (
+                                (dimName === name) ||
+                                (
+                                    (['lat', 'lon'].indexOf(name.substr(0, 3)) >= 0) &&
+                                    (dimName.substr(0, 3) === name.substr(0, 3))
+                                )
+                            ) {
+                                dimension.joined = dim.name;
+                                return false;
                             }
-                        ]
+                        })
                     }
-                ],
-                "distinct": false,
-                "offset": 0,
-                "limit": 100,
-                "orderings": []
-            }
+                    _from.select.push(dimension)
+                });
+
+                // add to query
+                result.from.push(_from);
+            });
+
+            return result;
         },
 
         /* Gets the data based on the fields & options selected by the user */
         fetchChartData: function () {
-            obj = this.objects[this.current()];
+            var obj = this.objects[this.current()];
             var that = this;
 
             // get category, values info & filters
@@ -750,51 +752,29 @@ $(function () {
 
             // request data
             $.ajax({
-                url: '/toolbox/util/graphData/?chartType=' + encodeURIComponent(obj.chartType) + '&chartFormat=' + encodeURIComponent(obj.chartFormat) + '&category=' + ct + '&values=' + info.values.join(',') + '&filters=' + filterStr,
-                success: function (result) {
+                url: '/queries/execute/',
+                type: 'POST',
+                data: {
+                    query: JSON.stringify(this.generateQueryDoc()),
+                    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function (response) {
                     // create the required graphs
-                    that._constructGraph(result.info);
-
-                    // set data
-                    that.chart.dataProvider = result.data;
-                    that.chart.validateData();
-                    that.chart.write('chartdiv');
-
-                    // update chart info
-                    that.updateChartInfo(result, filterStr);
-
-                    // attach chart to object
-                    obj.chart = that.chart;
+                    // todo update iframe
 
                     // update data table headers & data
                     var $table = $("#graph-data-table");
                     var colWidths = [];
                     var tableData = [[]];
-                    // category title
-                    var tableColumns = [{
-                        name: "category_field",
-                        title: $('select[name="category"] option:selected').text()
-                    }, {
-                        name: "number_of_projects",
-                        title: 'Number of projects'
-                    }];
 
-                    // add value titles
-                    Array.prototype.push.apply(tableColumns, info.columns);
-
-                    $.each(tableColumns, function (idx, col) {
+                    $.each(response.headers.columns, function (idx, col) {
                         colWidths.push(250);
                         tableData[0][idx] = col.title
                     });
 
-                    // pass table
-                    for (var j = 0; j < result.data.length; j++) {
-
-                        tableData[j + 1] = [];
-                        $.each(tableColumns, function (idx, col) {
-                            tableData[j + 1][idx] = result.data[j][col.name];
-                        })
-                    }
+                    $.each(response.results, function (idx, res) {
+                       tableData[idx + 1] = res;
+                    });
 
                     $table.data('handsontable').updateSettings({
                         colWidths: colWidths
@@ -978,11 +958,14 @@ $(function () {
                 $modalBody.html('<i class="fa fa-spin fa-spinner fa-4x"></i>');
 
                 // show the modal & autcscroll
-                $('#chart-modal').modal('show');
+                $('#chart-modal').dialog({
+                    title: 'Select a query to open',
+                    width: '50vw'
+                });
 
                 // get the user's charts
                 $.ajax({
-                    url: '/chart/list/',
+                    url: '/queries/simplified/list/',
                     type: 'GET',
                     success: function (data) {
                         $modalBody.html(data);
@@ -991,8 +974,8 @@ $(function () {
                         $modalBody.find('table').DataTable({
                             bLengthChange: false,
                             language: {
-                                emptyTable: 'No charts available',
-                                zeroRecords: 'No charts found'
+                                emptyTable: 'No queries available',
+                                zeroRecords: 'No queries found'
                             }
                         });
                     },
@@ -1004,7 +987,7 @@ $(function () {
 
             /* Close chart modal */
             close: function () {
-                $('#chart-modal').modal('hide');
+                $('#chart-modal').dialog('close');
             }
         },
 
@@ -1104,7 +1087,10 @@ $(function () {
                 this.load();
 
                 // show the modal
-                $('#filters-modal').modal('show');
+                $('#filters-modal').dialog({
+                    title: 'Define query filters',
+                    width: '70vw'
+                });
             },
 
             getFilterOptions: function () {
@@ -1347,12 +1333,6 @@ $(function () {
         e.stopPropagation()
     });
 
-    /* On select change update it's html */
-    $('body').on('change', 'select', function () {
-        var $select = $(this);
-        $select.find('option[value="' + $select.val() + '"]').attr('selected', 'selected').siblings().removeAttr('selected')
-    });
-
     /* On chart save */
     $('body').on('click', '#chart-save', function () {
         QueryToolbox.save();
@@ -1375,7 +1355,8 @@ $(function () {
     });
 
     /* On value field change */
-    $('body').on('change', 'select[name="value_field"], select[name="category"]', function () {
+    $('body').on('change', 'select[name="value_field"], select[name="category"]', function (e) {
+
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
 
@@ -1480,7 +1461,7 @@ $(function () {
         $closeBtn.html('<i class="fa fa-save"></i> Save changes').hide();
 
         // show the modal & auto-scroll
-        $modal.modal('show');
+        $modal.dialog();
 
         // get the user's charts
         $.ajax({
@@ -1521,10 +1502,13 @@ $(function () {
         }
         else if (e.keyCode == 78 && e.ctrlKey) { //Ctrl+N key pressed
             // Will not work on Chrome (does not allow to override Ctrl+N)
-            $('#select-chart-type').modal('show');
+            $('#select-chart-type').dialog();
 
             e.preventDefault();
             e.stopPropagation();
         }
     }, false);
+
+    // export
+    window.QueryToolbox = QueryToolbox;
 });

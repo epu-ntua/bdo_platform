@@ -25,8 +25,10 @@
             }
 
             var chartName = $chartContainer.find('.chart-title').text();
-            $('#chart-delete-modal').find('.modal-body').text(gettext('Are you sure you want to delete chart') + ' «' + chartName + '»?');
-            $('#chart-delete-modal').modal('show');
+            $('#chart-delete-modal').find('.modal-body').text('Are you sure you want to delete chart' + ' «' + chartName + '»?');
+            $('#chart-delete-modal').dialog({
+                title: 'Deleting query'
+            });
 
             // set the chart id to remove
             var chartId = $chartContainer.data('chart_id');
@@ -46,7 +48,7 @@
             $teaserRow.hide();
 
             // hide the modal
-            $('#chart-delete-modal').modal('hide');
+            $('#chart-delete-modal').dialog('close');
 
             // send the delete request
             $.ajax({

@@ -32,6 +32,8 @@ urlpatterns = [
     url('simplified/config/$', views.get_config, name='config'),
     url('simplified/(?P<pk>\d+)/$', views.simplified, name='simplified'),
 
+    url('simplified/list/$', views.list_queries, name='list-queries'),
+
     # basic page
     url('$', views.index, name='home'),
 ]
