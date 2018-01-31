@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 
 from utils import *
 from visualizer.models import Visualization
+import time;
 
 
 def test_request_include(request):
@@ -205,6 +206,125 @@ def valid_entry(entry, ship, minyear, maxyear):
     if year < minyear or year > maxyear:
         return False
     return True
+
+def transpose(date):
+    date_time = date
+    pattern = '%Y-%m-%d %H:%M:%S'
+    epoch = int(time.mktime(time.strptime(date_time, pattern)))*1000
+    return epoch
+
+def createjson(course,times,dates,ship,speeds,colours):
+    geo = {
+        "type": "Feature",
+        "geometry": {
+            "type": "MultiPoint",
+            "coordinates": course,
+        },
+        "properties": {
+            "time": times,
+            "date": dates,
+            "ship": ship,
+            "speed": speeds,
+            "colour": colours,
+        }
+    }
+    return geo
+
+def map_course_time(request):
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    location = [0, 0]
+    zoom_start = 2
+    max_zoom = 30
+    min_zoom = 2
+
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str + token_str,
+                   attr=attr_str)
+
+    plugins.Fullscreen(
+        position='topright',
+        title='Expand me',
+        title_cancel='Exit me',
+        force_separate_button=True).add_to(m)
+
+    if request.method == "GET":
+        markersum = int(request.GET.get("markers", 50))
+        ship = request.GET.get("ship", "all")
+        minyear = int(request.POST.get("min_year", 2000))
+        maxyear = int(request.POST.get("max_year", 2017))
+
+    data = get_data(markersum, ship, minyear, maxyear)
+
+    course = []
+    times = []
+    dates = []
+    speeds = []
+    colours = []
+    currboat = data[0][2]
+    datas = []
+
+    for index in range(0, len(data) - 1):
+        d = data[index]
+
+        if valid_entry(d, ship, minyear, maxyear):
+            lat = d[0]
+            lon = d[1]
+            date = d[3]
+            cship = d[2]
+            speed = d[4]
+            colour = 'blue'
+            if speed > 75.0:
+                colour = 'red'
+
+            if cship != currboat:
+                geo = createjson(course, times, dates, currboat, speeds, colours)
+                datas.append(geo)
+                currboat = cship
+                colours = []
+                course = []
+                times = []
+                dates = []
+                speeds = []
+
+            colours.append(colour)
+            course.append([lon, lat])
+            times.append(transpose(date))
+            dates.append(date)
+            speeds.append(speed)
+
+    geo = createjson(course, times, dates, currboat, speeds, colours)
+    datas.append(geo)
+    datas = json.dumps(datas)
+
+    #import pdb;pdb.set_trace()
+
+    m.save('templates/map.html')
+    map_html = open('templates/map.html', 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    # print map_id
+    js_all = soup.findAll('script')
+    # print(js_all)
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # print js
+    # os.remove('templates/map.html')
+    return render(request, 'visualizer/map_time.html',
+                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': datas})
+
+
 
 def map_course(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='

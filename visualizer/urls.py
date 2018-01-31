@@ -8,6 +8,7 @@ urlpatterns = [
     url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium'),
     url('^map_heat/$', views.map_heatmap, name='map_heatmap'),
     url('^map_course/$', views.map_course, name='map_course'),
+    url('^map_course_time/$', views.map_course_time, name='map_course_time'),
 
     url('^map_api/$', views.MapAPI.as_view(), name='map_api'),
 

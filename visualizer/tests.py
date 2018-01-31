@@ -10,6 +10,7 @@ def trim_year(full_date):
 def get_data(markers, ship, minyear, maxyear):
     q = Query.objects.get(pk=2)
     q.document['limit'] = markers
+    #import pdb;pdb.set_trace()
     result = q.execute()['results']
     length = len(result) - 1
     data = []

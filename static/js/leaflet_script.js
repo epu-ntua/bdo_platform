@@ -125,13 +125,12 @@ $(document).ready(function() {
         if(marray[i+1][5]=='red'){
             linecolor = 'red';
         }
-        t = new L.polyline([course[i], course[i+1]],{color:linecolor});
-        v = new L.polyline([course[i], course[i+1]],{color:linecolor});
+        t = new L.polyline([course[i], course[i+1]],{color:linecolor, opacity:0.4, weight:5, lineCap: 'round'});
+        //v = new L.polyline([course[i], course[i+1]],{color:linecolor});
         u = new L.polylineDecorator([course[i], course[i+1]],{
             patterns: [
-                {offset: '0', repeat: 30, symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {stroke: true, color: linecolor}})}
-            ],
-            color: 'red'
+                {offset: '0', repeat: 30, symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {color: linecolor, opacity: 0.5, weight: 5}})}
+            ]
         });
         //v.addTo(movinglayer);
         u.addTo(movinglayer);

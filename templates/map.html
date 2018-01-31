@@ -15,7 +15,7 @@
     <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
     <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
     
-            <style> #map_655faa23c7dc48a394fc61f98f8edda8 {
+            <style> #map_e35b7615ba834499bec5fd7756d1dab0 {
                 position : relative;
                 width : 100.0%;
                 height: 100.0%;
@@ -29,7 +29,7 @@
 </head>
 <body>    
     
-            <div class="folium-map" id="map_655faa23c7dc48a394fc61f98f8edda8" ></div>
+            <div class="folium-map" id="map_e35b7615ba834499bec5fd7756d1dab0" ></div>
         
 </body>
 <script>    
@@ -41,8 +41,8 @@
                 var bounds = L.latLngBounds(southWest, northEast);
             
 
-            var map_655faa23c7dc48a394fc61f98f8edda8 = L.map(
-                                  'map_655faa23c7dc48a394fc61f98f8edda8',
+            var map_e35b7615ba834499bec5fd7756d1dab0 = L.map(
+                                  'map_e35b7615ba834499bec5fd7756d1dab0',
                                   {center: [0,0],
                                   zoom: 2,
                                   maxBounds: bounds,
@@ -53,19 +53,17 @@
             
         
     
-            var tile_layer_fea41427962245ecb3fb0b1a32e6c972 = L.tileLayer(
+            var tile_layer_ed6e7124a5c24434be9fabfe37c794d0 = L.tileLayer(
                 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ',
                 {
   "attribution": "Map data &copy;<a href=\"http://openstreetmap.org\">OpenStreetMap</a>contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery \u00a9 <a href=\"http://mapbox.com\">Mapbox</a>", 
   "detectRetina": false, 
   "maxZoom": 30, 
-  "minZoom": [
-    2
-  ], 
+  "minZoom": 2, 
   "noWrap": false, 
   "subdomains": "abc"
 }
-                ).addTo(map_655faa23c7dc48a394fc61f98f8edda8);
+                ).addTo(map_e35b7615ba834499bec5fd7756d1dab0);
         
     
             L.control.fullscreen({
@@ -73,8 +71,8 @@
                 title: 'Expand me',
                 titleCancel: 'Exit me',
                 forceSeparateButton: true,
-                }).addTo(map_655faa23c7dc48a394fc61f98f8edda8);
-            map_655faa23c7dc48a394fc61f98f8edda8.on('enterFullscreen', function(){
+                }).addTo(map_e35b7615ba834499bec5fd7756d1dab0);
+            map_e35b7615ba834499bec5fd7756d1dab0.on('enterFullscreen', function(){
                 console.log('entered fullscreen');
             });
 
