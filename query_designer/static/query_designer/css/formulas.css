@@ -1,0 +1,270 @@
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
+
+#formula-editor {
+    margin-top: 30px;
+}
+
+.modal #formula-editor {
+    margin-top: 0;
+}
+
+/* Formula modal */
+
+#formulas-modal .modal-dialog {
+    width: 80%;
+}
+
+#formulas-modal .modal-body {
+    padding: 0 15px;
+}
+
+#formulas-modal .modal-footer {
+    margin-top: 0;
+}
+
+/* Main content */
+
+#formula-editor-status {
+    padding: 10px;
+    background: #BEBEBE;
+    color: #786767;
+}
+
+#formula-editor-main {
+    height: 657px;
+    background: white;
+    overflow-y: auto;
+    padding: 0;
+}
+
+#formula-create {
+    margin: 10px;
+}
+
+/* Formula table */
+
+#formula-table tbody td .formula,
+#formula-table tbody td .formula-input {
+    font-family: "Inconsolata", monospace;
+    font-size: 15px;
+}
+
+/* Sidebars */
+
+#formula-editor-sidebar {
+    background: #ececec;
+}
+
+#formula-editor-sidebar .item-box .item-list {
+    overflow-y: auto;
+}
+
+#formula-editor-sidebar .item-box {
+    border-bottom: 1px solid #BFBFBF;
+}
+
+#formula-editor-sidebar .item-box.no-border {
+    border-bottom: none;
+}
+
+#formula-editor-sidebar #property-box .item-list {
+    height: 320px;
+}
+
+#formula-editor-sidebar #function-box .item-list {
+    height: 190px;
+}
+
+/* Property/Function list */
+
+ul.item-list {
+    list-style: none;
+    padding-left: 0;
+    border-left: 1px solid #bbb;
+}
+
+ul.item-list > li {
+    list-style: none;
+    padding: 2px 0;
+}
+
+ul.item-list > li > .item-decoration {
+    margin: 8px 5px 8px 0;
+    display: inline-block;
+    vertical-align: top;
+}
+
+ul.item-list > li > .item-decoration > .branch {
+    margin: 10px 0;
+    width: 10px;
+    height: 1px;
+    display: inline-block;
+    background: #bbb;
+}
+
+ul.item-list > li > .item-decoration > .item-type {
+    display: inline-block;
+    vertical-align: top;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    color: #eee;
+    border-radius: 50%;
+    font-family: "Inconsolata", monospace;
+}
+
+ul.item-list.clickable > li:hover {
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+ul.item-list > li.property-item > .item-decoration > .item-type {
+    background: #2980b9;
+}
+
+ul.item-list > li.function-item > .item-decoration > .item-type {
+    background: #DB0A5B;
+}
+
+ul.item-list > li > .item-info {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% - 42px);
+}
+
+ul.item-list > li > .item-info > .item-value,
+ul.item-list > li > .item-info > .item-description {
+    display: block;
+    overflow: hidden;
+    vertical-align: top;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+ul.item-list > li > .item-info > .item-value {
+    font-family: "Inconsolata", monospace;
+    font-weight: 600;
+}
+
+ul.item-list > li.property-item > .item-info > .item-value,
+.formula .token-property {
+    color: #2980b9;
+}
+
+ul.item-list > li.function-item > .item-info > .item-value,
+.formula .token-function {
+    color: #DB0A5B;
+}
+
+ul.item-list > li > .item-info > .item-description {
+    color: #555;
+    font-size: 12px;
+}
+
+/* Search input */
+.search-input-container {
+    margin: 5px 0 10px 0;
+    border: 1px solid #bbb;
+    padding: 5px 10px;
+    background: #efefef;
+    border-radius: 5px;
+}
+
+.search-input-container .fa {
+    color: #999;
+    width: 25px;
+}
+
+.search-input-container .clear-search {
+    cursor: pointer;
+}
+
+.search-input-container input {
+    background: none;
+    width: calc(100% - 30px);
+    outline: none;
+    border: none;
+    color: #777;
+}
+
+/* Formulas */
+#formula-editor-main tbody {
+    border-bottom: 1px solid #ddd;
+}
+
+td.formula-name {
+    width: 216px;
+}
+
+td.formula-name.editing {
+    padding: 2px 8px;
+}
+
+td.formula-name > span {
+    width: 200px;
+    display: block;
+    overflow: hidden;
+    vertical-align: top;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.token {
+    padding: 0 4px;
+}
+
+.token-symbol {
+    padding: 0;
+    font-weight: 600;
+}
+
+.token-numerical {
+    color: #16A085;
+}
+
+.token-invalid {
+    border-bottom: 2px dotted rgb(217,30,24);
+}
+
+.formula-input,
+.formula-name-input {
+    width: calc(100% - 112px);
+    border: 1px solid #aaa;
+    outline: none;
+    background: white;
+    padding: 5px;
+}
+
+.formula-name-input {
+    width: calc(100% - 25px);
+}
+
+td.formula-value.editing {
+    padding: 2px 8px;
+}
+
+#formula-editor-main tr.with-error,
+#formula-editor-main tr.with-error td {
+    background: rgba(217,30,24,0.1);
+}
+
+#formula-editor-main tr.with-error:nth-child(odd),
+#formula-editor-main tr.with-error:nth-child(odd) td {
+    background: rgba(217,30,24,0.15);
+}
+
+
+td.formula-value .formula {
+    float: left;
+}
+
+button.btn-sm.save-formula,
+button.btn-sm.save-formula-name {
+    border-radius: 0 5px 5px 0;
+    padding: 7px 10px 6px 10px;
+    vertical-align: top;
+}
+
+button.btn-sm.save-formula-name {
+    padding: 6px;
+}

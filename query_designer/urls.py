@@ -27,6 +27,11 @@ urlpatterns = [
     # load new query to analysis
     url('load_to_analysis/$', views.load_to_analysis, name='load-to-analysis'),
 
+    # simplified
+    url('simplified/$', views.simplified, name='simplified'),
+    url('simplified/config/$', views.get_config, name='config'),
+    url('simplified/(?P<pk>\d+)/$', views.simplified, name='simplified'),
+
     # basic page
     url('$', views.index, name='home'),
 ]

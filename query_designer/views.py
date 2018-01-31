@@ -9,6 +9,7 @@ from mongo_client import get_mongo_db, MongoResponse
 
 
 from query_designer.api import *
+from query_designer.lists import AGGREGATES
 from query_designer.query import *
 
 # from query_designer.mongo_api import *
@@ -29,6 +30,10 @@ def load_query(request, pk):
         'title': q.title,
         'design': q.design,
     })
+
+
+def simplified(request, pk=None):
+    return render(request, 'query_designer/simplified.html')
 
 
 @csrf_exempt
@@ -136,3 +141,47 @@ def load_to_analysis(request):
         'raw_query': q.raw_query,
         'title': q.title,
     })
+
+
+def get_config(request):
+    field_policy = {
+        'categories': [],
+        'defaultAggregate': 'AVG',
+        'valueFields': [],
+        'aggregates': [],
+        'incrStep': 1,
+        'min': 1,
+        'max': 4
+    }
+
+    for dimension in Dimension.objects.all():
+        field_policy['categories'].append({
+            'title': dimension.title,
+            'value': dimension.name,
+            'type': dimension.pk,
+        })
+
+    """
+    for formula in Formula.objects.filter(created_by=user, is_valid=True):
+        field_policy['valueFields'].append({
+            'value': formula.internal_value,
+            'title': formula.name,
+        })
+    """
+
+    for variable in Variable.objects.all():
+        field_policy['valueFields'].append({
+            'value': variable.name,
+            'title': variable.title,
+            'type': variable.pk,
+        })
+
+    # pass aggregates
+    for aggregate in AGGREGATES:
+        field_policy['aggregates'].append({
+            'title': aggregate[1],
+            'value': aggregate[0],
+        })
+
+    # return the structure
+    return JsonResponse(field_policy)

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans 'De-risking Energy Efficiency Platform' %} - {% trans 'Analysis Toolbox' %}{% endblock %}
+{% block bodyclass %}overview{% endblock %}
+{% block analysismenu %}active{% endblock %}
+
+{% load static from staticfiles %}
+
+{% block css %}
+    <link href="{% static "query_designer/css/toolbox.css" %}" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" rel="stylesheet"/>
+    <link href="{% static 'query_designer/js/handsontable/handsontable.full.min.css' %}" rel="stylesheet">
+
+    <link href="{% static 'query_designer/css/formulas.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+    <!-- begin PAGE TITLE AREA -->
+    <!-- Use this section for each page's title and breadcrumb layout. In this example a date range picker is included within the breadcrumb. -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-title underline-title" style="margin-bottom:0px">
+                <h1>{% trans 'Analysis Toolbox'%} <small> {% trans 'Design your own chart' %}</small>
+                </h1>
+            </div>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <!-- /.row -->
+    <!-- end PAGE TITLE AREA -->
+
+    <ul id="chart-picker" class="nav nav-tabs">
+
+    </ul>
+
+    <div id="chart-file-controls">
+        <div id="add-chart" class="chart-file-control" title="Create new chart (Ctrl+Alt+N)"><i class="fa fa-plus-circle"></i> {% trans 'New' %}</div>
+        <div id="chart-open" class="chart-file-control" title="Open existing chart (Ctrl+O)"><i class="fa fa-file-o"></i> {% trans 'Open' %}</div>
+        <div id="chart-save" class="chart-file-control" title="Save chart (Ctrl+S)"><i class="fa fa-save"></i> {% trans 'Save' %}</div>
+
+        <div id="chart-status-msg" class="pull-right"></div>
+        <div id="chart-name" class="pull-right hidden">
+            {% trans 'Chart name' %}: <input type="text" name="chart-name" />
+        </div>
+        <div class="chart-file-control pull-right formula-editor-open" title="Define custom metrics"><i class="fa fa-cog"></i> {% trans 'Define custom metrics' %}</div>
+    </div>
+
+    <div class="row" id="chart-container" >
+        {% csrf_token %}
+        <div class="col-lg-12 col-sm-12">
+            <div>
+                <div class="row">
+                    <div class="col-md-3" id="chart-sidebar">
+                        <div class="clearfix">
+                            <h4 class="pull-left">{% trans 'Chart Data' %}</h4>
+                            <div class="btn-edit-filters pull-right btn btn-sm btn-default btn-white filter-edit-open" style="display: none;"><i class="fa fa-cog"></i> {% trans 'Data filters' %} (<span class="filter-counter">-</span>)</div>
+                        </div>
+
+                        <div id="chart-control-list">
+
+                        </div>
+                        <div id="chart-filters" style="display: none;">
+
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="chart-top-menu">
+                            <ul id="chart-content-tabs" class="nav nav-pills" data-tabs="tabs">
+                                <li class="active"><a href="#chart" data-toggle="tab">{% trans 'Chart' %}</a></li>
+                                <li><a href="#datatable" data-toggle="tab">{% trans 'Data table' %}</a></li>
+                            </ul>
+                        </div>
+                        <div id="chart-tab-content" class="tab-content">
+                            <div class="tab-pane active toggle-chart" id="chart">
+                                <div id="no-data-message" style="display: none;">{% trans 'No data available' %}</div>
+
+                                <div id="chartdiv" class="chartdiv"></div>
+                            </div>
+                            <div class="tab-pane" id="datatable">
+                                <div id="graph-data-table"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end of row -->
+
+    {% with modal_id="chart-modal" %}
+        {% include "query_designer/utils/common-modal.html" %}
+    {% endwith  %}
+
+    {% include "query_designer/utils/filters-modal.html" %}
+
+    {% with modal_id="formulas-modal" %}
+        {% include "query_designer/utils/common-modal.html" %}
+    {% endwith  %}
+{% endblock %}
+
+{% block js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>
+    <script src="{% static 'query_designer/js/handsontable/handsontable.full.min.js' %}"></script>
+
+    <link href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">
+    <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+    <script src="{% static "query_designer/js/simplified/toolbox.js" %}"></script>
+
+    <script src="{% static "query_designer/js/simplified/formula-editor.js" %}"></script>
+
+    {% if auto_open %}
+        <script>
+            $(function() {
+                QueryToolbox.load({{ auto_open }});
+            });
+        </script>
+    {% endif %}
+
+    {% if auto_create %}
+        <script>
+            $(function() {
+                $('#select-chart-type').modal('show');
+            });
+        </script>
+    {% endif %}
+{% endblock %}

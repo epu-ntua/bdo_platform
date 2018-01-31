@@ -1,0 +1,76 @@
+                {% load i18n %}
+
+                <div id="filters-modal" class="modal fade" role="dialog">
+                    <div class="modal-dialog">
+
+                    <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title"><span class="chart-title"></span> - {% trans 'Edit chart filters' %}</h4>
+                            </div>
+                            <div class="modal-body">
+                                <h4 class="top-title">{% trans 'Define chart filter(s)' %}</h4>
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans 'Filter name' %}</th>
+                                            <th>{% trans 'Filter' %}</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+
+                                <h4>{% trans 'Add a new filter' %}</h4>
+                                <div class="add-filter-row row">
+                                    <div class="col-sm-4">
+                                        <select id="new-filter-variable">
+                                            <option value="">{% trans 'Choose a variable to filter' %}</option>
+                                            {% for filter_variable in filter_variables %}
+                                                <option value="{{ filter_variable.0 }}">{{ filter_variable.1 }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <select id="new-filter-operator">
+                                            <option value="=">=</option>
+                                            <option value="!=">!=</option>
+                                            <option value="<">&lt;</option>
+                                            <option value="<=">&lt;=</option>
+                                            <option value=">">&gt;</option>
+                                            <option value=">=">&gt;=</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-4" id="new-filter-value-container">
+
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="btn btn-sm btn-green add-new-filter"><i class="fa fa-arrow-up"></i> {% trans 'Add to filters' %}</div>
+                                    </div>
+                                </div>
+
+                                <div id="filter-expr-settings">
+                                    <h4>{% trans 'How should these filters be combined?' %}</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <select id="filters-expr-type">
+                                                <option value="ALL_AND">{% trans 'All filters must be true' %}</option>
+                                                <option value="ALL_OR">{% trans 'At least one filter has to be true' %}</option>
+                                                <option value="CUSTOM">{% trans 'Specify a custom boolean expression' %}</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="text" id="filters-expr-input" class="form-control" placeholder="e.g F1 AND (F2 OR F3)" style="display: none;"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default pull-right" data-dismiss="modal">{% trans 'Close' %}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
