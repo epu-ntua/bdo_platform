@@ -33,10 +33,15 @@
     cursor: pointer;
 }
 
-#chart-file-controls .chart-file-control:hover {
+#chart-file-controls .chart-file-control:not(.disabled):hover {
     background: #ddd;
     color: #444;
     border: 1px solid #ccc;
+}
+
+#chart-file-controls .chart-file-control.disabled {
+    color: #999;
+    cursor: default;
 }
 
 #chart-file-controls .formula-editor-open {
@@ -179,24 +184,39 @@
 /* Tabs */
 #chart-content-tabs li.active a,
 #chart-content-tabs li a:hover {
-    background: none;
-    color: #34495e;
+    background: #00bcd4 !important;
+    color: white;
+}
+
+#chart-content-tabs.nav-pills:not(.nav-pills-icons) > li > a {
+    border-radius: 0;
+    padding: 5px 10px;
+    margin-top: 20px;
+    box-shadow: 0 0 5px #eee;
 }
 
 #chart-picker {
     margin-bottom: 0;
+    padding-left: 0;
     min-height: 42px;
-    background: gray;
+    background: lightblue;
 }
 
 #chart-picker .unsaved {
-    padding-left: 2px;
+    font-size: 14px;
+    font-weight: 600;
     color: #e74c3c;
 }
 
 #chart-picker li a {
     position: relative;
     min-width: 100px;
+    border-radius: 5px 5px 0 0;
+}
+
+#chart-picker li.active a {
+    background: #eaeaea;
+    color: #555 !important;
 }
 
 #chart-picker li a .chartTitle {

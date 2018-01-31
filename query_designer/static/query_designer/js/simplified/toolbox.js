@@ -25,7 +25,7 @@ $(function () {
 
             // add tab
             $('#chart-picker').find('li').removeClass('active');
-            $('#chart-picker').append('<li class="active"><a href="#chart-container"><span class="chartTitle">' + chartTitle + '</span> <i class="fa fa-times close-tab"></i></a></li>');
+            $('#chart-picker').append('<li class="active"><a href="#"><span class="chartTitle">' + chartTitle + '</span> <i class="fa fa-times close-tab"></i></a></li>');
 
             // mark tab as unsaved for new charts
             if (typeof(chartId) === 'undefined') {
@@ -262,10 +262,10 @@ $(function () {
             // add add filter & draw buttons
             var $btnContainer = $('<div class="row btn-container">').css('padding', '0 4px');
             if (obj.chartOptions.fields.length + 1 < obj.chartPolicy.max) {
-                $btnContainer.append('<div class="add-value-field add-value-field btn btn-default btn-sm pull-left"><i class="fa fa-plus"></i> Add value</div>')
+                $btnContainer.append('<div class="add-value-field add-value-field btn btn-default btn-sm pull-left bg-color--blue"><i class="fa fa-plus"></i> Add value</div>')
             }
 
-            $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data"><i class="fa fa-line-chart"></i> Draw</div>');
+            $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');
             $controlList.append($btnContainer);
 
             // show filters button & apply plugin
@@ -834,11 +834,14 @@ $(function () {
         setStatus: function (status, icon) {
             icon = icon || '';
             var extra = '';
-            if (icon == 'loading') {
+            if (icon === 'loading') {
                 extra = ' <i class="fa fa-spin fa-spinner"></i>'
             }
-            else if (icon == 'check') {
+            else if (icon === 'check') {
                 extra = ' <i class="fa fa-check"></i>'
+            }
+            else if (icon === 'failed') {
+                extra = ' <i class="fa fa-exclamation-triangle"></i>'
             }
 
             $('#chart-status-msg').html(status + extra)
@@ -853,7 +856,7 @@ $(function () {
             }
 
             // update status
-            this.setStatus('Saving' + '...', 'loading');
+            this.setStatus('Saving...', 'loading');
 
             // save (in memory) the latest chart options
             this.saveChartInfo();
@@ -888,7 +891,7 @@ $(function () {
                     that.setStatus('Saved', 'check');
                 },
                 error: function (xhr, status, error) {
-                    console.log(error)
+                    that.setStatus('Saving failed.', 'failed');
                 }
             });
         },
@@ -1265,7 +1268,6 @@ $(function () {
             // remove select2 & update counter
             $newField.find('.select2-container').remove();
             $newField.find('.metric-cnt').html($('.chart-control .fieldset').length);
-            $newField.find('select').select2();
 
             // add delete button
             if ($newField.find('.col-suffix .value-remove-btn').length === 0) {
@@ -1273,7 +1275,11 @@ $(function () {
             }
 
             // add
-            $newField.insertAfter($last)
+            $newField.insertAfter($last);
+
+            // restore select2
+            setTimeout(function() {$newField.find('select').select2()} ,100);
+            $last.find('select').select2();
         } else { // xy case
             var $valField = $last;
             var $yField = $last.prev();
