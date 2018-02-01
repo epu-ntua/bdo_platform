@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from bson import ObjectId
+from decimal import Decimal
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
@@ -33,7 +34,9 @@ def load_query(request, pk):
 
 
 def simplified(request, pk=None):
-    return render(request, 'query_designer/simplified.html')
+    return render(request, 'query_designer/simplified.html', {
+        'dimensions': Dimension.objects.all(),
+    })
 
 
 @csrf_exempt
@@ -114,6 +117,45 @@ def get_query_variables(request):
 
     else:
         return JsonResponse({'error': 'Invalid query document'}, status=400)
+
+
+class DefaultEncoder(json.JSONEncoder):
+
+    def default(self, o):
+        if isinstance(o, Decimal):
+            return float(o)
+        elif isinstance(o, datetime.datetime):
+            return o.isoformat()
+        elif isinstance(o, datetime.date):
+            return o.isoformat()
+
+        return super(DefaultEncoder, self).default(o)
+
+
+def filter_info(request, filter_type, pk):
+    if filter_type == 'variable':
+        return JsonResponse({'type': 'number', 'orderable': True})
+
+    dimension = Dimension.objects.get(pk=pk)
+
+    values = dimension.values
+
+    if type(values) == dict and 'min' in values:
+        values.update({
+            'type': 'number',
+            'orderable': True,
+        })
+
+        return JsonResponse(values, encoder=DefaultEncoder)
+
+    return JsonResponse({
+        'type': 'select',
+        'orderable': True,
+        'options': [{
+            'name': v,
+            'value': v,
+        } for v in values]
+    }, encoder=DefaultEncoder)
 
 
 def load_to_analysis(request):

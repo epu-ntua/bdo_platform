@@ -12,7 +12,7 @@ $(function () {
             // save previous chart options & filters
             QueryToolbox.saveChartInfo();
 
-            var chartTitle = chartTitle || 'Chart ' + ($('#chart-picker li').length + 1);
+            var chartTitle = chartTitle || 'Query ' + ($('#chart-picker li').length + 1);
 
             this.chart = $('<iframe />');
 
@@ -95,7 +95,7 @@ $(function () {
             var that = this;
 
             $.ajax({
-                url: '/toolbox/util/graphControl/?chartType=' + encodeURIComponent(obj.chartType) + '&chartFormat=' + encodeURIComponent(obj.chartFormat),
+                url: '/queries/simplified/config/',
                 success: function (chartPolicy) {
                     obj.chartPolicy.valueFields = chartPolicy.valueFields;
 
@@ -122,7 +122,13 @@ $(function () {
         /* Creates an option (group or metric) fieldset */
         renderChartOptionsField: function (config) {
             // create select
-            var $fieldSelect = $('<select name="' + config.name + '" />"');
+            var $fieldSelect = $('<select />')
+                .attr('name', config.name);
+
+            /* if (config.name === 'category') {
+                $fieldSelect.attr('multiple', 'multiple');
+            } */
+
             if (config.id) {
                 $fieldSelect.attr('id', config.id);
             }
@@ -167,9 +173,14 @@ $(function () {
                 $fieldSelect.append($option);
             });
 
+            var inlineLabel = '';
+            if (config.name === 'category') {
+                inlineLabel = config.label;
+            }
+
             // set field value
             $fieldSelect.val(config.value);
-            var $fieldset = $('<div class="fieldset">' + config.label + ': <br><div class="row"><div class="col-xs-3 col-prefix"></div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
+            var $fieldset = $('<div class="fieldset">' + (inlineLabel ? '' : config.label + '<br />') + '<div class="row"><div class="col-xs-3 col-prefix" style="' + (inlineLabel ? 'padding-left: 15px' : '') +'">' + inlineLabel + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
             $fieldset.find('.col-main').append($fieldSelect);
 
             if (config.xy) {
@@ -202,7 +213,7 @@ $(function () {
                 choices: obj.chartPolicy.categories,
                 name: 'category',
                 id: 'id_category',
-                label: 'Groups',
+                label: 'Group by',
                 value: obj.chartOptions.group.metric
             });
             $chartControls.append($groupSelectContainer);
@@ -309,43 +320,60 @@ $(function () {
                 filters.push({
                     'name': $flt.data('name'),
                     'title': $flt.data('title'),
-                    'value': $flt.text()
+                    'a': $flt.data('a'),
+                    'op': $flt.data('op'),
+                    'b': $flt.data('b')
                 });
             });
 
             return filters
         },
 
-        constructFiltersParam: function () {
+        constructFiltersParam: function (queryDocument) {
+            if (queryDocument === undefined) {
+                return
+            }
+
             // gather individual filters
             var filters = this.getFilterArray();
 
-            if (filters.length == 0) {
-                return '';
+            var filterTree = {};
+
+            if (filters.length === 0) {
+                return filterTree;
             }
 
             // find pattern
-            var $filterExpr = $('#chart-filters > .filter-expr');
-            var exprType = $filterExpr.data('expr_type');
-            var filterStr = '';
-            if (exprType == 'ALL_AND' || exprType == 'ALL_OR') {
-                var bln = exprType.split('_')[1];
-                for (var i = 0; i < filters.length; i++) {
-                    if (i > 0) {
-                        filterStr += bln + ' ';
-                    }
-                    filterStr += filters[i].name + ' ';
+            // assume ALL_AND
+            $.each(filters, function(idx, filter) {
+                var aName;
+                console.log(queryDocument);
+                $.each(queryDocument.from, function(idx, _from) {
+                    $.each(_from.select, function(jdx, attr) {
+                        if (attr.type == filter.a) {
+                            aName = attr.name;
+                        }
+                    })
+                });
+
+                var newFilter = {
+                    a: aName,
+                    op: filter.op,
+                    b: filter.b
+                };
+
+                if (idx === 0) {
+                    filterTree = newFilter;
+                } else {
+                    filterTree = {
+                        a: newFilter,
+                        op: 'AND',
+                        b: JSON.parse(JSON.stringify(filterTree))
+                    };
                 }
-            } else {
-                filterStr = $filterExpr.data('expr');
-            }
+            });
 
-            // apply named expressions to pattern & encode
-            for (var i = 0; i < filters.length; i++) {
-                filterStr = filterStr.replace(filters[i].name + ' ', '(' + filters[i].value + ')');
-            }
-
-            return filterStr
+            return filterTree;
         },
 
         _getChartInfo: function () {
@@ -708,7 +736,7 @@ $(function () {
                         type: $(opt).data('type'),
                         name: 'i' + String(idx) + '_' + name,
                         title: $(opt).text(),
-                        groupBy: $(opt).attr('value') === $('select[name="category"]').val(),
+                        groupBy: $('select[name="category"]').val().indexOf($(opt).attr('value')) >= 0,
                         exclude: true
                     };
 
@@ -736,17 +764,21 @@ $(function () {
                 result.from.push(_from);
             });
 
+            // add filters
+            console.log(result);
+            result.filters = this.constructFiltersParam(result);
+
             return result;
         },
 
         /* Gets the data based on the fields & options selected by the user */
         fetchChartData: function () {
-            var obj = this.objects[this.current()];
             var that = this;
 
+            // update available filters
+            this.filterManager.updateFilters(this._getChartInfo().values);
+
             // get category, values info & filters
-            var ct = $('select[name="category"]').val();
-            var info = this._getChartInfo();
             var filterStr = this.constructFiltersParam();
             filterStr = encodeURIComponent(filterStr);
 
@@ -820,7 +852,9 @@ $(function () {
             this.renderChartOptions(obj);
             this.refreshValueFields();
             this.chart = obj.chart;
-            this.chart.write('chartdiv');
+            $('#chartdiv')
+                .empty()
+                .append(this.chart);
 
             // update chart name field
             $('#chart-name input').val(obj.chartTitle);
@@ -1084,6 +1118,23 @@ $(function () {
                 }
             },
 
+            updateFilters: function(variables) {
+                var variableTypes = [];
+                $.each(variables, function(idx, variable) {
+                   variableTypes.push(variable.type);
+                });
+
+                $.each($('#new-filter-variable').find('option'), function(idx, opt) {
+                    var $opt = $(opt);
+
+                    if (variableTypes.indexOf($opt.data('forvariabletype')) >= 0) {
+                        $opt.removeAttr('disabled');
+                    } else {
+                        $opt.attr('disabled', 'disabled');
+                    }
+                });
+            },
+
             /* Open the filter manager popup */
             show: function () {
                 // first load all info
@@ -1103,33 +1154,45 @@ $(function () {
 
                 // get options, comparison type & input type from the backend
                 $.ajax({
-                    url: '/chart/filter-info/?variable=' + chosenFilter,
+                    url: '/queries/simplified/filter-info/dimension/' + chosenFilter + '/',
                     type: 'GET',
                     success: function (data) {
                         var $input,
                             $filterOperand = $('#new-filter-operator'),
                             opSelector = 'option[value="<"], option[value="<="], option[value=">"], option[value=">="]';
 
-                        if (data.type == 'number') {
-                            $input = $('<input type="number" name="new-filter-value" />');
-
-                            // update operands
-                            $filterOperand.find(opSelector).removeAttr('disabled');
-                            $filterOperand.select2()
-                        }
-                        else if (data.type == 'select') {
+                        if (data.options) {
                             $input = $('<select name="new-filter-value" />');
                             $.each(data.options, function (idx, option) {
-                                $input.append('<option value="\'' + option.value + '\'"">' + option.name + '</option>');
+                                var val = option.value;
+                                if (typeof(val) === 'string') {
+                                    val = "'" + val + "'";
+                                }
+
+                                $input.append('<option value="' + val + '">' + option.name + '</option>');
                             });
 
                             // update operands
-                            $filterOperand.find(opSelector).attr('disabled', 'disabled');
                             $filterOperand.select2()
                         }
 
+                        else if (data.type === 'number') {
+                            $input = $('<input type="number" name="new-filter-value" />');
+                        }
+                        else {
+                            $input = $('<input type="text" name="new-filter-value" />');
+                        }
+
+                        // enable/disable operators
+                        if (data.orderable) {
+                            $filterOperand.find(opSelector).removeAttr('disabled');
+                        } else {
+                            $filterOperand.find(opSelector).attr('disabled', 'disabled');
+                        }
+                        $filterOperand.select2();
+
                         $inputContainer.append($input);
-                        if (data.type == 'select') {
+                        if (data.options) {
                             $input.select2();
                         }
                     },
@@ -1159,7 +1222,8 @@ $(function () {
                 var filterName = 'F' + ($('#chart-filters .filter').length + 1);
 
                 // add to filters
-                $('#chart-filters').append('<div class="filter" data-name="' + filterName + '" data-title="' + filterTitle + '">' + filterStr + '</div>');
+                $('#chart-filters').append('<div class="filter" data-name="' + filterName + '" data-title="' + filterTitle +
+                    '" data-a="' + filterVariable +'" data-op="' + filterOperator + '" data-b="' + filterValue + '">' + filterStr + '</div>');
 
                 // update counter
                 this.updateFilterCounter();
@@ -1262,11 +1326,17 @@ $(function () {
         var $last = $('.chart-control .fieldset:last');
 
         if (!$last.hasClass('xy')) { // default case
+            // remove select2 first
+            $last
+                .find('select')
+                .select2('destroy')
+                .removeAttr('data-select2-id')
+                .removeData('select2-id');
+
             // clone last
             var $newField = $last.clone();
 
             // remove select2 & update counter
-            $newField.find('.select2-container').remove();
             $newField.find('.metric-cnt').html($('.chart-control .fieldset').length);
 
             // add delete button
@@ -1278,7 +1348,7 @@ $(function () {
             $newField.insertAfter($last);
 
             // restore select2
-            setTimeout(function() {$newField.find('select').select2()} ,100);
+            $newField.find('select').select2();
             $last.find('select').select2();
         } else { // xy case
             var $valField = $last;

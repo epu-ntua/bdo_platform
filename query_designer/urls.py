@@ -31,6 +31,7 @@ urlpatterns = [
     url('simplified/$', views.simplified, name='simplified'),
     url('simplified/config/$', views.get_config, name='config'),
     url('simplified/(?P<pk>\d+)/$', views.simplified, name='simplified'),
+    url('simplified/filter-info/(?P<filter_type>[\w-]+)/(?P<pk>\d+)/$', views.filter_info, name='filter-info'),
 
     url('simplified/list/$', views.list_queries, name='list-queries'),
 

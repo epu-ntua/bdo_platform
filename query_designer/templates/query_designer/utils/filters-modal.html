@@ -20,19 +20,23 @@
                             <div class="col-sm-4">
                                 <select id="new-filter-variable">
                                     <option value="">{% trans 'Choose a variable to filter' %}</option>
-                                    {% for filter_variable in filter_variables %}
-                                        <option value="{{ filter_variable.0 }}">{{ filter_variable.1 }}</option>
+                                    {% for dimension in dimensions %}
+                                        <option
+                                                value="{{ dimension.pk }}"
+                                                data-forvariabletype="{{ dimension.variable_id }}">
+                                            {{ dimension.title }} ({{ dimension.variable.title }})
+                                        </option>
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="col-sm-2">
                                 <select id="new-filter-operator">
-                                    <option value="=">=</option>
-                                    <option value="!=">!=</option>
-                                    <option value="<">&lt;</option>
-                                    <option value="<=">&lt;=</option>
-                                    <option value=">">&gt;</option>
-                                    <option value=">=">&gt;=</option>
+                                    <option value="eq">=</option>
+                                    <option value="neq">!=</option>
+                                    <option value="lt">&lt;</option>
+                                    <option value="lte">&lt;=</option>
+                                    <option value="gt">&gt;</option>
+                                    <option value="gte">&gt;=</option>
                                 </select>
                             </div>
                             <div class="col-sm-4" id="new-filter-value-container">
