@@ -218,7 +218,7 @@ class Query(Model):
         # restore initial doc
         self.document = doc
 
-        return res['raw_query']
+        return res[0]['raw_query']
 
 
 class InvalidUnitError(ValueError):

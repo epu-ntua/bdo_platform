@@ -1,6 +1,5 @@
 from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
-from PIL import Image, ImageChops
 import requests
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
@@ -13,13 +12,11 @@ from nvd3 import pieChart, lineChart
 import psycopg2
 import re
 
-from scipy.misc import imrotate
-
 import matplotlib.pyplot as plt
 
 from utils import *
 from visualizer.models import Visualization
-import time;
+import time
 
 from django.utils.safestring import SafeString
 

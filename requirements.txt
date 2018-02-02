@@ -1,7 +1,8 @@
-beautifulsoup4
-requests
 # django
 Django==1.11
+djangorestframework
+beautifulsoup4
+requests
 
 # authentication
 django-allauth
@@ -19,6 +20,8 @@ xlrd
 sympy
 
 #data visualization
+Pillow==4.2.1
+matplotlib
 django-leaflet
 folium
 django-nvd3
