@@ -55,7 +55,6 @@ class Query(Model):
             'not': ('NOT', None),
         }[op.lower()][0 if mode == 'postgres' else 1]
 
-    @staticmethod
     def process_filters(self, filters, mode='postgres', quote=False):
         # end value
         if type(filters) in [int, float]:
@@ -128,19 +127,19 @@ class Query(Model):
         _op = filters['op'].lower()
         if mode == 'solr' and _op in ['neq', 'gt', 'gte', 'lt', 'lte', 'mod', '!', 'not']:
             if _op == 'neq':
-                result = '-%s:%s' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
+                result = '-%s:%s' % (self.process_filters(filters['a']), self.process_filters(filters['b']))
             elif _op in ['gt', 'gte']:
-                result = '%s:[%s TO *]' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
+                result = '%s:[%s TO *]' % (self.process_filters(filters['a']), self.process_filters(filters['b']))
             elif _op in ['lt', 'lte']:
-                result = '%s:[* TO %s]' % (Query.process_filters(self, filters['a']), Query.process_filters(filters['b']))
+                result = '%s:[* TO %s]' % (self.process_filters(filters['a']), self.process_filters(filters['b']))
             elif _op == 'mod':
-                result = 'mod(%s, %s)' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
+                result = 'mod(%s, %s)' % (self.process_filters(filters['a']), self.process_filters(filters['b']))
             elif _op in ['!', 'not']:
                 raise NotImplementedError('TODO fix missing NOT operator in solr')
 
         else:
-            _a = Query.process_filters(filters['a'], mode=mode)
-            _b = Query.process_filters(self, filters['b'], mode=mode, quote=True)
+            _a = self.process_filters(filters['a'], mode=mode)
+            _b = self.process_filters(filters['b'], mode=mode, quote=True)
 
             result = '%s %s %s' % \
                    (('(%s)' % _a) if type(_a) not in [str, unicode, int, float] else _a,
