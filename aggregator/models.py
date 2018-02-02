@@ -127,7 +127,24 @@ class Dimension(BaseVariable):
         return value
 
     @property
-    def values(self):
+    def ranges(self):
+        cursor = connection.cursor()
+        cursor.execute("""
+            SELECT
+                MIN(%s),
+                MAX(%s)
+            FROM %s
+        """ % (self.data_column_name, self.data_column_name, self.variable.data_table_name))
+
+        res = cursor.fetchone()
+
+        return {
+            'min': self.normalize(res[0]),
+            'max': self.normalize(res[1]),
+        }
+
+    @property
+    def values(self,):
         if self.min is None or self.max is None or self.step is None:
             return self.get_values_from_db()
 

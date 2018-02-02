@@ -78,10 +78,22 @@ class Query(Model):
             if quote and (mode == 'solr') and filters.strip() != '*' and (not filters.startswith('"')) and filters:
                 return '"%s"' % filters
             else:
-                return filters
+                return "'%s'" % filters
 
         # Special case: parsing location filters
         # inside_rect|outside_rect <<lat_south,lng_west>,<lat_north,lng_east>>
+
+        for _from in self.document['from']:
+            v = Variable.objects.get(pk=_from['type'])
+
+            if _from['name'] == filters['a']:
+                filters['a'] = '%s.%s' % (_from['name'], 'value')
+
+            for x in _from['select']:
+                if x['name'] == filters['a']:
+                    filters['a'] = '%s.%s' % \
+                                   (_from['name'], Dimension.objects.get(pk=x['type'],
+                                                                         variable_id=v).data_column_name)
 
         if filters['op'] in ['inside_rect', 'outside_rect', ]:
             rect_start = filters['b'].split('<')[2].split('>,')[0].split(',')

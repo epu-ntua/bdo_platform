@@ -137,12 +137,11 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         limit_clause = 'LIMIT %d\n' % limit
 
     # organize into subquery
-    subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
-    subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
+    subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + ') AS SQ1\n'
+    subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + ') AS SQ1\n'
 
     # generate query
     q = subquery + \
-        where_clause + \
         order_by_clause + \
         offset_clause + \
         limit_clause
@@ -165,10 +164,8 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                 'total': 1
             }
 
-        q_pages = subquery_cnt + where_clause
-
         def _count():
-            cursor.execute(q_pages)
+            cursor.execute(subquery_cnt)
             self.count = cursor.fetchone()[0]
 
         self.count = None

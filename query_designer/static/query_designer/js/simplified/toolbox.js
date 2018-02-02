@@ -730,13 +730,14 @@ $(function () {
                 // push dimensions
                 $.each($('select[name="category"] > option[data-forvariable="' + value.type + '"]'), function(jdx, opt) {
                     var name = $(opt).attr('value');
+                    var groupBy = $('select[name="category"]').val().indexOf($(opt).attr('value')) >= 0;
 
                     var dimension = {
                         type: $(opt).data('type'),
                         name: 'i' + String(idx) + '_' + name,
                         title: $(opt).text(),
-                        groupBy: $('select[name="category"]').val().indexOf($(opt).attr('value')) >= 0,
-                        exclude: true
+                        groupBy: groupBy,
+                        exclude: !groupBy
                     };
 
                     // check if joined
@@ -1153,6 +1154,7 @@ $(function () {
             getFilterOptions: function () {
                 var chosenFilter = $('#new-filter-variable').val();
                 var $inputContainer = $('#new-filter-value-container');
+                var $info = $('#new-filter-info-message');
                 $inputContainer.empty();
 
                 // get options, comparison type & input type from the backend
@@ -1198,6 +1200,16 @@ $(function () {
                         if (data.options) {
                             $input.select2();
                         }
+
+                        // show help message
+                        var message = '';
+                        if (data.orderable && (typeof(data.min) !== 'undefined')) {
+                            message += 'Minimum value: ' + String(data.min)
+                        }
+                        if (data.orderable && (typeof(data.min) !== 'undefined')) {
+                            message += 'Maximum value: ' + String(data.max)
+                        }
+                        $info.text(message);
                     },
                     error: function (xhr, status, error) {
                         console.log(error)

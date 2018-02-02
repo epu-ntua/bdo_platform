@@ -148,11 +148,11 @@ def filter_info(request, filter_type, pk):
 
     dimension = Dimension.objects.get(pk=pk)
 
-    values = dimension.values
+    values = dimension.ranges
 
     if type(values) == dict and 'min' in values:
         values.update({
-            'type': 'number',
+            'type': 'text',
             'orderable': True,
         })
 
