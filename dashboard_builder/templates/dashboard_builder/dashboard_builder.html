@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'service_builder/css/basic.css' %}" rel="stylesheet" />
+    <link href="{% static 'visualizer/css/basic_viz.css' %}" rel="stylesheet" />
+    <style>
+        #loadImg{position:absolute;z-index:999;}
+        #loadImg {display:table-cell;width:100%;height:100%;background:#fff;text-align:center;vertical-align:middle;}
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue">Dashboard Builder</h1>
+            <h5>Create a new dashboard by using the provided visualizations.</h5>
+        </div>
+    </div>
+
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form">
+{#            <input id="query" value="" name="query" type="hidden"/>#}
+        </form>
+    </div>
+
+    <div class="col-sm-3">
+        <div id="query-container">
+            <label for="query">Select data</label>
+            <select id="query-select" class="form-control" name="query">
+                <option disabled selected>-- select one of the saved queries --</option>
+                {% for query in saved_queries %}
+                    <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+                {% endfor %}
+            </select>
+            <div><a href="#" id="new_query_link"> + or create a new query </a></div>
+            <input id="new_query_doc" type="hidden" value=""/>
+        </div>
+
+
+        <div id="components-container">
+            <label for="components-list-group">Select visualization type</label>
+            <ul class="list-group" id="components-list-group">
+                {% for component in components %}
+                    <li class="list-group-item">
+                        <div><strong>{{ component.title }}</strong></div>
+                        <btn class="btn btn-default btn-sm addNodeBtn"
+                             data-component-id="{{ component.id }}"
+                             data-component-title="{{ component.title }}">
+                            Add
+                        </btn>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-sm-9"><h4>Created Dashboard</h4></div>
+    <div class="col-sm-9" id="dynamic_dashboard"></div>
+
+
+    <button style="display: none;" id="modalbtn" type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Open Modal</button>
+
+{% endblock %}
+
+
+{% block modal %}
+    <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Configure Visualization</h4>
+                    <h5></h5>
+                </div>
+                <div class="modal-body">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-args-btn">Submit</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-args-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+
+
+    <script type="text/javascript">
+        $('.addNodeBtn').on('click', function() {
+            add_analysis_form_fields(this);
+        });
+
+      function add_analysis_form_fields(element) {
+          var component_id = element.getAttribute('data-component-id');
+          $.ajax({
+                url: '/dashboards/get_visualization_form_fields',
+                data: {
+                    id: parseInt(component_id),
+                    order: 1
+                    },
+                type: 'GET',
+                success: function(form_fields){
+                    $('#myModal').find('.modal-body').html(form_fields);
+                    $('#myModal').find('h5').html(element.getAttribute('data-component-title'));
+                    updateVariables($('#query-select'));
+                    $( "#modalbtn" ).trigger( "click" );
+                }
+            });
+      }
+
+      $('#submit-args-btn').on('click', function() {
+          var viz_request = "http://localhost:8000/visualizations/";
+          viz_request += $('#myModal').find('.modal-body').find('#action').val();
+
+          alert(viz_request);
+
+          var submitted_args = $('#myModal').find('.modal-body').clone();
+          var selects = $('#myModal').find('.modal-body').find("select");
+          $(selects).each(function(i) {
+            var select = this;
+            $(submitted_args).find("select").eq(i).val($(select).val());
+{#            $('#config-viz-form').append(select);#}
+          });
+          $('#config-viz-form').append(submitted_args);
+
+
+          var myData = $("#config-viz-form").serialize();
+
+          viz_request += '?';
+          viz_request += myData;
+          viz_request += '&query=' + $('#query-select').children(":selected").attr("id");
+
+          addToDashboard(viz_request);
+
+
+{#          var component_id = $('#myModal').find('input[name="viz_id"]').val();#}
+
+
+      });
+
+      function addToDashboard(viz_request) {
+          $("#dynamic_dashboard").append('<div id="viz_container">\n' +
+                              '                <div id="loadImg" style="display: none"><img src="{% static 'img/loading.gif' %}" width="70" height="70" /></div>\n' +
+                              '            </div>');
+          $('#loadImg').show();
+          $("#viz_container").append('<iframe class="resizable" ' +
+                'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+                'onload="document.getElementById(\'loadImg\').style.display=\'none\';"></iframe>');
+      }
+
+    </script>
+
+
+    <script type="text/javascript">
+        function updateVariables(element) {
+            $('#myModal .variable-select').find('option').remove().end();
+            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+            var new_query_id = $(element).children(":selected").attr("id");
+            var new_query_doc = $('#new_query_doc').val();
+            $.ajax({
+                url: '/queries/get_query_variables/',
+                data: {
+                    id: new_query_id,
+                    document: new_query_doc
+                    },
+                type: 'GET',
+                success: function(variables){
+                    $.each(variables, function(k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", k)
+                            .text(v));
+                    });
+                }
+            });
+        }
+
+        function addQueryToForm(raw_query){
+            $('#config-viz-form #query').val(raw_query);
+        }
+
+        $('#query-select').on('change', function() {
+            updateVariables(this);
+            addQueryToForm(this.options[this.selectedIndex].value.replace(/\n/g, " "));
+{#          TODO: JOHN, when the query is changed all the service must be reset!#}
+        });
+
+        function addNewQuery(title, raw_query, document) {
+            $("#query-select option[id='-1']").remove().end();
+            $('#query-select').append($("<option selected id='-1' value='"+raw_query+"'>"+title+"</option>"));
+            $('#new_query_doc').val(document);
+            updateVariables($('#query-select'));
+            addQueryToForm(raw_query)
+        }
+    </script>
+
+    <script type="text/javascript">
+        $('a#new_query_link').click(function(){
+            var left  = ($(window).width()/2)-(900/2);
+            var top   = ($(window).height()/2)-(600/2);
+            window.open('/queries/', 'window name', 'width=900, height=600, top='+top+', left='+left);
+            return false;
+        });
+    </script>
+
+{% endblock %}

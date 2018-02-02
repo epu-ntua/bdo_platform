@@ -1,0 +1,50 @@
+#dynamic_service{
+    border: 1px solid #348b96;
+    height: 500px;
+    /*width: 80%*/
+}
+
+#components-container{
+    height: 200px;
+    overflow-y: scroll;
+    margin: 20px 0px 20px 0px;
+    padding: 0;
+}
+
+.components-list-group{
+    border: 1px solid #348b96;
+}
+
+#query-container .form-group{
+    margin-top: 5px;
+}
+
+.list-group-item{
+    padding: 5px 10px;
+}
+
+.list-group-item .btn{
+    margin: 0;
+}
+
+#myModal {
+    width: 750px;
+    overflow: visible;
+}
+
+#myModal .modal-header{
+    text-align: center;
+    color: #006176;
+    font-size: 16pt;
+    font-weight: bold;
+}
+
+#myModal .modal-footer{
+    text-align: center;
+
+}
+
+#myModal .modal-content{
+    height: 700px;
+    overflow-y: scroll;
+}

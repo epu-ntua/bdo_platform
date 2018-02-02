@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     # django
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,16 +42,23 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'django.contrib.sites',
 
+
     # authentication
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+
+    # maps
+    'leaflet',
 
     # apps
     'bdo_main_app',
     'aggregator',
     'query_designer',
     'analytics',
+    'visualizer',
+    'dashboard_builder',
+
 ]
 
 AUTHENTICATION_BACKENDS = (
