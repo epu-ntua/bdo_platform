@@ -10,7 +10,8 @@
     # icons
     <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
     <link rel="stylesheet" href="{% static 'css/leaflet.awesome-markers.css' %}">
-    <link rel="stylesheet" href="{% static 'css/MarkerCluster.css' %}">
+{#    <link rel="stylesheet" href="{% static 'css/MarkerCluster.css' %}">#}
+{#    <link rel="stylesheet" href="{% static 'css/easy-button.css' %}">#}
 
     {% for css in css_all %}
         {% autoescape off %}
@@ -24,6 +25,10 @@
 
 {% block viz_content %}
 
+    <script>
+        var name = '{{ map_id }}';
+        var data = '{{ data|escapejs }}';
+    </script>
     {% leaflet_map map_id %}
 {#    <div id="{{ map_id }}" style="height: 500px;"></div>#}
 {% endblock %}
@@ -34,11 +39,14 @@
 
 
     {% leaflet_js %}
-{#    <script src="{% static 'js/leaflet-heat.js' %}"></script>#}
     <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>
+{#    <script src="{% static 'js/leaflet.markercluster.js'%}"></script>#}
+    <script src="{% static 'js/MovingMarker.js'%}"></script>
+    <script src="{% static 'js/leaflet.polylineDecorator.js' %}"></script>
+    <script src="{% static 'js/L.Polyline.SnakeAnim.js'%}"></script>
+    <script src="{% static 'js/easy-button.js' %}"></script>
 
-    <script src="{% static 'js/leaflet.markercluster.js'%}"></script>
-
+    <script src="{% static 'js/leaflet_script.js' %}"></script>
 
     {% for js in js_all %}
         {% autoescape off %}

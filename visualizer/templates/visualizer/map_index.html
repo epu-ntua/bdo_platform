@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+
+{% block css %}
+
+    {% for css in css_all %}
+        {% autoescape off %}
+            {{ css }}
+        {% endautoescape %}
+    {% endfor %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
+
+    <link rel="shortcut icon" href="http://designm.ag/favicon.ico">
+    <link rel="icon" href="http://designm.ag/favicon.ico">
+    <link rel="stylesheet" type="text/css" media="all" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" media="all" href="http://fonts.googleapis.com/css?family=Acme">
+
+{% endblock %}
+
+{% block content %}
+
+    <h2>Map Configuration Page:</h2>
+        <form action="#" method="post" name="map_conf">
+        {% csrf_token %}
+            {% for field in form %}
+                {% if field.label == 'Min Year' %}
+
+                    <div id="rangedval">
+
+                        <span> Range Year:
+                            <span id="min_year">{{ field.value }} - </span>
+                            <input type="hidden" id="id_min_year" name="min_year" value="{{ field.value }}">
+
+                {% elif field.label == 'Max Year' %}
+                            <span id="max_year">{{ field.value }}</span>
+                            <input type="hidden" id="id_max_year" name="max_year" value="{{ field.value }}">
+
+                        </span>
+                    </div>
+                    <div id="rangeslider" style="width: 250px;"></div>
+                    <hr>
+                {% else %}
+                    {{ field.label }} : {{ field }}
+                    <hr>
+                {% endif %}
+            {% endfor %}
+            <input id="submit" type="submit" value="Create"/>
+        </form>
+        <h3>Preview: </h3>
+        <image id='map_preview' src="" alt="Please Select A Map From Above" style="width: 300px; height: 300px;"></image>
+        <image id='loading' src="{% static 'img/loading.gif' %}" style="visibility: hidden;"></image>
+{% endblock %}
+
+
+
+{% block js %}
+    <script src="{% static 'js/mapscript.js' %}"></script>
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+
+    {% for js in js_all %}
+        {% autoescape off %}
+            {{ js }}
+        {% endautoescape %}
+    {% endfor %}
+
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'visualizer/viz_base.html' %}
+
+{% load static %}
+{% load leaflet_tags %}
+
+
+{% block css %}
+    {% leaflet_css %}
+
+    # icons
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
+    <link rel="stylesheet" href="{% static 'css/leaflet.awesome-markers.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap-timepicker.css' %}"/>
+
+    {% for css in css_all %}
+        {% autoescape off %}
+            {{ css }}
+        {% endautoescape %}
+    {% endfor %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}"/>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/control.css' %}"/>
+
+{% endblock %}
+
+{% block viz_content %}
+
+    <script>
+        var name = '{{ map_id }}';
+        var data = '{{ data|escapejs }}';
+    </script>
+    {% leaflet_map map_id %}
+
+{% endblock %}
+
+
+
+{% block js %}
+
+
+    {% leaflet_js %}
+{#    <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>#}
+{#    <script src="{% static 'js/leaflet.markercluster.js'%}"></script>#}
+
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap-timepicker.js' %}"></script>
+    <script src="{% static 'js/LeafletPlayback.js' %}"></script>
+    <script src="{% static 'js/leaflet_time.js' %}"></script>
+
+    {% for js in js_all %}
+        {% autoescape off %}
+            {{ js }}
+        {% endautoescape %}
+    {% endfor %}
+
+
+
+{% endblock %}

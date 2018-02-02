@@ -177,49 +177,49 @@ class Query(Model):
         groups = []
         for _from in self.document['from']:
             v_obj = Variable.objects.get(pk=_from['type'])
-
             for s in _from['select']:
                 if s['type'] != 'VALUE':
+                    # TODO : possible memory leak? exit code 1073741819
                     dimension = Dimension.objects.get(pk=s['type'])
+                    # TODO : possible memory leak? exit code 1073741819
                     column_name = dimension.data_column_name
                     column_unit = dimension.unit
                     column_axis = dimension.axis
                     column_step = dimension.step
                     sql_type = dimension.sql_type
-
                 else:
                     column_name = 'value'
                     column_unit = v_obj.unit
                     column_axis = None
                     column_step = None
                     sql_type = 'double precision'
-
                 selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
 
-            # TODO: check if comment is right
+                # TODO: check if comment is right
             #if 'joined' not in s:
-                c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
-                if s.get('aggregate', '') != '':
-                    c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+                    c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
+                    if s.get('aggregate', '') != '':
+                        c_name = '%s(%s)' % (s.get('aggregate'), c_name)
 
-                if not s.get('exclude', False):
-                    header_sql_types.append(sql_type)
-                    headers.append({
-                        'title': s['title'],
-                        'name': s['name'],
-                        'unit': column_unit,
-                        'step': column_step,
-                        'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
-                        'isVariable': s['type'] == 'VALUE',
-                        'axis': column_axis,
-                    })
+                    if not s.get('exclude', False):
+                        header_sql_types.append(sql_type)
+                        headers.append({
+                            'title': s['title'],
+                            'name': s['name'],
+                            'unit': column_unit,
+                            'step': column_step,
+                            'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
+                            'isVariable': s['type'] == 'VALUE',
+                            'axis': column_axis,
+                        })
 
-                    # add fields to select clause
-                    columns.append((c_name, '%s' % s['name']))
+                        # add fields to select clause
+                        columns.append((c_name, '%s' % s['name']))
 
-                # add fields to grouping
-                if s.get('groupBy', False):
-                    groups.append(c_name)
+                    # add fields to grouping
+                    if s.get('groupBy', False):
+                        groups.append(c_name)
+
 
         # select
         select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'

@@ -10,7 +10,6 @@ from django.utils.timezone import now
 from bdo_main_app.models import Service
 from bdo_platform.settings import BASE_DIR, SERVER_URL, SPARK_SUBMIT_PATH
 
-
 class JobInstance(Model):
     """
 
