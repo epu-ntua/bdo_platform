@@ -40,54 +40,12 @@
     <!--     Fonts and icons     -->
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
     <link href='https://fonts.googleapis.com/css?family=Roboto:400,700,300|Material+Icons' rel='stylesheet' type='text/css'>
+
 </head>
 
 <body>
 
 	<div class="wrapper">
-
-	    <div class="sidebar" data-color="blue" data-image="{% static 'img/sidebar-1.jpg' %}">
-			<div class="logo">
-				<a href="/" class="simple-text">
-					<img src="{% static 'img/logo.png' %}" style="width: 110px; height: auto;">
-				</a>
-			</div>
-
-	    	<div class="sidebar-wrapper">
-	            <ul class="nav">
-                    <li{% if sidebar_active == 'products' or not sidebar_active %} class="active"{% endif %}>
-	                    <a href="/">
-	                        <i class="material-icons">directions_boat</i>
-	                        <p>Products</p>
-	                    </a>
-	                </li>
-	                <li>
-	                    <a href="#">
-	                        <i class="material-icons">person</i>
-	                        <p>Providers</p>
-	                    </a>
-	                </li>
-                    <li{% if sidebar_active == 'dashboard'%} class="active"{% endif %}>
-	                    <a href="#">
-	                        <i class="material-icons">dashboard</i>
-	                        <p>Dashboard</p>
-	                    </a>
-	                </li>
-	                <li{% if sidebar_active == 'queries' %} class="active"{% endif %}>
-	                    <a href="/queries">
-	                        <i class="fa fa-database"></i>
-	                        <p>Explore data</p>
-	                    </a>
-	                </li>
-	                <li>
-	                    <a href="#">
-	                        <i class="material-icons text-gray">notifications</i>
-	                        <p>Notifications</p>
-	                    </a>
-	                </li>
-	            </ul>
-	    	</div>
-	    </div>
 
 	    <div class="main-panel">
 			<nav class="navbar navbar-transparent navbar-absolute">
@@ -107,6 +65,14 @@
 							<li class="dropdown">
 								<a href="#" class="btn bg-color--blue dropdown-toggle"
                                    data-toggle="dropdown" aria-expanded="false"
+                                   style="padding: 10px 25px; margin: 5px 0px 5px 40px">
+									<i class="fa fa-cogs o-white"></i>
+									Services &amp; Dahsboards
+								</a>
+							</li>
+                            <li class="dropdown">
+								<a href="#" class="btn bg-color--blue dropdown-toggle"
+                                   data-toggle="dropdown" aria-expanded="false"
                                    style="padding: 10px 25px; margin: 5px 40px;">
 									<i class="fa fa-plus-circle o-white"></i>
 									Upload &amp; create
@@ -115,7 +81,8 @@
                                     <li><a href="#" style="font-size: 1.1em;"><i class="fa fa-cloud-upload margin-right-4"></i> <span>Upload a dataset</span></a></li>
 									<li><a href="/queries/" style="font-size: 1.1em;"><i class="fa fa-database margin-right-5"></i> <span>Define a query</span></a></li>
 									<li><a href="/analytics/create/" style="font-size: 1.1em;"><i class="fa fa-industry margin-right-5"></i> <span>Create an analysis</span></a></li>
-								</ul>
+								    <li><a href="/dashboards/create/" style="font-size: 1.1em;"><i class="fa fa-bar-chart margin-right-5"></i> <span>Create a dashboard</span></a></li>
+                                </ul>
 							</li>
 							<li class="dropdown">
 								<a href="#" class="dropdown-toggle" data-toggle="dropdown">
@@ -202,7 +169,8 @@
 	<script src="{% static 'js/bootstrap-notify.js' %}"></script>
 
 	<!--  Google Maps Plugin    -->
-	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js"></script>
+    # Google Maps Requires Special User Key For #
+	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBE2A-pZn-ZWSdADTL5VmKOrw7TEFlS58E"></script>
 
 	<!-- Material Dashboard javascript methods -->
 	<script src="{% static 'js/material-dashboard.js' %}"></script>

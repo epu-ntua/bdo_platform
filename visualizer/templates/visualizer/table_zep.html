@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'visualizer/css/basic_viz.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+
+    <p>Hello world</p>
+    <div id="mapContourContainer">
+        <iframe id="iframe" class="resizable" src="http://localhost:8080/#/notebook/{{ notebook_id }}/paragraph/{{ paragraph_id }}"
+                frameborder="0" allowfullscreen="">
+        </iframe>
+    </div>
+    <button id="btn">Click me!</button>
+
+{% endblock %}
+
+
+
+{% block js %}
+
+    <script type="text/javascript">
+        // addEventListener support for IE8
+        function bindEvent(element, eventName, eventHandler) {
+            if (element.addEventListener){
+                element.addEventListener(eventName, eventHandler, false);
+            } else if (element.attachEvent) {
+                element.attachEvent('on' + eventName, eventHandler);
+            }
+        }
+
+        // Send a message to the child iframe
+        var iframeEl = document.getElementById('iframe'),
+            messageButton = document.getElementById('btn');
+
+        // Send a message to the child iframe
+        var sendMessage = function(msg) {
+            // Make sure you are sending a string, and to stringify JSON
+            iframeEl.contentWindow.postMessage(msg, '*');
+        };
+        // Send random messge data on every button click
+        bindEvent(messageButton, 'click', function (e) {
+            var random = "Message sent";
+            sendMessage('' + random);
+        });
+
+{#        $("#btn").click(function(){#}
+{#           alert("btn clicked");#}
+{#           $("#iframe").click();#}
+{#        });#}
+{##}
+{#        $("#iframe").click(function(){#}
+{##}
+{#           alert("iframe clicked");#}
+{#            $("#iframe").contents().find("#0171204-165229_1814239706_0_switch > div.btn-group.ng-scope > button:nth-child(2)").click();#}
+{#        });#}
+    </script>
+
+{% endblock %}

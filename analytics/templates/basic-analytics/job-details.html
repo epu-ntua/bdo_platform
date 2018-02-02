@@ -12,10 +12,6 @@
 
 <table class="table">
     <tr>
-        <td style="width: 120px">Analysis type</td>
-        <td>{{ base_analysis.title }}</td>
-    </tr>
-    <tr>
         <td class="status-cell" data-status="{{ job.status }}">Status</td>
         <td>{{ job.get_status_display }}</td>
     </tr>
@@ -33,16 +29,25 @@
             <td>{{ job.finished }}</td>
         </tr>
     {% endif %}
-    <tr>
-        <td>{% if job.arguments %}<b>{% endif %}Arguments{% if job.arguments %}</b>{% endif %}</td>
-        <td>{% if not job.arguments %}No arguments{% endif %}</td>
-    </tr>
-    {% for arg_name, value in job.arguments.items %}
+
+    {% for order, analysis_id in analysis_flow %}
         <tr>
-            <td>{{ arg_name }}</td>
-            <td>{{ value }}</td>
+            <td style="width: 120px"><b>{{ order }}: Analysis type</b></td>
+            <td>{{ analysis_id }}</td>
         </tr>
+        <tr>
+            <td>{% if job.arguments|get_item:order %}<b>{% endif %}Arguments:{% if job.arguments|get_item:order  %}</b>{% endif %}</td>
+            <td>{% if not job.arguments|get_item:order %}No arguments{% endif %}</td>
+        </tr>
+        {% for arg_name in job.arguments|get_item:order %}
+            <tr>
+                <td>{{ arg_name }}</td>
+                <td>{{ job.arguments|get_item:order|get_item:arg_name }}</td>
+            </tr>
+        {% endfor %}
     {% endfor %}
+
+
     {% if job.results %}
         <tr>
             <td><b>Results</b></td>

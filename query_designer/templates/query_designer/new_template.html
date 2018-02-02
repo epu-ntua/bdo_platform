@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'query_designer/css/new_template.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <div class="container row col-sm-12" id="query-designer-container">
+        <div class="col-sm-3" id="side-panel">
+            <div class="row" id="selected-vars-panel">
+                <div id="var-panel-header">
+                    <h3 style="display: inline-block">Selected Variables</h3>
+                    <button id="add-var-btn" class="button btn btn-default" data-toggle="modal" data-target="#addVarModal">Add Variable</button>
+                </div>
+                <form>
+                    <ul id="variable-list">
+                        <li>
+                            <h5 class="variable" data-toggle="collapse" href="#collapse1">Sea water temperature</h5>
+                            <ul id="collapse1" class="list-group collapse in dimension-list">
+                                <li class="list-group-item"><input type="checkbox" name="Latitude" value="Latitude" checked>Latitude</li>
+                                <li class="list-group-item"><input type="checkbox" name="Longitude" value="Longitude" checked>Longitude</li>
+                                <li class="list-group-item"><input type="checkbox" name="Time" value="Time" checked>Time</li>
+                                <li class="list-group-item"><input type="checkbox" name="Depth" value="Depth" checked>Depth</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <h5 class="variable" data-toggle="collapse" href="#collapse2">Wind speed</h5>
+                            <ul id="collapse2" class="list-group collapse in dimension-list">
+                                <li class="list-group-item"><input type="checkbox" name="Latitude" value="Latitude" checked>Latitude</li>
+                                <li class="list-group-item"><input type="checkbox" name="Longitude" value="Longitude" checked>Longitude</li>
+                                <li class="list-group-item"><input type="checkbox" name="Time" value="Time" checked>Time</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </form>
+            </div>
+            <div class="row" id="selected-filters-panel">
+                <div id="filters-panel-header">
+                    <h3 style="display: inline-block">Filters</h3>
+                    <button id="add-filter-btn" class="button btn btn-default" data-toggle="modal" data-target="#addFilterModal">Add Filter</button>
+                </div>
+                <form>
+                    <select>
+                       <option value="All-filters-must-be-true">All filters must be true</option>
+                       <option value="At-least-one-filter-must-be-true">At least one filter must be true</option>
+                   </select>
+                    <ul style="list-style-type: none; padding-left: 5px; padding-top: 5px; " id="default-filter-list">
+                        <li><span>Time range</span><input style="width: 70px" type="text"/><span>to</span><input style="width: 70px" type="text"/></li>
+                        <li>Location</li>
+                    </ul>
+
+                    <ul id="filter-list">
+                        <li class="list-group-item">Sea water temperature.Latitude == Wind speed.Latitude</li>
+                        <li class="list-group-item">Sea water temperature.Longitude == Wind speed.Longitude</li>
+                        <li class="list-group-item">Sea water temperature.Time == Wind speed.Time</li>
+                        <li class="list-group-item removable">Sea water temperature.Time between 2018-01-01 00:00:00, 2018-01-03 00:00:00</li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+        <div class="col-sm-9" id="main-panel">
+            <div class="row designer-menu">
+                <div class="btn-group">
+                <button class="btn btn-sm bg-color--lightgray execute-query" title="Run (F9)"><i class="material-icons text-green">play_arrow</i> Run(F9)</button>
+                <button class="btn btn-sm bg-color--lightgray save-query" title="Save (Ctrl+S)"><i class="material-icons text-orange">save</i> Save</button>
+                <button class="btn btn-sm bg-color--lightgray query-to-analysis" title="Load query to analysis/dashboard"><i class="material-icons text-blue">input</i> Load to analysis/dashboard</button>
+
+                </div>
+            </div>
+            <div class="row">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#Vizualisation">Vizualisation</a></li>
+                    <li><a data-toggle="tab" href="#Data">Data</a></li>
+                    <li><a data-toggle="tab" href="#Info">Info</a></li>
+                  </ul>
+
+                  <div class="tab-content">
+                    <div id="Vizualisation" class="tab-pane fade in active">
+                      <h3>Vizualisation</h3>
+                        <iframe id="iframe" class="resizable" src="http://localhost:8000/visualizations/get_line_chart_am/?query=11&y_var=i0_temperature&x_var=i0_time"
+                                frameborder="0" allowfullscreen="">
+                        </iframe>
+                    </div>
+                    <div id="Data" class="tab-pane fade">
+                      <h3>Data</h3>
+                        <iframe id="iframe" class="resizable" src="http://localhost:8000/visualizations/get_table_zep/?query=11"
+                                frameborder="0" allowfullscreen="">
+                        </iframe>
+                    </div>
+                    <div id="Info" class="tab-pane fade">
+                      <h3>Info</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Dataset</th>
+                                    <th>Origin</th>
+                                    <th>Time period</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>A dummy dataset</td>
+                                    <td>HCMR</td>
+                                    <td>2018-01-01 00:00:00 - 2018-12-31 23:59:59</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                  </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="addVarModal" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Select variables to include in the query</h4>
+          </div>
+          <div class="modal-body">
+            <div class="container">
+                <input class="form-control" placeholder="Autocomplete search"/>
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th class="col-sm-1"></th>
+                    <th class="col-sm-3">Variable</th>
+                    <th class="col-sm-3">Description</th>
+                    <th class="col-sm-3">Dimensions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><input type="checkbox" checked></td>
+                    <td>Sea water temperature</td>
+                    <td>Description</td>
+                    <td>Latitude, Longitude, Time, Depth</td>
+                  </tr>
+                  <tr>
+                    <td><input type="checkbox" checked></td>
+                    <td>Wind speed</td>
+                    <td>Description</td>
+                    <td>Latitude, Longitude, Time</td>
+                  </tr>
+                  <tr>
+                    <td><input type="checkbox"></td>
+                    <td>Ship location</td>
+                    <td>Description</td>
+                    <td>Latitude, Longitude, Time, Ship ID, Ship Name</td>
+                  </tr>
+                  {% for i in "xxxxxxxxxxxxxx" %}
+                      <tr>
+                        <td><input type="checkbox"></td>
+                        <td>Dummy Var</td>
+                        <td>Description</td>
+                        <td>Latitude, Longitude, Time, Ship ID, Ship Name</td>
+                      </tr>
+                {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Save and Close</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- Modal -->
+    <div id="addFilterModal" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add a new filter</h4>
+              <div class="row">
+               <select class="col-sm-3 col-sm-offset-2">
+                   <option value="Sea water temperature">Sea water temperature</option>
+                   <option value="Wind speed">Wind speed</option>
+                   <option value="Latitude">Latitude</option>
+                   <option value="audi">Longitude</option>
+                   <option value="audi">Time</option>
+                   <option value="audi">Depth</option>
+               </select>
+
+              <select  class="col-sm-1">
+                   <option value="=">=</option>
+                   <option value="!=">!=</option>
+                   <option value="<"><</option>
+                   <option value="<="><</option>
+                   <option value=">"></option>
+                   <option value=">="></option>
+               </select>
+               <input  class="col-sm-3"/>
+              </div>
+          </div>
+          <div class="modal-body">
+            <div class="container">
+
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Save and Close</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <!-- amChart -->
+    <script src="https://www.amcharts.com/lib/3/ammap.js"></script>
+    <script src="https://www.amcharts.com/lib/3/maps/js/worldHigh.js"></script>
+    <script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+    <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
+    <script src="https://www.amcharts.com/lib/3/themes/light.js"></script>
+
+
+    <script>
+        $(function() {
+
+        });
+    </script>
+{% endblock %}

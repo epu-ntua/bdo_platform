@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+
+    <style>
+        #loadImg{position:absolute;z-index:999;}
+        #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
+        .popover{
+            width: 500px;
+            max-width: 600px;
+            min-height: 230px;
+        }
+        .popover-content{
+            width: 100%;
+        }
+        .modal-header{
+            padding-top: 0;
+        }
+        .modal .modal-content .modal-body{
+            min-height: 500px;
+            height: 590px;
+            overflow-y: scroll;
+            padding: 0 24px 0 24px;
+        }
+        .modal .modal-dialog{
+            margin-top: 5px;
+            padding-top: 0;
+            padding-bottom: 5px;
+            width: 90%;
+        }
+        #viz_container{
+            background-color: #d8d8d8;
+            height: 500px;
+            width: 80%;
+            padding: 0;
+        }
+        #viz_container iframe{
+            background-color: white;
+            height: 96%;
+            width: 98%;
+            margin: 1% 1% 1% 1%;
+            padding: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form"></form>
+    </div>
+    <div class="row">
+            <div class="text-center">
+                <h1 class="o-blue" style="margin: 0; font-size: 30pt" >Dashboard Builder</h1>
+                <h5  style="display: inline-block; margin: 0;" >Create a new dashboard by selecting data and using the provided visualizations.</h5>
+            </div>
+    </div>
+    <div class="row text-left">
+        <button type="button" id="new_widget_btn" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#myModal">
+            <i class="fa fa-plus-circle o-white"></i>  New visualisation
+        </button>
+    </div>
+
+
+
+
+{#    <div class="row" style="border-style: solid; border-width: 1px; min-height: 500px;">#}
+{#        <div><h4>Created Dashboard</h4></div>#}
+{#        <div id="dynamic_dashboard"></div>#}
+{#    </div>#}
+
+
+
+
+    <div id="query-container" hidden>
+        <select id="query-select" class="form-control" name="query">
+            <option disabled selected>-- select one of the saved queries --</option>
+            {% for query in saved_queries %}
+                <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+            {% endfor %}
+        </select>
+        <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+        <input id="new_query_doc" type="hidden" value=""/>
+        <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+    </div>
+
+    <div id="viz-container" hidden>
+
+
+        <button type="button" id="select_viz_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+    </div>
+
+    <div id="conf-container" hidden>
+
+    </div>
+
+
+{% endblock %}
+
+
+{% block modal %}
+    <div id="myModal2" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+{#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
+                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
+                </div>
+                <div class="modal-body">
+                        <div class="row text-center">
+                            <button type="button" id="select_data_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"
+                                    data-container="body">1. Select data
+                            </button>
+                            <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select visualization type" data-placement="bottom"
+                                    data-container="body" disabled>2. Select visualisation
+                            </button>
+                            <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"
+                                    data-container="body" disabled>3. Configure
+                            </button>
+                        </div>
+
+{#                        <div class="row col-sm-12 text-center">#}
+{#                            <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?query=17&y_var=i0_sea_floor_potential_temperature&x_var=i0_time"#}
+{#                                    class="resizable"frameborder="0" allowfullscreen="">#}
+{#                            </iframe>#}
+{#                        </div>#}
+                        <div class="row col-sm-2 text-left">
+                            <ul class="list-group collapse in">
+                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Line chart</li>
+                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Column chart</li>
+                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Pie chart</li>
+                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Contours on map</li>
+                            </ul>
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" disabled>Add</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+{#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
+                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
+                </div>
+                <div class="modal-body">
+                        <div class="row text-left">
+                            <button type="button" id="select_data_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="right"
+                                    >Select data
+                            </button>
+                            <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select visualization type" data-placement="bottom"
+                                    data-container="body" disabled style="display: none">2. Select visualisation
+                            </button>
+                            <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"
+                                    data-container="body" disabled style="display: none">3. Configure
+                            </button>
+                        </div>
+
+{#                        <div class="row col-sm-12 text-center">#}
+{#                            <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?query=17&y_var=i0_sea_floor_potential_temperature&x_var=i0_time"#}
+{#                                    class="resizable"frameborder="0" allowfullscreen="">#}
+{#                            </iframe>#}
+{#                        </div>#}
+                        <div class="row" id="viz_config" style="display: none">
+                            <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                                <li class="list-group-item" id="line_chart_item" data-component-id="5"><i class="fa fa-line-chart margin-right-1"></i>Line chart</li>
+                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-1"></i>Column chart</li>
+                                <li class="list-group-item"><i class="fa fa-pie-chart margin-right-1"></i>Pie chart</li>
+                                <li class="list-group-item"><i class="fa fa-map margin-right-1"></i>Contours on map</li>
+                            </ul>
+                            <div id="viz_container" class="col-sm-8" style="width: 85%">
+
+                            </div>
+                        </div>
+                        <input type="hidden" id="selected_query" value="">
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" disabled>Add</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        function updateVariables(element) {
+            $('#myModal .variable-select').find('option').remove().end();
+            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+            var new_query_id = $('#myModal #selected_query').val();
+{#            var new_query_doc = $('#new_query_doc').val();#}
+            var new_query_doc = {};
+            $.ajax({
+                url: '/queries/get_query_variables/',
+                data: {
+                    id: new_query_id,
+                    document: new_query_doc
+                    },
+                type: 'GET',
+                success: function(result){
+                    var variables = result['variables'];
+                    var dimensions = result['dimensions'];
+                    $.each(variables, function(k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", v)
+                            .text(k));
+                    });
+
+                    $.each(dimensions, function(k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", v)
+                            .text(k));
+                    });
+                }
+            });
+        }
+
+
+
+
+    </script>
+    <script>
+        $(document).ready(function(){
+
+            $("#myModal #select_data_popover").popover({
+                html: true,
+                animation:true,
+                content: function() {
+                    return $('#query-container').html();
+                }
+            }).click(function(e) {
+                $(this).popover('toggle');
+                $('.popover-content #query-select').on('change', function() {
+                    updateVariables(this);
+                    var new_query_id = $(this).children(":selected").attr("id");
+{#                    alert(new_query_id);#}
+                    var new_query_doc = $('#new_query_doc').val();
+                    $('#myModal #selected_query').val(new_query_id);
+        {#            addQueryToForm(this.options[this.selectedIndex].value.replace(/\n/g, " "));#}
+                });
+                $('.popover-content #select_data_ok').click(function (e) {
+{#                    var query_popover_id = '#' + $("#select_data_popover").attr('aria-describedby');#}
+{#                    var selected_query = $(query_popover_id+' select').children(":selected").attr("id");#}
+{#                    alert(selected_query);#}
+{#                    $('#myModal #selected_query').val(selected_query);#}
+                    $('#myModal #select_data_popover').popover("hide");
+                    $('#viz_config').show();
+                })
+            });
+
+
+
+            $("#line_chart_item").click(function (element) {
+{#              var component_id = element.getAttribute('data-component-id');#}
+              var component_id = 5;
+              $.ajax({
+                    url: '/dashboards/get_visualization_form_fields',
+                    data: {
+                        id: parseInt(component_id),
+                        order: 1
+                        },
+                    type: 'GET',
+                    success: function(form_fields){
+                        $("#conf-container").html(form_fields);
+                        $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
+
+                        $("#line_chart_item").popover({
+                            html: true,
+                            title: 'Configure visualisation',
+                            content: function() {
+                                return $('#conf-container').html();
+                            }
+                        });
+                        updateVariables($('#query-select'));
+                        $("#line_chart_item").popover('toggle');
+                        var popver_id = '#' + $("#line_chart_item").attr('aria-describedby');
+                        $(popver_id+' #select_conf_ok').click(function(e){
+                            submit_conf();
+                            $('#line_chart_item').popover("hide");
+                        });
+                    }
+                });
+            });
+
+
+
+
+            function submit_conf() {
+                var viz_request = "http://localhost:8000/visualizations/";
+                viz_request += $('#myModal').find('.modal-body').find('#action').val();
+{#                alert(viz_request);#}
+                var conf_popover_id = '#' + $("#line_chart_item").attr('aria-describedby');
+
+                var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
+{#                alert(submitted_args);#}
+                var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
+                $(selects).each(function(i) {
+                    var select = this;
+                    $(submitted_args).find("select").eq(i).val($(select).val());
+                    {#            $('#config-viz-form').append(select);#}
+                });
+                $('#config-viz-form').empty();
+                $('#config-viz-form').append(submitted_args);
+
+
+                var myData = $("#config-viz-form").serialize();
+{#                alert(myData);#}
+                viz_request += '?';
+                viz_request += myData;
+{#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}
+
+                viz_request += '&query=' + $('#myModal #selected_query').val();
+
+                show_viz(viz_request);
+{#                alert(viz_request);#}
+                {#          var component_id = $('#myModal').find('input[name="viz_id"]').val();#}
+            };
+
+            function show_viz(viz_request) {
+{#                $("#dynamic_dashboard").append('<div id="viz_container">\n' +#}
+{#                                  '                <div id="loadImg" style="display: none"><img src="{% static 'img/loading.gif' %}" width="70" height="70" /></div>\n' +#}
+{#                                  '            </div>');#}
+{#                $('#loadImg').show();#}
+                $("#viz_container").html('<iframe ' +
+                    'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+                    'onload="document.getElementById(\'loadImg\').style.display=\'none\'"></iframe>');
+
+            }
+
+
+
+
+            $("#submit-modal-btn").click(function (e) {
+                $('#select_viz_popover').prop('disabled', true);
+                $('#select_conf_popover').prop('disabled', true);
+                $('.modal #viz_container iframe').remove();
+            });
+            $("#dismiss-modal-btn").click(function (e) {
+                $('#select_viz_popover').prop('disabled', true);
+                $('#select_conf_popover').prop('disabled', true);
+                $('.modal #viz_container iframe').remove();
+            });
+
+        });
+
+
+
+    </script>
+
+{% endblock %}

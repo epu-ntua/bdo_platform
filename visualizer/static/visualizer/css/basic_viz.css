@@ -1,0 +1,14 @@
+.resizable{
+    background: white;
+    font-size: 2em;
+    border: 1px solid black;
+    overflow: scroll;
+    resize: both;
+    width: 900px;
+    height: 600px;
+    box-shadow: 3px 3px 1px darkgrey;
+}
+
+.amcharts-chart-div > a {
+    display: none!important;
+}

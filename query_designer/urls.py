@@ -40,6 +40,9 @@ urlpatterns = [
 
     url('simplified/list/$', views.list_queries, name='list-queries'),
 
+    # new query designer template
+    url('new_template/$', views.new_template, name='new_template'),
+
     # basic page
     url('$', views.index, name='home'),
 ]

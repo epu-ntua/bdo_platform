@@ -56,9 +56,23 @@ class Query(Model):
         }[op.lower()][0 if mode == 'postgres' else 1]
 
     @staticmethod
-    def process_filters(filters, mode='postgres', quote=False):
+    def process_filters(self, filters, mode='postgres', quote=False):
         # end value
         if type(filters) in [int, float]:
+            try:
+                col_name = ''
+                from_order = int(filters[filters.find('i')+1:filters.find('_')])
+                if from_order >= 0:
+                    table_name = self.document['from'][from_order]['name']
+                    for x in self.document['from'][from_order]['select']:
+                        if x['name'] == filters:
+                            if x['type'] != 'VALUE':
+                                col_name = Dimension.objects.get(pk=x['type']).data_column_name
+                            else:
+                                col_name = 'value'
+                    filters = table_name + '.' + col_name
+            except:
+                return filters
             return filters
 
         if type(filters) in [str, unicode]:
@@ -74,6 +88,24 @@ class Query(Model):
             rect_start = filters['b'].split('<')[2].split('>,')[0].split(',')
             rect_end = filters['b'].split('>,<')[1].split('>')[0].split(',')
 
+            #lat = filters['a'] + '_latitude'
+            #lng = filters['a'] + '_longitude'
+
+            lat_col_name = ''
+            lon_col_name = ''
+            from_order = int(filters['a'][1])
+            table_name = self.document['from'][from_order]['name']
+            for x in self.document['from'][from_order]['select']:
+                if x['name'] == (filters['a'] + '_latitude'):
+                    lat_col_name = Dimension.objects.get(pk=x['type']).data_column_name
+                if x['name'] == (filters['a'] + '_longitude'):
+                    lon_col_name = Dimension.objects.get(pk=x['type']).data_column_name
+
+            lat = table_name+'.'+lat_col_name
+            lng = table_name+'.'+lon_col_name
+
+            result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
+            result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
             lat = filters['a'] + '_latitude'
             lng = filters['a'] + '_longitude'
 
@@ -100,7 +132,7 @@ class Query(Model):
             elif _op in ['gt', 'gte']:
                 result = '%s:[%s TO *]' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
             elif _op in ['lt', 'lte']:
-                result = '%s:[* TO %s]' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
+                result = '%s:[* TO %s]' % (Query.process_filters(self, filters['a']), Query.process_filters(filters['b']))
             elif _op == 'mod':
                 result = 'mod(%s, %s)' % (Query.process_filters(filters['a']), Query.process_filters(filters['b']))
             elif _op in ['!', 'not']:
@@ -108,7 +140,7 @@ class Query(Model):
 
         else:
             _a = Query.process_filters(filters['a'], mode=mode)
-            _b = Query.process_filters(filters['b'], mode=mode, quote=True)
+            _b = Query.process_filters(self, filters['b'], mode=mode, quote=True)
 
             result = '%s %s %s' % \
                    (('(%s)' % _a) if type(_a) not in [str, unicode, int, float] else _a,

@@ -1,0 +1,88 @@
+{% extends 'visualizer/viz_base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'visualizer/css/basic_viz.css' %}" rel="stylesheet" />
+    <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all">
+
+    <style>
+        #chartdiv {
+          width: 100%;
+          height: 500px;
+        }
+
+        .amcharts-export-menu-top-right {
+          top: 10px;
+          right: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block viz_content %}
+
+    <div id="chartdiv" style="overflow: visible; text-align: left; margin-top: 50px"></div>
+
+{% endblock %}
+
+
+
+{% block js %}
+<script type="text/javascript" src="https://www.amcharts.com/lib/3/plugins/export/libs/fabric.js/fabric.min.js" async=""></script><script type="text/javascript" src="https://www.amcharts.com/lib/3/plugins/export/libs/FileSaver.js/FileSaver.min.js" async=""></script><script type="text/javascript" src="https://www.amcharts.com/lib/3/plugins/export/libs/jszip/jszip.min.js" async=""></script><script type="text/javascript" src="https://www.amcharts.com/lib/3/plugins/export/libs/pdfmake/pdfmake.min.js" async=""></script><script type="text/javascript" src="https://www.amcharts.com/lib/3/plugins/export/libs/xlsx/xlsx.min.js" async=""></script><script type="text/javascript" src="https://www.amcharts.com/lib/3/plugins/export/libs/pdfmake/vfs_fonts.js" async=""></script></head>
+<script src="https://www.amcharts.com/lib/3/amcharts.js"></script>
+<script src="https://www.amcharts.com/lib/3/serial.js"></script>
+<script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+<script src="https://www.amcharts.com/lib/3/themes/light.js"></script>
+
+<script type="text/javascript">//<![CDATA[
+
+var chart = AmCharts.makeChart("chartdiv", {
+  "type": "serial",
+  "theme": "light",
+  "marginRight": 70,
+  "dataProvider": {{ data|safe }},
+  "valueAxes": [{
+    "axisAlpha": 0,
+    "position": "left",
+    "title": "{{ value_col }}"
+  }],
+  "startDuration": 1,
+  "graphs": [{
+    "balloonText": "<b>[[category]]: [[value]]</b>",
+    "fillColorsField": "color",
+    "fillAlphas": 0.9,
+    "lineAlpha": 0.2,
+    "type": "column",
+    "valueField": "{{ value_col }}"
+  }],
+  "chartCursor": {
+    "categoryBalloonEnabled": false,
+    "cursorAlpha": 0,
+    "zoomable": false
+  },
+  "categoryField": "{{ category_col }}",
+  "categoryAxis": {
+    "gridPosition": "start",
+    "labelRotation": 45
+  },
+  "export": {
+    "enabled": true
+  }
+});
+
+
+//]]>
+
+</script>
+
+  <script>
+  // tell the embed parent frame the height of the content
+  if (window.parent && window.parent.parent){
+    window.parent.parent.postMessage(["resultsFrame", {
+      height: document.body.getBoundingClientRect().height,
+      slug: "None"
+    }], "*")
+  }
+</script>
+
+{% endblock %}

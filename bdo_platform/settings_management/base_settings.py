@@ -46,11 +46,20 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
 
+    # maps
+    'leaflet',
+
+    # vizualisations
+    'django_nvd3',
+    'djangobower',
+
     # apps
     'bdo_main_app',
     'aggregator',
     'query_designer',
     'analytics',
+    'visualizer',
+    'dashboard_builder',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -126,6 +135,20 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+
+# Django-bower
+# ------------
+
+# Specifie path to components root (you need to use absolute path)
+BOWER_COMPONENTS_ROOT = os.path.join(BASE_DIR, 'components')
+
+BOWER_PATH = '/usr/local/bin/bower'
+
+BOWER_INSTALLED_APPS = (
+    'd3#3.3.13',
+    'nvd3#1.7.1',
+)
 
 
 # Static files (CSS, JavaScript, Images)

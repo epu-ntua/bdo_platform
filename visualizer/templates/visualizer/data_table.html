@@ -1,0 +1,27 @@
+{% extends 'visualizer/viz_base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'visualizer/css/basic_viz.css' %}" rel="stylesheet" />
+
+    <style type="text/css">
+        #chartdiv {
+            width: 100%;
+            height: 500px;
+        }
+    </style>
+{% endblock %}
+
+{% block viz_content %}
+
+    <div id="chartdiv" style="overflow: visible; text-align: left; margin-top: 50px"></div>
+
+{% endblock %}
+
+
+
+{% block js %}
+
+
+{% endblock %}

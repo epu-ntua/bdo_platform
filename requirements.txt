@@ -1,6 +1,7 @@
+beautifulsoup4
 requests
 # django
-Django==1.9
+Django==1.11
 
 # authentication
 django-allauth
@@ -16,6 +17,13 @@ pytz==2017.2
 python-dateutil
 xlrd
 sympy
+
+#data visualization
+django-leaflet
+folium
+django-nvd3
+python-nvd3
+django-bower
 
 # deployment
 dj-config-url==0.1.1

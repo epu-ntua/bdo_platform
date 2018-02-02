@@ -10,7 +10,6 @@ from django.utils.timezone import now
 from bdo_main_app.models import Service
 from bdo_platform.settings import BASE_DIR, SERVER_URL, SPARK_SUBMIT_PATH
 
-
 class JobInstance(Model):
     """
 
@@ -26,14 +25,15 @@ class JobInstance(Model):
         ('STOPPED', 'Stopped'),
         ('FAILED', 'Failed'),
     ), default='PENDING')
-    base_analysis = ForeignKey(Service)
+    analysis_flow = JSONField()  # json representation of the process of the
     arguments = JSONField()  # json representation of arguments passed to the analysis
     message = TextField(blank=True, null=True, default=None)  # some progress or error message
     results = JSONField(blank=True, null=True, default=None)  # the results of this job
 
     @property
     def job_source(self):
-        return self.base_analysis.job_name
+        # TODO: maybe to be configured dynamically
+        return 'service_building'
 
     def submit(self):
         # mark as started
@@ -80,4 +80,4 @@ class JobInstance(Model):
         return '/analytics/jobs/%d/' % self.pk
 
     def __unicode__(self):
-        return '%s -> %s' % (self.user.username, str(self.base_analysis))
+        return '%s -> %s' % (self.user.username, str(self.analysis_flow))
