@@ -125,9 +125,9 @@ $(function () {
             var $fieldSelect = $('<select />')
                 .attr('name', config.name);
 
-            /* if (config.name === 'category') {
+            if (config.name === 'category') {
                 $fieldSelect.attr('multiple', 'multiple');
-            } */
+            }
 
             if (config.id) {
                 $fieldSelect.attr('id', config.id);
@@ -347,7 +347,6 @@ $(function () {
             // assume ALL_AND
             $.each(filters, function(idx, filter) {
                 var aName;
-                console.log(queryDocument);
                 $.each(queryDocument.from, function(idx, _from) {
                     $.each(_from.select, function(jdx, attr) {
                         if (attr.type == filter.a) {
@@ -1124,10 +1123,14 @@ $(function () {
                    variableTypes.push(variable.type);
                 });
 
-                $.each($('#new-filter-variable').find('option'), function(idx, opt) {
+                $.each($('#new-filter-variable, select[name="category"]').find('option'), function(idx, opt) {
                     var $opt = $(opt);
 
-                    if (variableTypes.indexOf($opt.data('forvariabletype')) >= 0) {
+                    if (
+                        (variableTypes.indexOf($opt.data('forvariabletype')) >= 0) ||
+                        (variableTypes.indexOf($opt.data('forvariable')) >= 0)
+
+                    ) {
                         $opt.removeAttr('disabled');
                     } else {
                         $opt.attr('disabled', 'disabled');
@@ -1537,11 +1540,15 @@ $(function () {
         $closeBtn.html('<i class="fa fa-save"></i> Save changes').hide();
 
         // show the modal & auto-scroll
-        $modal.dialog();
+        $modal.dialog({
+            title: 'Formula editor',
+            width: '90vw',
+            position: {at: 'center top'}
+        });
 
         // get the user's charts
         $.ajax({
-            url: '/formulas/',
+            url: '/queries/formulas/',
             type: 'GET',
             success: function (data) {
                 // insert formula editor & initialize

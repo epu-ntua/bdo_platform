@@ -10,6 +10,11 @@ urlpatterns = [
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/properties/$', views.dataset_variable_properties),
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/count/$', views.count_variable_values),
 
+    # formulas
+    url('^formulas/save/$', views.save_formulas, name='save-formula'),
+    url('^formulas/delete/$', views.delete_formula, name='delete-formula'),
+    url('^formulas/$', views.formulas, name='formula-editor'),
+
     # execute
     url('execute/$', views.execute_query, name='execute-query'),
     url('execute/(?P<pk>\d+)/$', views.execute_query, name='execute-query'),

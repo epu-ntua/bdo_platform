@@ -175,12 +175,12 @@ $(function() {
             $td.html($input);
 
             // append save button
-            var $saveFormulaBtn = $('<button class="btn btn-sm btn-primary save-formula"><i class="fa fa-save"></i> ' + gettext('Save formula') + '</button>');
+            var $saveFormulaBtn = $('<button class="btn btn-sm btn-primary save-formula"><i class="fa fa-save"></i> Save formula</button>');
             $td.append($saveFormulaBtn);
 
             // set sidebar elements active & update info message
             $('ul.item-list').addClass('clickable');
-            this.setStatus('<i class="fa fa-info-circle"></i> ' + gettext('Click on properties or functions on the left to insert them to the formula'));
+            this.setStatus('<i class="fa fa-info-circle"></i> Click on properties or functions on the left to insert them to the formula');
 
             // focus input
             $input.focus()
@@ -302,7 +302,7 @@ $(function() {
         save: function() {
             var formulas = [];
 
-            this.setStatus(gettext('Saving') + ' <i class="fa fa-spin fa-spinner"></i>');
+            this.setStatus('Saving <i class="fa fa-spin fa-spinner"></i>');
 
             // prepare data
             $.each($('#formula-editor-main').find('tbody tr'), function(idx, tr) {
@@ -329,7 +329,7 @@ $(function() {
             // make request to save
             var that = this;
             $.ajax({
-                url: '/formulas/save/',
+                url: '/queries/formulas/save/',
                 method: 'POST',
                 data: data,
                 success: function(formulas) {
@@ -345,7 +345,7 @@ $(function() {
                         that.setFormulaUnit(formulaRow, formula.unit);
                     });
 
-                    that.setStatus(gettext('Saved') + ' <i class="fa fa-check"></i>');
+                    that.setStatus('Saved <i class="fa fa-check"></i>');
                 }
             })
         },

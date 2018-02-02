@@ -13,6 +13,14 @@ from query_designer.api import *
 from query_designer.lists import AGGREGATES
 from query_designer.query import *
 
+import json
+
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.http import HttpResponse
+from django.http import JsonResponse
+from django.shortcuts import render
+
 # from query_designer.mongo_api import *
 # from query_designer.mongo_query import *
 
@@ -334,3 +342,87 @@ def open_chart(request, pk):
         'chartPolicy': get_field_policy(user=request.user,
                                         chart_type=chart.chart_type, chart_format=chart.chart_format),
     }, safe=True, encoder=DefaultEncoder)
+
+
+def save_formulas(request):
+    user = request.user if request.user.is_authenticated() else None
+
+    # ensure POST request
+    if request.method != 'POST':
+        return HttpResponse('Only `POST` method allowed', status=400)
+
+    try:
+        formulas = json.loads(request.POST.get('formulas'))
+    except ValueError:
+        return HttpResponse('Invalid formula input', status=400)
+
+    # list with formulas to remove -- assume all
+    to_delete_ids = [f.pk for f in Formula.objects.filter(created_by=user)]
+
+    result = []
+    with transaction.atomic():
+        for formula in formulas:
+
+            if not formula.get('formulaName') or not formula.get('formulaValue'):
+                return HttpResponse('`formula_name` and `formula_value` are both required for a formula', status=400)
+
+            # save the formula
+            try:
+                if not formula['formulaId']:
+                    raise Formula.DoesNotExist()
+
+                fo = Formula.objects.get(pk=formula['formulaId'])
+            except Formula.DoesNotExist:
+                fo = Formula.objects.create(name=formula['formulaName'], created_by=user)
+
+            fo.value = formula['formulaValue']
+            fo.name = formula['formulaName']
+            fo.save()
+
+            # remove from to_delete list
+            if fo.pk in to_delete_ids:
+                to_delete_ids.pop(to_delete_ids.index(fo.pk))
+
+            # validate formula
+            result.append({
+                'name': fo.name,
+                'id': fo.pk,
+                'errors': fo.errors(),
+                'unit': fo.unit,
+            })
+
+    # delete any formula not submitted
+    Formula.objects.filter(pk__in=to_delete_ids, created_by=user).delete()
+
+    # respond
+    return JsonResponse(result, safe=False)
+
+
+def delete_formula(request):
+    # ensure POST request
+    if request.method != 'POST':
+        return HttpResponse('Only `POST` method allowed', status=400)
+
+    # get the formula info
+    formula_name = request.POST.get('formula_name', '')
+
+    try:
+        formula = Formula.objects.get(name=formula_name, created_by=request.user if request.user.is_authenticated() else None)
+    except Formula.DoesNotExist as e:
+        return HttpResponse('Formula "%s" not found' % formula_name, status=404)
+
+    # delete & send OK response
+    formula.delete()
+    return HttpResponse('', status=204)
+
+
+def formulas(request):
+    template = 'query_designer/utils/formula-editor.html'
+
+    if request.is_ajax():
+        template = 'query_designer/utils/formula-editor-content.html'
+    return render(request, template, {
+        'formulas': Formula.objects.filter(created_by=request.user if request.user.is_authenticated() else None).order_by('date_created'),
+        'value_properties': [(v.name, v.title) for v in Variable.objects.all()] + [(d.name, d.title) for d in Dimension.objects.all()],
+        'formula_functions': Formula.safe_function_info(),
+    })
