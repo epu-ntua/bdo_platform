@@ -26,8 +26,20 @@ class Query(Model):
     title = TextField(default='Untitled query')
     created = DateTimeField(auto_now_add=True)
     updated = DateTimeField(auto_now=True)
+    generated_by = CharField(max_length=32, choices=[
+        ('CUSTOM', 'Custom query'),
+        ('QDv1', 'Query Designer (old)'),
+        ('QDv2', 'Query Designer (new)'),
+    ])
     document = JSONField()
+
+    # v1-specific fields
     design = JSONField(blank=True, null=True, default=None)
+
+    # v2-specific fields
+    v2_fields = TextField(editable=False, blank=True, null=True, default=None)
+    v2_filters = TextField(editable=False, blank=True, null=True, default=None)
+
     count = IntegerField(blank=True, null=True, default=None)
     headers = JSONField(blank=True, null=True, default=None)
 

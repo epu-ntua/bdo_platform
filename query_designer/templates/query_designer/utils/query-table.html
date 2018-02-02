@@ -15,7 +15,7 @@
     <tbody>
         {% for query in queries %}
             <tr class="full-chart-row{% if not actions %} chart-open-teaser{% endif %}"
-                data-chart_id="{{ query.pk }}" data-href="{% url 'toolbox-open' query.pk %}">
+                data-chart_id="{{ query.pk }}">
                 <td>{{ query.pk }}</td>
                 <td>
                         <span class="chart-title">{{ query.title }}</span>

@@ -40,6 +40,8 @@ urlpatterns = [
 
     url('simplified/list/$', views.list_queries, name='list-queries'),
 
+    url('^simplified/open/(?P<pk>\w+)/$', views.open_chart, name='open-chart'),
+
     # new query designer template
     url('new_template/$', views.new_template, name='new_template'),
 

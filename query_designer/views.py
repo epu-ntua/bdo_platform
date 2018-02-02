@@ -59,6 +59,9 @@ def save_query(request, pk=None):
     else:
         q = Query.objects.get(pk=pk)
 
+    # initially assume custom query
+    q.generated_by = 'CUSTOM'
+
     # document
     if 'document' in request.POST:
         try:
@@ -76,8 +79,19 @@ def save_query(request, pk=None):
             return JsonResponse({'error': 'Invalid design'}, status=400)
 
         q.design = design
+        q.generated_by = 'QDv1'
     else:
         q.design = None
+
+    # v2 fields
+    v2_fields = request.POST.get('v2_fields', '')
+    v2_filters = request.POST.get('v2_filters', '')
+    if v2_fields:
+        q.v2_fields = json.dumps(json.loads(v2_fields))
+        q.generated_by = 'QDv2'
+
+        if v2_filters:
+            q.filters = v2_filters
 
     # title
     if 'title' in request.POST:
@@ -195,7 +209,7 @@ def load_to_analysis(request):
     })
 
 
-def get_config(request):
+def get_field_policy(user):
     field_policy = {
         'categories': [],
         'defaultAggregate': 'AVG',
@@ -236,76 +250,25 @@ def get_config(request):
             'value': aggregate[0],
         })
 
-    # return the structure
-    return JsonResponse(field_policy)
+    return field_policy
+
+
+def get_config(request):
+    return JsonResponse(get_field_policy(request.user if request.user.is_authenticated else None))
 
 
 def list_queries(request):
+    user = request.user if request.user.is_authenticated() else None
+
     # ensure GET request
     if request.method != 'GET':
         return HttpResponse('Only `GET` method allowed', status=400)
 
     ctx = {
-        'queries': Query.objects.filter(user=request.user if request.user.is_authenticated() else None),
+        'queries': Query.objects.filter(user=user, generated_by='QDv2'),
     }
 
     return render(request, 'query_designer/utils/query-table.html', ctx)
-
-
-def save_chart(request):
-    # ensure POST request
-    if request.method != 'POST':
-        return HttpResponse('Only `POST` method allowed', status=400)
-
-    # get the chart to update (or new chart)
-    chart_id = request.POST.get('chart_id', '')
-    chart_title = request.POST.get('title', '')
-    chart_fields = request.POST.get('chart_options', '')
-    chart_filters = request.POST.get('chart_filters', '')
-    chart_type = request.POST.get('chart_type', '')
-    chart_format = request.POST.get('chart_format', '')
-
-    if chart_id:  # existing chart
-        try:
-            chart = Chart.objects.filter(Q(created_by=request.user) | Q(is_template=True)).get(pk=chart_id)
-        except Chart.DoesNotExist as e:
-            return HttpResponse('Chart not found', status=404)
-    else:  # new chart
-        # we need all the info in this case
-        if not chart_title or not chart_fields:
-            return HttpResponse('`title` and `fields` are both required for a new chart', status=400)
-
-        chart = Chart(created_by=request.user)
-
-    # update the provided fields
-    if chart_title:
-        chart.title = chart_title
-
-    if chart_fields:
-        # ensure json
-        chart.fields = json.dumps(json.loads(chart_fields))
-
-    if chart_type:
-        chart.chart_type = chart_type
-
-    if chart_format:
-        chart.chart_format = chart_format
-
-    if chart_filters:
-        chart.filters = chart_filters
-
-    # make sure to clone chart for templates
-    if chart.is_template and not request.user.is_superuser:
-        # change owner, mark as plain chart & save as new object
-        chart.created_by = request.user
-        chart.is_template = False
-        chart.pk = None
-
-    # save the chart
-    chart.save()
-
-    # send the ID
-    return HttpResponse(chart.pk)
 
 
 def delete_chart(request, pk):
@@ -324,25 +287,24 @@ def delete_chart(request, pk):
 
 
 def open_chart(request, pk):
+    user = request.user if request.user.is_authenticated() else None
+
     # ensure GET request
     if request.method != 'GET':
         return HttpResponse('Only `GET` method allowed', status=400)
 
     # check if chart exists & is owned by this user
     try:
-        chart = Chart.objects.filter(Q(created_by=request.user) | Q(is_template=True)).get(pk=pk)
-    except Chart.DoesNotExist as e:
-        return HttpResponse('Chart not found', status=404)
+        chart = Query.objects.filter(user=user).get(pk=pk)
+    except Query.DoesNotExist as e:
+        return HttpResponse('Query not found', status=404)
 
     # return the chart info
     return JsonResponse({
         'title': chart.title,
-        'chartType': chart.chart_type,
-        'chartFormat': chart.chart_format,
-        'chartOptions': json.loads(chart.fields),
-        'chartFilters': chart.filters,
-        'chartPolicy': get_field_policy(user=request.user,
-                                        chart_type=chart.chart_type, chart_format=chart.chart_format),
+        'chartOptions': json.loads(chart.v2_fields),
+        'chartFilters': chart.v2_filters,
+        'chartPolicy': get_field_policy(user=user),
     }, safe=True, encoder=DefaultEncoder)
 
 

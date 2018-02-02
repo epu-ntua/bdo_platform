@@ -898,22 +898,16 @@ $(function () {
             // csrf token
             var data = {
                 csrfmiddlewaretoken: this.getCsrfMiddlewareToken(),
+                document: JSON.stringify(this.generateQueryDoc()),
                 title: this.objects[current].chartTitle,
-                chart_options: JSON.stringify(this.objects[current].chartOptions),
-                chart_filters: this.objects[current].$chartFilters.html(),
-                chart_type: this.objects[current].chartType,
-                chart_format: this.objects[current].chartFormat
+                v2_fields: JSON.stringify(this.objects[current].chartOptions),
+                v2_options: this.objects[current].$chartFilters.html()
             };
-
-            // add the chart ID if it's not a new chart
-            if (typeof(this.objects[current].chartId) != 'undefined') {
-                data.chart_id = this.objects[current].chartId;
-            }
 
             // send the save request
             var that = this;
             $.ajax({
-                url: '/chart/save/',
+                url: '/queries/save/' + (this.objects[current].chartId ? this.objects[current].chartId + '/' : ''),
                 type: 'POST',
                 data: data,
                 success: function (data) {
@@ -934,7 +928,7 @@ $(function () {
         load: function (chartId) {
             var that = this;
             $.ajax({
-                url: '/chart/open/' + chartId + '/',
+                url: '/queries/simplified/open/' + chartId + '/',
                 type: 'GET',
                 success: function (data) {
                     that.addChart(data.chartOptions, data.chartFilters, data.chartPolicy, chartId, data.title)
