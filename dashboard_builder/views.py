@@ -13,7 +13,7 @@ def build_dynamic_dashboard(request):
             saved_queries = Query.objects.filter(user=user)
         else:
             saved_queries = []
-        return render(request, 'dashboard_builder/dashboard_builder.html', {
+        return render(request, 'dashboard_builder/dashboard_builder2.html', {
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
             'components': Visualization.objects.all().order_by('id'),

@@ -68,9 +68,23 @@ class Query(Model):
         }[op.lower()]
 
     @staticmethod
-    def process_filters(filters):
+    def process_filters(self, filters):
         # end value
         if type(filters) in [str, unicode, int, float]:
+            try:
+                col_name = ''
+                from_order = int(filters[filters.find('i')+1:filters.find('_')])
+                if from_order >= 0:
+                    table_name = self.document['from'][from_order]['name']
+                    for x in self.document['from'][from_order]['select']:
+                        if x['name'] == filters:
+                            if x['type'] != 'VALUE':
+                                col_name = Dimension.objects.get(pk=x['type']).data_column_name
+                            else:
+                                col_name = 'value'
+                    filters = table_name + '.' + col_name
+            except:
+                return filters
             return filters
 
         # Special case: parsing location filters
@@ -80,8 +94,22 @@ class Query(Model):
             rect_start = filters['b'].split('<')[2].split('>,')[0].split(',')
             rect_end = filters['b'].split('>,<')[1].split('>')[0].split(',')
 
-            lat = filters['a'] + '_latitude'
-            lng = filters['a'] + '_longitude'
+            #lat = filters['a'] + '_latitude'
+            #lng = filters['a'] + '_longitude'
+
+            lat_col_name = ''
+            lon_col_name = ''
+            from_order = int(filters['a'][1])
+            table_name = self.document['from'][from_order]['name']
+            for x in self.document['from'][from_order]['select']:
+                if x['name'] == (filters['a'] + '_latitude'):
+                    lat_col_name = Dimension.objects.get(pk=x['type']).data_column_name
+                if x['name'] == (filters['a'] + '_longitude'):
+                    lon_col_name = Dimension.objects.get(pk=x['type']).data_column_name
+
+            lat = table_name+'.'+lat_col_name
+            lng = table_name+'.'+lon_col_name
+
             result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
             result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
 
@@ -91,9 +119,9 @@ class Query(Model):
             return result
 
         result = '(%s) %s (%s)' % \
-               (Query.process_filters(filters['a']),
+               (Query.process_filters(self, filters['a']),
                 Query.operator_to_str(filters['op']),
-                Query.process_filters(filters['b']))
+                Query.process_filters(self, filters['b']))
 
         return result
 
@@ -168,29 +196,30 @@ class Query(Model):
 
                 selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
 
-                if 'joined' not in s:
-                    c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
-                    if s.get('aggregate', '') != '':
-                        c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+            # TODO: check if comment is right
+            #if 'joined' not in s:
+                c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
+                if s.get('aggregate', '') != '':
+                    c_name = '%s(%s)' % (s.get('aggregate'), c_name)
 
-                    if not s.get('exclude', False):
-                        header_sql_types.append(sql_type)
-                        headers.append({
-                            'title': s['title'],
-                            'name': s['name'],
-                            'unit': column_unit,
-                            'step': column_step,
-                            'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
-                            'isVariable': s['type'] == 'VALUE',
-                            'axis': column_axis,
-                        })
+                if not s.get('exclude', False):
+                    header_sql_types.append(sql_type)
+                    headers.append({
+                        'title': s['title'],
+                        'name': s['name'],
+                        'unit': column_unit,
+                        'step': column_step,
+                        'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
+                        'isVariable': s['type'] == 'VALUE',
+                        'axis': column_axis,
+                    })
 
-                        # add fields to select clause
-                        columns.append((c_name, '%s' % s['name']))
+                    # add fields to select clause
+                    columns.append((c_name, '%s' % s['name']))
 
-                    # add fields to grouping
-                    if s.get('groupBy', False):
-                        groups.append(c_name)
+                # add fields to grouping
+                if s.get('groupBy', False):
+                    groups.append(c_name)
 
         # select
         select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
@@ -232,7 +261,7 @@ class Query(Model):
         if not filters:
             where_clause = ''
         else:
-            where_clause = Query.process_filters(filters)
+            where_clause = Query.process_filters(self, filters)
 
         if where_clause:
             where_clause = 'WHERE ' + where_clause + ' \n'
@@ -262,17 +291,29 @@ class Query(Model):
             limit_clause = 'LIMIT %d\n' % limit
 
         # organize into subquery
-        subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
-        subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
+        #subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
+        #subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
 
         # generate query
-        q = subquery + \
+        # q = subquery + \
+        #    where_clause + \
+        #    order_by_clause + \
+        #    offset_clause + \
+        #    limit_clause
+
+        q = select_clause + \
+            from_clause + \
+            join_clause + \
             where_clause + \
+            group_clause + \
             order_by_clause + \
             offset_clause + \
             limit_clause
 
-        print q
+        #subquery = q
+        subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1'
+        # print subquery_cnt
+        # print q
         cursor = connection.cursor()
         if not only_headers:
             # execute query & return results
@@ -290,11 +331,15 @@ class Query(Model):
                     'total': 1
                 }
 
-            q_pages = subquery_cnt + where_clause
+            #q_pages = subquery_cnt + where_clause
+            q_pages = subquery_cnt
 
             def _count():
+                # print q_pages
                 cursor.execute(q_pages)
-                self.count = cursor.fetchone()[0]
+                cnt = cursor.fetchone()[0]
+                # print cnt
+                self.count = cnt
 
             self.count = None
             count_failed = False

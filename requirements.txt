@@ -1,5 +1,5 @@
 # django
-Django==1.9
+Django==1.11
 
 # authentication
 django-allauth
@@ -18,9 +18,15 @@ xlrd
 #data visualization
 django-leaflet
 folium
+django-nvd3
+python-nvd3
+django-bower
 
 # deployment
 dj-config-url==0.1.1
 newrelic
 whitenoise
 gunicorn
+
+
+requests

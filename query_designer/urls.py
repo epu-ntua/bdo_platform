@@ -27,6 +27,10 @@ urlpatterns = [
     # load new query to analysis
     url('load_to_analysis/$', views.load_to_analysis, name='load-to-analysis'),
 
+    # new query designer template
+    url('new_template/$', views.new_template, name='new_template'),
+
     # basic page
     url('$', views.index, name='home'),
+
 ]

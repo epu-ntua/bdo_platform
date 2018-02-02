@@ -23,7 +23,8 @@ def execute_query(request, pk=None):
             q.document = json.loads(doc_str)
         except ValueError:
             pass
-
+    # print q.document
+    # print q.raw_query
     # get POST params
     dimension_values = request.POST.get('dimension_values', '')
     variable = request.POST.get('variable', '')

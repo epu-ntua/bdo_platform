@@ -1,0 +1,152 @@
+#query-designer-container{
+    /* border: solid; */
+    /* box-shadow: 3px 3px #a4a4a4; */
+    background-color: #ebebeb;
+    margin: 0;
+    padding: 0;
+    width:100%;
+    /* padding-left: 5px; */
+    /* padding-right: 5px; */
+}
+
+#side-panel{
+    /*background-color: #55b17d;*/
+    padding: 5px 10px;
+    height: 700px;
+    margin: 0;
+}
+
+#main-panel{
+    background-color: white;
+    height: 700px;
+    margin: 0px;
+    padding: 0px;
+}
+
+#selected-vars-panel{
+    height: 60%;
+    border-bottom-style: ridge;
+    margin: 0;
+    overflow-y: scroll;
+}
+
+#selected-filters-panel{
+    height: 40%;
+    /*background-color: #b1827b;*/
+    margin: 0;
+    overflow-y: scroll;
+}
+
+#side-panel h3{
+    text-decoration-line:  underline;
+    text-decoration-color: #bfbfc5;
+    margin: 13px 0px 0px 0px;
+    font-size: 15pt;
+}
+
+#add-var-btn, #add-filter-btn{
+    margin: 10px 25px;
+    padding: 7px 15px;
+    float: right;
+}
+
+.variable{
+    list-style-type:none;
+    margin-bottom: 10px;
+    font-size: 12pt;
+}
+
+.variable:before {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content: "\e114";    /* adjust as needed, taken from bootstrap.css */
+    float: left;        /* adjust as needed */
+    color: grey;         /* adjust as needed */
+    margin-right: 5px;
+}
+
+.variable.collapsed:before {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
+    float: left;        /* adjust as needed */
+    color: grey;         /* adjust as needed */
+}
+
+#variable-list, #filter-list{
+    padding-left: 0px;
+    margin-top: 20px;
+}
+
+.list-group-item{
+    background-color: transparent;
+    padding: 4px 5px;
+    margin: 0px 10px 0px 8px;
+}
+
+.list-group-item input{
+    margin-right: 5px;
+}
+
+.dimension-list{
+    margin: 0;
+}
+
+.modal-backdrop { z-index: auto;}
+
+.modal-header{
+    text-align: center;
+}
+
+.modal-open .modal{
+    overflow: visible;
+}
+
+/*!*.modal .table{*!*/
+    /*!*max-height: 700px;*!*/
+    /*!*overflow-y: scroll;*!*/
+/*}*/
+
+.modal-content{
+    max-height: 700px;
+    overflow-y: scroll;
+}
+
+.table thead tr th{
+    background-color: #3b5998;
+    color: white;
+    font-size: 13pt;
+    font-weight: bold;
+}
+
+.modal .table tbody tr td:first-child{
+    text-align: center;
+    max-width: 14px;
+}
+
+.modal .table thead tr th:first-child{
+    text-align: center;
+    max-width: 12px;
+}
+
+.removable:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+    content:"\e014";
+    float: right;        /* adjust as needed */
+    color: red;         /* adjust as needed */
+}
+
+#addFilterModal .modal-content select, #addFilterModal .modal-content input{
+    height: 30px;
+}
+
+#iframe{
+    width: 100%;
+    min-height: 550px;
+}
+
+#main-panel .row{
+    margin: 0px;
+    padding: 0px 5px;
+}

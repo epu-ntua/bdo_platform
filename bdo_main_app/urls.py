@@ -7,6 +7,10 @@ urlpatterns = [
     url('^$', views.home, name='home'),
     url('^search/$', views.search, name='search'),
 
+
+    url('^analytics-environment/$', views.search, name='search'),
+
+
     # datasets
     url('^datasets/(?P<slug>[\w-]+)/$', views.dataset, name='dataset-details'),
 

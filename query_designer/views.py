@@ -95,17 +95,19 @@ def get_query_variables(request):
                 except ValueError:
                     return JsonResponse({'error': 'Invalid query document'}, status=400)
 
-        # find the query's SELECT variables formatted as: 'variable's column name': 'variable's name'
+        # find the query's SELECT variables formatted as: 'variable's column name (title)': 'variable's name'
         variables = dict()
-        for var in doc['from']:
-            value_name = ''
-            for col_name in var['select']:
-                if col_name['type'] == 'VALUE':
-                    value_name = col_name['name']
-            variables[value_name] = var['name']
+        dimensions = dict()
+        for from_clause in doc['from']:
+            for col in from_clause['select']:
+                if col['type'] == 'VALUE':
+                    variables[col['title']] = col['name']
+                else:
+                    dimensions[col['title']] = col['name']
 
+        result = {'variables': variables, 'dimensions': dimensions}
         # return the found variables
-        return HttpResponse(json.dumps(variables), content_type="application/json")
+        return HttpResponse(json.dumps(result), content_type="application/json")
 
     else:
         return JsonResponse({'error': 'Invalid query document'}, status=400)
@@ -136,3 +138,7 @@ def load_to_analysis(request):
         'raw_query': q.raw_query,
         'title': q.title,
     })
+
+
+def new_template(request):
+    return render(request, 'query_designer/new_template.html', {})
