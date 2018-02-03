@@ -8,7 +8,6 @@ import numpy as np
 from math import floor, ceil
 import folium.plugins as plugins
 import folium
-from PIL import Image, ImageChops
 import numpy as np
 import requests
 

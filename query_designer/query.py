@@ -8,6 +8,7 @@ from query_designer.models import *
 from django.http import JsonResponse
 
 from aggregator.models import *
+from query_designer.query_processors.utils import ResultEncoder
 
 
 def execute_query(request, pk=None):
@@ -31,8 +32,8 @@ def execute_query(request, pk=None):
     only_headers = request.POST.get('only_headers', '').lower() == 'true'
 
     # execute
-    response = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers)
+    response, encoder = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers)
 
     # send results
-    return JsonResponse(response, encoder=ResultEncoder)
+    return JsonResponse(response, encoder=encoder)
 

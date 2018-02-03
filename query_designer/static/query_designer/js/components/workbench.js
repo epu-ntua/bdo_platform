@@ -57,6 +57,7 @@
 
             /*Adds an instance of a class*/
             add_instance: function (dt_name, uri, label, x, y, default_properties) {
+                console.log('in add')
                 var new_id = this.instances.length;
                 $('.help-prompt').remove();
                 var new_instance = $.parseHTML('<div id="class_instance_' + new_id + '" class="class-instance" data-n="' + new_id + '"style="left: ' + x + 'px; top: ' + y + 'px;"><div class="title"><h3>' + label + '</h3><span class="subquery-select empty"></span><button type="button" class="delete btn btn-danger btn-simple btn-xs" data-about="' + new_id + '"><i class="material-icons">close</i></button><span class="dataset">' + this.endpoint_to_name(dt_name) + '</span></div><div class="properties"><span class="loading">Loading properties...</span></div></div>');
@@ -90,13 +91,13 @@
                     .replace('{{ variableId }}', uri);
 
                 // make request for properties
-                $.ajax({
+                /* $.ajax({
                     url: valuesCountUrl,
                     type: "GET",
                     success: function (resp) {
                         $("#class_instance_" + new_id + " .title h3").append('<span class="n-of-instances">(' + resp.count.toLocaleString() + ')</span>');
                     }
-                });
+                }); */
 
                 //check if uri exists in defaults or should be added manually
                 var has_URI = false;
@@ -159,6 +160,10 @@
                 that.builder.reset_height($("#class_instance_" + new_id));
                 that.builder.reset();
                 that.qd.arrows.draw();
+
+                setTimeout(function() {
+                    that.qd.queryExecutor.run();
+                }, 100);
             },
 
             update_orders: function (e, ui) { //update properties, arrows & query after property reordering

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans 'Query Designer' %} | {% trans 'Formula Editor' %}{% endblock %}
+{% block bodyclass %}overview{% endblock %}
+{% block analysismenu %}active{% endblock %}
+
+{% load static from staticfiles %}
+
+{% block css %}
+    <link href="{% static 'query_designer/css/formulas.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-title underline-title" style="margin-bottom:0px">
+                <h1>Query Designer
+                    <small> Define your formulas</small>
+                </h1>
+            </div>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+
+    {% include 'query_designer/utils/formula-editor-content.html' %}
+{% endblock %}
+
+{% block js %}
+    <script src="{% static "query_designer/js/simplified/formula-editor.js" %}"></script>
+    <script>
+        $(function() {
+            onFormulaLoad();
+        });
+    </script>
+{% endblock %}

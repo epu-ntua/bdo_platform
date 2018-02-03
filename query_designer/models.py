@@ -7,6 +7,8 @@ import datetime
 import copy
 import time
 from collections import OrderedDict
+import re
+import sympy
 from threading import Thread
 
 from django.contrib.auth.models import User
@@ -15,22 +17,8 @@ from django.db.models import *
 
 from aggregator.models import *
 
-
-# if there are less results than `GRANULARITY_MIN_PAGES`
-# any granularity requests are ignored
-GRANULARITY_MIN_PAGES = 10000
-
-
-class ResultEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, decimal.Decimal):
-            return float(obj)
-        elif isinstance(obj, float):
-            return float(obj)
-        elif isinstance(obj, datetime.datetime):
-            return obj.isoformat()
-
-        return json.JSONEncoder.default(self, obj)
+from query_designer.formula_functions import *
+from query_designer.query_processors.utils import SolrResultEncoder, PostgresResultEncoder
 
 
 class Query(Model):
@@ -47,30 +35,29 @@ class Query(Model):
         return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
 
     @staticmethod
-    def operator_to_str(op):
+    def operator_to_str(op, mode='postgres'):
         return {
             # comparison
-            'eq': '=',
-            'neq': '!=',
-            'gt': '>',
-            'gte': '>=',
-            'lt': '<',
-            'lte': '<=',
-            'mod': '%',
+            'eq': ('=', ':'),
+            'neq': ('!=', None),
+            'gt': ('>', None),
+            'gte': ('>=', None),
+            'lt': ('<', None),
+            'lte': ('<=', None),
+            'mod': ('%', None),
 
             # boolean
-            '&&': 'AND',
-            'and': 'AND',
-            '||': 'OR',
-            'or': 'OR',
-            '!': 'NOT',
-            'not': 'NOT',
-        }[op.lower()]
+            '&&': ('AND', 'AND'),
+            'and': ('AND', 'AND'),
+            '||': ('OR', 'OR'),
+            'or': ('OR', 'OR'),
+            '!': ('NOT', None),
+            'not': ('NOT', None),
+        }[op.lower()][0 if mode == 'postgres' else 1]
 
-    @staticmethod
-    def process_filters(self, filters):
+    def process_filters(self, filters, mode='postgres', quote=False):
         # end value
-        if type(filters) in [str, unicode, int, float]:
+        if type(filters) in [int, float]:
             try:
                 col_name = ''
                 from_order = int(filters[filters.find('i')+1:filters.find('_')])
@@ -86,6 +73,12 @@ class Query(Model):
             except:
                 return filters
             return filters
+
+        if type(filters) in [str, unicode]:
+            if quote and (mode == 'solr') and filters.strip() != '*' and (not filters.startswith('"')) and filters:
+                return '"%s"' % filters
+            else:
+                return filters
 
         # Special case: parsing location filters
         # inside_rect|outside_rect <<lat_south,lng_west>,<lat_north,lng_east>>
@@ -112,16 +105,46 @@ class Query(Model):
 
             result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
             result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
+            lat = filters['a'] + '_latitude'
+            lng = filters['a'] + '_longitude'
+
+            if mode == 'solr':
+                result = '%s:[%s TO %s]' % (lat, rect_start[0], rect_end[0])
+                result += ' AND %s:[%s TO %s]' % (lng, rect_start[1], rect_end[1])
+            else:
+                result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
+                result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
 
             if filters['op'] == 'outside_rect':
-                result = 'NOT(%s)' % result
+                if mode == 'postgres':
+                    result = 'NOT(%s)' % result
+                else:
+                    result = '-(%s)' % result
 
             return result
 
-        result = '(%s) %s (%s)' % \
-               (Query.process_filters(self, filters['a']),
-                Query.operator_to_str(filters['op']),
-                Query.process_filters(self, filters['b']))
+        result = ''
+        _op = filters['op'].lower()
+        if mode == 'solr' and _op in ['neq', 'gt', 'gte', 'lt', 'lte', 'mod', '!', 'not']:
+            if _op == 'neq':
+                result = '-%s:%s' % (self.process_filters(filters['a']), self.process_filters(filters['b']))
+            elif _op in ['gt', 'gte']:
+                result = '%s:[%s TO *]' % (self.process_filters(filters['a']), self.process_filters(filters['b']))
+            elif _op in ['lt', 'lte']:
+                result = '%s:[* TO %s]' % (self.process_filters(filters['a']), self.process_filters(filters['b']))
+            elif _op == 'mod':
+                result = 'mod(%s, %s)' % (self.process_filters(filters['a']), self.process_filters(filters['b']))
+            elif _op in ['!', 'not']:
+                raise NotImplementedError('TODO fix missing NOT operator in solr')
+
+        else:
+            _a = self.process_filters(filters['a'], mode=mode)
+            _b = self.process_filters(filters['b'], mode=mode, quote=True)
+
+            result = '%s %s %s' % \
+                   (('(%s)' % _a) if type(_a) not in [str, unicode, int, float] else _a,
+                    Query.operator_to_str(filters['op'], mode=mode),
+                    ('(%s)' % _b) if type(_b) not in [str, unicode, int, float] else _b)
 
         return result
 
@@ -163,267 +186,18 @@ class Query(Model):
         return all_rows
 
     def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
-        if dimension_values:
-            dimension_values = dimension_values.split(',')
+        if 'POSTGRES' in Variable.objects.get(pk=self.document['from'][0]['type']).dataset.stored_at:
+            from query_designer.query_processors.postgres import process as q_process
+            encoder = PostgresResultEncoder
         else:
-            dimension_values = []
+            from query_designer.query_processors.solr import process as q_process
+            encoder = SolrResultEncoder
 
-        # select
-        selects = OrderedDict()
-        headers = []
-        header_sql_types = []
+        data = q_process(self, dimension_values=dimension_values, variable=variable,
+                         only_headers=only_headers, commit=commit,
+                         execute=execute, raw_query=raw_query)
 
-        columns = []
-        groups = []
-        for _from in self.document['from']:
-            v_obj = Variable.objects.get(pk=_from['type'])
-            for s in _from['select']:
-                if s['type'] != 'VALUE':
-                    # TODO : possible memory leak? exit code 1073741819
-                    dimension = Dimension.objects.get(pk=s['type'])
-                    # TODO : possible memory leak? exit code 1073741819
-                    column_name = dimension.data_column_name
-                    column_unit = dimension.unit
-                    column_axis = dimension.axis
-                    column_step = dimension.step
-                    sql_type = dimension.sql_type
-                else:
-                    column_name = 'value'
-                    column_unit = v_obj.unit
-                    column_axis = None
-                    column_step = None
-                    sql_type = 'double precision'
-                selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
-
-                # TODO: check if comment is right
-            #if 'joined' not in s:
-                c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
-                if s.get('aggregate', '') != '':
-                    c_name = '%s(%s)' % (s.get('aggregate'), c_name)
-
-                if not s.get('exclude', False):
-                    header_sql_types.append(sql_type)
-                    headers.append({
-                        'title': s['title'],
-                        'name': s['name'],
-                        'unit': column_unit,
-                        'step': column_step,
-                        'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
-                        'isVariable': s['type'] == 'VALUE',
-                        'axis': column_axis,
-                    })
-
-                    # add fields to select clause
-                    columns.append((c_name, '%s' % s['name']))
-
-                # add fields to grouping
-                if s.get('groupBy', False):
-                    groups.append(c_name)
-
-
-        # select
-        select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
-
-        # from
-        from_clause = 'FROM %s AS %s\n' % \
-                      (selects[selects.keys()[0]]['table'], self.document['from'][0]['name'])
-
-        # join
-        join_clause = ''
-        for _from in self.document['from'][1:]:
-            joins = []
-            for s in _from['select']:
-                if 'joined' in s:
-                    if s['name'].endswith('location_latitude'):
-                        js = [
-                            (s['name'], s['joined'] + '_latitude'),
-                            (s['name'].replace('_latitude', '_longitude'), s['joined'] + '_longitude'),
-                        ]
-                    elif s['name'].endswith('location_longitude'):
-                        js = []
-                    else:
-                        js = [(s['name'], s['joined'])]
-
-                    for j in js:
-                        joins.append('%s.%s=%s.%s' %
-                                     (_from['name'],
-                                      selects[j[0]]['column'],
-                                      self.document['from'][0]['name'],
-                                      selects[j[1]]['column']))
-
-            join_clause += 'JOIN %s AS %s ON %s\n' % \
-                           (selects[_from['select'][0]['name']]['table'],
-                            _from['name'],
-                            ' AND '.join(joins))
-
-        # where
-        filters = self.document.get('filters', '')
-        if not filters:
-            where_clause = ''
-        else:
-            where_clause = Query.process_filters(self, filters)
-
-        if where_clause:
-            where_clause = 'WHERE ' + where_clause + ' \n'
-
-        # grouping
-        group_clause = ''
-        if groups:
-            group_clause = 'GROUP BY %s\n' % ','.join(groups)
-
-        # ordering
-        order_by_clause = ''
-        orderings = self.document.get('orderings', [])
-        if orderings:
-            order_by_clause = 'ORDER BY %s\n' % ','.join([(o['name'] + ' ' + o['type']) for o in orderings])
-
-        # offset & limit
-        offset_clause = ''
-        offset = 0
-        limit_clause = ''
-        limit = None
-        if 'offset' in self.document and self.document['offset']:
-            offset = int(self.document['offset'])
-            offset_clause = 'OFFSET %d\n' % offset
-
-        if 'limit' in self.document and self.document['limit']:
-            limit = int(self.document['limit'])
-            limit_clause = 'LIMIT %d\n' % limit
-
-        # organize into subquery
-        #subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
-        #subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + group_clause + ') AS SQ1\n'
-
-        # generate query
-        # q = subquery + \
-        #    where_clause + \
-        #    order_by_clause + \
-        #    offset_clause + \
-        #    limit_clause
-
-        q = select_clause + \
-            from_clause + \
-            join_clause + \
-            where_clause + \
-            group_clause + \
-            order_by_clause + \
-            offset_clause + \
-            limit_clause
-
-        #subquery = q
-        subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1'
-        # print subquery_cnt
-        # print q
-        cursor = connection.cursor()
-        if not only_headers:
-            # execute query & return results
-            t1 = time.time()
-
-            # count pages
-            if limit is not None:
-                pages = {
-                    'current': (offset / limit) + 1,
-                    'total': 1
-                }
-            else:
-                pages = {
-                    'current': 1,
-                    'total': 1
-                }
-
-            #q_pages = subquery_cnt + where_clause
-            q_pages = subquery_cnt
-
-            def _count():
-                # print q_pages
-                cursor.execute(q_pages)
-                cnt = cursor.fetchone()[0]
-                # print cnt
-                self.count = cnt
-
-            self.count = None
-            count_failed = False
-            t = Thread(target=_count, args=[])
-            t.start()
-            t.join(timeout=5)
-
-            if self.count is None:
-                count_failed = True
-                self.count = 10000000
-
-            if limit is not None:
-                pages['total'] = (self.count - 1) / limit + 1
-
-            # apply granularity
-            if self.count >= GRANULARITY_MIN_PAGES and (not count_failed):
-                try:
-                    granularity = int(self.document.get('granularity', 0))
-                except ValueError:
-                    granularity = 0
-
-                if granularity > 1:
-                    q = """
-                        SELECT %s FROM (
-                            SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
-                        ) AS GQ_C
-                        WHERE (row_id %% %d = 0)
-                    """ % (','.join([c[1] for c in columns]), q, granularity)
-
-            results = []
-            if execute:
-                cursor.execute(q)
-                all_rows = cursor.fetchall()
-                # all_rows = Query.threaded_fetchall(connection, q, self.count)
-
-                # we have to convert numeric results to float
-                # by default they're returned as strings to prevent loss of precision
-                for row in all_rows:
-                    res_row = []
-                    for idx, h_type in enumerate(header_sql_types):
-                        if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:
-                            res_row.append(float(row[idx]))
-                        else:
-                            res_row.append(row[idx])
-
-                    results.append(res_row)
-
-        # include dimension values if requested
-        for d_name in dimension_values:
-            hdx, header = [hi for hi in enumerate(headers) if hi[1]['name'] == d_name][0]
-            d = Dimension.objects.get(pk=selects[d_name]['column'].split('_')[-1])
-            if not d.non_filterable:
-                header['values'] = d.values
-
-        # include variable ranges if requested
-        if variable:
-            vdx, v = [vi for vi in enumerate(headers) if vi[1]['name'] == variable][0]
-            v['distribution'] = Variable.objects.get(pk=selects[variable]['table'].split('_')[-1]).distribution
-
-        if not only_headers:
-            # monitor query duration
-            q_time = (time.time() - t1) * 1000
-
-        if not only_headers:
-            response = {
-                'results': results,
-                'headers': {
-                    'runtime_msec': q_time,
-                    'pages': pages,
-                }
-            }
-        else:
-            response = {'headers': {}}
-        response['headers']['columns'] = headers
-
-        if raw_query:
-            response['raw_query'] = q
-
-        # store headers
-        self.headers = ResultEncoder().encode(headers)
-        if self.pk and commit:
-            self.save()
-
-        return response
+        return data, encoder
 
     def execute(self, dimension_values='', variable='', only_headers=False, commit=True):
         return self.process(dimension_values, variable, only_headers, commit, execute=True)
@@ -443,4 +217,296 @@ class Query(Model):
         # restore initial doc
         self.document = doc
 
-        return res['raw_query']
+        return res[0]['raw_query']
+
+
+class InvalidUnitError(ValueError):
+    pass
+
+
+class Formula(Model):
+    # generic information
+    date_created = DateTimeField(auto_now_add=True)
+    date_updated = DateTimeField(auto_now=True)
+    created_by = ForeignKey(User, blank=True, null=True, default=None)
+    name = TextField(blank=False, null=False)
+
+    # the actual formula
+    # e.g (`energydemandbefore_19` - `energydemandafter_20`)/`energydemandbefore_19`
+    value = TextField(blank=False, null=False)
+
+    # is this a public formula?
+    is_valid = BooleanField(default=False)
+    is_public = BooleanField(default=False)
+
+    @property
+    def dependencies(self):
+        """
+        :return: A list with all the variables used in the formula
+        """
+        return list(set([prop[1:-1] for prop in re.findall(r'`\w+`', self.value)]))
+
+    @property
+    def internal_value(self):
+        return '$%d' % self.pk
+
+    @staticmethod
+    def math():
+        return [fn['name'].split('(')[0] for fn in MATH_FUNCTIONS]
+
+    @staticmethod
+    def random():
+        return [fn['name'].split('(')[0] for fn in RAND_FUNCTIONS]
+
+    @staticmethod
+    def trig():
+        return [fn['name'].split('(')[0] for fn in TRIG_FUNCTIONS]
+
+    @staticmethod
+    def safe_function_info():
+        result = []
+
+        for item in MATH_FUNCTIONS:
+            result.append((item['name'], item['description']))
+
+        for item in RAND_FUNCTIONS:
+            result.append((item['name'], item['description']))
+
+        for item in TRIG_FUNCTIONS:
+            result.append((item['name'], item['description']))
+
+        return result
+
+    @staticmethod
+    def functions():
+        return [fn[0].split('(')[0] for fn in Formula.safe_function_info()]
+
+    @staticmethod
+    def safe(value):
+        """
+        :param value: A potential formula
+        :return: True if formula contains only numbers, operators and safe functions, False otherwise
+        """
+        for token in re.findall(r"[\w']+", value):
+            try:
+                float(token)
+            except ValueError:
+                # allowed functions here
+                if token not in Formula.functions():
+                    return False
+
+            return True
+
+    @staticmethod
+    def find_unit(variable):
+        try:
+            return Variable.objects.filter(name=variable)[0].unit
+        except IndexError:
+            return Dimension.objects.filter(name=variable)[0].unit
+
+    @staticmethod
+    def _normalize_unit(unit):
+        """
+        :param unit: The continuous version of the unit, e.g "€/kWh"
+        :return:
+        """
+        unit_str = unit
+        unit_str = unit_str.replace('kWh', 'kW*h').replace('²', '**2')
+
+        return unit_str, re.split(r'[\s,.|/*]+', unit_str)
+
+    @property
+    def unit(self):
+        try:
+            return self.suggest_unit(fail_on_invalid=False)
+        except ValueError:
+            return '-'
+
+    def suggest_unit(self, fail_on_invalid=True):
+
+        # ignore minus as it could incorrectly cause expressions to collapse
+        # e.g € - € => €, not empty unit
+        value = self.value.replace('-', '+').replace(' ', '')
+        units = {}
+
+        # this is the symbols variable, should not use any unit character inside
+        q = []
+
+        # make sure value is safe to proceed
+        if self.errors(include_unit_errors=False):
+            raise ValueError('Can\'t detect unit of invalid expression')
+
+        # replace each dependency with its unit & define symbols
+        unit_cnt = 0
+        for dependency in self.dependencies:
+            unit_str, du = Formula._normalize_unit(Formula.find_unit(dependency))
+            if not du:
+                value = value.replace('`' + dependency + '`', '1')
+
+            for unit in du:
+                try:
+                    # do not replace numbers with tokens
+                    float(unit)
+                except ValueError:
+                    if unit not in units:
+                        units[unit] = 'q[%d]' % unit_cnt
+                        q.append(sympy.Symbol(unit))
+                        unit_cnt += 1
+
+                    unit_str = unit_str.replace(unit, units[unit])
+
+            # replace in value
+            value = value.replace('`' + dependency + '`', '(' + unit_str + ')')
+
+        # remove functions
+        for fn in Formula.functions():
+            value = value.replace(str(fn) + '(', '(')
+
+        # simplify expression
+        expr_result = str(eval(value))
+
+        # replace original symbols
+        for unit in units:
+            expr_result = expr_result.replace(units[unit], unit)
+
+        # replace ** with ^
+        expr_result = expr_result.replace('**', '^')
+
+        # remove digits
+        result = ''
+        to_remove_constant = True
+        for x in expr_result:
+            if x == ' ':
+                continue
+
+            try:
+                int(x)
+
+                if not to_remove_constant:
+                    result += x
+            except ValueError:
+                result += x
+
+            # should not remove the next constant if it exposes to power
+            to_remove_constant = x not in ['^', ]
+
+        # no unit remaining -- assume percentage:
+        if not result:
+            return '%'
+
+        # remove trailing symbols
+        while result and result[0] in ['+', '*', ]:
+            result = result[1:]
+
+        while result and result[len(result) - 1] in ['+', '*', '/']:
+            result = result[:-1]
+
+        # if addition is included, the formula most probably does not make sense
+        if '+' in result and fail_on_invalid:
+            # format error string
+            adders = result.split('+')
+            err_str = adders[0]
+            for idx, term in enumerate(adders[1:]):
+                if not term.strip():
+                    continue
+
+                if idx == 0:
+                    err_str += ' with %s' % term
+                elif idx + 2 < len(adders):
+                    err_str += ', %s' % term
+                else:
+                    err_str += ' and %s' % term
+
+            # raise error
+            raise InvalidUnitError('Formula seems to be incorrect: adding %s' % err_str)
+
+        if len(result):
+            if result[0] == '*':
+                result = result[1:]
+            elif result[0] == '/':
+                result = '1' + result[1:]
+
+        return result
+
+    def apply(self, context):
+        """
+        :param context: A dictionary of variables and their values
+        :return: The result of the formula after applying the context
+        """
+        # modules for formula calculation
+        ###
+
+        # make sure all values are there
+        for dependency in self.dependencies:
+            if dependency not in context:
+                raise ValueError('Missing value "%s"' % dependency)
+
+        # apply context
+        value = self.value
+        for key in context:
+            value = value.replace('`' + key + '`', str(context[key]))
+
+        # make sure user input is safe
+        if not Formula.safe(value):
+            raise ValueError('Unsafe formula "%s"' % value)
+
+        # remove functions
+        for fn in Formula.functions():
+            value = value.replace(str(fn) + '(', '(')
+
+        # evaluate the expression
+        try:
+            result = eval(value)
+        except ZeroDivisionError:
+            result = None
+
+        # respond
+        return result
+
+    def errors(self, include_unit_errors=True):
+        """
+        :return: A list of all the errors in the formula
+        """
+        dummy_context = {}
+        errors = []
+        for prop in self.dependencies:
+            # make sure the variable is valid
+            if prop not in [v.name for v in Variable.objects.all()] + [d.name for d in Dimension.objects.all()]:
+                errors.append('Unknown variable %s' % prop)
+
+            dummy_context[prop] = 0
+
+        try:
+            dummy_result = self.apply(dummy_context)
+            if type(dummy_result) not in [int, float, type(None)]:
+                errors.append('Incorrect return type %s: Must be either an int or a float' % type(dummy_result))
+                return errors
+        except SyntaxError as se:
+            try:
+                errors.append(str(se).split(' (')[0])
+            except IndexError:
+                errors.append(str(se))
+        except ValueError:
+            errors.append('Unknown expression')
+
+        if include_unit_errors and not errors:
+            try:
+                self.suggest_unit()
+            except InvalidUnitError as err:
+                errors.append(str(err))
+
+        return errors
+
+    def save(self, *args, **kwargs):
+        """
+        Override the save method to store the `valid`
+        """
+        try:
+            self.is_valid = len(self.errors(include_unit_errors=False)) == 0
+        except ValueError:  # unsafe formula or incorrect context
+            self.is_valid = False
+
+        super(Formula, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return '=%s' % self.value
