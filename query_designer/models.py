@@ -78,6 +78,20 @@ class Query(Model):
             if quote and (mode == 'solr') and filters.strip() != '*' and (not filters.startswith('"')) and filters:
                 return '"%s"' % filters
             else:
+                try:
+                    col_name = ''
+                    from_order = int(filters[filters.find('i') + 1:filters.find('_')])
+                    if from_order >= 0:
+                        table_name = self.document['from'][from_order]['name']
+                        for x in self.document['from'][from_order]['select']:
+                            if x['name'] == filters:
+                                if x['type'] != 'VALUE':
+                                    col_name = Dimension.objects.get(pk=x['type']).data_column_name
+                                else:
+                                    col_name = 'value'
+                        filters = table_name + '.' + col_name
+                except:
+                    return filters
                 return filters
 
         # Special case: parsing location filters
@@ -105,8 +119,8 @@ class Query(Model):
 
             result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
             result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
-            lat = filters['a'] + '_latitude'
-            lng = filters['a'] + '_longitude'
+            #lat = filters['a'] + '_latitude'
+            #lng = filters['a'] + '_longitude'
 
             if mode == 'solr':
                 result = '%s:[%s TO %s]' % (lat, rect_start[0], rect_end[0])

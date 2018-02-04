@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
+# import matplotlib
 import requests
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
@@ -13,7 +14,9 @@ import psycopg2
 import re
 
 import matplotlib.pyplot as plt
-
+from matplotlib.figure import Figure
+from matplotlib import use
+from PIL import Image, ImageChops
 from utils import *
 from visualizer.models import Visualization
 import time
@@ -485,6 +488,7 @@ def map_viz_folium_contour(request):
         # if 'orderings' not in doc.keys():
         #     doc['orderings'] = []
         doc['orderings'] = []
+        doc['limit'] = []
         var_query_id = variable[:variable.find('_')]
 
         print doc
@@ -531,7 +535,7 @@ def map_viz_folium_contour(request):
         print data[:3]
 
         var_index = lat_index = lon_index = 0
-        result_headers = q.execute(only_headers=True)['headers']
+        result_headers = q.execute(only_headers=True)[0]['headers']
         print result_headers
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] == variable:
@@ -593,7 +597,7 @@ def map_viz_folium_contour(request):
                 else:
                     row.append(None)
             final_data.append(row)
-        # print final_data
+        print final_data[:3]
 
 
         # # Perform a query and get data
@@ -641,25 +645,37 @@ def map_viz_folium_contour(request):
         # min_val = min([float(item[2]) for item in data])
         # max_val = max([float(item[2]) for item in data])
         levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+        print 'level ok'
+
 
         # Create a contour plot plot from grid (lat, lon) data
-        fig = plt.figure(frameon=False)
+        use('Agg')
+        fig = Figure()
         ax = fig.add_subplot(111)
         plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
         plt.axis('off')
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+        plt.draw()
         plt.savefig('map.png', bbox_inches=extent, transparent=True, pad_inches=0)
-        # plt.savefig('map.png', bbox_inches='tight', edgecolor='black', pad_inches=0)
+
+        fig = None
+        ax = None
+        fig = Figure()
+        ax = fig.add_subplot(111)
+        fig = None
+        ax = None
 
         # read in png file to numpy array
-        data = Image.open("map.png")
-        data = trim(data)
+        data_img = Image.open("map.png")
+        data = trim(data_img)
+        data_img.close()
         #data = imrotate(data, 180)
 
         # Overlay the image
         contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True, bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
         contour_layer.layer_name = 'Contour'
         m.add_child(contour_layer)
+
         # TODO: add other dimensions' names and values used for the contour along with colorbar
 
         # Overlay an extra coastline field (to be removed
@@ -674,7 +690,8 @@ def map_viz_folium_contour(request):
 
         # Create the map visualization and render it
         m.save('templates/map.html')
-        map_html = open('templates/map.html', 'r').read()
+        f = open('templates/map.html', 'r')
+        map_html = f.read()
         soup = BeautifulSoup(map_html, 'html.parser')
         map_id = soup.find("div", {"class": "folium-map"}).get('id')
         # print map_id
@@ -687,7 +704,9 @@ def map_viz_folium_contour(request):
         if len(css_all) > 3:
             css_all = [css.prettify() for css in css_all[3:]]
         # print js
-        # os.remove('templates/map.html')
+        f.close()
+        os.remove('map.png')
+        os.remove('templates/map.html')
         return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
     except HttpResponseNotFound:
         return HttpResponseNotFound
@@ -1035,7 +1054,7 @@ def get_line_chart_am(request):
     cursor = connection.cursor()
     cursor.execute(raw_query)
     result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)['headers']
+    result_headers = query.execute(only_headers=True)[0]['headers']
 
     y_var_index = x_var_index = 0
     for idx, c in enumerate(result_headers['columns']):
@@ -1121,7 +1140,7 @@ def get_pie_chart_am(request):
     cursor = connection.cursor()
     cursor.execute(raw_query)
     result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)['headers']
+    result_headers = query.execute(only_headers=True)[0]['headers']
 
     value_var_index = key_var_index = 0
     for idx, c in enumerate(result_headers['columns']):
@@ -1164,18 +1183,21 @@ def get_column_chart_am(request):
     print doc
     print raw_query
 
-    result = query.execute()
-    result_data = result['results']
-    result_headers = result['headers']
+    try:
+        connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
+    except:
+        print "I am unable to connect to the database"
+    cursor = connection.cursor()
+    cursor.execute(raw_query)
+    result_data = cursor.fetchall()
+    result_headers = query.execute(only_headers=True)[0]['headers']
+
     y_var_index = x_var_index = 0
     for idx, c in enumerate(result_headers['columns']):
         if c['name'] == y_var:
             y_var_index = idx
         elif c['name'] == x_var:
             x_var_index = idx
-
-    #print result_data
-    print y_var_index, x_var_index
 
     json_data = []
     for d in result_data:
