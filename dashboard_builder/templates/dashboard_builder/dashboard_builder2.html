@@ -334,7 +334,7 @@
 {#                                  '                <div id="loadImg" style="display: none"><img src="{% static 'img/loading.gif' %}" width="70" height="70" /></div>\n' +#}
 {#                                  '            </div>');#}
 {#                $('#loadImg').show();#}
-                $("#viz_container").html('<iframe ' +
+                $("#viz_container").html('<iframe id="viz-iframe" ' +
                     'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
                     '></iframe>');
 
@@ -347,7 +347,7 @@
 {#                $('#select_viz_popover').prop('disabled', true);#}
 {#                $('#select_conf_popover').prop('disabled', true);#}
 {#                $('#viz-container').appendTo($('#dynamic_dashboard'));#}
-                $('#viz_container iframe').appendTo('#dynamic_dashboard')
+                $('#viz_container iframe').appendTo('#dynamic_dashboard');
                 $('#myModal #viz_container').empty();
 
             });
