@@ -1,0 +1,104 @@
+{% load i18n %}
+
+{% load formula_filters %}
+
+<div id="formula-editor" class="row">
+    {% csrf_token %}
+    <div class="col-lg-12 col-sm-12">
+        <div class="row">
+            <div class="col-md-3" id="formula-editor-sidebar">
+                <div class="row">
+                    <div class="col-xs-12 item-box" id="property-box">
+                        <h4>{% trans 'Properties' %}</h4>
+                        <div class="search-input-container">
+                            <i class="fa fa-search"></i>
+                            <input type="text" />
+                        </div>
+                        <ul class="item-list property-list">
+                            {% for value_property in value_properties %}
+                                <li class="property-item">
+                                    <div class="item-decoration">
+                                        <span class="branch"></span><span class="item-type">P</span>
+                                    </div>
+                                    <div class="item-info">
+                                        <span class="item-value" title="{{ value_property.0 }}" data-value="{{ value_property.0 }}">{{ value_property.0 }}</span>
+                                        {% with descr=value_property|variable_description %}
+                                            <span class="item-description" title="{{ descr }}">{{ descr }}</span>
+                                        {% endwith %}
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 item-box no-border" id="function-box">
+                        <h4>{% trans 'Functions' %}</h4>
+                        <div class="search-input-container">
+                            <i class="fa fa-search"></i>
+                            <input type="text" />
+                        </div>
+                        <ul class="item-list function-list">
+                            {% for formula_function in formula_functions %}
+                                <li class="function-item">
+                                    <div class="item-decoration">
+                                        <span class="branch"></span><span class="item-type">F</span>
+                                    </div>
+                                    <div class="item-info">
+                                        {% with fn=formula_function.0|get_function_name %}
+                                            <span class="item-value" title="{{ formula_function.0 }}" data-value="{{ fn }}">{{ formula_function.0 }}</span>
+                                        {% endwith %}
+                                        <span class="item-description" title="{{ formula_function.1 }}">{{ formula_function.1 }}</span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9" id="formula-editor-content">
+                <div class="row">
+                    <div class="col-xs-12" id="formula-editor-status">
+                        <div class="pull-left content">&nbsp;</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12" id="formula-editor-main">
+                        <table class="table table-striped" id="formula-table">
+                            <thead>
+                            <tr>
+                                <th>{% trans 'Formula name' %}</th>
+                                <th>{% trans 'Formula' %}</th>
+                                <th>{% trans 'Unit' %}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for formula in formulas %}
+                                {% with errors=formula.errors %}
+                                    <tr {% if formula.errors %}class="with-error"{% endif %} data-id="{{ formula.pk }}">
+                                        <td class="formula-name"><span title="{{ formula.name }}">{{ formula.name }}</span></td>
+                                        <td class="formula-value" data-value="{{ formula.value }}">
+                                            <div class="formula">{{ formula.value }}</div>
+                                            {% if formula.errors %}
+                                                <span class="error-info pull-right" title="{{ formula.errors|format_errors }}">
+                                                    <i class="fa fa-exclamation-triangle"></i>
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="formula-unit">
+                                            {{ formula.unit }}
+                                        </td>
+                                    </tr>
+                                {% endwith %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="clearfix">
+                            <div id="formula-create" class="btn btn-sm btn-default pull-right"><i class="fa fa-plus-circle"></i> {% trans 'New formula' %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

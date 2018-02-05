@@ -1,9 +1,11 @@
-from django.http import HttpResponse
+from django.contrib.auth.models import User
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
 
 from query_designer.models import Query
 from visualizer.models import Visualization
+from dashboard_builder.models import Dashboard
 
 
 def build_dynamic_dashboard(request):
@@ -13,7 +15,7 @@ def build_dynamic_dashboard(request):
             saved_queries = Query.objects.filter(user=user)
         else:
             saved_queries = []
-        return render(request, 'dashboard_builder/dashboard_builder.html', {
+        return render(request, 'dashboard_builder/dashboard_builder2.html', {
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
             'components': Visualization.objects.all().order_by('id'),
@@ -30,3 +32,31 @@ def get_visualization_form_fields(request):
                                                                                         'info': visualization.info,
                                                                                         'action': visualization.view_name})
     return HttpResponse(html)
+
+
+def save_dashboard(request, pk=None):
+    # create or update
+    if not pk:
+        user = request.user
+        if user.is_authenticated():
+            dashboard = Dashboard(user=user)
+        else:
+            dashboard = Dashboard(user=User.objects.get(username='BigDataOcean'))
+
+    else:
+        dashboard = Dashboard.objects.get(pk=pk)
+
+    dashboard.title = 'Test Dashboard'
+
+    dashboard_data = request.POST
+    print dashboard_data
+    for order in dashboard_data.keys():
+        print order
+        print dashboard_data[order]
+    dashboard.viz_components = dashboard_data
+
+    dashboard.save()
+
+    return JsonResponse({
+        'pk': dashboard.pk,
+    })

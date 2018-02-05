@@ -1,6 +1,8 @@
-beautifulsoup4
 # django
-Django==1.9
+Django==1.11
+djangorestframework
+beautifulsoup4
+requests
 
 # authentication
 django-allauth
@@ -15,10 +17,16 @@ numpy==1.12.1
 pytz==2017.2
 python-dateutil
 xlrd
+sympy
 
 #data visualization
+Pillow==4.2.1
+matplotlib
 django-leaflet
 folium
+django-nvd3
+python-nvd3
+django-bower
 
 # deployment
 dj-config-url==0.1.1

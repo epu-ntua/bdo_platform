@@ -8,6 +8,10 @@ urlpatterns = [
     url('^bdo/$', views.bdohome, name='bdo'),
     url('^search/$', views.search, name='search'),
 
+
+    url('^analytics-environment/$', views.search, name='search'),
+
+
     # datasets
     url('^datasets/(?P<slug>[\w-]+)/$', views.dataset, name='dataset-details'),
 

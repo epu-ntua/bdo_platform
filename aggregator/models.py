@@ -10,11 +10,18 @@ import math
 from netCDF4._netCDF4 import num2date
 
 
+DATASET_STORAGES = (
+    ('LOCAL_POSTGRES', 'Local PostgreSQL instance'),
+    ('UBITECH_SOLR', 'Solr instance at http://212.101.173.50:8983'),
+)
+
+
 class Dataset(Model):
     title = TextField()
     source = TextField()
     description = TextField()
     references = ArrayField(TextField())
+    stored_at = CharField(max_length=32, choices=DATASET_STORAGES, default='LOCAL_POSTGRES')
 
     class Meta:
         ordering = ['-id']
@@ -135,8 +142,10 @@ class Dimension(BaseVariable):
         while v <= self.max:
             result.append(self.normalize(v))
             v += self.step
-            if v - self.min >= 100:
-                break
+
+            # TODO investigate the reason for the following line
+            # if v - self.min >= 100:
+            #     break
 
         return result
 

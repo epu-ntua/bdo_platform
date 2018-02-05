@@ -4,10 +4,10 @@
 
 {% block css %}
     <link href="{% static 'service_builder/css/basic.css' %}" rel="stylesheet" />
-    <link href="{% static 'visualizer/css/basic_viz.css' %}" rel="stylesheet" />
+    <link href="{% static 'dashboard_builder/css/basic_viz.css' %}" rel="stylesheet" />
     <style>
         #loadImg{position:absolute;z-index:999;}
-        #loadImg {display:table-cell;width:100%;height:100%;background:#fff;text-align:center;vertical-align:middle;}
+        #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
     </style>
 {% endblock %}
 
@@ -20,9 +20,7 @@
     </div>
 
     <div class="row" style="display: none;">
-        <form class="form" id="config-viz-form">
-{#            <input id="query" value="" name="query" type="hidden"/>#}
-        </form>
+        <form class="form" id="config-viz-form"></form>
     </div>
 
     <div class="col-sm-3">
@@ -125,6 +123,7 @@
             $(submitted_args).find("select").eq(i).val($(select).val());
 {#            $('#config-viz-form').append(select);#}
           });
+          $('#config-viz-form').empty();
           $('#config-viz-form').append(submitted_args);
 
 
@@ -149,8 +148,11 @@
           $('#loadImg').show();
           $("#viz_container").append('<iframe class="resizable" ' +
                 'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
-                'onload="document.getElementById(\'loadImg\').style.display=\'none\';"></iframe>');
+                'onload="document.getElementById(\'loadImg\').style.display=\'none\'"></iframe>');
+
       }
+
+
 
     </script>
 
@@ -168,11 +170,19 @@
                     document: new_query_doc
                     },
                 type: 'GET',
-                success: function(variables){
+                success: function(result){
+                    var variables = result['variables'];
+                    var dimensions = result['dimensions'];
                     $.each(variables, function(k, v) {
                         $('#myModal .variable-select').append($("<option></option>")
-                            .attr("value", k)
-                            .text(v));
+                            .attr("value", v)
+                            .text(k));
+                    });
+
+                    $.each(dimensions, function(k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", v)
+                            .text(k));
                     });
                 }
             });

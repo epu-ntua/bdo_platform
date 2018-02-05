@@ -1,0 +1,66 @@
+                {% load i18n %}
+
+                <div id="filters-modal">
+                    <div class="modal-body">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>{% trans 'Filter name' %}</th>
+                                    <th>{% trans 'Filter' %}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+
+                        <h4>{% trans 'Add a new filter' %}</h4>
+                        <div class="add-filter-row row">
+                            <div class="col-sm-4">
+                                <select id="new-filter-variable">
+                                    <option value="">{% trans 'Choose a variable to filter' %}</option>
+                                    {% for dimension in dimensions %}
+                                        <option
+                                                value="{{ dimension.pk }}"
+                                                data-forvariabletype="{{ dimension.variable_id }}">
+                                            {{ dimension.title }} ({{ dimension.variable.title }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-2">
+                                <select id="new-filter-operator">
+                                    <option value="eq">=</option>
+                                    <option value="neq">!=</option>
+                                    <option value="lt">&lt;</option>
+                                    <option value="lte">&lt;=</option>
+                                    <option value="gt">&gt;</option>
+                                    <option value="gte">&gt;=</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4" id="new-filter-value-container">
+
+                            </div>
+                            <div class="col-sm-2">
+                                <div class="btn btn-sm btn-green add-new-filter"><i class="fa fa-arrow-up"></i> {% trans 'Add to filters' %}</div>
+                            </div>
+                        </div>
+
+                        <div id="filter-expr-settings">
+                            <h4>{% trans 'How should these filters be combined?' %}</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <select id="filters-expr-type">
+                                        <option value="ALL_AND">{% trans 'All filters must be true' %}</option>
+                                        <option value="ALL_OR">{% trans 'At least one filter has to be true' %}</option>
+                                        <option value="CUSTOM">{% trans 'Specify a custom boolean expression' %}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" id="filters-expr-input" class="form-control" placeholder="e.g F1 AND (F2 OR F3)" style="display: none;"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>

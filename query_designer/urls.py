@@ -10,6 +10,11 @@ urlpatterns = [
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/properties/$', views.dataset_variable_properties),
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/count/$', views.count_variable_values),
 
+    # formulas
+    url('^formulas/save/$', views.save_formulas, name='save-formula'),
+    url('^formulas/delete/$', views.delete_formula, name='delete-formula'),
+    url('^formulas/$', views.formulas, name='formula-editor'),
+
     # execute
     url('execute/$', views.execute_query, name='execute-query'),
     url('execute/(?P<pk>\d+)/$', views.execute_query, name='execute-query'),
@@ -26,6 +31,17 @@ urlpatterns = [
 
     # load new query to analysis
     url('load_to_analysis/$', views.load_to_analysis, name='load-to-analysis'),
+
+    # simplified
+    url('simplified/$', views.simplified, name='simplified'),
+    url('simplified/config/$', views.get_config, name='config'),
+    url('simplified/(?P<pk>\d+)/$', views.simplified, name='simplified'),
+    url('simplified/filter-info/(?P<filter_type>[\w-]+)/(?P<pk>\d+)/$', views.filter_info, name='filter-info'),
+
+    url('simplified/list/$', views.list_queries, name='list-queries'),
+
+    # new query designer template
+    url('new_template/$', views.new_template, name='new_template'),
 
     # basic page
     url('$', views.index, name='home'),

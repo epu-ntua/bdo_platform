@@ -138,9 +138,9 @@ body.modal-open,
 
 @media screen and (min-width: 768px) {
   .modal-dialog {
-    right: auto;
-    left: 50%;
-    width: 600px;
+    /* right: auto; */
+    /* left: 50%; */
+    width: 80%;
     padding-top: 30px;
     padding-bottom: 30px;
   }
