@@ -500,12 +500,12 @@ def map_viz_folium_contour(request):
                 if s['name'] == variable:
                     s['aggregate'] = 'avg'
                     s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
                     s['groupBy'] = True
                     s['aggregate'] = 'round'
                     s['exclude'] = False
                     doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                elif str(s['name']).find('lon') >= 0 and str(s['name']).find(var_query_id) >= 0:
                     s['groupBy'] = True
                     s['aggregate'] = 'round'
                     s['exclude'] = False
@@ -543,9 +543,9 @@ def map_viz_folium_contour(request):
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] == variable:
                 var_index = idx
-            elif str(c['name']).find('latitude') >= 0:
+            elif str(c['name']).find('lat') >= 0:
                 lat_index = idx
-            elif str(c['name']).find('longitude') >= 0:
+            elif str(c['name']).find('lon') >= 0:
                 lon_index = idx
 
         print var_index, lat_index, lon_index

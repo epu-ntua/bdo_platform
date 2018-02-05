@@ -133,9 +133,9 @@ class Query(Model):
             from_order = int(filters['a'][1])
             table_name = self.document['from'][from_order]['name']
             for x in self.document['from'][from_order]['select']:
-                if x['name'] == (filters['a'] + '_latitude'):
+                if x['name'] == (filters['a'] + '_lat'):
                     lat_col_name = Dimension.objects.get(pk=x['type']).data_column_name
-                if x['name'] == (filters['a'] + '_longitude'):
+                if x['name'] == (filters['a'] + '_lon'):
                     lon_col_name = Dimension.objects.get(pk=x['type']).data_column_name
 
             lat = table_name+'.'+lat_col_name
