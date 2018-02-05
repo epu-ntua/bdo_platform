@@ -43,7 +43,9 @@ def load_query(request, pk):
 
 def simplified(request, pk=None):
     return render(request, 'query_designer/simplified.html', {
+        'datasets': Dataset.objects.filter(stored_at='LOCAL_POSTGRES').exclude(variables=None),
         'dimensions': Dimension.objects.all(),
+        'AGGREGATES': AGGREGATES,
     })
 
 
@@ -223,8 +225,8 @@ def get_field_policy(user):
     for dimension in Dimension.objects.all():
         field_policy['categories'].append({
             'title': '%s (%s)' % (dimension.title, dimension.variable.title),
-            'value': dimension.name,
-            'type': dimension.pk,
+            'value': dimension.pk,
+            'type': dimension.name.replace(' ', '_'),
             'forVariable': dimension.variable.pk,
         })
 
@@ -238,7 +240,7 @@ def get_field_policy(user):
 
     for variable in Variable.objects.all():
         field_policy['valueFields'].append({
-            'value': variable.name,
+            'value': variable.safe_name,
             'title': variable.title,
             'type': variable.pk,
         })

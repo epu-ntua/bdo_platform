@@ -195,8 +195,12 @@ class Variable(BaseVariable):
         }
 
     @property
+    def safe_name(self):
+        return slugify(self.name, allow_unicode=False).replace('-', '_')
+
+    @property
     def data_table_name(self):
-        return slugify(self.name, allow_unicode=False).replace('-', '_') + ('_%d' % self.pk)
+        return self.safe_name + ('_%d' % self.pk)
 
     def create_data_table(self, cursor, with_indices=True):
         # gather columns

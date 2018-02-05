@@ -90,7 +90,7 @@ class Query(Model):
             if quote and (mode == 'solr') and filters.strip() != '*' and (not filters.startswith('"')) and filters:
                 return '"%s"' % filters
             else:
-                return "'%s'" % filters
+                return "%s" % filters
 
         # Special case: parsing location filters
         # inside_rect|outside_rect <<lat_south,lng_west>,<lat_north,lng_east>>

@@ -10,6 +10,7 @@
 
 {% block css %}
     <link href="{% static "query_designer/css/toolbox.css" %}" rel="stylesheet">
+    <link href="{% static "query_designer/css/data-modal.css" %}" rel="stylesheet">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
     <link href="{% static 'query_designer/js/handsontable/handsontable.full.min.css' %}" rel="stylesheet">
@@ -18,7 +19,6 @@
 {% endblock %}
 
 {% block content %}
-
     <!-- begin PAGE TITLE AREA -->
     <!-- Use this section for each page's title and breadcrumb layout. In this example a date range picker is included within the breadcrumb. -->
     <div class="row">
@@ -99,6 +99,8 @@
 
     {% include "query_designer/utils/filters-modal.html" %}
 
+    {% include "query_designer/utils/select-data-modal.html" %}
+
     {% with modal_id="formulas-modal" %}
         {% include "query_designer/utils/common-modal.html" %}
     {% endwith  %}
@@ -112,6 +114,8 @@
     <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 
     <script src="{% static "query_designer/js/simplified/toolbox.js" %}"></script>
+
+    <script src="{% static "query_designer/js/simplified/data-modal.js" %}"></script>
 
     <script src="{% static "query_designer/js/simplified/formula-editor.js" %}"></script>
 

@@ -67,16 +67,16 @@ $(function () {
                 success: function (chartPolicy) {
                     var chartOptions = {
                         group: {
-                            metric: chartPolicy.categories[0].value
+                            metric: '' // chartPolicy.categories[0].value
                         },
                         fields: []
                     };
 
-                    for (var j = 0; j < chartPolicy.incrStep; j++) {
+                    /* for (var j = 0; j < chartPolicy.incrStep; j++) {
                         chartOptions.fields.push({
                             metric: chartPolicy.valueFields[0].value
                         })
-                    }
+                    } */
 
                     that.setChartOptions(obj, chartOptions, '', chartPolicy)
                 }
@@ -273,7 +273,7 @@ $(function () {
             // add add filter & draw buttons
             var $btnContainer = $('<div class="row btn-container">').css('padding', '0 4px');
             if (obj.chartOptions.fields.length + 1 < obj.chartPolicy.max) {
-                $btnContainer.append('<div class="add-value-field add-value-field btn btn-default btn-sm pull-left bg-color--blue"><i class="fa fa-plus"></i> Add value</div>')
+                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue"><i class="fa fa-plus"></i> Add data</div>')
             }
 
             $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');
@@ -358,7 +358,7 @@ $(function () {
                 var newFilter = {
                     a: aName,
                     op: filter.op,
-                    b: filter.b
+                    b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
                 };
 
                 if (idx === 0) {
@@ -729,15 +729,15 @@ $(function () {
 
                 // push dimensions
                 $.each($('select[name="category"] > option[data-forvariable="' + value.type + '"]'), function(jdx, opt) {
-                    var name = $(opt).attr('value');
+                    var name = $(opt).data('type');
                     var groupBy = $('select[name="category"]').val().indexOf($(opt).attr('value')) >= 0;
 
                     var dimension = {
-                        type: $(opt).data('type'),
+                        type: $(opt).attr('value'),
                         name: 'i' + String(idx) + '_' + name,
                         title: $(opt).text(),
                         groupBy: groupBy,
-                        exclude: !groupBy
+                        exclude: !groupBy && value.aggregate
                     };
 
                     // check if joined
@@ -753,6 +753,7 @@ $(function () {
                                 )
                             ) {
                                 dimension.joined = dim.name;
+                                dimension.exclude = true;
                                 return false;
                             }
                         })
@@ -765,7 +766,6 @@ $(function () {
             });
 
             // add filters
-            console.log(result);
             result.filters = this.constructFiltersParam(result);
 
             return result;
@@ -774,6 +774,11 @@ $(function () {
         /* Gets the data based on the fields & options selected by the user */
         fetchChartData: function () {
             var that = this;
+
+            var doc = this.generateQueryDoc();
+            if (doc.from.length === 0) {
+                return
+            }
 
             // update available filters
             this.filterManager.updateFilters(this._getChartInfo().values);
@@ -787,7 +792,7 @@ $(function () {
                 url: '/queries/execute/',
                 type: 'POST',
                 data: {
-                    query: JSON.stringify(this.generateQueryDoc()),
+                    query: JSON.stringify(doc),
                     csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val()
                 },
                 success: function (response) {
@@ -820,7 +825,7 @@ $(function () {
         tabMarker: {
             currentUnsaved: function () {
                 var $active = $('#chart-picker li.active');
-                if ($active.length == 0) {
+                if ($active.length === 0) {
                     return;
                 }
 
@@ -1334,65 +1339,53 @@ $(function () {
     $('body').on('click', '.add-value-field', function () {
         var $last = $('.chart-control .fieldset:last');
 
-        if (!$last.hasClass('xy')) { // default case
-            // remove select2 first
-            $last
-                .find('select')
-                .select2('destroy')
-                .removeAttr('data-select2-id')
-                .removeData('select2-id');
+        $('#select-data-modal').dialog({
+            width: '40vw',
+            position: {my: 'center'},
+            title: 'Select data'
+        });
 
-            // clone last
-            var $newField = $last.clone();
+    });
 
-            // remove select2 & update counter
-            $newField.find('.metric-cnt').html($('.chart-control .fieldset').length);
+    /* Add a value field */
+    $('#selection-confirm-btn').on('click', function() {
+        var newField = window.getDataSelection();
 
-            // add delete button
-            if ($newField.find('.col-suffix .value-remove-btn').length === 0) {
-                $newField.find('.col-suffix').append('<div class="value-remove-btn" title="Remove value"><i class="fa fa-trash" /></div>');
-            }
+        var $chartControls = $('#chart-control-list > .chart-control');
+        console.log(QueryToolbox);
+        var label = 'Metric #<span class="metric-cnt">' + ($chartControls.find('> *').length + 1) + '</span>';
 
-            // add
-            $newField.insertAfter($last);
+        var obj = QueryToolbox.objects[QueryToolbox.current()];
 
-            // restore select2
-            $newField.find('select').select2();
-            $last.find('select').select2();
-        } else { // xy case
-            var $valField = $last;
-            var $yField = $last.prev();
-            var $xField = $yField.prev();
+        var $fieldset = QueryToolbox.renderChartOptionsField({
+            choices: obj.chartPolicy.valueFields,
+            emptyChoice: false,
+            name: 'value_field',
+            label: label,
+            value: newField.value,
+            aggregate: newField.aggregate,
+            aggregates: obj.chartPolicy.aggregates,
+            canConfig: true,
+            canDelete: true,
+            xy: false
+        });
 
-            // clone three last
-            var $newValField = $valField.clone();
-            var $newYField = $yField.clone();
-            var $newXField = $xField.clone();
+        var $category = $('[name="category"]');
 
-            var cnt = ($('.chart-control .fieldset').length - 1) / 3 + 1;
-            $.each([$newValField, $newYField, $newXField], function (idx, $newField) {
-                // remove select2 & update counter
-                $newField.find('.select2-container').remove();
-                $newField.find('.metric-cnt').html(cnt);
-                $newField.find('select').select2();
+        $category.val($category.val() + newField.groupBy).trigger('change.select2');
 
-                // add delete button
-                if ($newField.find('.col-xs-3 .value-remove-btn').length === 0) {
-                    $newField.find('.col-xs-3').append('<div class="value-remove-btn" title="Remove value"><i class="fa fa-trash" /></div>');
-                }
-            });
+        $fieldset.find('select').select2();
 
-            // add all
-            $newXField.insertAfter($last);
-            $newYField.insertAfter($newXField);
-            $newValField.insertAfter($newYField);
-        }
+        $chartControls.append($fieldset);
 
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
 
         // redraw
         QueryToolbox.fetchChartData();
+
+        // close popup
+        $('#select-data-modal').dialog('close');
     });
 
     /* Initialize data table */
