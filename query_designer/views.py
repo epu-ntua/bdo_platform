@@ -267,20 +267,20 @@ def list_queries(request):
         return HttpResponse('Only `GET` method allowed', status=400)
 
     ctx = {
-        'queries': Query.objects.filter(user=user, generated_by='QDv2'),
+        'queries': Query.objects.filter(user=user, generated_by='QDv2').order_by('-updated'),
     }
 
     return render(request, 'query_designer/utils/query-table.html', ctx)
 
 
-def delete_chart(request, pk):
+def delete_query(request, pk):
     # ensure POST request
     if request.method != 'POST':
         return HttpResponse('Only `POST` method allowed', status=400)
 
     try:
-        chart = Chart.objects.get(pk=pk, created_by=request.user)
-    except Chart.DoesNotExist as e:
+        chart = Query.objects.get(pk=pk, created_by=request.user)
+    except Query.DoesNotExist as e:
         return HttpResponse('Chart not found', status=404)
 
     # delete & send OK response
