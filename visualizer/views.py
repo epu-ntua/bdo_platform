@@ -1029,7 +1029,6 @@ def get_line_chart_am(request):
     y_var = str(request.GET.get('y_var', ''))
 
     doc = query.document
-    """
     for f in doc['from']:
         for s in f['select']:
             if s['name'] == y_var:
@@ -1040,7 +1039,6 @@ def get_line_chart_am(request):
                 s['exclude'] = False
             else:
                 s['exclude'] = True
-    """
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
     query.document = doc
     raw_query = query.raw_query
@@ -1059,11 +1057,12 @@ def get_line_chart_am(request):
     """
 
     cursor = connection.cursor()
-    cursor.execute(raw_query)
+    result_data = cursor.execute(raw_query)
 
-    result = query.execute()
-    result_data = result['results']
-    result_headers = result[0]['headers']
+    cursor = connection.cursor()
+    cursor.execute(raw_query)
+    result_data = cursor.fetchall()
+    result_headers = query.execute(only_headers=True)[0]['headers']
 
     y_var_index = x_var_index = 0
     for idx, c in enumerate(result_headers['columns']):

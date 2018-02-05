@@ -243,7 +243,7 @@ class Query(Model):
 
         return data, encoder
 
-    def execute(self, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=False):
+    def execute(self, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=True):
         result = self.process(dimension_values, variable, only_headers, commit, execute=True)
 
         if with_encoder:
