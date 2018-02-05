@@ -106,6 +106,7 @@ var chart = AmCharts.makeChart("chartdiv", {
   "categoryField": "{{ category_col }}",
   "categoryAxis": {
     "parseDates": {{ isDate }},
+    {% if isDate %}"minPeriod": "ss",{% endif %}
     "dashLength": 1,
     "minorGridEnabled": true
   },

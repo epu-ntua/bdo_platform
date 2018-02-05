@@ -10,7 +10,7 @@ def build_dynamic_dashboard(request):
     if request.method == 'GET':
         user = request.user
         if request.user.is_authenticated():
-            saved_queries = Query.objects.filter(user=user)
+            saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
         else:
             saved_queries = []
         return render(request, 'dashboard_builder/dashboard_builder2.html', {

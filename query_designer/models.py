@@ -210,7 +210,13 @@ class Query(Model):
         return all_rows
 
     def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
-        if 'POSTGRES' in Variable.objects.get(pk=self.document['from'][0]['type']).dataset.stored_at:
+        is_postgres = True
+        try:
+            is_postgres = 'POSTGRES' in Variable.objects.get(pk=self.document['from'][0]['type']).dataset.stored_at
+        except IndexError:
+            pass
+
+        if is_postgres:
             from query_designer.query_processors.postgres import process as q_process
             encoder = PostgresResultEncoder
         else:

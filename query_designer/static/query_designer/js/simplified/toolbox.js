@@ -775,6 +775,8 @@ $(function () {
         fetchChartData: function () {
             var that = this;
 
+            var obj = this.objects[this.current()];
+
             var doc = this.generateQueryDoc();
             if (doc.from.length === 0) {
                 return
@@ -798,6 +800,14 @@ $(function () {
                 success: function (response) {
                     // create the required graphs
                     // todo update iframe
+                    var y_var = doc.from[0].select[0].name;
+                    var x_var = doc.from[0].select[1].name;
+                    $.each(doc.from[0].select, function(idx, s) {
+                       if (s.groupBy) {
+                           x_var = s.name
+                       }
+                    });
+                    $('iframe').attr('src', 'http://127.0.0.1:8000/visualizations/get_line_chart_am/?query=39&y_var=' + y_var + '&x_var=' + x_var);
 
                     // update data table headers & data
                     var $table = $("#graph-data-table");

@@ -381,9 +381,16 @@ table .full-chart-row .delete-chart {
     top: 200px;
 }
 
+#chartdiv iframe {
+    width: 100%;
+    height: 50vh;
+    border: none;
+}
+
 /* Data table overrides */
 
 table.dataTable thead th, table.dataTable thead td,
 table.dataTable.no-footer {
     border-bottom: none;
 }
+
