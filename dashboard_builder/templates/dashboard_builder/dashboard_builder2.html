@@ -36,9 +36,10 @@
             width: 80%;
             padding: 0;
         }
-        #viz_container iframe{
+        #viz_container iframe, #dynamic_dashboard iframe{
             background-color: white;
             height: 96%;
+            min-height: 480px;
             width: 98%;
             margin: 1% 1% 1% 1%;
             padding: 0;
@@ -47,9 +48,11 @@
 {% endblock %}
 
 {% block content %}
+    {% csrf_token %}
     <div class="row" style="display: none;">
         <form class="form" id="config-viz-form"></form>
     </div>
+    <input type="hidden" value="" id="dashboard_pk">
     <div class="row">
             <div class="text-center">
                 <h1 class="o-blue" style="margin: 0; font-size: 30pt" >Dashboard Builder</h1>
@@ -60,15 +63,17 @@
         <button type="button" id="new_widget_btn" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#myModal">
             <i class="fa fa-plus-circle o-white"></i>  New visualisation
         </button>
+
+        <button type="button" id="save_dashboard_btn" class="btn btn-lg btn-primary">
+            Save Dashboard
+        </button>
     </div>
 
 
 
 
-{#    <div class="row" style="border-style: solid; border-width: 1px; min-height: 500px;">#}
-{#        <div><h4>Created Dashboard</h4></div>#}
-{#        <div id="dynamic_dashboard"></div>#}
-{#    </div>#}
+    <div id="dynamic_dashboard"></div>
+
 
 
 
@@ -100,48 +105,48 @@
 
 
 {% block modal %}
-    <div id="myModal2" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header text-center">
+{#    <div id="myModal2" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">#}
+{#        <div class="modal-dialog">#}
+{#            <!-- Modal content-->#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header text-center">#}
 {#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
-                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
-                </div>
-                <div class="modal-body">
-                        <div class="row text-center">
-                            <button type="button" id="select_data_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"
-                                    data-container="body">1. Select data
-                            </button>
-                            <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select visualization type" data-placement="bottom"
-                                    data-container="body" disabled>2. Select visualisation
-                            </button>
-                            <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"
-                                    data-container="body" disabled>3. Configure
-                            </button>
-                        </div>
-
+{#                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                        <div class="row text-center">#}
+{#                            <button type="button" id="select_data_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"#}
+{#                                    data-container="body">1. Select data#}
+{#                            </button>#}
+{#                            <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select visualization type" data-placement="bottom"#}
+{#                                    data-container="body" disabled>2. Select visualisation#}
+{#                            </button>#}
+{#                            <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"#}
+{#                                    data-container="body" disabled>3. Configure#}
+{#                            </button>#}
+{#                        </div>#}
+{##}
 {#                        <div class="row col-sm-12 text-center">#}
 {#                            <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?query=17&y_var=i0_sea_floor_potential_temperature&x_var=i0_time"#}
 {#                                    class="resizable"frameborder="0" allowfullscreen="">#}
 {#                            </iframe>#}
 {#                        </div>#}
-                        <div class="row col-sm-2 text-left">
-                            <ul class="list-group collapse in">
-                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Line chart</li>
-                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Column chart</li>
-                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Pie chart</li>
-                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Contours on map</li>
-                            </ul>
-                        </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" disabled>Add</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
+{#                        <div class="row col-sm-2 text-left">#}
+{#                            <ul class="list-group collapse in">#}
+{#                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Line chart</li>#}
+{#                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Column chart</li>#}
+{#                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Pie chart</li>#}
+{#                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Contours on map</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                </div>#}
+{#                <div class="modal-footer">#}
+{#                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" disabled>Add</button>#}
+{#                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
 
     <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
@@ -171,10 +176,10 @@
 {#                        </div>#}
                         <div class="row" id="viz_config" style="display: none">
                             <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                                <li class="list-group-item" id="line_chart_item" data-component-id="5"><i class="fa fa-line-chart margin-right-1"></i>Line chart</li>
-                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-1"></i>Column chart</li>
-                                <li class="list-group-item"><i class="fa fa-pie-chart margin-right-1"></i>Pie chart</li>
-                                <li class="list-group-item"><i class="fa fa-map margin-right-1"></i>Contours on map</li>
+                                <li class="list-group-item viz_item" id="line_chart_item" data-component-id="5"><i class="fa fa-line-chart margin-right-1"></i>Line chart</li>
+                                <li class="list-group-item viz_item" id="column_chart_item" data-component-id="13"><i class="fa fa-bar-chart margin-right-1"></i>Column chart</li>
+                                <li class="list-group-item viz_item" id="pie_chart_item" data-component-id="12"><i class="fa fa-pie-chart margin-right-1"></i>Pie chart</li>
+                                <li class="list-group-item viz_item" id="contours_on_map_item" data-component-id="4"><i class="fa fa-map margin-right-1"></i>Contours on map</li>
                             </ul>
                             <div id="viz_container" class="col-sm-8" style="width: 85%">
 
@@ -185,8 +190,8 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" disabled>Add</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>
+                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="submit-modal-btn">Add</button>
+                    <button type="button" class="btn btn-default"  data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>
                 </div>
             </div>
         </div>
@@ -242,11 +247,12 @@
             }).click(function(e) {
                 $(this).popover('toggle');
                 $('.popover-content #query-select').on('change', function() {
-                    updateVariables(this);
                     var new_query_id = $(this).children(":selected").attr("id");
 {#                    alert(new_query_id);#}
                     var new_query_doc = $('#new_query_doc').val();
                     $('#myModal #selected_query').val(new_query_id);
+                      updateVariables(this);
+
         {#            addQueryToForm(this.options[this.selectedIndex].value.replace(/\n/g, " "));#}
                 });
                 $('.popover-content #select_data_ok').click(function (e) {
@@ -261,9 +267,11 @@
 
 
 
-            $("#line_chart_item").click(function (element) {
-{#              var component_id = element.getAttribute('data-component-id');#}
-              var component_id = 5;
+            $(".viz_item").click(function (element) {
+              var component_id = $(this).attr('data-component-id');
+              var component_selector = '#' + $(this).attr('id')
+{#              alert(component_id);#}
+{#              var component_id = 5;#}
               $.ajax({
                     url: '/dashboards/get_visualization_form_fields',
                     data: {
@@ -275,7 +283,7 @@
                         $("#conf-container").html(form_fields);
                         $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
 
-                        $("#line_chart_item").popover({
+                        $(component_selector).popover({
                             html: true,
                             title: 'Configure visualisation',
                             content: function() {
@@ -283,11 +291,11 @@
                             }
                         });
                         updateVariables($('#query-select'));
-                        $("#line_chart_item").popover('toggle');
-                        var popver_id = '#' + $("#line_chart_item").attr('aria-describedby');
+                        $(component_selector).popover('toggle');
+                        var popver_id = '#' + $(component_selector).attr('aria-describedby');
                         $(popver_id+' #select_conf_ok').click(function(e){
-                            submit_conf();
-                            $('#line_chart_item').popover("hide");
+                            submit_conf(component_selector);
+                            $(component_selector).popover("hide");
                         });
                     }
                 });
@@ -296,11 +304,11 @@
 
 
 
-            function submit_conf() {
+            function submit_conf(component_selector) {
                 var viz_request = "http://localhost:8000/visualizations/";
                 viz_request += $('#myModal').find('.modal-body').find('#action').val();
 {#                alert(viz_request);#}
-                var conf_popover_id = '#' + $("#line_chart_item").attr('aria-describedby');
+                var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
 
                 var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
 {#                alert(submitted_args);#}
@@ -332,28 +340,90 @@
 {#                                  '                <div id="loadImg" style="display: none"><img src="{% static 'img/loading.gif' %}" width="70" height="70" /></div>\n' +#}
 {#                                  '            </div>');#}
 {#                $('#loadImg').show();#}
-                $("#viz_container").html('<iframe ' +
+                $("#viz_container").html('<iframe id="viz-iframe" ' +
                     'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
-                    'onload="document.getElementById(\'loadImg\').style.display=\'none\'"></iframe>');
+                    '></iframe>');
 
             }
 
 
 
+            $("#myModal #submit-modal-btn").click(function () {
+{#                alert('clicked');#}
+{#                $('#select_viz_popover').prop('disabled', true);#}
+{#                $('#select_conf_popover').prop('disabled', true);#}
+{#                $('#viz-container').appendTo($('#dynamic_dashboard'));#}
+                $('#viz_container iframe').appendTo('#dynamic_dashboard');
+                $('#myModal #viz_container').empty();
 
-            $("#submit-modal-btn").click(function (e) {
-                $('#select_viz_popover').prop('disabled', true);
-                $('#select_conf_popover').prop('disabled', true);
-                $('.modal #viz_container iframe').remove();
             });
-            $("#dismiss-modal-btn").click(function (e) {
+            $("#dismiss-modal-btn").click(function m (e) {
                 $('#select_viz_popover').prop('disabled', true);
                 $('#select_conf_popover').prop('disabled', true);
-                $('.modal #viz_container iframe').remove();
+                $('#myModal #viz_container').empty();
             });
 
         });
 
+
+
+        $('#save_dashboard_btn').click(function () {
+            var postEndpoint = "/dashboards/save/";
+            var pk = $('#dashboard_pk').val();
+            if (pk !== '') {
+                postEndpoint += pk + '/'
+            }
+
+            var post_data_obj = new Object();
+            $('#dynamic_dashboard iframe').each(function(index, element){
+                post_data_obj[String(index)] = $(element).attr("src");
+            });
+            var post_data = JSON.stringify(post_data_obj);
+            $.ajax({
+                "type": "POST",
+                "dataType": "json",
+                "url": postEndpoint,
+                "data": post_data_obj,
+                "beforeSend": function(xhr, settings) {
+                    console.log("Before Send");
+                    $.ajaxSettings.beforeSend(xhr, settings);
+                },
+                "success": function(result) {
+                    console.log(result);
+                    $('#dashboard_pk').val(result.pk);
+                    window.history.replaceState({} , 'a_title', '/dashboards/create/' + result.pk + '/');
+                },
+                error: function (jqXHR) {
+                    alert('error');
+                }
+            });
+        });
+
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    // Only send the token to relative URLs i.e. locally.
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            }
+        });
 
 
     </script>

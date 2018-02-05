@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-
+from PIL import Image, ImageChops
 from query_designer.models import Query
 import numpy as np
 from math import floor, ceil

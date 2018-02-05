@@ -5,6 +5,7 @@ import bdo_main_app.views as views
 urlpatterns = [
     # home & signup
     url('^$', views.home, name='home'),
+    url('^bdo/$', views.bdohome, name='bdo'),
     url('^search/$', views.search, name='search'),
 
 
