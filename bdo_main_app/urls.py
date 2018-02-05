@@ -18,4 +18,8 @@ urlpatterns = [
     # on demand
     url('^on-demand/$', views.on_demand_search, name='on-demand'),
     url('^on-demand/create/$', views.on_demand_create, name='on-demand-create'),
+
+    # service and dashboards
+    url('^services/$', views.services, name='services'),
+    url('^services/(?P<pk>\d+)/$', views.view_service, name='view_service'),
 ]
