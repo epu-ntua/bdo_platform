@@ -7,7 +7,7 @@ DOCUMENT_STORE_DB = 'bdo_platform'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bdo_platform',
+        'NAME': 'bdo_platform_2',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',

@@ -267,7 +267,7 @@ def list_queries(request):
         return HttpResponse('Only `GET` method allowed', status=400)
 
     ctx = {
-        'queries': Query.objects.filter(user=user, generated_by='QDv2').order_by('-updated'),
+        'queries': Query.objects.filter(user=user, generated_by='QDv2').order_by().order_by('-created', '-updated'),
     }
 
     return render(request, 'query_designer/utils/query-table.html', ctx)
