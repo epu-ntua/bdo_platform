@@ -933,7 +933,7 @@ $(function () {
                 data: data,
                 success: function (data) {
                     // save id & mark
-                    that.objects[current].chartId = Number(data);
+                    that.objects[current].chartId = Number(data.pk);
                     that.tabMarker.currentSaved();
 
                     // update status
