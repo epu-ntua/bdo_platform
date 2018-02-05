@@ -117,9 +117,13 @@ class Query(Model):
 
             for x in _from['select']:
                 if x['name'] == filters['a']:
-                    filters['a'] = '%s.%s' % \
-                                   (_from['name'], Dimension.objects.get(pk=x['type'],
-                                                                         variable_id=v).data_column_name)
+                    if x['type'] != 'VALUE':
+                        filters['a'] = '%s.%s' % \
+                                       (_from['name'], Dimension.objects.get(pk=x['type'],
+                                                                             variable_id=v).data_column_name)
+                    else:
+                        filters['a'] = '%s.%s' % \
+                                       (_from['name'], 'value')
 
         if filters['op'] in ['inside_rect', 'outside_rect', ]:
             rect_start = filters['b'].split('<')[2].split('>,')[0].split(',')
