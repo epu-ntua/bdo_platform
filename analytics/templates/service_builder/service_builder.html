@@ -248,10 +248,10 @@
                     },
                 type: 'GET',
                 success: function(variables){
-                    $.each(variables, function(k, v) {
+                    $.each(variables['variables'], function(k, v) {
                         $('#myModal .variable-select').append($("<option></option>")
-                            .attr("value", k)
-                            .text(v));
+                            .attr("value", v)
+                            .text(k));
                     });
                     $.each(newOutputColumns, function() {
                         $('#myModal .variable-select').append($("<option></option>")

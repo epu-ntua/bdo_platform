@@ -87,8 +87,8 @@
         <select id="query-select" class="form-control" name="query">
             <option disabled selected>-- select one of the saved queries --</option>
             {% for query in saved_queries %}
-{#                <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>#}
-                <option id="{{ query.id }}" value="{{ query.id }}">{{ query.title }}</option>
+                <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+{#                <option id="{{ query.id }}" value="{{ query.id }}">{{ query.title }}</option>#}
             {% endfor %}
         </select>
         <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>

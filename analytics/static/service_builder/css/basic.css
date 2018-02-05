@@ -28,7 +28,7 @@
 }
 
 #myModal {
-    width: 750px;
+    width: 550px;
     overflow: visible;
 }
 
@@ -45,6 +45,10 @@
 }
 
 #myModal .modal-content{
-    height: 700px;
+    height: 500px;
     overflow-y: scroll;
+}
+.modal-dialog{
+    left: 50%;
+    margin-top: 10px;
 }
