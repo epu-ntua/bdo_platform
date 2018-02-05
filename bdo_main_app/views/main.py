@@ -7,10 +7,10 @@ from django.utils.timezone import now
 
 from bdo_main_app.models import Service
 
-def bdohome(request):
+def home(request):
     return render(request, 'bdoindex.html')
 
-def home(request):
+def bdohome(request):
     return render(request, 'index.html', {
         'sidebar_active': 'products',
         'items': [
