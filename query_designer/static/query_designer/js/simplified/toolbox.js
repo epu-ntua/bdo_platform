@@ -1139,7 +1139,7 @@ $(function () {
                    variableTypes.push(variable.type);
                 });
 
-                $.each($('#new-filter-variable , select[name="category"]').find('option'), function(idx, opt) {
+                $.each($('#new-filter-variable').find('option'), function(idx, opt) {
                     var $opt = $(opt);
 
                     if (
