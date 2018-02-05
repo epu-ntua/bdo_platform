@@ -808,7 +808,7 @@ $(function () {
                                 x_var = s.name
                             }
                         });
-                        $('iframe').attr('src', 'http://127.0.0.1:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
+                        $('iframe').attr('src', 'http://localhost:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
 
                         // update data table headers & data
                         var $table = $("#graph-data-table");
