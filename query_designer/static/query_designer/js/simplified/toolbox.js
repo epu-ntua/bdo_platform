@@ -790,46 +790,52 @@ $(function () {
             filterStr = encodeURIComponent(filterStr);
 
             // request data
-            $.ajax({
-                url: '/queries/execute/',
-                type: 'POST',
-                data: {
-                    query: JSON.stringify(doc),
-                    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val()
-                },
-                success: function (response) {
-                    // create the required graphs
-                    // todo update iframe
-                    var y_var = doc.from[0].select[0].name;
-                    var x_var = doc.from[0].select[1].name;
-                    $.each(doc.from[0].select, function(idx, s) {
-                       if (s.groupBy) {
-                           x_var = s.name
-                       }
-                    });
-                    $('iframe').attr('src', 'http://127.0.0.1:8000/visualizations/get_line_chart_am/?query=39&y_var=' + y_var + '&x_var=' + x_var);
+            var runQuery = function(id) {
+                $.ajax({
+                    url: '/queries/execute/',
+                    type: 'POST',
+                    data: {
+                        query: JSON.stringify(doc),
+                        csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val()
+                    },
+                    success: function (response) {
+                        // create the required graphs
+                        // todo improve updating iframe
+                        var y_var = doc.from[0].select[0].name;
+                        var x_var = doc.from[0].select[1].name;
+                        $.each(doc.from[0].select, function (idx, s) {
+                            if (s.groupBy) {
+                                x_var = s.name
+                            }
+                        });
+                        $('iframe').attr('src', 'http://127.0.0.1:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
 
-                    // update data table headers & data
-                    var $table = $("#graph-data-table");
-                    var colWidths = [];
-                    var tableData = [[]];
+                        // update data table headers & data
+                        var $table = $("#graph-data-table");
+                        $table.find('thead').empty();
+                        $table.find('tbody').empty();
 
-                    $.each(response.headers.columns, function (idx, col) {
-                        colWidths.push(250);
-                        tableData[0][idx] = col.title
-                    });
+                        var $header = $('<tr />');
+                        $.each(response.headers.columns, function (idx, col) {
+                            $header.append($('<td />').text(col.title))
+                        });
+                        $table.find('thead').append($header);
 
-                    $.each(response.results, function (idx, res) {
-                       tableData[idx + 1] = res;
-                    });
+                        $.each(response.results, function (idx, res) {
+                            var $row = $('<tr />');
+                            $.each(res, function(jdx, resItem) {
+                                $row.append($('<td />').text(resItem));
+                            });
 
-                    $table.data('handsontable').updateSettings({
-                        colWidths: colWidths
-                    });
+                            $table.find('tbody').append($row);
+                        });
+                    }
+                })
+            };
 
-                    $table.handsontable("loadData", tableData);
-                }
-            })
+            // hack due to visualizations needing the query id
+            // first save
+            QueryToolbox.save(runQuery);
         },
 
         tabMarker: {
@@ -897,7 +903,7 @@ $(function () {
         },
 
         /* Save the current chart */
-        save: function () {
+        save: function (callback) {
             // get current chart (if any)
             var current = this.current();
             if (current < 0) {
@@ -932,6 +938,11 @@ $(function () {
 
                     // update status
                     that.setStatus('Saved', 'check');
+
+                    // run callback
+                    if (callback) {
+                        callback(data.pk)
+                    }
                 },
                 error: function (xhr, status, error) {
                     that.setStatus('Saving failed.', 'failed');
@@ -983,11 +994,6 @@ $(function () {
 
             this.objects[current].chartTitle = title;
             $('#chart-picker li.active a .chartTitle').text(title);
-
-            if (typeof(this.chart) != 'undefined') {
-                this.chart.titles[0].text = title;
-                this.chart.write('chartdiv');
-            }
 
             this.tabMarker.currentUnsaved();
         },
@@ -1133,7 +1139,7 @@ $(function () {
                    variableTypes.push(variable.type);
                 });
 
-                $.each($('#new-filter-variable, select[name="category"]').find('option'), function(idx, opt) {
+                $.each($('#new-filter-variable , select[name="category"]').find('option'), function(idx, opt) {
                     var $opt = $(opt);
 
                     if (
@@ -1382,7 +1388,13 @@ $(function () {
 
         var $category = $('[name="category"]');
 
-        $category.val($category.val() + newField.groupBy).trigger('change.select2');
+        QueryToolbox.filterManager.updateFilters(QueryToolbox._getChartInfo().values);
+
+        var v = $category.val();
+        $.each(newField.groupBy, function(idx, f) {
+            v.push(f);
+        });
+        $category.val(v).trigger('change.select2');
 
         $fieldset.find('select').select2();
 
@@ -1396,13 +1408,6 @@ $(function () {
 
         // close popup
         $('#select-data-modal').dialog('close');
-    });
-
-    /* Initialize data table */
-    $("#graph-data-table").handsontable({
-        readOnly: true,
-        colHeaders: true,
-        rowHeaders: true
     });
 
     /* Switch chart */
