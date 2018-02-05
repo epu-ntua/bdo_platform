@@ -137,12 +137,12 @@
 }
 
 #chart-sidebar .project-type-option.active i {
-    color: #3d566e;
+    color: #2172ac;
 }
 
 #chart-sidebar .project-type-option.active .chart-panel-font {
-    color: #3d566e;
-    border-bottom: 5px solid #3d566e;
+    color: #2172ac;
+    border-bottom: 5px solid #2172ac;
 }
 
 .chart-control .fieldset {
@@ -184,7 +184,7 @@
 /* Tabs */
 #chart-content-tabs li.active a,
 #chart-content-tabs li a:hover {
-    background: #00bcd4 !important;
+    background: #2172ac !important;
     color: white;
 }
 
@@ -199,7 +199,7 @@
     margin-bottom: 0;
     padding-left: 0;
     min-height: 42px;
-    background: lightblue;
+    background: #2172ac;
 }
 
 #chart-picker .unsaved {
@@ -244,7 +244,7 @@
 #chart-modal .modal-body .fa-spinner {
     position: relative;
     left: calc(50% - 20px);
-    color: #314559;
+    color: #2172ac;
 }
 
 #chart-modal .modal-body .charts-empty-message {
