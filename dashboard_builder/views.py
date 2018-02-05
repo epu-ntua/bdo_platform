@@ -15,7 +15,9 @@ def build_dynamic_dashboard(request):
             saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
         else:
             saved_queries = []
+        num_of_dashboards = Dashboard.objects.count()
         return render(request, 'dashboard_builder/dashboard_builder2.html', {
+            'dashboard_title': num_of_dashboards+1,
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
             'components': Visualization.objects.all().order_by('id'),
@@ -46,14 +48,17 @@ def save_dashboard(request, pk=None):
     else:
         dashboard = Dashboard.objects.get(pk=pk)
 
-    dashboard.title = 'Test Dashboard'
+    dashboard.title = 'BDO Dashboard'
 
-    dashboard_data = request.POST
+    dashboard_data = request.POST.dict()
     print dashboard_data
+    title = dashboard_data.pop('title', None)
     for order in dashboard_data.keys():
         print order
         print dashboard_data[order]
     dashboard.viz_components = dashboard_data
+    dashboard.title = title
+    print dashboard.title
 
     dashboard.save()
 

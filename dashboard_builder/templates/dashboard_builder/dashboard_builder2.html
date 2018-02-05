@@ -59,20 +59,25 @@
                 <h5  style="display: inline-block; margin: 0;" >Create a new dashboard by selecting data and using the provided visualizations.</h5>
             </div>
     </div>
+    <div class="row text-center">
+            <input class="form-control text-center" type="text" id="dashboard_title" value="Dashboard - {{ dashboard_title }}" />
+    </div>
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#myModal">
             <i class="fa fa-plus-circle o-white"></i>  New visualisation
         </button>
 
-        <button type="button" id="save_dashboard_btn" class="btn btn-lg btn-primary">
+        <button type="button" id="save_dashboard_btn" class="btn btn-lg btn-primary" style="display: none">
             Save Dashboard
         </button>
+
     </div>
 
 
 
 
-    <div id="dynamic_dashboard"></div>
+    <div id="dynamic_dashboard">
+    </div>
 
 
 
@@ -356,6 +361,7 @@
 {#                $('#viz-container').appendTo($('#dynamic_dashboard'));#}
                 $('#viz_container iframe').appendTo('#dynamic_dashboard');
                 $('#myModal #viz_container').empty();
+                $('#save_dashboard_btn').show();
 
             });
             $("#dismiss-modal-btn").click(function m (e) {
@@ -379,6 +385,7 @@
             $('#dynamic_dashboard iframe').each(function(index, element){
                 post_data_obj[String(index)] = $(element).attr("src");
             });
+            post_data_obj['title'] = $('#dashboard_title').val();
             var post_data = JSON.stringify(post_data_obj);
             $.ajax({
                 "type": "POST",
@@ -393,6 +400,7 @@
                     console.log(result);
                     $('#dashboard_pk').val(result.pk);
                     window.history.replaceState({} , 'a_title', '/dashboards/create/' + result.pk + '/');
+                    alert('Dashboard saved successfully!');
                 },
                 error: function (jqXHR) {
                     alert('error');
