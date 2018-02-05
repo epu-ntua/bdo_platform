@@ -730,7 +730,7 @@ $(function () {
                 // push dimensions
                 $.each($('select[name="category"] > option[data-forvariable="' + value.type + '"]'), function(jdx, opt) {
                     var name = $(opt).data('type');
-                    var groupBy = $('select[name="category"]').val().indexOf($(opt).attr('value')) >= 0;
+                    var groupBy = $('select[name="category"]').val().indexOf(String($(opt).attr('value'))) >= 0;
 
                     var dimension = {
                         type: $(opt).attr('value'),
@@ -777,13 +777,13 @@ $(function () {
 
             var obj = this.objects[this.current()];
 
+            // update available filters
+            this.filterManager.updateFilters(this._getChartInfo().values);
+
             var doc = this.generateQueryDoc();
             if (doc.from.length === 0) {
                 return
             }
-
-            // update available filters
-            this.filterManager.updateFilters(this._getChartInfo().values);
 
             // get category, values info & filters
             var filterStr = this.constructFiltersParam();
@@ -1139,7 +1139,7 @@ $(function () {
                    variableTypes.push(variable.type);
                 });
 
-                $.each($('#new-filter-variable , select[name="category"]').find('option'), function(idx, opt) {
+                $.each($('#new-filter-variable').find('option'), function(idx, opt) {
                     var $opt = $(opt);
 
                     if (
@@ -1368,7 +1368,6 @@ $(function () {
         var newField = window.getDataSelection();
 
         var $chartControls = $('#chart-control-list > .chart-control');
-        console.log(QueryToolbox);
         var label = 'Metric #<span class="metric-cnt">' + ($chartControls.find('> *').length + 1) + '</span>';
 
         var obj = QueryToolbox.objects[QueryToolbox.current()];
