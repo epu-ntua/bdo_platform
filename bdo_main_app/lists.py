@@ -18,10 +18,10 @@ SERVICE_TYPES = [
         'color': 'red',
     },
     {
-        'id': 'analysis',
-        'icon': 'industry',
-        'title': 'Analysis',
-        'color': 'red',
+        'id': 'dashboard',
+        'icon': 'chart-bar',
+        'title': 'Dashboard',
+        'color': 'green',
     },
 ]
 
