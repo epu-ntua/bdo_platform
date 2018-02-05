@@ -223,8 +223,14 @@ class Query(Model):
 
         return data, encoder
 
-    def execute(self, dimension_values='', variable='', only_headers=False, commit=True):
-        return self.process(dimension_values, variable, only_headers, commit, execute=True)
+    def execute(self, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=False):
+        result = self.process(dimension_values, variable, only_headers, commit, execute=True)
+
+        if with_encoder:
+            return result
+
+        encoder = result[1]
+        return json.loads(encoder().encode(result[0]))
 
     @property
     def raw_query(self):

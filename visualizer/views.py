@@ -14,6 +14,8 @@ import re
 
 import matplotlib.pyplot as plt
 
+from django.db import connection
+
 from utils import *
 from visualizer.models import Visualization
 import time
@@ -1028,10 +1030,13 @@ def get_line_chart_am(request):
     #result_data = result['results']
     #result_headers = result['headers']
 
+    """
     try:
         connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
     except:
         print "I am unable to connect to the database"
+    """
+
     cursor = connection.cursor()
     cursor.execute(raw_query)
     result_data = cursor.fetchall()

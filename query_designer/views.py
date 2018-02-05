@@ -87,13 +87,13 @@ def save_query(request, pk=None):
 
     # v2 fields
     v2_fields = request.POST.get('v2_fields', '')
-    v2_filters = request.POST.get('v2_filters', '')
+    v2_filters = request.POST.get('v2_options', '')
     if v2_fields:
         q.v2_fields = json.dumps(json.loads(v2_fields))
         q.generated_by = 'QDv2'
 
         if v2_filters:
-            q.filters = v2_filters
+            q.v2_filters = v2_filters
 
     # title
     if 'title' in request.POST:
