@@ -372,6 +372,7 @@ def map_course(request):
     #import pdb;pdb.set_trace()
 
     data = get_data(markersum, ship, minyear, maxyear)
+    print data[:3]
 
     jsonobj = []
     currboat = data[0][2]
