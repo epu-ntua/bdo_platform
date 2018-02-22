@@ -1,3 +1,4 @@
+beautifulsoup4
 # django
 Django==1.11
 djangorestframework
@@ -27,6 +28,10 @@ folium
 django-nvd3
 python-nvd3
 django-bower
+
+#data visualization
+django-leaflet
+folium
 
 # deployment
 dj-config-url==0.1.1
