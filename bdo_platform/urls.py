@@ -37,5 +37,7 @@ urlpatterns = [
 
     # dashboards
     url(r'^dashboards/', include('dashboard_builder.urls')),
-]
 
+    # uploader
+    url(r'^upload/', include('uploader.urls')),
+]

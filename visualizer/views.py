@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from utils import *
 from visualizer.models import Visualization
-import time;
+import time
 
 
 def test_request_include(request):

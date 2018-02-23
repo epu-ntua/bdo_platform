@@ -1,6 +1,7 @@
 beautifulsoup4
 # django
-Django==1.9
+Django==1.11
+djangorestframework
 
 # authentication
 django-allauth
@@ -19,9 +20,14 @@ xlrd
 #data visualization
 django-leaflet
 folium
+matplotlib
+Pillow
 
 # deployment
 dj-config-url==0.1.1
 newrelic
 whitenoise
 gunicorn
+
+# misc
+scipy
