@@ -37,5 +37,8 @@ urlpatterns = [
 
     # dashboards
     url(r'^dashboards/', include('dashboard_builder.urls')),
+
+    # dashboards
+    url(r'^service_builder/', include('service_builder.urls')),
 ]
 
