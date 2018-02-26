@@ -2,12 +2,18 @@
 
 {% load i18n %}
 
+{% load leaflet_tags %}
+
 {% block bodyclass %}overview{% endblock %}
 {% block analysismenu %}active{% endblock %}
 
 {% load static from staticfiles %}
 
 {% block css %}
+
+    {% leaflet_css %}
+    <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
+
     <link href="{% static "query_designer/css/toolbox.css" %}" rel="stylesheet">
     <link href="{% static "query_designer/css/data-modal.css" %}" rel="stylesheet">
 
@@ -15,6 +21,9 @@
     <link href="{% static 'query_designer/js/handsontable/handsontable.full.min.css' %}" rel="stylesheet">
 
     <link href="{% static 'query_designer/css/formulas.css' %}" rel="stylesheet">
+
+
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -60,9 +69,15 @@
                             <div class="btn-edit-filters pull-right btn btn-sm btn-default btn-white filter-edit-open" style="display: none;"><i class="fa fa-cog"></i> {% trans 'Data filters' %} (<span class="filter-counter">-</span>)</div>
                         </div>
 
+                        <div id="bounds" class="text-center">
+                            <h4 class="pull-left">{% trans 'Coverage' %}</h4>
+                            {% include "query_designer/utils/bounds-modals.html" %}
+                        </div>
+
                         <div id="chart-control-list">
 
                         </div>
+                        <div id="fetch" style="float: right;"></div>
 
                         <div id="chart-filters" style="display: none;">
 
@@ -109,6 +124,9 @@
 {% endblock %}
 
 {% block js %}
+
+    {% leaflet_js %}
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
     <script src="{% static 'query_designer/js/handsontable/handsontable.full.min.js' %}"></script>
 
@@ -120,6 +138,14 @@
     <script src="{% static "query_designer/js/simplified/data-modal.js" %}"></script>
 
     <script src="{% static "query_designer/js/simplified/formula-editor.js" %}"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+
+    <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+
+    <script src="{% static "js/leaflet-areaselect.js" %}"></script>
+
+    <script src="{% static "query_designer/js/simplified/selbound.js" %}"></script>
 
     {% if auto_open %}
         <script>

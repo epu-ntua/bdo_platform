@@ -1260,7 +1260,7 @@ $(function () {
 
                 // re-load popup
                 this.load();
-
+                console.log( filterStr );
                 // mark as unsaved
                 QueryToolbox.tabMarker.currentUnsaved()
             },

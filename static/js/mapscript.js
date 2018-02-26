@@ -1,7 +1,7 @@
 $(document).ready(function(){
 
     var min_year = parseInt(document.getElementById('min_year').innerHTML);
-    var max_year = document.getElementById('max_year').innerHTML;
+    var max_year = parseInt(document.getElementById('max_year').innerHTML);
 
 
     $('#id_tiles').on('change', function(e){
