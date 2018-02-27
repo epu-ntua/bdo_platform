@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{%  block title %}User Requests{% endblock %}</title>
+
+    {% load staticfiles %}
+
+    <!-- Bootstrap library -->
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+	<!-- Latest compiled JavaScript -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'requestservice/styles.css' %}"/>
+
+    {% block script %}{% endblock %}
+
+</head>
+<body>
+
+
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#menu">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="{% url 'requestservice:index' %}">BigDataOcean</a>
+                </div>
+                <div class="collapse navbar-collapse" id="menu">
+                    <ul class="nav navbar-nav">
+                        <li>
+                            <a href="#">
+                                Usability1
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                Usability2
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                Usability3
+                            </a>
+                        </li>
+                        <li class="dropdown
+                            {% if request.path == "/requests/create" or request.path == "/requests/" %}
+                               active
+                            {% endif %}">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="reqmenu">
+                                <span class="caret"></span> Requests
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a href="{% url 'requestservice:create' %}">Create A Request</a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'requestservice:index' %}">Requests Data</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <form class="navbar-form navbar-right" role="search" method="GET" action="#">
+                                <div class="form-group  is-empty">
+                                    <input type="text" class="form-control border-input" placeholder="" name="q">
+                                    <span class="material-input"></span>
+                                    <span class="material-input"></span>
+                                </div>
+                                <button type="submit" class="btn btn-white btn-round btn-just-icon">
+                                    <i class="material-icons">search</i>
+                                    <div class="ripple-container">
+                                    </div>
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            {% if request.user.is_authenticated %}
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-user"></span>
+                                    Hello {{ request.user.username }}
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a href="{% url 'requestservice:user-logout' %}">
+                                            <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+                                            Logout
+                                        </a>
+                                    </li>
+                                </ul>
+                            {% else %}
+                                <a href="{% url 'requestservice:login' %}">
+                                    <span class="glyphicon glyphicon-log-in" aria-hidden="true"></span>
+                                    Login
+                                </a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+            <!-- content when window is in it's original size : contains both horizontal and vertical navigations bars and the main content -->
+
+        <div class="jumbotron">
+            <div id="content" class="container">
+
+                {% block body %}
+                {% endblock %}
+
+            </div>
+        </div>
+
+
+</body>
+
+</html>
