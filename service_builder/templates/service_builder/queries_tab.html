@@ -1,0 +1,39 @@
+<div id="queries_container" class="tab-pane fade in active">
+    <h3>Select Queries to Use</h3>
+    <button type="button" id="query_template_popbtn" class="btn btn-md btn-primary" data-toggle="popover" title="Select query as template" data-placement="right">
+        + Add Query
+    </button>
+
+    <table id="selected-queries-table" class="table table-full-width">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Query name</th>
+                <th>Doc</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0</td>
+                <td>Query 1</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="query-select-container">
+    <select id="query-select" class="form-control" name="query">
+        <option disabled selected>-- select one of the saved queries --</option>
+        {% for query in saved_queries %}
+            <option value="{{ query.id }}"
+                    data-query-id="{{ query.id }}"
+                    data-query-raw="{{ query.raw_query }}"
+                    data-query-title="{{ query.title }}"
+                    data-query-document="{{ query.document }}">
+                {{ query.title }}
+            </option>
+        {% endfor %}
+    </select>
+    <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+    <button type="button" id="add_new_query_btn" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+</div>

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'service_builder/css/create_service.css' %}" rel="stylesheet" />
+    <style>
+
+    </style>
+{% endblock %}
+
+
+
+{% block content %}
+    <div class="container" id ='service_container'>
+        <ul class="nav nav-pills nav-justified">
+            <li class="active"><a data-toggle="pill" href="#queries_container">Queries</a></li>
+            <li><a data-toggle="pill" href="#arguments_container">Arguments</a></li>
+            <li><a data-toggle="pill" href="#code_container">Code</a></li>
+            <li><a data-toggle="pill" href="#output_container">Output</a></li>
+        </ul>
+
+        <div class="tab-content">
+            {% include "service_builder/queries_tab.html" %}
+
+            <div id="arguments_container" class="tab-pane fade">
+                <h3>Define Service Arguments</h3>
+            </div>
+            <div id="code_container" class="tab-pane fade">
+                <h3>Provide Service Code</h3>
+            </div>
+            <div id="output_container" class="tab-pane fade">
+                <h3>Define Service Output</h3>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    <script src="{% static 'service_builder/js/queries_tab.js' %}"></script>
+{% endblock %}

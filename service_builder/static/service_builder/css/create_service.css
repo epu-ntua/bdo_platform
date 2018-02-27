@@ -1,0 +1,35 @@
+#service_container{
+    margin-top: 3%;
+}
+
+.nav-pills:not(.nav-pills-icons) > li > a{
+    background-color: #efefef;
+}
+
+.nav-pills:not(.nav-pills-icons) > li > a:hover{
+    background-color: #d9d9d9;
+}
+
+.nav-pills:not(.nav-pills-icons) > .active > a{
+    background-color: #2671aa;
+}
+
+.nav-pills:not(.nav-pills-icons) > .active > a:hover{
+    background-color: #2671aa;
+}
+
+.table-full-width{
+    margin-left: 0;
+    margin-right: 0;
+}
+
+
+.tab-pane{
+    min-height: 500px;
+}
+
+#queries_container .popover{
+    min-width: 470px;
+    max-width: 600px;
+    min-height: 230px;
+}
