@@ -33,7 +33,11 @@ $(document).ready(function(){
         available_filter_args = JSON.parse('{}');
         $('#selected-queries-table tbody tr').each(function( index ) {
             console.log( index + ": " + JSON.stringify(JSON.parse($( this ).children().eq(3).text().replace(/u'/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'))['filters']) );
-            parse_filters($( this ).children().eq(0).text(), $( this ).children().eq(1).text(), JSON.parse($( this ).children().eq(3).text().replace(/u'/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'))['filters']) ;
+            var query_doc = JSON.parse($( this ).children().eq(3).text().replace(/u'/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
+            var filters = query_doc['filters'];
+            if (filters != undefined){
+                parse_filters($( this ).children().eq(0).text(), $( this ).children().eq(1).text(), filters) ;
+            }
         });
 
         $('#query-argument-select').empty();
