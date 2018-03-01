@@ -1,4 +1,6 @@
 $(document).ready(function(){
+    var notebook_id = $('#notebook_id').val();
+
     $("#load_query_popbtn").popover({
         html: true,
         animation:true,
@@ -32,8 +34,24 @@ $(document).ready(function(){
 
 
         $('.popover-content #load_query_btn').click(function (e) {
-            // alert(load_query_id);
-
+            if (selected){
+                // alert(load_query_id);
+                // alert(notebook_id);
+                $.ajax({
+                    "type": "GET",
+                    "url": "/service_builder/load_query/",
+                    "data": {
+                        query_id: load_query_id,
+                        notebook_id: notebook_id
+                    },
+                    "success": function(result) {
+                        console.log(result);
+                    },
+                    error: function (jqXHR) {
+                        alert('error');
+                    }
+                });
+            }
             selected = false;
             $('#load_query_popbtn').popover("hide");
         })
