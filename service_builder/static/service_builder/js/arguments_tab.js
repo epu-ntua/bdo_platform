@@ -66,7 +66,9 @@ $(document).ready(function(){
         var new_arg_a;
         var new_arg_op;
         var new_arg_b;
+        var selected = false;
         $('.popover-content #query-argument-select').on('change', function() {
+            selected = true;
             new_arg_query_id = $(this).children(":selected").attr("data-query-id");
             new_arg_query_display_name = $(this).children(":selected").attr("data-display_name");
             new_arg_a = $(this).children(":selected").attr("data-arg-a");
@@ -78,9 +80,11 @@ $(document).ready(function(){
 
 
         $('.popover-content #add_new_argument_btn').click(function (e) {
-            var new_arg_tr_string = "<tr> <td>"+new_arg_query_id+"</td> <td>"+new_arg_query_display_name+"</td> <td>"+new_arg_a+' '+new_arg_op +"</td> <td><input value='"+new_arg_b+"'/></td> <td><input value=''/></td> <td><textarea rows='3' cols='50'/></td> </tr>";
-            $('#selected-arguments-table tbody').append(new_arg_tr_string);
-
+            if(selected) {
+                var new_arg_tr_string = "<tr> <td>" + new_arg_query_id + "</td> <td>" + new_arg_query_display_name + "</td> <td>" + new_arg_a + ' ' + new_arg_op + "</td> <td><input value='" + new_arg_b + "'/></td> <td><input value=''/></td> <td><textarea rows='3' cols='50'/></td> </tr>";
+                $('#selected-arguments-table tbody').append(new_arg_tr_string);
+            }
+            selected = false;
             $('#add_argument_popbtn').popover("hide");
         })
     });

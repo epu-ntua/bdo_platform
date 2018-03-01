@@ -22,7 +22,9 @@ $(document).ready(function(){
 
 
         var load_query_id;
+        var selected = false;
         $('.popover-content #load-query-select').on('change', function() {
+            selected = true;
             load_query_id = $(this).children(":selected").attr("data-query-id");
         });
 
@@ -32,6 +34,7 @@ $(document).ready(function(){
         $('.popover-content #load_query_btn').click(function (e) {
             // alert(load_query_id);
 
+            selected = false;
             $('#load_query_popbtn').popover("hide");
         })
     });

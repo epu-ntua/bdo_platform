@@ -36,6 +36,7 @@ $(document).ready(function(){
                 var new_query_tr_string = "<tr> <td>" + new_query_id + "</td> <td>Q" + number_of_queries + "</td> <td>" + new_query_title + "</td> <td>" + new_query_document + "</td> </tr>";
                 $('#selected-queries-table tbody').append(new_query_tr_string);
             }
+            selected = false;
             $('#add_query_popbtn').popover("hide");
         })
     });
