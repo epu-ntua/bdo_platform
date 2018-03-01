@@ -104,3 +104,5 @@ aggregator/datasets
 
 *.ipynb
 metastore_db/*
+.idea/
+analytics/logs/
