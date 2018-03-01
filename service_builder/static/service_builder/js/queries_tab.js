@@ -9,6 +9,9 @@ $(document).ready(function(){
         }
     }).click(function(e) {
         $(this).popover('toggle');
+
+        $('.popover-content #query-select').select2();
+
         var new_query_id;
         var new_query_document;
         var new_query_title;
@@ -23,6 +26,8 @@ $(document).ready(function(){
             //   updateVariables(this);
 
         });
+
+
         $('.popover-content #add_new_query_btn').click(function (e) {
             number_of_queries++;
             var new_query_tr_string = "<tr> <td>"+new_query_id+"</td> <td>Q"+number_of_queries+"</td> <td>"+new_query_title+"</td> <td>"+new_query_document+"</td> </tr>";

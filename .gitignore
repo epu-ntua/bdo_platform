@@ -101,5 +101,6 @@ ENV/
 # BDO specific
 settings-loader.txt
 aggregator/datasets
-/*.ipynb
-/metastore_db
+
+*.ipynb
+metastore_db/*

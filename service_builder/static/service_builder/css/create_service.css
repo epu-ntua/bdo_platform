@@ -28,9 +28,10 @@
     min-height: 500px;
 }
 
-#queries_container .popover{
-    min-width: 470px;
-    max-width: 600px;
+/*Size of the popovers*/
+#queries_container .popover, #code_container .popover{
+    min-width: 570px;
+    max-width: 700px;
     min-height: 230px;
 }
 
@@ -39,13 +40,15 @@
     max-width: 900px;
     min-height: 230px;
 }
+/******************/
 
-#add_new_query_btn, #add_new_argument_btn{
+#add_new_query_btn, #add_new_argument_btn, #load_query_btn{
     position: absolute;
     right: 7px;
     bottom: 0px;
 }
 
+/*Size of the query args select field*/
 .select2-dropdown, .select2-dropdown--below{
     width: 475px !important;
     max-width: 480px;
@@ -55,3 +58,30 @@
     width: 475px !important;
     max-width: 480px;
 }
+/***************/
+
+/*Zeppelin Iframe*/
+#code_container #main-container, .nav-pills{
+    position: relative;
+    z-index: 1;
+}
+
+.holder{
+    margin-top: -90px;
+    position:relative;
+    z-index: 0;
+}
+.frame{
+    width: 100%;
+    height:100%;
+    min-height: 450px;
+}
+.bar{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height: 110px;
+    background-color: white;
+}
+/***************/
