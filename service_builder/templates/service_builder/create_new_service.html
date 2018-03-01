@@ -3,6 +3,7 @@
 {% load static %}
 
 {% block css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
     <link href="{% static 'service_builder/css/create_service.css' %}" rel="stylesheet" />
     <style>
 
@@ -23,12 +24,11 @@
         <div class="tab-content">
             {% include "service_builder/queries_tab.html" %}
 
-            <div id="arguments_container" class="tab-pane fade">
-                <h3>Define Service Arguments</h3>
-            </div>
-            <div id="code_container" class="tab-pane fade">
-                <h3>Provide Service Code</h3>
-            </div>
+            {% include "service_builder/arguments_tab.html" %}
+
+            {% include "service_builder/code_tab.html" %}
+
+
             <div id="output_container" class="tab-pane fade">
                 <h3>Define Service Output</h3>
             </div>
@@ -38,5 +38,9 @@
 
 
 {% block js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
     <script src="{% static 'service_builder/js/queries_tab.js' %}"></script>
+    <script src="{% static 'service_builder/js/arguments_tab.js' %}"></script>
+    <script src="{% static 'service_builder/js/code_tab.js' %}"></script>
+
 {% endblock %}

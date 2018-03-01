@@ -33,3 +33,25 @@
     max-width: 600px;
     min-height: 230px;
 }
+
+#arguments_container .popover{
+    min-width: 750px;
+    max-width: 900px;
+    min-height: 230px;
+}
+
+#add_new_query_btn, #add_new_argument_btn{
+    position: absolute;
+    right: 7px;
+    bottom: 0px;
+}
+
+.select2-dropdown, .select2-dropdown--below{
+    width: 475px !important;
+    max-width: 480px;
+}
+
+.select2, .select2-container, .select2-container--default, .select2-container--below, .select2-container--open{
+    width: 475px !important;
+    max-width: 480px;
+}
