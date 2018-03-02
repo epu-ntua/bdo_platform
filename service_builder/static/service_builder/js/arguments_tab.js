@@ -81,7 +81,7 @@ $(document).ready(function(){
 
         $('.popover-content #add_new_argument_btn').click(function (e) {
             if(selected) {
-                var new_arg_tr_string = "<tr> <td>" + new_arg_query_id + "</td> <td>" + new_arg_query_display_name + "</td> <td>" + new_arg_a + ' ' + new_arg_op + "</td> <td><input value='" + new_arg_b + "'/></td> <td><input value=''/></td> <td><textarea rows='3' cols='50'/></td> </tr>";
+                var new_arg_tr_string = "<tr > <td>" + new_arg_query_id + "</td> <td>" + new_arg_query_display_name + "</td> <td>" + new_arg_a + ' ' + new_arg_op + "</td> <td><input value='" + new_arg_b + "'/></td> <td><input value=''/></td> <td><textarea rows='3' cols='50'/></td> </tr>";
                 $('#selected-arguments-table tbody').append(new_arg_tr_string);
             }
             selected = false;

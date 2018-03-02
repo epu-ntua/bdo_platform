@@ -82,6 +82,11 @@
     left:0;
     width:100%;
     height: 110px;
-    background-color: white;
+    background-color: #f9f9f9;
+    border-width: 2px;
+    border-bottom-width: 2px;
+    border-bottom-style: inset;
+    border-color: initial;
+    border-bottom-color: initial;
 }
 /***************/

@@ -16,7 +16,7 @@ def create_new_service(request):
         saved_queries = []
     return render(request, 'service_builder/create_new_service.html', {
         'saved_queries': saved_queries,
-        'notebook_id': '2D3RV23D6'})
+        'notebook_id': '2D9E8JBBX'})
 
 
 def load_query(request):
