@@ -10,6 +10,18 @@ import folium.plugins as plugins
 import folium
 import numpy as np
 import requests
+import collections
+
+
+def convert_unicode_json(data):
+    if isinstance(data, basestring):
+        return str(data)
+    elif isinstance(data, collections.Mapping):
+        return dict(map(convert_unicode_json, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(convert_unicode_json, data))
+    else:
+        return data
 
 
 def fig2data(fig):
@@ -578,27 +590,41 @@ def create_zep_drop_all_paragraph(notebook_id, title):
     return paragraph_id
 
 
-def create_zep_toJSON_paragraph(notebook_id, title):
+def create_zep_toJSON_paragraph(notebook_id, title, df_name, order_by='', order_type='ASC'):
     data = dict()
     data['title'] = 'bdo_test_paragraph'
-    data['text'] = '%spark.pyspark' \
-                   '\ndf.toJSON().collect()'
+    if order_by != '':
+        if order_type == 'ASC':
+            data['text'] = '%spark.pyspark' \
+                           '\n{0}.orderBy("{1}", ascending=True).toJSON().collect()'.format(df_name, order_by)
+        else:
+            data['text'] = '%spark.pyspark' \
+                           '\n{0}.orderBy("{1}", ascending=False).toJSON().collect()'.format(df_name, order_by)
+    else:
+        data['text'] = '%spark.pyspark' \
+                       '\n{0}.toJSON().collect()'.format(df_name)
 
     str_data = json.dumps(data)
     response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
-    response_json = response.json()
+    response_json = convert_unicode_json(response.json())
     paragraph_id = response_json['body']
     print paragraph_id
     return paragraph_id
 
 
 def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
+    print "request: "+"http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id)
     response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
     print response
-    response_json = response.json()
-    json_data = response_json['body']['results']['msg'][0]['data']
-    print json_data
+    response_json = convert_unicode_json(response.json())
+    json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}"))
+    # print json_data
+    # print type(json_data)
+    # json_data = convert_unicode_json(json_data)
+    # print json_data
+    # print type(json_data)
+
     return json_data
 
 

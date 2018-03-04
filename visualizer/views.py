@@ -1023,59 +1023,70 @@ def test_request_zep(request):
 
 
 def get_line_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    query = Query(document=query.document)
+    query_pk = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
 
-    doc = query.document
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == y_var:
-                s['aggregate'] = 'avg'
-                s['exclude'] = False
-            elif s['name'] == x_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            else:
-                s['exclude'] = True
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-    query.document = doc
-    raw_query = query.raw_query
-    print doc
-    print raw_query
+    if query_pk != 0:
+        query = Query.objects.get(pk=query_pk)
+        query = Query(document=query.document)
+        doc = query.document
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == y_var:
+                    s['aggregate'] = 'avg'
+                    s['exclude'] = False
+                elif s['name'] == x_var:
+                    s['groupBy'] = True
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+        query.document = doc
+        raw_query = query.raw_query
+        print doc
+        print raw_query
 
-    #result = query.execute()
-    #result_data = result['results']
-    #result_headers = result['headers']
+        #result = query.execute()
+        #result_data = result['results']
+        #result_headers = result['headers']
 
-    """
-    try:
-        connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
-    except:
-        print "I am unable to connect to the database"
-    """
+        """
+        try:
+            connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
+        except:
+            print "I am unable to connect to the database"
+        """
 
-    cursor = connection.cursor()
-    result_data = cursor.execute(raw_query)
+        cursor = connection.cursor()
+        result_data = cursor.execute(raw_query)
 
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)[0]['headers']
+        cursor = connection.cursor()
+        cursor.execute(raw_query)
+        result_data = cursor.fetchall()
+        result_headers = query.execute(only_headers=True)[0]['headers']
 
-    y_var_index = x_var_index = 0
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == y_var:
-            y_var_index = idx
-        elif c['name'] == x_var:
-            x_var_index = idx
+        y_var_index = x_var_index = 0
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == y_var:
+                y_var_index = idx
+            elif c['name'] == x_var:
+                x_var_index = idx
 
-    json_data = []
-    for d in result_data:
-        json_data.append({y_var: d[y_var_index], x_var: str(d[x_var_index])})
+        json_data = []
+        for d in result_data:
+            json_data.append({y_var: d[y_var_index], x_var: str(d[x_var_index])})
 
+
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print json_data
 
 
     #notebook_id = create_zep_note(name='bdo_test')
@@ -1102,8 +1113,6 @@ def get_line_chart_am(request):
     #print str(json_data)
     # print json.loads(str(json_data))
     #
-
-    doc = query.document
 
     if 'time' in x_var:
         isDate = 'true'

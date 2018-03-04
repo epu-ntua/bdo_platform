@@ -50,7 +50,6 @@ def update_filter(doc_filters, arg):
     return doc_filters
 
 
-
 def load_query(request):
     notebook_id = str(request.POST.get('notebook_id'))
     query_id = int(request.POST.get('query_id'))
