@@ -2,20 +2,22 @@ $(document).ready(function(){
     var available_filter_args;
 
     function parse_filters(query_id, query_num, json){
-        if (json['a']['a'] == undefined) {
-            if (available_filter_args[query_id] == undefined){
-                available_filter_args[query_id] = {};
-                available_filter_args[query_id]['display_name'] = null;
-                available_filter_args[query_id]['filter_args'] = [];
+        if(json['a'] != undefined) {
+            if (json['a']['a'] == undefined) {
+                if (available_filter_args[query_id] == undefined) {
+                    available_filter_args[query_id] = {};
+                    available_filter_args[query_id]['display_name'] = null;
+                    available_filter_args[query_id]['filter_args'] = [];
+                    console.log(JSON.stringify(available_filter_args));
+                }
                 console.log(JSON.stringify(available_filter_args));
+                available_filter_args[query_id]['display_name'] = query_num;
+                available_filter_args[query_id]['filter_args'].push(json);
             }
-            console.log(JSON.stringify(available_filter_args));
-            available_filter_args[query_id]['display_name'] = query_num;
-            available_filter_args[query_id]['filter_args'].push(json);
-        }
-        else {
-            parse_filters(query_id, query_num, json['a']);
-            parse_filters(query_id, query_num, json['b']);
+            else {
+                parse_filters(query_id, query_num, json['a']);
+                parse_filters(query_id, query_num, json['b']);
+            }
         }
     }
 
@@ -32,8 +34,10 @@ $(document).ready(function(){
 
         available_filter_args = JSON.parse('{}');
         $('#selected-queries-table tbody tr').each(function( index ) {
-            console.log( index + ": " + JSON.stringify(JSON.parse($( this ).children().eq(3).text().replace(/u'/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'))['filters']) );
-            var query_doc = JSON.parse($( this ).children().eq(3).text().replace(/u'/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
+            console.log( index + ": " + $( this ).children().eq(3).text());
+            console.log( index + ": " + $( this ).children().eq(3).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
+            console.log( index + ": " + JSON.stringify(JSON.parse($( this ).children().eq(3).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'))['filters']) );
+            var query_doc = JSON.parse($( this ).children().eq(3).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
             var filters = query_doc['filters'];
             if (filters != undefined){
                 parse_filters($( this ).children().eq(0).text(), $( this ).children().eq(1).text(), filters) ;
@@ -81,7 +85,7 @@ $(document).ready(function(){
 
         $('.popover-content #add_new_argument_btn').click(function (e) {
             if(selected) {
-                var new_arg_tr_string = "<tr > <td>" + new_arg_query_id + "</td> <td>" + new_arg_query_display_name + "</td> <td>" + new_arg_a + ' ' + new_arg_op + "</td> <td><input value='" + new_arg_b + "'/></td> <td><input value=''/></td> <td><textarea rows='3' cols='50'/></td> </tr>";
+                var new_arg_tr_string = "<tr > <td>" + new_arg_query_id + "</td> <td>" + new_arg_query_display_name + "</td> <td> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td><input value='" + new_arg_b + "'/></td> <td><input value=''/></td> <td><textarea rows='3' cols='50'/></td> </tr>";
                 $('#selected-arguments-table tbody').append(new_arg_tr_string);
             }
             selected = false;

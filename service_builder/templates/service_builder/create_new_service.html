@@ -5,6 +5,8 @@
 {% block css %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
     <link href="{% static 'service_builder/css/create_service.css' %}" rel="stylesheet" />
+
+    <link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
     <style>
 
     </style>
@@ -13,6 +15,7 @@
 
 
 {% block content %}
+    {% csrf_token %}
     <div class="container" id ='service_container'>
         <ul class="nav nav-pills nav-justified">
             <li class="active"><a data-toggle="pill" href="#queries_container">Queries</a></li>
@@ -28,19 +31,37 @@
 
             {% include "service_builder/code_tab.html" %}
 
+            {% include "service_builder/output_tab.html" %}
 
-            <div id="output_container" class="tab-pane fade">
-                <h3>Define Service Output</h3>
-            </div>
         </div>
     </div>
 {% endblock %}
 
 
 {% block js %}
+    {# Select2    #}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+
+    {# Code Mirror    #}
+    <script src="http://codemirror.net/lib/codemirror.js"></script>
+    <!-- For HTML/XML -->
+    <script src="http://codemirror.net/mode/xml/xml.js"></script>
+    <script src="http://codemirror.net/mode/htmlmixed/htmlmixed.js"></script>
+    <!-- For CSS -->
+    <script src="http://codemirror.net/mode/css/css.js"></script>
+    <!-- For JS -->
+    <script src="http://codemirror.net/mode/javascript/javascript.js"></script>
+
+    <script src="http://codemirror.net/addon/display/autorefresh.js"></script>
+
+    {# End Code Mirror    #}
+
+
     <script src="{% static 'service_builder/js/queries_tab.js' %}"></script>
     <script src="{% static 'service_builder/js/arguments_tab.js' %}"></script>
     <script src="{% static 'service_builder/js/code_tab.js' %}"></script>
+    <script src="{% static 'service_builder/js/output_tab.js' %}"></script>
 
 {% endblock %}

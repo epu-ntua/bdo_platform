@@ -1,4 +1,18 @@
 $(document).ready(function(){
+    var csrftoken = Cookies.get('csrftoken');
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+
     var notebook_id = $('#notebook_id').val();
 
     $("#load_query_popbtn").popover({
@@ -37,12 +51,26 @@ $(document).ready(function(){
             if (selected){
                 // alert(load_query_id);
                 // alert(notebook_id);
+                var exposed_args=[];
+                $("#selected-arguments-table tbody tr").each(
+                    function(index, elem){
+                        if($(this).children().eq(0).text()==load_query_id){
+                            console.log($(this).text());
+                            exposed_args.push({
+                                filter_a: $(this).children().eq(2).children().eq(0).text(),
+                                filter_op: $(this).children().eq(2).children().eq(1).text(),
+                                filter_b: $(this).children().eq(3).children().eq(0).val()
+                            });
+                        }
+                    }
+                );
                 $.ajax({
-                    "type": "GET",
+                    "type": "POST",
                     "url": "/service_builder/load_query/",
                     "data": {
                         query_id: load_query_id,
-                        notebook_id: notebook_id
+                        notebook_id: notebook_id,
+                        exposed_args: JSON.stringify(exposed_args)
                     },
                     "success": function(result) {
                         console.log(result);
