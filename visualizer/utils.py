@@ -621,7 +621,7 @@ def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
     json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}"))
     # print json_data
     # print type(json_data)
-    # json_data = convert_unicode_json(json_data)
+    json_data = convert_unicode_json(json_data)
     # print json_data
     # print type(json_data)
 
