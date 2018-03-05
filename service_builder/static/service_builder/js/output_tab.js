@@ -1,4 +1,3 @@
-$(document).ready(function(){
 
 	// Base template
 	var base_tpl =
@@ -117,7 +116,8 @@ $(document).ready(function(){
 
 	// SETTING CODE EDITORS INITIAL CONTENT
 	html_editor.setValue('<h1>Service 1</h1>');
-	css_editor.setValue('h1 { color: blue; }');
+	css_editor.setValue("h1 { color: blue; }\n" +
+                        "iframe {width: 100%; height:300px;}");
 
 
 
@@ -261,4 +261,3 @@ $(document).ready(function(){
         $('#addVizModal #viz_container').empty();
     });
 
-}());

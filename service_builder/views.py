@@ -7,6 +7,7 @@ from django.shortcuts import render
 
 from query_designer.models import Query
 from visualizer.models import Visualization
+from service_builder.models import Service
 from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph
 
 
@@ -70,5 +71,38 @@ def load_query(request):
     run_zep_paragraph(notebook_id, query_paragraph_id)
 
     result = {}
-    # return the found variables
+    return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+def publish_new_service(request):
+    if request.method == 'POST':
+        selected_queries = convert_unicode_json(json.loads(str(request.POST.get('selected_queries'))))
+        print selected_queries
+        arguments = convert_unicode_json(json.loads(str(request.POST.get('exposed_args'))))
+        print arguments
+        notebook_id = str(request.POST.get('notebook_id'))
+        print notebook_id
+        output_html = str(request.POST.get('output_html'))
+        print output_html
+        output_css = str(request.POST.get('output_css'))
+        print output_css
+        output_js = str(request.POST.get('output_js'))
+        print output_js
+
+        service = Service()
+        service.user = request.user
+        service.title = 'A Test Service'
+
+        service.notebook_id = ''
+        service.queries = selected_queries
+        service.arguments = arguments
+
+        service.output_html = output_html
+        service.output_css = output_css
+        service.output_js = output_js
+
+        service.save()
+
+
+    result = {}
     return HttpResponse(json.dumps(result), content_type="application/json")
