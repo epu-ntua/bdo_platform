@@ -6,6 +6,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 from query_designer.models import Query
+from visualizer.models import Visualization
 from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph
 
 
@@ -15,8 +16,10 @@ def create_new_service(request):
         saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
     else:
         saved_queries = []
+    available_viz = Visualization.objects.filter(hidden=False)
     return render(request, 'service_builder/create_new_service.html', {
         'saved_queries': saved_queries,
+        'available_viz': available_viz,
         'notebook_id': '2D9E8JBBX'})
 
 

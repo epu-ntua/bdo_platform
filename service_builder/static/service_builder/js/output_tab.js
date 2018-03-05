@@ -14,9 +14,9 @@ $(document).ready(function(){
 
 	var prepareSource = function() {
 		var html = html_editor.getValue(),
-				css = css_editor.getValue(),
-				js = js_editor.getValue(),
-				src = '';
+            css = css_editor.getValue(),
+			js = js_editor.getValue(),
+			src = '';
 
 		// HTML
 		src = base_tpl.replace('</body>', html + '</body>');
@@ -37,6 +37,7 @@ $(document).ready(function(){
 
 		var iframe = document.querySelector('#output iframe'),
 			iframe_doc = iframe.contentDocument;
+		    // console.log(iframe_doc);
 
 		iframe_doc.open();
 		iframe_doc.write(source);
@@ -117,5 +118,137 @@ $(document).ready(function(){
 	// SETTING CODE EDITORS INITIAL CONTENT
 	html_editor.setValue('<h1>Service 1</h1>');
 	css_editor.setValue('h1 { color: blue; }');
+
+
+
+//	END CODE MIRROR
+// }());
+//
+// $(document).ready(function(){
+	$('#addVizModal select').select2();
+
+
+    function updateVariables(element) {
+        $('#addVizModal .variable-select').find('option').remove().end();
+        $('#addVizModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+        var new_query_id = $('#addVizModal #selected_query').val();
+        var new_query_doc = {};
+        $.ajax({
+            url: '/queries/get_query_variables/',
+            data: {
+                id: new_query_id,
+                document: new_query_doc
+                },
+            type: 'GET',
+            success: function(result){
+                var variables = result['variables'];
+                var dimensions = result['dimensions'];
+                $.each(variables, function(k, v) {
+                    $('#addVizModal .variable-select').append($("<option></option>")
+                        .attr("value", v)
+                        .text(k));
+                });
+
+                $.each(dimensions, function(k, v) {
+                    $('#addVizModal .variable-select').append($("<option></option>")
+                        .attr("value", v)
+                        .text(k));
+                });
+            }
+        });
+    }
+
+
+    $('#addVizModal .select2').on("click", function() {
+        $('.popover').popover('hide');
+    });
+
+    $('#addVizModal select').on('change', function() {
+        $('#addVizModal #viz_config').show();
+        var new_query_id = $(this).children(":selected").attr("data-query-id");
+        $('#addVizModal #selected_query').val(new_query_id);
+        $('.popover').popover('hide');
+          // updateVariables(this);
+    });
+
+
+
+    $(".viz_item").click(function (element) {
+      var component_id = $(this).attr('data-viz-id');
+      var component_selector = 'li[data-viz-id="'+component_id+'"]';
+      $.ajax({
+            url: '/dashboards/get_visualization_form_fields',
+            data: {
+                id: parseInt(component_id),
+                order: 1
+                },
+            type: 'GET',
+            success: function(form_fields){
+                $("#conf-container").html(form_fields);
+                $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
+
+                $(component_selector).popover({
+                    html: true,
+                    title: 'Configure visualisation',
+                    trigger: 'manual',
+                    content: function() {
+                        return $('#conf-container').html();
+                    }
+                });
+                updateVariables($('#load-viz-query-select'));
+                $(component_selector).popover('toggle');
+                var popver_id = '#' + $(component_selector).attr('aria-describedby');
+                $(popver_id+' #select_conf_ok').click(function(e){
+                    submit_conf(component_selector);
+                    $(component_selector).popover("hide");
+                });
+            }
+        });
+    });
+
+
+    var viz_request = "";
+    function submit_conf(component_selector) {
+        viz_request = "http://localhost:8000/visualizations/";
+        viz_request += $('#addVizModal').find('.modal-body').find('#action').val();
+        var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+
+        var submitted_args = $('#addVizModal').find(conf_popover_id).find('.popover-content').clone();
+        var selects = $('#addVizModal').find(conf_popover_id).find('.popover-content').find("select");
+        $(selects).each(function(i) {
+            var select = this;
+            $(submitted_args).find("select").eq(i).val($(select).val());
+        });
+        $('#config-viz-form').empty();
+        $('#config-viz-form').append(submitted_args);
+
+
+        var myData = $("#config-viz-form").serialize();
+        viz_request += '?';
+        viz_request += myData;
+
+        viz_request += '&query=' + $('#addVizModal #selected_query').val();
+
+        show_viz(viz_request);
+    }
+
+    function show_viz(viz_request) {
+        $("#viz_container").html('<iframe id="viz-iframe" ' +
+            'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+            '></iframe>');
+    }
+
+
+    $("#addVizModal #submit-modal-btn").click(function () {
+        $('#viz_container iframe').appendTo('#dynamic_dashboard');
+        html_editor.replaceRange('\n<iframe src="'+viz_request+'" frameborder="0" allowfullscreen=""\n', {line: Infinity});
+        html_editor.refresh();
+        viz_request = "";
+        $('#addVizModal #viz_container').empty();
+    });
+    $("#dismiss-modal-btn").click(function m (e) {
+        viz_request = "";
+        $('#addVizModal #viz_container').empty();
+    });
 
 }());
