@@ -125,6 +125,16 @@ $(document).ready(function(){
 // }());
 //
 // $(document).ready(function(){
+
+    $('#addVizModal').on('show.bs.modal', function () {
+        $('#load-viz-query-select').empty();
+        $('#load-viz-query-select').append('<option disabled selected>-- select one of the loaded queries --</option>');
+        $('#selected-queries-table tbody tr').each(function( index ) {
+            $('#load-viz-query-select').append('<option  data-query-id="'+$( this ).children().eq(0).text()+'"> ' + $( this ).children().eq(1).text() + '-' + $( this ).children().eq(2).text() +' </option>');
+        });
+    });
+
+
 	$('#addVizModal select').select2();
 
 
