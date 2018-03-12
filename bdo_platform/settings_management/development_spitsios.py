@@ -4,8 +4,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'bdo-django',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
+        'USER': 'bdo',
+        'PASSWORD': 'df195715HBdhahfP',
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -17,4 +17,6 @@ CONTACT_EMAIL = ''
 
 SPARK_SUBMIT_PATH = ''
 
-PARSER_URL = 'http://127.0.0.1:8080/parser/parse'
+PARSER_JWT = 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJiZG8iLCJleHAiOjE1NTIzODQ1NDYsInJvbGUiOiJST0xFX0FETUlOIn0.wI8o1voaOJMUHbAxziKzWBTADPLx2sMLohedavoxhOVauQtI8DDEKxUBJm6MQw02962alVn_Xqus4jGSB_Adew'
+UPLOAD_URL = 'http://127.0.0.1:8080/file/upload'
+DOWNLOAD_URL = 'http://127.0.0.1:8080/file/download'

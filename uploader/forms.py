@@ -3,16 +3,16 @@ from django import forms
 
 class DatasetsForm(forms.Form):
     choices = (
-        ('trips', 'ANEK - Trips'),
-        ('history', 'ANEK - History'),
-        ('tanker', 'FOINIKAS - Tanker'),
-        ('forecast', 'HCMR - Forecast'),
-        ('profile', 'HCMR - Profile'),
-        ('timeSeries', 'HCMR - Time Series'),
-        ('buoy', 'NESTER - Buoys'),
-        ('maretec', 'NESTER - Maretec'),
-        ('numerical', 'NESTER - Numerical'),
-        ('AIS', 'XMILE - AIS')
+        (u'{"observation": "trip", "source": "anek", "dataType": "csv"}', "ANEK - Trips"),
+        (u'{"observation": "history", "source": "anek", "dataType": "csv"}', "ANEK - History"),
+        (u'{"observation": "tanker", "source": "foinikas", "dataType": "xslx"}', "FOINIKAS - Tanker"),
+        (u'{"observation": "forecast", "source": "hcmr", "dataType": "netcdf"}', "HCMR - Forecast"),
+        (u'{"observation": "profile", "source": "hcmr", "dataType": "netcdf"}', "HCMR - Profile"),
+        (u'{"observation": "timeseries", "source": "hcmr", "dataType": "netcdf"}', "HCMR - Time Series"),
+        (u'{"observation": "buoy", "source": "nester", "dataType": "netcdf"}', "NESTER - Buoys"),
+        (u'{"observation": "maretec", "source": "nester", "dataType": "netcdf"}', "NESTER - Maretec"),
+        (u'{"observation": "numerical", "source": "nester", "dataType": "netcdf"}', "NESTER - Numerical"),
+        (u'{"observation": "ais", "source": "xmile", "dataType": "netcdf"}', "XMILE - AIS")
     )
 
     dataset = forms.ChoiceField(widget=forms.Select(attrs={"id": "dataset-dropdown", "name": "dataset-dropdown"}),
@@ -20,4 +20,12 @@ class DatasetsForm(forms.Form):
 
 
 class FileUploadForm(forms.Form):
-    file = forms.FileField(widget=forms.FileInput(attrs={"id": "file-upload", "name": "file-upload"}), label="")
+    upload = forms.FileField(widget=forms.FileInput(attrs={"id": "file-upload-picker",
+                                                           "disabled": True}), label="")
+
+
+class FileDownloadForm(forms.Form):
+    download = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-url",
+                                                             "disabled": True}), label="URL")
+    name = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-name",
+                                                         "disabled": True}), label="File Name")
