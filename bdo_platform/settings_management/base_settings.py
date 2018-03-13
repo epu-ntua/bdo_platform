@@ -58,7 +58,8 @@ INSTALLED_APPS = [
     'analytics',
     'visualizer',
     'dashboard_builder',
-    'uploader'
+    'uploader',
+    'data_parser'
 ]
 
 AUTHENTICATION_BACKENDS = (

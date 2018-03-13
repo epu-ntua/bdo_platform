@@ -12,6 +12,8 @@ def upload_form(request):
     dataset_form = DatasetsForm()
     file_upload_form = FileUploadForm()
     file_download_form = FileDownloadForm()
+
+    submitted_alert = False
     success_alert = False
 
     if request.method == 'POST':
@@ -27,20 +29,27 @@ def upload_form(request):
             files = {'file': f}
             req = Request('POST', UPLOAD_URL, data=data, files=files, headers={'Authorization': PARSER_JWT})
             prep = req.prepare()
-            _ = s.send(prep)
+            resp = s.send(prep)
+
+            if resp.status_code == 200:
+                success_alert = True
         else:
             data["downloadUrl"] = request.POST["download"]
             data["fileName"] = request.POST["name"]
 
             req = Request('POST', DOWNLOAD_URL, json=data, headers={'Authorization': PARSER_JWT})
             prep = req.prepare()
-            _ = s.send(prep)
+            resp = s.send(prep)
+
+            if resp.status_code == 200:
+                success_alert = True
 
         s.close()
 
-        success_alert = True
+        submitted_alert = True
 
     return render(request, 'upload-form.html', {'dataset_form': dataset_form,
                                                 'upload_form': file_upload_form,
                                                 'download_form': file_download_form,
+                                                'submitted_alert': submitted_alert,
                                                 'success_alert': success_alert})

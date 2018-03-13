@@ -40,4 +40,7 @@ urlpatterns = [
 
     # uploader
     url(r'^upload/', include('uploader.urls')),
+
+    # parser
+    url(r'^parse/', include('data_parser.urls'))
 ]

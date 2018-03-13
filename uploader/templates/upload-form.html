@@ -16,11 +16,18 @@
 
         <hr>
 
-        {% if success_alert %}
-            <div class="alert alert-success" role="alert">
-                <a class="close" data-dismiss="alert" aria-label="Close">x</a>
-                Process successfully submitted!
-            </div>
+        {% if submitted_alert %}
+            {% if success_alert %}
+                <div class="alert alert-success" role="alert">
+                    <a class="close" data-dismiss="alert" aria-label="Close">x</a>
+                    Process successfully submitted.
+                </div>
+            {% else %}
+                <div class="alert alert-danger" role="alert">
+                    <a class="close" data-dismiss="alert" aria-label="Close">x</a>
+                    There was an error while submitting the process.
+                </div>
+            {% endif %}
         {% endif %}
 
         <div class="jumbotron">
