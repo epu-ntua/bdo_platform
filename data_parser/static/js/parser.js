@@ -8,7 +8,8 @@ $(document).ready(function(){
         $.ajax({
             async: true,
             crossDomain: true,
-            url: "http://127.0.0.1:8080/file/parsable/" + selected,
+            url: "http://212.101.173.34:8085/file/parsable/" + selected,
+            // url: "http://127.0.0.1/file/parsable/" + selected,
             method: "GET",
             headers: {
                 Authorization: "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJiZG8iLCJleHAiOjE1NTE4Njg4MzUsInJvbGUiOiJST0xFX0FETUlOIn0.f1XIipvaCNW-0qh_9zxzdiil5fAtHQhjA4ES8XwGe5LE-Wz85zRsLh3_eYAeIYdpROFgjk6vCZPN6NF7yaveOw",
