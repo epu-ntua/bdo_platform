@@ -18,7 +18,7 @@ def parse_form(request):
         # Initialize a session for the request
         s = Session()
         req = Request("POST", PARSE_URL + "/" + request.POST["file"], headers={'Authorization': PARSER_JWT,
-                                                                              'Content-Type': 'application/json'})
+                                                                               'Content-Type': 'application/json'})
         prep = req.prepare()
         resp = s.send(prep)
 

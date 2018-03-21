@@ -6,11 +6,12 @@ class DataProviderForm(forms.Form):
         (None, ""),
         ("trip", "ANEK - Trips"),
         ("history", "ANEK - History"),
+        ("copernicus-wave-forecast", "Copernicus - Wave Forecast"),
         ("tanker", "FOINIKAS - Tanker"),
         ("forecast", "HCMR - Forecast"),
         ("profile", "HCMR - Profile"),
         ("timeseries", "HCMR - Time Series"),
-        ("buoy", "NESTER - Buoys"),
+        ("buoy", "NESTER - Buoy"),
         ("maretec", "NESTER - Maretec"),
         ("numerical", "NESTER - Numerical"),
         ("ais", "XMILE - AIS")
