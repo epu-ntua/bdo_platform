@@ -21,7 +21,7 @@ from query_designer.formula_functions import *
 from query_designer.query_processors.utils import SolrResultEncoder, PostgresResultEncoder
 
 
-class Query(Model):
+class AbstractQuery(Model):
     user = ForeignKey(User, related_name='queries')
     title = TextField(default='Untitled query')
     created = DateTimeField(auto_now_add=True)
@@ -565,7 +565,13 @@ class Formula(Model):
     def __str__(self):
         return '=%s' % self.value
 
+    class Meta:
+        abstract = True
 
-class TempQuery(Query):
-    original = ForeignKey(Query, null=True, related_name='+')
-    args = JSONField(null=True)
+
+class Query(AbstractQuery):
+    pass
+
+
+class TempQuery(AbstractQuery):
+    original = ForeignKey(Query)

@@ -20,6 +20,8 @@ from django.db import connection
 from matplotlib.figure import Figure
 from matplotlib import use
 from PIL import Image, ImageChops
+
+from query_designer.models import AbstractQuery
 from utils import *
 from visualizer.models import Visualization
 import time
@@ -486,7 +488,7 @@ def map_viz_folium_contour(request):
         variable = str(request.GET.get('feat_1', ''))
         query = str(request.GET.get('query', ''))
 
-        q = Query.objects.get(pk=int(query))
+        q = AbstractQuery.objects.get(pk=int(query))
         q = Query(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
@@ -1032,7 +1034,7 @@ def get_line_chart_am(request):
     y_var = str(request.GET.get('y_var', ''))
 
     if query_pk != 0:
-        query = Query.objects.get(pk=query_pk)
+        query = AbstractQuery.objects.get(pk=query_pk)
         query = Query(document=query.document)
         doc = query.document
         for f in doc['from']:
@@ -1124,7 +1126,7 @@ def get_line_chart_am(request):
 
 def get_pie_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
     query = Query(document=query.document)
     key_var = str(request.GET.get('key_var', ''))
     value_var = str(request.GET.get('value_var', ''))
@@ -1177,7 +1179,7 @@ def get_pie_chart_am(request):
 
 def get_column_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
     query = Query(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
@@ -1232,7 +1234,7 @@ def get_column_chart_am(request):
 
 def get_data_table(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
 
     result_data = query.execute()['results']
 
