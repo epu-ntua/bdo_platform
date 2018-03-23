@@ -1,0 +1,29 @@
+<div id="service_container" class="text-center">
+    <h2>My Test Service</h2>
+    <button type="button" id="argsModalBtn" class="btn btn-md btn-primary" data-toggle="modal" data-target="#serviceConfigModal">
+         Configure
+    </button>
+    <div class="viz_container">
+        <div class="loadImg" style="display: block"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div>
+        <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?y_var=i1_votemper&x_var=i0_time&query=86"
+                style="width: 100%; height: 100%; background-color: white;">
+        </iframe>
+    </div>
+</div>
+
+
+<div id="serviceConfigModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h4 class="modal-title">Give your input</h4>
+            </div>
+            <form id="service_args_container" class="modal-body" style="padding: 0 25%">
+
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success"  data-dismiss="modal" id="submitServiceConfig">Go!</button>
+            </div>
+        </div>
+    </div>
+</div>

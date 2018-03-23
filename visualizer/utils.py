@@ -169,6 +169,34 @@ def create_zep_note(name):
     return notebook_id
 
 
+def clone_zep_note(notebook_id, name):
+    data = dict()
+    data['name'] = name
+    str_data = json.dumps(data)
+    # Make a post request
+    response = requests.post("http://localhost:8080/api/notebook/"+notebook_id, data=str_data)
+    print response
+    response_json = response.json()
+    notebook_id = response_json['body']
+    print notebook_id
+    return notebook_id
+
+
+def run_zep_note(notebook_id):
+    response_status = 500
+    # number of tries
+    counter = 1
+    while response_status != 200:
+        response = requests.post("http://localhost:8080/api/notebook/job/" + str(notebook_id))
+        print response
+        if int(response.status_code) == 200:
+            break
+        counter -= 1
+        if counter == 0:
+            return HttpResponse(status=500)
+        response_status = response.status_code
+
+
 def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     data = dict()
     data['title'] = title
@@ -190,17 +218,19 @@ def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     return paragraph_id
 
 
-def create_zep__query_paragraph(notebook_id, title, raw_query):
+def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name="df"):
     data = dict()
+    if index >= 0:
+        data['index'] = index
     data['title'] = title
     data['text'] = '%spark.pyspark' \
-                   '\ndf = spark.read.format("jdbc")' \
+                   '\n'+df_name+'= spark.read.format("jdbc")' \
                    '.option("url", "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234")' \
                    '.option("driver", "org.postgresql.Driver")' \
                    '.option("database", "bdo_platform")' \
                    '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
                    '.load()' \
-                   '\ndf.printSchema()'
+                   '\n'+df_name+'.printSchema()'
 
     str_data = json.dumps(data)
     response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
@@ -209,6 +239,13 @@ def create_zep__query_paragraph(notebook_id, title, raw_query):
     paragraph_id = response_json['body']
     print paragraph_id
     return paragraph_id
+
+
+def delete_zep_paragraph(notebook_id, paragraph_id):
+    data = dict()
+    str_data = json.dumps(data)
+    response = requests.delete("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id), data=str_data)
+    print response
 
 
 def run_zep_paragraph(notebook_id, paragraph_id):
@@ -223,6 +260,7 @@ def run_zep_paragraph(notebook_id, paragraph_id):
         if counter < 0:
             return HttpResponse(status=500)
         response_status = response.status_code
+        # TODO: CHANGE THE ABOVE CODE BECAUSE EVERY TIME STATUS 500 IS RETURNED
 
 
 def create_zep_viz_paragraph(notebook_id, title):

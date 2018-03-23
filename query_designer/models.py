@@ -564,3 +564,8 @@ class Formula(Model):
 
     def __str__(self):
         return '=%s' % self.value
+
+
+class TempQuery(Query):
+    original = ForeignKey(Query, null=True, related_name='+')
+    args = JSONField(null=True)
