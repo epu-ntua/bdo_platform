@@ -1,4 +1,52 @@
+// Preview-Load service on the #output iframe
+var preview_service = function () {
+    $("#outputLoadImg").show();
+    $.ajax({
+        "type": "POST",
+        "url": "/service_builder/update_service_output/",
+        "data": {
+            service_id: service_id,
+            output_html: html_editor.getValue(),
+            output_css: css_editor.getValue(),
+            output_js: js_editor.getValue()
+        },
+        "success": function(result) {
+            console.log(result);
+            $('#outputIframe').attr("src", "/service_builder/service/"+service_id+"/");
+        },
+        error: function (jqXHR) {
+            alert('error');
+        }
+    });
+};
 
+$("#preview_btn").click(function () {
+    preview_service();
+});
+
+// When preview button is clicked, load the created service
+$("#outputIframe").on( "load", function(){
+    show_hide_results();
+    $(this).siblings("#outputLoadImg").css( "display", "none" );
+});
+
+$("#showServiceOutputChkbox").change(function(){
+    show_hide_results();
+});
+
+
+function show_hide_results(){
+    if ($("#showServiceOutputChkbox").is(':checked')) {
+        $("#outputIframe").contents().find( "#service_result_container" ).show();
+        $("#outputIframe").contents().find( "#service_result_container iframe" ).attr({
+            "src": 'http://localhost:8000/visualizations/get_line_chart_am/?y_var=i0_votemper&x_var=i0_time&query=1'});
+    }
+    else{
+        $("#outputIframe").contents().find( "#service_result_container" ).hide();
+    }
+}
+
+// ***************  CODE MIRROR  ***************
 	// Base template
 	var base_tpl =
 			"<!doctype html>\n" +
@@ -6,6 +54,7 @@
       "<head>\n\t\t" +
       "<meta charset=\"utf-8\">\n\t\t" +
       "<title>Test</title>\n\n\t\t\n\t" +
+      "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js\"></script>"+
       "</head>\n\t" +
       "<body>\n\t\n\t" +
       "</body>\n" +
@@ -25,7 +74,8 @@
 		src = src.replace('</head>', css + '</head>');
 
 		// Javascript
-		js = '<script>' + js + '<\/script>';
+		js = '<script> function get_service_id() { return window.parent.get_service_id()  } </script>' + js ;
+        // js = '<script>' + js + '<\/script>';
 		src = src.replace('</body>', js + '</body>');
 
 		return src;
@@ -34,7 +84,7 @@
 	var render = function() {
 		var source = prepareSource();
 
-		var iframe = document.querySelector('#output iframe'),
+		var iframe = document.querySelector('#outputIframe'),
 			iframe_doc = iframe.contentDocument;
 		    // console.log(iframe_doc);
 
@@ -42,9 +92,6 @@
 		iframe_doc.write(source);
 		iframe_doc.close();
 	};
-
-
-	// EDITORS
 
 	// CM OPTIONS
 	var cm_opt = {
@@ -58,47 +105,31 @@
 	var html_box = document.querySelector('#html textarea');
 	var html_editor = CodeMirror.fromTextArea(html_box, cm_opt);
 
-    html_editor.on('change', function (inst, changes) {
-        render();
-    });
+    // html_editor.on('change', function (inst, changes) {
+    //     render();
+    // });
+
+
 
 	// CSS EDITOR
 	cm_opt.mode = 'css';
 	var css_box = document.querySelector('#css textarea');
 	var css_editor = CodeMirror.fromTextArea(css_box, cm_opt);
 
-    css_editor.on('change', function (inst, changes) {
-        render();
-    });
+    // css_editor.on('change', function (inst, changes) {
+    //     render();
+    // });
 
 	// JAVASCRIPT EDITOR
 	cm_opt.mode = 'javascript';
 	var js_box = document.querySelector('#js textarea');
 	var js_editor = CodeMirror.fromTextArea(js_box, cm_opt);
 
-    js_editor.on('change', function (inst, changes) {
-        render();
-    });
+    // js_editor.on('change', function (inst, changes) {
+    //     render();
+    // });
 
 
-
-
-	// RENDER CALL ON PAGE LOAD
-	// NOT NEEDED ANYMORE, SINCE WE RELY
-	// ON CODEMIRROR'S onChange OPTION THAT GETS
-	// TRIGGERED ON setValue
-	// render();
-
-
-	// NOT SO IMPORTANT - IF YOU NEED TO DO THIS
-	// THEN THIS SHOULD GO TO CSS
-
-	/*
-		Fixing the Height of CodeMirror.
-		You might want to do this in CSS instead
-		of JS and override the styles from the main
-		codemirror.css
-	*/
 	var cms = document.querySelectorAll('.CodeMirror');
 	for (var i = 0; i < cms.length; i++) {
 
@@ -107,12 +138,8 @@
 		cms[i].style.bottom = '0';
 		cms[i].style.left = '0';
 		cms[i].style.right = '0';
-        cms[i].style.height = '100%';
+        cms[i].style.height = '60vh';
 	}
-	/*cms = document.querySelectorAll('.CodeMirror-scroll');
-	for (i = 0; i < cms.length; i++) {
-		cms[i].style.height = '100%';
-	}*/
 
 	// SETTING CODE EDITORS INITIAL CONTENT
 	html_editor.setValue('<h1>Service 1</h1>');
@@ -121,11 +148,12 @@
 
 
 
-//	END CODE MIRROR
-// }());
-//
-// $(document).ready(function(){
+// ***************	END CODE MIRROR  ***************
 
+
+
+
+// CODE FOR ADDING VISUALIZATION TO THE SERVICE (CHECK IT)
     $('#addVizModal').on('show.bs.modal', function () {
         $('#load-viz-query-select').empty();
         $('#load-viz-query-select').append('<option disabled selected>-- select one of the loaded queries --</option>');
@@ -251,7 +279,7 @@
 
     $("#addVizModal #submit-modal-btn").click(function () {
         $('#viz_container iframe').appendTo('#dynamic_dashboard');
-        html_editor.replaceRange('\n<iframe src="'+viz_request+'" frameborder="0" allowfullscreen=""\n', {line: Infinity});
+        html_editor.replaceRange('\n<iframe src="'+viz_request+'" frameborder="0" allowfullscreen=""/>\n', {line: Infinity});
         html_editor.refresh();
         viz_request = "";
         $('#addVizModal #viz_container').empty();

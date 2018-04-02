@@ -10,3 +10,10 @@ class ServiceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Service, ServiceAdmin)
+
+
+class ServiceTemplateAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in ServiceTemplate._meta.get_fields()]
+
+
+admin.site.register(ServiceTemplate, ServiceTemplateAdmin)

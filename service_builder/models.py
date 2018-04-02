@@ -14,12 +14,19 @@ class Service(Model):
     user = ForeignKey(User)
     title = CharField(max_length=512)
     private = BooleanField(default=False)
+    published = BooleanField(default=False)
 
     notebook_id = CharField(max_length=100)
 
-    queries = JSONField()
-    arguments = JSONField()
+    queries = JSONField(default={})
+    arguments = JSONField(default={})
 
-    output_html = TextField()
-    output_css = TextField()
-    output_js = TextField()
+    output_html = TextField(null=True)
+    output_css = TextField(null=True)
+    output_js = TextField(null=True)
+
+
+class ServiceTemplate(Model):
+    html = TextField()
+    css = TextField()
+    js = TextField()

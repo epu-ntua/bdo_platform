@@ -55,6 +55,7 @@
 {% block content %}
     {% csrf_token %}
     <div class="container" id ='service_container'>
+        <input type="text" id="service_id" value="{{ service_id }}" style="display: none;">
         <ul class="nav nav-pills nav-justified">
             <li class="active"><a data-toggle="pill" href="#queries_container">Queries</a></li>
             <li><a data-toggle="pill" href="#arguments_container">Arguments</a></li>
@@ -102,6 +103,7 @@
     <script src="{% static 'service_builder/js/code_tab.js' %}"></script>
     <script src="{% static 'service_builder/js/output_tab.js' %}"></script>
     <script src="{% static 'service_builder/js/publish.js' %}"></script>
+    <script src="{% static 'service_builder/js/templates.js' %}"></script>
 
 {% endblock %}
 
