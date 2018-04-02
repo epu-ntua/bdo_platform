@@ -40,5 +40,8 @@ urlpatterns = [
 
     # requestservice
     url(r'^requests/', include('requestservice.urls')),
+
+    # dashboards
+    url(r'^service_builder/', include('service_builder.urls')),
 ]
 

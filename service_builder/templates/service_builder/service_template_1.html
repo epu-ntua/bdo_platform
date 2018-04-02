@@ -1,0 +1,64 @@
+<div id="service_container" class="text-center">
+    <h2>My Test Service</h2>
+{#    <button type="button" id="argsModalBtn" class="btn btn-md btn-primary" data-toggle="modal" data-target="#serviceConfigModal">#}
+{#        Configure#}
+{#    </button>#}
+    <div id="service_config_container" class="text-center">
+        <button type="button" id="argsCollapseBtn" class="btn btn-md btn-primary" data-toggle="collapse" data-target="#serviceConfigCollapse" aria-expanded="false" aria-controls="serviceConfigCollapse">
+          Configure
+        </button>
+        <div id="serviceConfigCollapse" class="collapse in" >
+            <div class="well">
+                <h4 class="modal-title">Give your input</h4>
+                <form id="service_args_container" class="modal-body" style="padding: 0 25%">
+
+                </form>
+                <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#serviceConfigCollapse" id="submitServiceConfig">Submit</button>
+                <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#serviceConfigCollapse">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="service_result_container" class="text-center">
+        <div class="loadingDiv">
+            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>
+        </div>
+        <div class="viz_container">
+            <div class="loadingFrame">
+                <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>
+            </div>
+            <iframe data-src="http://localhost:8000/visualizations/get_line_chart_am/?y_var=i0_votemper&x_var=i0_time&query=1"
+                    style="width: 100%; height: 100%; background-color: white;">
+            </iframe>
+        </div>
+        <div class="viz_container">
+            <div class="loadingFrame">
+                <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>
+            </div>
+            <iframe data-src="http://localhost:8000/visualizations/get_line_chart_am/?y_var=i0_votemper&x_var=i0_time&query=1"
+                    style="width: 100%; height: 100%; background-color: white;">
+            </iframe>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+{#<div id="serviceConfigModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">#}
+{#    <div class="modal-dialog">#}
+{#        <div class="modal-content">#}
+{#            <div class="modal-header text-center">#}
+{#                <h4 class="modal-title">Give your input</h4>#}
+{#            </div>#}
+{#            <form id="service_args_container" class="modal-body" style="padding: 0 25%">#}
+{##}
+{#            </form>#}
+{#            <div class="modal-footer">#}
+{#                <button type="button" class="btn btn-success" data-dismiss="modal" id="submitServiceConfig">Go!</button>#}
+{#                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}

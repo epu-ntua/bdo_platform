@@ -1,0 +1,29 @@
+<div id="code_container" class="tab-pane fade">
+    <div id="main-container">
+
+        <h3>Write the Service Code</h3>
+        <button type="button" id="load_query_popbtn" class="btn btn-md btn-primary" data-toggle="popover" title="" data-placement="right">
+            Load Query
+        </button>
+
+    </div>
+
+
+
+    <div class="holder">
+       <iframe class="col-sm-12 frame" src="http://localhost:8080/#/notebook/{{ notebook_id }}/"></iframe>
+       <div class="bar"></div>
+    </div>
+
+
+    <div  style="margin-top: 500px; display: none;">
+        <div id="load-query-select-container">
+            <select id="load-query-select" class="form-control" name="query">
+
+            </select>
+            <button type="button" id="load_query_btn" class="btn btn-sm btn-success" data-toggle="popover">Load</button>
+        </div>
+
+        <input id="notebook_id" value="{{ notebook_id }}"/>
+    </div>
+</div>

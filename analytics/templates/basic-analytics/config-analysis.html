@@ -100,10 +100,10 @@
                     },
                 type: 'GET',
                 success: function(variables){
-                    $.each(variables, function(k, v) {
+                    $.each(variables['variables'], function(k, v) {
                         $('.variable-select').append($("<option></option>")
-                            .attr("value", k)
-                            .text(v));
+                            .attr("value", v)
+                            .text(k));
                     });
                 }
             });
