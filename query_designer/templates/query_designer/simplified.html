@@ -69,15 +69,16 @@
                             <div class="btn-edit-filters pull-right btn btn-sm btn-default btn-white filter-edit-open" style="display: none;"><i class="fa fa-cog"></i> {% trans 'Data filters' %} (<span class="filter-counter">-</span>)</div>
                         </div>
 
-                        <div id="bounds" class="text-center">
-                            <h4 class="pull-left">{% trans 'Coverage' %}</h4>
-                            {% include "query_designer/utils/bounds-modals.html" %}
-                        </div>
+
 
                         <div id="chart-control-list">
 
                         </div>
-                        <div id="fetch" style="float: right;"></div>
+{#                        <div id="fetch" style="float: right;"></div>#}
+
+                        <div id="bounds" class="text-center" style="margin-top: 30px;">
+                            {% include "query_designer/utils/bounds-modals.html" %}
+                        </div>
 
                         <div id="chart-filters" style="display: none;">
 

@@ -1,26 +1,10 @@
 $(document).ready(function() {
+    $('#mapchoices').select2();
+
     var selections = [[53,10,65,30],[34,129,52,142],[12,32,29,42],[30,6,46,36]];              // configure some predifined places here
     var bounds = [0,0,30,30];
     var startdate, enddate;
     var map, mapprev, init=false;
-
-    /*          Set Up Html for Map Selection           */
-    var seldiv = document.getElementById('mapbtn');
-    var regbut = document.createElement('button');
-    regbut.setAttribute('class','btn btn-primary btn-xs');
-    regbut.setAttribute('id', 'selbutton');
-    regbut.setAttribute('data-toggle','modal');
-    regbut.setAttribute('data-target','#mapModal');
-    regbut.innerHTML = "Choose Region";
-    seldiv.appendChild(regbut);
-
-    seldiv = document.getElementById('fetch');
-    regbut = document.createElement('button');
-    regbut.setAttribute('class','btn btn-primary');
-    regbut.setAttribute('id', 'project');
-    regbut.innerHTML = "Project";
-    seldiv.appendChild(regbut);
-    /*          Set Up Html for Map Selection           */
 
     /*          Set Up Maps for Modal and Preview       */
     function map_init() {
@@ -94,7 +78,7 @@ $(document).ready(function() {
     /*          Set Up Default Selection of Map         */
 
     /*          Modal Open Button For Area Selection    */
-    $('#selbutton').on('click', function(){
+    $('#mappreview').on('click', function(){
 
         $('#mapModal').on('show.bs.modal', function(){
             setTimeout(function() {
@@ -112,8 +96,7 @@ $(document).ready(function() {
             var nelat = bounds.getNorthEast().lat;
             var nelon = bounds.getNorthEast().lng;
             mapprev.fitBounds([[swlat,swlon],[nelat,nelon]]);
-           $('#closemodal').click();
-           $('#mapchoices').val('null').prop('selected', false);
+           $('#mapchoices').val('-1').prop('selected', false);
            $('#mapbounds').html("SouthWest {Lat:" + swlat + " Lng:" + swlon + "} <br>NorthEast {Lat:" + nelat + " Lng:" + nelon + "}");
            bounds = [swlat,swlon,nelat,nelon];
         });

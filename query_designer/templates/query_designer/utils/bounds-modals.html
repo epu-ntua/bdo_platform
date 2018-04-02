@@ -1,33 +1,33 @@
 <div class="coverage-map-filters">
+    <div style="text-align: left;"><h4>Choose spatial coverage</h4></div>
     <div id="mapselection" class="selection">
-        <div class="row">
-            <div class="col-sm-offset-4">
-                <div id="mappreview" style="height: 150px; margin-right:15px; margin-top: 15px; margin-bottom: 10px; border: solid 2px grey; border-radius: 1em;">
+            <div class="" style="padding-left: 0; padding-right: 0;">
+                <div id="mappreview" data-toggle="modal" data-target="#mapModal" style="cursor: pointer; height: 150px; margin-top: 15px; margin-bottom: 10px; border: solid 2px grey; border-radius: 1em;">
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-offset-4">
+            <div class="">
                 <div id="choices">
                 <select style="border: 2px solid grey; border-radius: 1em;" id="mapchoices">
                     <option value="-1">Choose Predefined</option>
                     <option value="0">Baltic Sea</option>
                     <option value="1">Sea Of Japan</option>
                     <option value="2">Red Sea</option>
-                    <option value="3">Mediterainian</option>
+                    <option value="3">mediterranean</option>
                 </select>
-                <div id="mapbtn" style="display: inline;"></div>
                 </div>
+{#                <div id="mapbtn" style="display: inline;">#}
+{#                    <button class="btn btn-primary btn-xs" id="selbutton" data-toggle="modal" data-target="#mapModal">Choose Region</button>#}
+{#                </div>#}
             </div>
             <div>
-                <p id="mapbounds" style="float: right;"></p>
+                <p id="mapbounds"></p>
             </div>
-        </div>
 
     </div>
 </div>
 
 <div class="coverage-date-filters">
+    <div style="text-align: left;"><h4>Choose temporal coverage</h4></div>
     <div class="row">
         <div class="coverage-date-filters-icon">
         </div>
@@ -72,7 +72,7 @@
                   </div>
                   <div class="modal-footer">
                         <button type="button" class="btn btn-default" id="closemodal" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" id="saveregion">Save changes</button>
+                        <button type="button" class="btn btn-primary" id="saveregion" data-dismiss="modal">Save changes</button>
                   </div>
             </div>
       </div>

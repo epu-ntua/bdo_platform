@@ -4,6 +4,11 @@
     border-top: 1px solid #bbb;
 }
 
+.datetimepicker {
+    width: 30%;
+}
+
+
 .btn.btn-plain {
     background: #fff;
     border: 1px solid #eee;
