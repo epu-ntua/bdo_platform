@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import psycopg2
 
 import time
 from threading import Thread
@@ -35,7 +36,8 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                 sql_type = dimension.sql_type
 
             else:
-                column_name = 'value'
+                column_name = v_obj.name
+                # column_name = 'value'
                 column_unit = v_obj.unit
                 column_axis = None
                 column_step = None
@@ -148,7 +150,11 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
 
     print q
+
+
+    connection = psycopg2.connect("dbname='bigdataocean' user='bdo' host='212.101.173.34' password='df195715HBdhahfP'")
     cursor = connection.cursor()
+
     if not only_headers:
         # execute query & return results
         t1 = time.time()
