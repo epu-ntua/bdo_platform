@@ -729,7 +729,7 @@ $(function () {
                 });
 
                 // push dimensions
-                $.each($('select[name="category"] > option[data-forvariable="' + value.type + '"]'), function(jdx, opt) {
+                $.each($('#selected_dimensions > option[data-forvariable="' + value.name + '"]'), function(jdx, opt) {
                     var name = $(opt).data('type');
                     var groupBy = $('select[name="category"]').val().indexOf(String($(opt).attr('value'))) >= 0;
 
@@ -1390,16 +1390,33 @@ $(function () {
             });
 
             var $category = $('[name="category"]');
+            var $dimensions = $('#selected_dimensions');
 
 
             $.each(newField.dimensions, function (id, data) {
-                if ($category.find("option[value='" + data.value + "']").length) {
-                    // $category.val(id).trigger('change');
+                if ($category.find("option[name='" + data.title + "']").length) {
+                    // Create a DOM Option and pre-select by default
+                    var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
+                    // Append it to the select
+                    // $category.append(newOption).trigger('change');
+                    $dimensions.append(newOption);
                 } else {
                     // Create a DOM Option and pre-select by default
                     var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
                     // Append it to the select
                     $category.append(newOption).trigger('change');
+
+                    var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
+                    $dimensions.append(newOption);
                 }
             });
 
