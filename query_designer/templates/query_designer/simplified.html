@@ -67,13 +67,14 @@
                     <div class="col-md-3" id="chart-sidebar">
                         <div class="clearfix">
                             <h4 class="pull-left">{% trans 'Query Data' %}</h4>
-                            <div class="btn-edit-filters pull-right btn btn-sm btn-default btn-white filter-edit-open" style="display: none;"><i class="fa fa-cog"></i> {% trans 'Data filters' %} (<span class="filter-counter">-</span>)</div>
+                            <div class="btn-edit-filters pull-right btn btn-sm btn-default btn-white filter-edit-open" style="display: none;">
+                                <i class="fa fa-cog"></i> {% trans 'Data filters' %} (<span class="filter-counter">-</span>)
+                            </div>
                         </div>
 
 
 
                         <div id="chart-control-list">
-
                         </div>
 {#                        <div id="fetch" style="float: right;"></div>#}
 
@@ -82,14 +83,13 @@
                         </div>
 
                         <div id="chart-filters" style="display: none;">
-
                         </div>
                     </div>
                     <div class="col-md-9">
                         <div class="chart-top-menu">
                             <ul id="chart-content-tabs" class="nav nav-pills" data-tabs="tabs">
-                                <li class="active"><a href="#chart" data-toggle="tab">{% trans 'Chart' %}</a></li>
-                                <li><a href="#datatable" data-toggle="tab">{% trans 'Data' %}</a></li>
+                                <li class="active"><a href="#datatable" data-toggle="tab">{% trans 'Data' %}</a></li>
+                                <li><a href="#chart" data-toggle="tab">{% trans 'Chart' %}</a></li>
                             </ul>
                         </div>
                         <div id="chart-tab-content" class="tab-content">

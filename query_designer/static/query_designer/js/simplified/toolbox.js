@@ -154,6 +154,7 @@ $(function () {
 
             if (config.emptyChoice) {
                 $fieldSelect.append('<option value="">No value</option>');
+                $fieldSelect.append('<option value="">No value</option>');
             }
 
             $.each(config.choices, function (idx, choice) {
@@ -1389,6 +1390,19 @@ $(function () {
             });
 
             var $category = $('[name="category"]');
+
+
+            $.each(newField.dimensions, function (id, data) {
+                if ($category.find("option[value='" + data.value + "']").length) {
+                    // $category.val(id).trigger('change');
+                } else {
+                    // Create a DOM Option and pre-select by default
+                    var newOption = new Option(data.title, data.value, false, false);
+                    // Append it to the select
+                    $category.append(newOption).trigger('change');
+                }
+            });
+
 
             QueryToolbox.filterManager.updateFilters(QueryToolbox._getChartInfo().values);
 

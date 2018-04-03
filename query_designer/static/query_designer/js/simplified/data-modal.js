@@ -75,10 +75,18 @@ $(function() {
     });
 
     window.getDataSelection = function() {
+        var dims = [];
+        $('#group-by-select option').each(function () {
+            dims.push({
+                value: $(this).val(),
+                title: $(this).text().split(',')[0]
+            })
+        });
         return {
             value: $modal.find('.variable-section.selected').find('.variable-name').text(),
             aggregate: $modal.find('#selection-aggregate').val(),
-            groupBy: $modal.find('#group-by-select').val()
+            groupBy: $modal.find('#group-by-select').val(),
+            dimensions: dims
         }
     };
     

@@ -222,13 +222,13 @@ def get_field_policy(user):
         'max': 4
     }
 
-    for dimension in Dimension.objects.all():
-        field_policy['categories'].append({
-            'title': '%s (%s)' % (dimension.title, dimension.variable.title),
-            'value': dimension.pk,
-            'type': dimension.name.replace(' ', '_'),
-            'forVariable': dimension.variable.pk,
-        })
+    # for dimension in Dimension.objects.all().distinct('name').order_by('name'):
+    #     field_policy['categories'].append({
+    #         'title': '%s' % (dimension.title),
+    #         'value': dimension.pk,
+    #         'type': dimension.name.replace(' ', '_'),
+    #         'forVariable': dimension.variable.pk,
+    #     })
 
     """
     for formula in Formula.objects.filter(created_by=user, is_valid=True):
