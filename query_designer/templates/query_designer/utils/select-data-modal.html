@@ -1,6 +1,6 @@
     {% load i18n %}
 
-    <div id="select-data-modal" style="display: none;">
+    <div id="select-data-modal" style="display: none; width: 60vw;">
         <div class="modal-body">
             <div class="form-group">
                 <input type="text" autocomplete="off" id="data-filter-search"
@@ -16,21 +16,28 @@
                             <div class="dataset-name">
                                 <i class="fa fa-database"></i>
                                 {{ dataset.title }}
+                                <i class="fa fa-info-circle dataset-metadata-btn"></i>
+                            </div>
+                            <div class="dataset-metadata collapse well">
+                                <div>{{ dataset.source }}</div>
+                                <div>{{ dataset.description }}</div>
                             </div>
                         </div>
-                        <div class="variable-list">
+                        <table class="variable-list">
                             {% for variable in dataset.variables.all %}
-                                <div class="variable-section">
-                                    <div class="variable-name">{{ variable.safe_name }}</div>
-                                    <div class="variable-title">{{ variable.title }} ({{ variable.unit }})</div>
-                                    <div class="dimensions hidden">
+                                <tr class="variable-section">
+                                    <td class="variable-name hidden">{{ variable.safe_name }}</td>
+                                    <td class="variable-title">{{ variable.title }} ({{ variable.unit }})</td>
+                                    <td>
+                                    <div class="dimensions">
                                         {% for dimension in variable.dimensions.all %}
-                                            <div data-type="{{ dimension.pk }}">{{ dimension.name }}</div>
+                                            <span data-type="{{ dimension.pk }}">{{ dimension.name }}, </span>
                                         {% endfor %}
                                     </div>
-                                </div>
+                                    </td>
+                                </tr>
                             {% endfor %}
-                        </div>
+                        </table>
                     </div>
                 {% endfor %}
             </div>

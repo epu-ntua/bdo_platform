@@ -772,7 +772,8 @@ $(function () {
         },
 
         /* Gets the data based on the fields & options selected by the user */
-        fetchChartData: function () {
+        fetchChartData: function () {},
+        fetchQueryData: function () {
             var that = this;
 
             var obj = this.objects[this.current()];
@@ -1356,7 +1357,7 @@ $(function () {
         var $last = $('.chart-control .fieldset:last');
 
         $('#select-data-modal').dialog({
-            width: '40vw',
+            width: '60vw',
             position: {my: 'center'},
             title: 'Select data'
         });
@@ -1366,47 +1367,58 @@ $(function () {
     /* Add a value field */
     $('#selection-confirm-btn').on('click', function() {
         var newField = window.getDataSelection();
+        if (newField.value != ""){
 
-        var $chartControls = $('#chart-control-list > .chart-control');
-        var label = 'Metric #<span class="metric-cnt">' + ($chartControls.find('> *').length + 1) + '</span>';
 
-        var obj = QueryToolbox.objects[QueryToolbox.current()];
+            var $chartControls = $('#chart-control-list > .chart-control');
+            var label = 'Metric #<span class="metric-cnt">' + ($chartControls.find('> *').length ) + '</span>';
 
-        var $fieldset = QueryToolbox.renderChartOptionsField({
-            choices: obj.chartPolicy.valueFields,
-            emptyChoice: false,
-            name: 'value_field',
-            label: label,
-            value: newField.value,
-            aggregate: newField.aggregate,
-            aggregates: obj.chartPolicy.aggregates,
-            canConfig: true,
-            canDelete: true,
-            xy: false
-        });
+            var obj = QueryToolbox.objects[QueryToolbox.current()];
 
-        var $category = $('[name="category"]');
+            var $fieldset = QueryToolbox.renderChartOptionsField({
+                choices: obj.chartPolicy.valueFields,
+                emptyChoice: false,
+                name: 'value_field',
+                label: label,
+                value: newField.value,
+                aggregate: newField.aggregate,
+                aggregates: obj.chartPolicy.aggregates,
+                canConfig: true,
+                canDelete: true,
+                xy: false
+            });
 
-        QueryToolbox.filterManager.updateFilters(QueryToolbox._getChartInfo().values);
+            var $category = $('[name="category"]');
 
-        var v = $category.val();
-        $.each(newField.groupBy, function(idx, f) {
-            v.push(f);
-        });
-        $category.val(v).trigger('change.select2');
+            QueryToolbox.filterManager.updateFilters(QueryToolbox._getChartInfo().values);
 
-        $fieldset.find('select').select2();
+            var v = $category.val();
+            $.each(newField.groupBy, function (idx, f) {
+                v.push(f);
+            });
+            $category.val(v).trigger('change.select2');
 
-        $chartControls.append($fieldset);
+            $fieldset.find('select').select2();
 
-        // mark as unsaved
-        QueryToolbox.tabMarker.currentUnsaved();
+            $chartControls.append($fieldset);
 
-        // redraw
-        QueryToolbox.fetchChartData();
+            // mark as unsaved
+            QueryToolbox.tabMarker.currentUnsaved();
+
+            // redraw
+            QueryToolbox.fetchChartData();
+        }
 
         // close popup
-        $('#select-data-modal').dialog('close');
+        // $('#select-data-modal').dialog('close');
+        $(".variable-list .selected").removeClass("selected");
+        $("#selection-aggregate").val(null).trigger('change');
+        $("#group-by-select").val(null).trigger('change');
+
+    });
+
+    $('#select-data-modal').on('dialogclose', function(event) {
+        $('.selection-confirm .col-xs-12').addClass('hidden');
     });
 
     /* Switch chart */
@@ -1580,6 +1592,11 @@ $(function () {
     /* On formula editor popup save */
     $('body').on('click', '#formulas-modal .modal-footer .btn-default', function () {
         QueryToolbox.refreshValueFields()
+    });
+
+    /* On run query btn click, execute the query and fetch results */
+    $("#run-query-btn").click(function () {
+        QueryToolbox.fetchQueryData();
     });
 
     /* Hotkeys */

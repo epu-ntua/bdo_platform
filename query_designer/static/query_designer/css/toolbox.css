@@ -4,6 +4,10 @@
     border-top: 1px solid #bbb;
 }
 
+#run-query-btn{
+    margin-top: 0;
+}
+
 .datetimepicker {
     width: 30%;
 }

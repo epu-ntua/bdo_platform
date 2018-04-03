@@ -42,7 +42,9 @@ $(function() {
 
         var $selectionCol = $modal.find('.selection-confirm > div');
         $selectionCol.removeClass('hidden');
-        $selectionCol.find('#selection-aggregate').val('AVG');
+        // $selectionCol.find('#selection-aggregate').val('AVG');
+        $selectionCol.find('#selection-aggregate').val(null).trigger('change');
+
 
         // remove old group by
         $modal.find('#group-by-select').remove();
@@ -52,7 +54,7 @@ $(function() {
             .attr('id', 'group-by-select')
             .attr('multiple', 'multiple');
 
-        $.each($(this).find('.dimensions > div'), function(idx, dimension) {
+        $.each($(this).find('.dimensions > span'), function(idx, dimension) {
             var $dimension = $(dimension);
 
             var $opt = $('<option />')
@@ -68,6 +70,7 @@ $(function() {
 
         // add & config plugin
         $modal.find('.selection-group-by').append($gSelect);
+        $("#group-by-select").val(null).trigger('change');
         $gSelect.select2();
     });
 
@@ -77,5 +80,9 @@ $(function() {
             aggregate: $modal.find('#selection-aggregate').val(),
             groupBy: $modal.find('#group-by-select').val()
         }
-    }
+    };
+    
+    $(".dataset-metadata-btn").click(function () {
+        $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
+    })
 });
