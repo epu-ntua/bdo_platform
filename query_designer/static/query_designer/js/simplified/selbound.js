@@ -35,6 +35,7 @@ $(document).ready(function() {
     }
 
     map_init();
+    $('#bounds').addClass('after-data-selection');
     /*          Set Up Maps for Modal and Preview       */
     /*          Set Up Time Pickers For Start/End Date  */
     var startpick = $('#startdatepicker').datetimepicker({autoclose: true});

@@ -128,6 +128,9 @@ $(function () {
             if (config.name === 'category') {
                 $fieldSelect.attr('multiple', 'multiple');
             }
+            if (config.name === 'orderby') {
+                $fieldSelect.attr('multiple', 'multiple');
+            }
 
             if (config.id) {
                 $fieldSelect.attr('id', config.id);
@@ -178,10 +181,13 @@ $(function () {
             if (config.name === 'category') {
                 inlineLabel = config.label;
             }
+            if (config.name === 'orderby') {
+                inlineLabel = config.label;
+            }
 
             // set field value
             $fieldSelect.val(config.value);
-            var $fieldset = $('<div class="fieldset">' + (inlineLabel ? '' : config.label + '<br />') + '<div class="row"><div class="col-xs-3 col-prefix" style="' + (inlineLabel ? 'padding-left: 15px' : '') +'">' + inlineLabel + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
+            var $fieldset = $('<div class="fieldset">' + (inlineLabel ? '' : config.label + '<br />') + '<div class="row" style="margin: 0"><div class="col-xs-3 col-prefix" style="' + (inlineLabel ? 'padding: 0' : '') +'">' + inlineLabel + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
             $fieldset.find('.col-main').append($fieldSelect);
 
             if (config.xy) {
@@ -208,16 +214,16 @@ $(function () {
             /* empty from previous controls */
             $controlList.empty();
 
-            /* load group */
-            // create group select
-            var $groupSelectContainer = this.renderChartOptionsField({
-                choices: obj.chartPolicy.categories,
-                name: 'category',
-                id: 'id_category',
-                label: 'Group by',
-                value: obj.chartOptions.group.metric
-            });
-            $chartControls.append($groupSelectContainer);
+            // add add filter & draw buttons
+            var $btnContainer = $('<div class="row btn-container">').css('padding', '0').css('margin-left', '0');
+            if (obj.chartOptions.fields.length + 1 < obj.chartPolicy.max) {
+                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue"><i class="fa fa-plus"></i> Add data</div>')
+            }
+
+            $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');
+            $btnContainer.append('<div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection"><i class="fa fa-play-circle"></i> Run</div>');
+            $controlList.append($btnContainer);
+
 
             /* load fields */
             var that = this;
@@ -271,14 +277,31 @@ $(function () {
             $chartFilters.empty();
             $chartFilters.append(obj.$chartFilters);
 
-            // add add filter & draw buttons
-            var $btnContainer = $('<div class="row btn-container">').css('padding', '0 4px');
-            if (obj.chartOptions.fields.length + 1 < obj.chartPolicy.max) {
-                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue"><i class="fa fa-plus"></i> Add data</div>')
-            }
 
-            $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');
-            $controlList.append($btnContainer);
+            // add group by and order by fields
+            var $queryControlsContainer = $('<div class="row after-data-selection" id="query-controls-container">').css('padding', '0').css('margin-left', '0').css('margin-top', '20px');
+
+            // create group select
+            var $groupSelectContainer = this.renderChartOptionsField({
+                choices: obj.chartPolicy.categories,
+                name: 'category',
+                id: 'id_category',
+                label: 'Group by',
+                value: obj.chartOptions.group.metric
+            });
+            $queryControlsContainer.append($groupSelectContainer);
+
+            // create order select
+            var $orderSelectContainer = this.renderChartOptionsField({
+                choices: obj.chartPolicy.categories,
+                name: 'orderby',
+                id: 'id_orderby',
+                label: 'Order by',
+                value: obj.chartOptions.group.metric
+            });
+            $queryControlsContainer.append($orderSelectContainer);
+
+            $controlList.append($queryControlsContainer);
 
             // show filters button & apply plugin
             $('.filter-edit-open').show();
@@ -701,7 +724,7 @@ $(function () {
 
         generateQueryDoc: function() {
             var info = this._getChartInfo();
-
+            console.log(info);
             var result = {
                 from: [],
                 distinct: false,
@@ -1077,6 +1100,11 @@ $(function () {
             }
 
             $fieldset.remove();
+            if(cnt===0){
+                $('.after-data-selection').each(function () {
+                    $(this).hide();
+                })
+            }
         },
 
         /* Responsible for editing queryset filters */
@@ -1365,6 +1393,10 @@ $(function () {
 
     });
 
+    $('#selection-close-btn').on('click', function () {
+        $('#select-data-modal').dialog('close');
+    });
+
     /* Add a value field */
     $('#selection-confirm-btn').on('click', function() {
         var newField = window.getDataSelection();
@@ -1390,6 +1422,7 @@ $(function () {
             });
 
             var $category = $('[name="category"]');
+            var $orderby = $('[name="orderby"]');
             var $dimensions = $('#selected_dimensions');
 
 
@@ -1416,6 +1449,13 @@ $(function () {
                     newOption.setAttribute('data-forVariable', newField.value);
                     newOption.setAttribute('data-type', data.title);
                     newOption.setAttribute('name', data.title);
+                    // Append it to the select
+                    $orderby.append(newOption).trigger('change');
+
+                    var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
                     $dimensions.append(newOption);
                 }
             });
@@ -1432,6 +1472,13 @@ $(function () {
             $fieldset.find('select').select2();
 
             $chartControls.append($fieldset);
+
+            // show other query controls
+            if($chartControls.find('> *').length>0) {
+                $('.after-data-selection').each(function () {
+                    $(this).show();
+                });
+            }
 
             // mark as unsaved
             QueryToolbox.tabMarker.currentUnsaved();

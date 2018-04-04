@@ -5,7 +5,17 @@
 }
 
 #run-query-btn{
-    margin-top: 0;
+    /*margin-top: 0;*/
+    margin-right: 15px;
+}
+
+.after-data-selection{
+    display: none;
+}
+
+.clearfix{
+    border-top: thin dashed #2171ac73;
+    margin-top: 10px;
 }
 
 .datetimepicker {
@@ -172,7 +182,7 @@
 .chart-control .fieldset > .row > .col-xs-3,
 .chart-control .fieldset > .row > .col-xs-7,
 .chart-control .fieldset > .row > .col-xs-8 {
-    padding: 0 2px;
+    padding: 0;
 }
 
 .chart-control .value-options-btn,
