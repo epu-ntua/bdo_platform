@@ -101,3 +101,4 @@ ENV/
 # BDO specific
 settings-loader.txt
 aggregator/datasets
+/bdo_platform/settings_management/development_gtsapelas.py

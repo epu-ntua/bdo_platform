@@ -4,7 +4,7 @@ import psycopg2
 import time
 from threading import Thread
 
-from django.db import connection
+from django.db import connections
 
 from aggregator.models import Variable, Dimension
 from .utils import GRANULARITY_MIN_PAGES, ResultEncoder
@@ -36,8 +36,10 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                 sql_type = dimension.sql_type
 
             else:
-                column_name = v_obj.name
-                # column_name = 'value'
+                if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                    column_name = v_obj.name
+                else:
+                    column_name = 'value'
                 column_unit = v_obj.unit
                 column_axis = None
                 column_step = None
@@ -150,10 +152,11 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
 
     print q
-
-
-    connection = psycopg2.connect("dbname='bigdataocean' user='bdo' host='212.101.173.34' password='df195715HBdhahfP'")
-    cursor = connection.cursor()
+    # cursor = connection.cursor()
+    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+        cursor = connections['UBITECH_POSTGRES'].cursor()
+    else:
+        cursor = connections['default'].cursor()
 
     if not only_headers:
         # execute query & return results
