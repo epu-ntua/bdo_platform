@@ -217,11 +217,11 @@ $(function () {
             // add add filter & draw buttons
             var $btnContainer = $('<div class="row btn-container">').css('padding', '0').css('margin-left', '0');
             if (obj.chartOptions.fields.length + 1 < obj.chartPolicy.max) {
-                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue"><i class="fa fa-plus"></i> Add data</div>')
+                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" style=""><i class="fa fa-plus"></i> Add data</div>')
             }
 
             $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');
-            $btnContainer.append('<div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection"><i class="fa fa-play-circle"></i> Run</div>');
+            $btnContainer.append('<div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;"><i class="fa fa-play-circle"></i> Run Query</div>');
             $controlList.append($btnContainer);
 
 
@@ -1673,7 +1673,8 @@ $(function () {
     });
 
     /* On run query btn click, execute the query and fetch results */
-    $("#run-query-btn").click(function () {
+    $('body').on('click', '#run-query-btn', function () {
+    // $("#run-query-btn").click(function () {
         QueryToolbox.fetchQueryData();
     });
 
