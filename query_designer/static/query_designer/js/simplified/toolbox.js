@@ -360,6 +360,18 @@ $(function () {
 
             // gather individual filters
             var filters = this.getFilterArray();
+            var latitude_dim_id = $('#selected_dimensions option[data-type="latitude"]').val();
+            var longitude_dim_id = $('#selected_dimensions option[data-type="longitude"]').val();
+            if (bounds[0] !== -90) filters.push({a: latitude_dim_id, op: 'gt', b: bounds[0].toString()});
+            if (bounds[2] !== 90) filters.push({a: latitude_dim_id, op: 'lt', b: bounds[2].toString()});
+            if (bounds[1] !== -180) filters.push({a: longitude_dim_id, op: 'gt', b: bounds[1].toString()});
+            if (bounds[3] !== 180) filters.push({a: longitude_dim_id, op: 'lt', b: bounds[3].toString()});
+
+
+            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
+            if (startdate !== null) filters.push({a: time_dim_id, op: 'gt', b: startdate.toString()});
+            if (enddate !== null) filters.push({a: time_dim_id, op: 'lt', b: enddate.toString()});
+            console.log(filters);
 
             var filterTree = {};
 
@@ -1276,7 +1288,7 @@ $(function () {
                 var filterStr = filterVariable + filterOperator + filterValue;
 
                 // humanized title of the filter
-                var filterTitle = $('#new-filter-variable option[value="' + filterVariable + '"]').text() + filterOperator + title;
+                var filterTitle = $('#new-filter-variable option[value="' + filterVariable + '"]').text() + ' ' +filterOperator + ' ' + title;
 
                 // create filter name
                 var filterName = 'F' + ($('#chart-filters .filter').length + 1);
@@ -1424,7 +1436,7 @@ $(function () {
             var $category = $('[name="category"]');
             var $orderby = $('[name="orderby"]');
             var $dimensions = $('#selected_dimensions');
-
+            var $filter_variables = $('#new-filter-variable');
 
             $.each(newField.dimensions, function (id, data) {
                 if ($category.find("option[name='" + data.title + "']").length) {
@@ -1457,6 +1469,12 @@ $(function () {
                     newOption.setAttribute('data-type', data.title);
                     newOption.setAttribute('name', data.title);
                     $dimensions.append(newOption);
+
+                    var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
+                    $filter_variables.append(newOption);
                 }
             });
 

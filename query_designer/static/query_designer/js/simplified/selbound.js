@@ -1,10 +1,13 @@
+var bounds = [-90,-180,90,180];
+var startdate = null;
+var enddate = null;
 $(document).ready(function() {
     $('#mapchoices').select2();
 
     var selections = [[53,10,65,30],[34,129,52,142],[12,32,29,42],[30,6,46,36]];              // configure some predifined places here
-    var bounds = [0,0,30,30];
-    var startdate, enddate;
+
     var map, mapprev, init=false;
+
 
     /*          Set Up Maps for Modal and Preview       */
     function map_init() {
@@ -14,17 +17,17 @@ $(document).ready(function() {
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
         'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
 
-        map = L.map('map').setView([38, 0], 4);
+        map = L.map('map').setView([0, 0], 1);
         L.tileLayer(maplayer + token, {
         attribution: attr,
         maxZoom: 18
         }).addTo(map);
         init = true;
-
         mapprev = L.map('mappreview',{
             zoomControl: false
             }).setView([0, 0], 0);
         mapprev.fitWorld();
+
         L.tileLayer(maplayer + token).addTo(mapprev);
         mapprev.dragging.disable();
         mapprev.touchZoom.disable();
@@ -35,6 +38,7 @@ $(document).ready(function() {
     }
 
     map_init();
+
     $('#bounds').addClass('after-data-selection');
     /*          Set Up Maps for Modal and Preview       */
     /*          Set Up Time Pickers For Start/End Date  */
@@ -44,19 +48,21 @@ $(document).ready(function() {
     startpick.on('changeDate', function(e){
         var minDate = new Date(e.date.valueOf());
         endpick.datetimepicker('setStartDate' ,minDate);
-        startdate = minDate;
+        startdate = $('#startdatepicker input').val();
+        set_time_filters();
     });
     endpick.on('changeDate', function(e){
         var maxDate = new Date(e.date.valueOf());
         startpick.datetimepicker('setEndDate', maxDate);
-        enddate = maxDate;
+        enddate = $('#enddatepicker input').val();
+        set_time_filters();
     });
     /*          Set Up Time Pickers For Start/End Date  */
 
     /*          Set Up Selection Area on Map            */
     var areaSelect = L.areaSelect({
-            width:500,
-            height:200
+            width:450,
+            height:450
     }).addTo(map);
     /*          Set Up Selection Area on Map            */
     /*          Set Up Default Selection of Map         */
@@ -64,10 +70,7 @@ $(document).ready(function() {
     mapselect.on('change', function(){
         var i = parseInt($('#mapchoices').val());
         if(i == -1){
-            mapprev.fitWorld();
-            map.setView([38, 0],4);
-            $('#mapbounds').html("");
-            bounds = [0,0,30,30];
+            reset_map_selection();
         }
         else{
            areaSelect.setBounds([[selections[i][0],selections[i][1]],[selections[i][2],selections[i][3]]]);
@@ -88,18 +91,19 @@ $(document).ready(function() {
          });
 
         areaSelect.on("change", function() {
-            bounds = this.getBounds();
+            area_bounds = this.getBounds();
         });
 
         $('#saveregion').on("click", function(){
-            var swlat = bounds.getSouthWest().lat;
-            var swlon = bounds.getSouthWest().lng;
-            var nelat = bounds.getNorthEast().lat;
-            var nelon = bounds.getNorthEast().lng;
+            var swlat = area_bounds.getSouthWest().lat;
+            var swlon = area_bounds.getSouthWest().lng;
+            var nelat = area_bounds.getNorthEast().lat;
+            var nelon = area_bounds.getNorthEast().lng;
             mapprev.fitBounds([[swlat,swlon],[nelat,nelon]]);
            $('#mapchoices').val('-1').prop('selected', false);
-           $('#mapbounds').html("SouthWest {Lat:" + swlat + " Lng:" + swlon + "} <br>NorthEast {Lat:" + nelat + " Lng:" + nelon + "}");
+           // $('#mapbounds').html("SouthWest {Lat:" + swlat + " Lng:" + swlon + "} <br>NorthEast {Lat:" + nelat + " Lng:" + nelon + "}");
            bounds = [swlat,swlon,nelat,nelon];
+           set_bounds_filters()
         });
     });
     /*          Modal Open Button For Area Selection    */
@@ -115,5 +119,39 @@ $(document).ready(function() {
         QueryToolbox.filterManager.addFilter('timestamp', 'gt' , startdate.toString());
         QueryToolbox.filterManager.addFilter('timestamp', 'lt' , enddate.toString());
     });
+
+    function set_bounds_filters() {
+        var latitude_dim_id = $('#selected_dimensions option[data-type="latitude"]').val();
+        var longitude_dim_id = $('#selected_dimensions option[data-type="longitude"]').val();
+        // QueryToolbox.filterManager.addFilter(latitude_dim_id, 'gt', bounds[0].toString());
+        // QueryToolbox.filterManager.addFilter(latitude_dim_id, 'lt' , bounds[2].toString());
+        // QueryToolbox.filterManager.addFilter(longitude_dim_id, 'gt' , bounds[1].toString());
+        // QueryToolbox.filterManager.addFilter(longitude_dim_id, 'lt' , bounds[3].toString());
+    }
+
+    function set_time_filters() {
+        var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
+        // QueryToolbox.filterManager.addFilter(time_dim_id, 'gt', startdate.toString());
+        // QueryToolbox.filterManager.addFilter(time_dim_id, 'lt' , enddate.toString());
+        // var filters = QueryToolbox.getFilterArray();
+        // for (var key in filters) {
+        //     if (parseInt(time_dim_id) === filters[key].a){
+        //
+        //     }
+        // }
+    }
+
+
+    function reset_map_selection() {
+        mapprev.fitWorld();
+        // map.setView([38, 0],4);
+        map.setView([0, 0], 1);
+        // mapprev.setView([0, 0], 1);
+        $('#mapbounds').html("");
+
+        bounds = [-90,-180,90,180];
+    }
+
+    reset_map_selection();
 
 });
