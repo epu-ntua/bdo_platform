@@ -362,15 +362,15 @@ $(function () {
             var filters = this.getFilterArray();
             var latitude_dim_id = $('#selected_dimensions option[data-type="latitude"]').val();
             var longitude_dim_id = $('#selected_dimensions option[data-type="longitude"]').val();
-            if (bounds[0] !== -90) filters.push({a: latitude_dim_id, op: 'gt', b: bounds[0].toString()});
-            if (bounds[2] !== 90) filters.push({a: latitude_dim_id, op: 'lt', b: bounds[2].toString()});
-            if (bounds[1] !== -180) filters.push({a: longitude_dim_id, op: 'gt', b: bounds[1].toString()});
-            if (bounds[3] !== 180) filters.push({a: longitude_dim_id, op: 'lt', b: bounds[3].toString()});
+            if (bounds[0] !== -90) filters.push({a: latitude_dim_id, op: 'gte', b: bounds[0].toString()});
+            if (bounds[2] !== 90) filters.push({a: latitude_dim_id, op: 'lte', b: bounds[2].toString()});
+            if (bounds[1] !== -180) filters.push({a: longitude_dim_id, op: 'gte', b: bounds[1].toString()});
+            if (bounds[3] !== 180) filters.push({a: longitude_dim_id, op: 'lte', b: bounds[3].toString()});
 
 
             var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
-            if (startdate !== null) filters.push({a: time_dim_id, op: 'gt', b: startdate.toString()});
-            if (enddate !== null) filters.push({a: time_dim_id, op: 'lt', b: enddate.toString()});
+            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
+            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
             console.log(filters);
 
             var filterTree = {};
