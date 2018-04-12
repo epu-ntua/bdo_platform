@@ -141,12 +141,15 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         limit_clause = 'LIMIT %d\n' % limit
 
     # organize into subquery
-    subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + ') AS SQ1\n'
+    subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + order_by_clause + ') AS SQ1\n'
     subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + ') AS SQ1\n'
 
     # generate query
+    # q = subquery + \
+    #     order_by_clause + \
+    #     offset_clause + \
+    #     limit_clause
     q = subquery + \
-        order_by_clause + \
         offset_clause + \
         limit_clause
     subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
@@ -205,11 +208,14 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                     ) AS GQ_C
                     WHERE (row_id %% %d = 0)
                 """ % (','.join([c[1] for c in columns]), q, granularity)
-
+        print "Executed query:"
+        print q
         results = []
         if execute:
             cursor.execute(q)
             all_rows = cursor.fetchall()
+            print "First rows"
+            print all_rows[:3]
             # all_rows = Query.threaded_fetchall(connection, q, self.count)
 
             # we have to convert numeric results to float

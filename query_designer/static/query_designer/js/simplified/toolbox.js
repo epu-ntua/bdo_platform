@@ -767,6 +767,7 @@ $(function () {
                 $.each($('#selected_dimensions > option[data-forvariable="' + value.name + '"]'), function(jdx, opt) {
                     var name = $(opt).data('type');
                     var groupBy = $('select[name="category"]').val().indexOf(String($(opt).attr('value'))) >= 0;
+                    var orderBy = $('select[name="orderby"]').val().indexOf(String($(opt).attr('value'))) >= 0;
 
                     var dimension = {
                         type: $(opt).attr('value'),
@@ -794,15 +795,22 @@ $(function () {
                             }
                         })
                     }
-                    _from.select.push(dimension)
+                    _from.select.push(dimension);
+                    if(orderBy) {
+                        result.orderings.push({type: 'ASC', name: 'i' + String(idx) + '_' + name});
+                    }
                 });
 
                 // add to query
                 result.from.push(_from);
+
             });
 
             // add filters
             result.filters = this.constructFiltersParam(result);
+
+            // add orderings
+
 
             return result;
         },
