@@ -75,7 +75,7 @@ $(document).ready(function() {
         else{
            areaSelect.setBounds([[selections[i][0],selections[i][1]],[selections[i][2],selections[i][3]]]);
             mapprev.fitBounds([[selections[i][0],selections[i][1]],[selections[i][2],selections[i][3]]]);
-            $('#mapbounds').html("SouthWest {Lat:" + selections[i][0] + " Lng:" + selections[i][1] + "} <br>NorthEast {Lat:" + selections[i][2] + " Lng:" + selections[i][3] + "}");
+            $('#mapbounds').html("SouthWest {Lat:" + selections[i][0] + ", Lng:" + selections[i][1] + "}</br>NorthEast {Lat:" + selections[i][2] + ", Lng:" + selections[i][3] + "}");
             bounds = [selections[i][0],selections[i][1],selections[i][2],selections[i][3]];
         }
     });
@@ -95,13 +95,13 @@ $(document).ready(function() {
         });
 
         $('#saveregion').on("click", function(){
-            var swlat = area_bounds.getSouthWest().lat;
-            var swlon = area_bounds.getSouthWest().lng;
-            var nelat = area_bounds.getNorthEast().lat;
-            var nelon = area_bounds.getNorthEast().lng;
+            var swlat = Math.round(area_bounds.getSouthWest().lat * 1000) / 1000;
+            var swlon = Math.round(area_bounds.getSouthWest().lng * 1000) / 1000;
+            var nelat = Math.round(area_bounds.getNorthEast().lat * 1000) / 1000;
+            var nelon = Math.round(area_bounds.getNorthEast().lng * 1000) / 1000;
             mapprev.fitBounds([[swlat,swlon],[nelat,nelon]]);
            $('#mapchoices').val('-1').prop('selected', false);
-           // $('#mapbounds').html("SouthWest {Lat:" + swlat + " Lng:" + swlon + "} <br>NorthEast {Lat:" + nelat + " Lng:" + nelon + "}");
+           $('#mapbounds').html("SouthWest {Lat:" + swlat + ", Lng:" + swlon + "} </br>NorthEast {Lat:" + nelat + ", Lng:" + nelon + "}");
            bounds = [swlat,swlon,nelat,nelon];
            set_bounds_filters()
         });
@@ -148,10 +148,15 @@ $(document).ready(function() {
         map.setView([0, 0], 1);
         // mapprev.setView([0, 0], 1);
         $('#mapbounds').html("");
-
+        $('#mapchoices').val('-1').prop('selected', false);
         bounds = [-90,-180,90,180];
     }
 
     reset_map_selection();
+
+    $('#resetMapBounds').click(function () {
+        reset_map_selection();
+        $('#mapchoices').trigger("change");
+    })
 
 });

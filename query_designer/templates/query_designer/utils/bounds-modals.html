@@ -7,20 +7,21 @@
             </div>
             <div class="">
                 <div id="choices">
-                <select style="border: 2px solid grey; border-radius: 1em;" id="mapchoices">
-                    <option value="-1">Choose Predefined</option>
-                    <option value="0">Baltic Sea</option>
-                    <option value="1">Sea Of Japan</option>
-                    <option value="2">Red Sea</option>
-                    <option value="3">mediterranean</option>
-                </select>
+                    <select style="border: 2px solid grey; border-radius: 1em;" id="mapchoices">
+                        <option value="-1">Choose Predefined</option>
+                        <option value="0">Baltic Sea</option>
+                        <option value="1">Sea Of Japan</option>
+                        <option value="2">Red Sea</option>
+                        <option value="3">mediterranean</option>
+                    </select>
                 </div>
 {#                <div id="mapbtn" style="display: inline;">#}
 {#                    <button class="btn btn-primary btn-xs" id="selbutton" data-toggle="modal" data-target="#mapModal">Choose Region</button>#}
 {#                </div>#}
             </div>
-            <div>
-                <p id="mapbounds"></p>
+            <div class="row" style="margin: 0px;">
+                <button id="resetMapBounds" class="btn btn-default btn-sm pull-left" style="margin: 5px 0px;">Reset</button>
+                <p id="mapbounds" class="pull-left" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
             </div>
 
     </div>
