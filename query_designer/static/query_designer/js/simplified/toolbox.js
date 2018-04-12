@@ -217,7 +217,7 @@ $(function () {
             // add add filter & draw buttons
             var $btnContainer = $('<div class="row btn-container">').css('padding', '0').css('margin-left', '0');
             if (obj.chartOptions.fields.length + 1 < obj.chartPolicy.max) {
-                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" style=""><i class="fa fa-plus"></i> Add data</div>')
+                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" style=""><i class="fa fa-plus"></i> Select data</div>')
             }
 
             $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');

@@ -10,7 +10,7 @@
 }
 
 .after-data-selection{
-    /*display: none;*/
+    display: none;
 }
 
 .clearfix{
@@ -131,9 +131,6 @@
     /*width: 50% !important;*/
 }
 
-#chart-sidebar #resolution div {
-    /* margin: 0px 0px; */
-}
 
 #select-chart-type {
     position: absolute;
