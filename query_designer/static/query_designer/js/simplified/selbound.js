@@ -3,6 +3,8 @@ var startdate = null;
 var enddate = null;
 $(document).ready(function() {
     $('#mapchoices').select2();
+    $('#resolution select').select2({width: 'style'});
+
 
     var selections = [[53,10,65,30],[34,129,52,142],[12,32,29,42],[30,6,46,36]];              // configure some predifined places here
 

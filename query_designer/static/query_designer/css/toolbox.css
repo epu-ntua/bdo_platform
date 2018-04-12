@@ -10,7 +10,7 @@
 }
 
 .after-data-selection{
-    display: none;
+    /*display: none;*/
 }
 
 .clearfix{
@@ -125,6 +125,14 @@
 
 #chart-sidebar .select2-container {
     width: 100% !important;
+}
+
+#chart-sidebar #resolution .select2-container {
+    /*width: 50% !important;*/
+}
+
+#chart-sidebar #resolution div {
+    /* margin: 0px 0px; */
 }
 
 #select-chart-type {
