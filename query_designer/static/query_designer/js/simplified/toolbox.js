@@ -1555,7 +1555,31 @@ $(function () {
     });
 
     /* On value field change */
-    $('body').on('change', 'select[name="value_field"], select[name="category"]', function (e) {
+    $('body').on('change', 'select[name="value_field"]', function (e) {
+
+        // mark as unsaved
+        QueryToolbox.tabMarker.currentUnsaved();
+
+        // redraw
+        QueryToolbox.fetchChartData();
+    });
+
+    /* On category field change */
+    $('body').on('change', 'select[name="category"]', function (e) {
+
+        if($("select[name='category']").val().length > 0){
+            $("select[name='field_aggregate']").each(function () {
+                $(this).val("AVG");
+                $(this).trigger("change");
+            });
+
+        }
+        else{
+            $("select[name='field_aggregate']").each(function () {
+                $(this).val("");
+                $(this).trigger("change");
+            });
+        }
 
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
