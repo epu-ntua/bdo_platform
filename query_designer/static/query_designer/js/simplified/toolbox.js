@@ -797,7 +797,9 @@ $(function () {
                     }
                     _from.select.push(dimension);
                     if(orderBy) {
-                        result.orderings.push({type: 'ASC', name: 'i' + String(idx) + '_' + name});
+                        var selected_index = $('select[name="orderby"]').val().indexOf(String($(opt).attr('value')));
+                        var ordering = $('select[name="orderby"]').find('option:selected').eq(selected_index).data('ordering');
+                        result.orderings.push({type: ordering, name: 'i' + String(idx) + '_' + name});
                     }
                 });
 
@@ -1465,9 +1467,18 @@ $(function () {
                     // Append it to the select
                     $category.append(newOption).trigger('change');
 
-                    var newOption = new Option(data.title, data.value, false, false);
+                    var newOption = new Option(data.title + ' - ASC', data.value, false, false);
                     newOption.setAttribute('data-forVariable', newField.value);
                     newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('data-ordering', 'ASC');
+                    newOption.setAttribute('name', data.title);
+                    // Append it to the select
+                    $orderby.append(newOption).trigger('change');
+
+                    var newOption = new Option(data.title + ' - DESC', data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('data-ordering', 'DESC');
                     newOption.setAttribute('name', data.title);
                     // Append it to the select
                     $orderby.append(newOption).trigger('change');
