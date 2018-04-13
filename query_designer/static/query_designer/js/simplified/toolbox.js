@@ -162,19 +162,20 @@ $(function () {
 
             $.each(config.choices, function (idx, choice) {
                 var $option = $('<option />');
+                if(config.value === choice.value) { // john's addition to have only the selected variable as option
+                    $option.attr('value', choice.value);
+                    $option.text(choice.title);
+                    if (typeof(choice.type) !== 'undefined') {
+                        $option.data('type', choice.type);
+                        $option.attr('data-type', choice.type);
+                    }
+                    if (typeof(choice.forVariable) !== 'undefined') {
+                        $option.data('forvariable', choice.forVariable);
+                        $option.attr('data-forvariable', choice.forVariable);
+                    }
 
-                $option.attr('value', choice.value);
-                $option.text(choice.title);
-                if (typeof(choice.type) !== 'undefined') {
-                    $option.data('type', choice.type);
-                    $option.attr('data-type', choice.type);
+                    $fieldSelect.append($option);
                 }
-                if (typeof(choice.forVariable) !== 'undefined') {
-                    $option.data('forvariable', choice.forVariable);
-                    $option.attr('data-forvariable', choice.forVariable);
-                }
-
-                $fieldSelect.append($option);
             });
 
             var inlineLabel = '';
