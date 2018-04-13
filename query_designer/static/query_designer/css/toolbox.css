@@ -1,3 +1,5 @@
+#outputLoadImg{position:absolute;z-index:999;display:table-cell;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
+
 .popover{
     min-width: 500px;
 }
@@ -19,6 +21,7 @@
 #viz_container{
     width: 84%;
     float: right;
+    position: relative;
 }
 
 .viz_item{

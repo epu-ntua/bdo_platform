@@ -72,6 +72,7 @@ function updateVariables(element) {
                 $(component_selector).popover('toggle');
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id+' #select_conf_ok').click(function(e){
+                    $("#outputLoadImg").show();
                     submit_conf(component_selector);
                     $(component_selector).popover("hide");
                 });
@@ -106,10 +107,19 @@ function submit_conf(component_selector) {
 }
 
 function show_viz(viz_request) {
-    $("#viz_container").html('<iframe id="viz-iframe" ' +
-        'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+    var iframe = $('<iframe id="viz-iframe" ' +
+        'src="'+viz_request+'" frameborder="0" allowfullscreen="" onload="hide_gif();"'+
         '></iframe>');
+    $("#viz_container iframe").remove();
+    $("#viz_container").append(iframe);
+    // $("#viz_container").html('<iframe id="viz-iframe" ' +
+    //     'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+    //     '></iframe>');
 }
+
+function hide_gif(){
+    $("#outputLoadImg").css( "display", "none" );
+};
 
 
 // $("#toggleviz_group_container_btn").click(function () {
