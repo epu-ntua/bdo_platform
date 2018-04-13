@@ -838,6 +838,10 @@ $(function () {
 
             // request data
             var runQuery = function(id) {
+                // update data table headers & data
+                var $table = $("#graph-data-table");
+                $table.find('thead').empty();
+                $table.find('tbody').empty();
                 $.ajax({
                     url: '/queries/execute/',
                     type: 'POST',
@@ -863,10 +867,7 @@ $(function () {
                         $("#viz_container").append(iframe);
                         $('#viz_container iframe').attr('src', 'http://localhost:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
 
-                        // update data table headers & data
-                        var $table = $("#graph-data-table");
-                        $table.find('thead').empty();
-                        $table.find('tbody').empty();
+
 
                         var $header = $('<tr />');
                         $.each(response.headers.columns, function (idx, col) {
@@ -1744,8 +1745,7 @@ $(function () {
 
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
-        alert('fds');
-        $("#outputLoadImg").show();
+        $(".outputLoadImg").show();
     // $("#run-query-btn").click(function () {
         QueryToolbox.fetchQueryData();
     });
