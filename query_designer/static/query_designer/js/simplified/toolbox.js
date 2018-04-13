@@ -741,7 +741,7 @@ $(function () {
                 from: [],
                 distinct: false,
                 offset: 0,
-                "limit": 100,
+                "limit": parseInt($('#limit_container select').val()),
                 "orderings": []
             };
 
@@ -1392,6 +1392,8 @@ $(function () {
 
     /* Filter dialog should always use select2 */
     $('#filters-modal select').select2();
+
+    $('#limit_container select').select2({tags: true});
 
     /* Add a new query */
     $('#add-chart').on('click', function () {

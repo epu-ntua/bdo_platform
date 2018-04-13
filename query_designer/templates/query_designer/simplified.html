@@ -57,6 +57,15 @@
             {% trans 'Query name' %}: <input type="text" name="chart-name" />
         </div>
         <div class="chart-file-control pull-right formula-editor-open" title="Define custom metrics"><i class="fa fa-cog"></i> {% trans 'Define custom metrics' %}</div>
+        <div class="pull-right" id="limit_container">
+            {% trans 'Limit results' %}:
+            <select  style="border: 2px solid grey; border-radius: 1em;" id="limit" name="limit">
+                <option value="none">-- None --</option>
+                <option value="100" selected>100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+            </select>
+        </div>
     </div>
 
     <div class="row" id="chart-container" >
