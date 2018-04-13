@@ -883,6 +883,14 @@ $(function () {
 
                             $table.find('tbody').append($row);
                         });
+                        $("#chart-content-tabs li").eq(1).find('a').click();
+                        $("#chart-content-tabs li").eq(0).find('a').click();
+                    },
+                    error: function (response) {
+                        hide_gif();
+                        $('#chartdiv').hide();
+                        $('.no-data-message').show();
+                        alert('We are sorry, an error occurred.');
                     }
                 })
             };
