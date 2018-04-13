@@ -2,6 +2,29 @@
     min-width: 500px;
 }
 
+.collapse.width {
+    height: auto;
+    -webkit-transition: width 0.35s linear;
+    -moz-transition: width 0.35s linear;
+    -o-transition: width 0.35s linear;
+    transition: width 0.35s linear;
+}
+
+#viz_group_container{
+    float: left;
+    margin-top: 20px;
+    width: 15%;
+}
+
+#viz_container{
+    width: 84%;
+    float: right;
+}
+
+.viz_item{
+    cursor: pointer;
+    font-size: 10.5pt;
+}
 
 /* Override */
 .select2-dropdown {

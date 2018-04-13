@@ -68,6 +68,7 @@ function updateVariables(element) {
                     }
                 });
                 updateVariables($('#load-viz-query-select'));
+                $('.viz_item').not(component_selector).popover('hide');
                 $(component_selector).popover('toggle');
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id+' #select_conf_ok').click(function(e){
@@ -109,3 +110,15 @@ function show_viz(viz_request) {
         'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
         '></iframe>');
 }
+
+
+// $("#toggleviz_group_container_btn").click(function () {
+//     if($('#viz_group_container').is(":visible")){
+//         $('#viz_group_container').collapse("hide");
+//         $('#viz_container').removeClass('col-sm-10').addClass('col-sm-12');
+//     }
+//     else{
+//         $('#viz_group_container').collapse("show");
+//         $('#viz_container').removeClass('col-sm-12').addClass('col-sm-10');
+//     }
+// });

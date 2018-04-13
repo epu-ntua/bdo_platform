@@ -1,10 +1,17 @@
-<div class="row" id="viz_config">
-    <ul class="list-group collapse in col-sm-2" style="width: 15%">
-        {% for viz in available_viz %}
-            <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
-        {% endfor %}
-    </ul>
-    <div id="viz_container" class="col-sm-8" style="width: 85%">
+{#<button id="toggleviz_group_container_btn" data-toggle="collapse" data-target="#viz_group_container">#}
+{#    Show available charts#}
+{#</button>#}
+<div class="row" id="viz_config" style="width: 100%;">
+    <div id='viz_group_container' class="collapse width in" >
+
+        <ul class="list-group">
+            {% for viz in available_viz %}
+                <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+            {% endfor %}
+        </ul>
+
+    </div>
+    <div id="viz_container" class="" >
     </div>
 </div>
 <input type="hidden" id="selected_query" value="">
