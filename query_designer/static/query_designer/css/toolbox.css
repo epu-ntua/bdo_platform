@@ -1,3 +1,8 @@
+.popover{
+    min-width: 500px;
+}
+
+
 /* Override */
 .select2-dropdown {
     min-width: 500px;

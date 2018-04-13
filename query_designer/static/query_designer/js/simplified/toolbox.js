@@ -14,7 +14,7 @@ $(function () {
 
             var chartTitle = chartTitle || 'Query ' + ($('#chart-picker li').length + 1);
 
-            this.chart = $('<iframe />');
+            // this.chart = $('<iframe />');
 
             // save
             var obj = {
@@ -43,9 +43,9 @@ $(function () {
             $('#chart-name').removeClass('hidden').find('input').val(chartTitle);
 
             // show graph
-            $('#chartdiv')
-                .empty()
-                .append(this.chart);
+            // $('#chartdiv')
+            //     .empty()
+            //     .append(this.chart);
         },
 
         setChartOptions: function (obj, chartOptions, chartFilters, chartPolicy) {
@@ -846,6 +846,9 @@ $(function () {
                         csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val()
                     },
                     success: function (response) {
+                        $('.no-data-message').hide();
+                        $('#chartdiv').show();
+
                         // create the required graphs
                         // todo improve updating iframe
                         var y_var = doc.from[0].select[0].name;
@@ -855,7 +858,10 @@ $(function () {
                                 x_var = s.name
                             }
                         });
-                        $('iframe').attr('src', 'http://localhost:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
+                        var iframe = $('<iframe />');
+                        $("#viz_container").empty();
+                        $("#viz_container").append(iframe);
+                        $('#viz_container iframe').attr('src', 'http://localhost:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
 
                         // update data table headers & data
                         var $table = $("#graph-data-table");
@@ -921,7 +927,7 @@ $(function () {
             this.refreshValueFields();
             this.chart = obj.chart;
             $('#chartdiv')
-                .empty()
+                // .empty()
                 .append(this.chart);
 
             // update chart name field
@@ -986,6 +992,7 @@ $(function () {
                     // update status
                     that.setStatus('Saved', 'check');
 
+                    $('#selected_query').val(parseInt(data.pk));
                     // run callback
                     if (callback) {
                         callback(data.pk)

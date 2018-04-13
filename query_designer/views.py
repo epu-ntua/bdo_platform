@@ -21,6 +21,8 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render
 
+from visualizer.models import Visualization
+
 # from query_designer.mongo_api import *
 # from query_designer.mongo_query import *
 
@@ -45,6 +47,7 @@ def simplified(request, pk=None):
     return render(request, 'query_designer/simplified.html', {
         'datasets': Dataset.objects.filter(stored_at='LOCAL_POSTGRES').exclude(variables=None),
         'dimensions': Dimension.objects.all(),
+        'available_viz': Visualization.objects.filter(hidden=False),
         'AGGREGATES': AGGREGATES,
     })
 

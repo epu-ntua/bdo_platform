@@ -1,0 +1,18 @@
+<div class="row" id="viz_config">
+    <ul class="list-group collapse in col-sm-2" style="width: 15%">
+        {% for viz in available_viz %}
+            <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+        {% endfor %}
+    </ul>
+    <div id="viz_container" class="col-sm-8" style="width: 85%">
+    </div>
+</div>
+<input type="hidden" id="selected_query" value="">
+
+
+<div id="conf-container" style="display: none">
+</div>
+
+
+<form id="config-viz-form" style="display: none">
+</form>

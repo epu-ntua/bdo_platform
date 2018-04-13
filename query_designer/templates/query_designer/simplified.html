@@ -110,11 +110,14 @@
                         </div>
                         <div id="chart-tab-content" class="tab-content">
                             <div class="tab-pane active toggle-chart" id="chart">
-                                <div id="no-data-message" style="display: none;">{% trans 'No data available' %}</div>
+                                <div class="no-data-message">{% trans 'No data available' %}</div>
 
-                                <div id="chartdiv" class="chartdiv"></div>
+                                <div id="chartdiv" class="chartdiv" style="display: none;">
+                                    {% include "query_designer/utils/chart_editor.html" %}
+                                </div>
                             </div>
                             <div class="tab-pane" id="datatable">
+                                <div class="no-data-message">{% trans 'No data available' %}</div>
                                 <table id="graph-data-table" class="table">
                                     <thead></thead>
                                     <tbody></tbody>
@@ -164,6 +167,7 @@
     <script src="{% static "js/leaflet-areaselect.js" %}"></script>
 
     <script src="{% static "query_designer/js/simplified/selbound.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/chart_editor.js" %}"></script>
 
     {% if auto_open %}
         <script>
