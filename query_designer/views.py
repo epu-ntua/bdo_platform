@@ -53,16 +53,25 @@ def simplified(request, pk=None):
 
 
 @csrf_exempt
-def save_query(request, pk=None):
+def save_query(request, pk=None, temp=1):
+    print pk, temp
     # create or update
     if not pk:
         current_user = request.user
         if current_user.is_authenticated():
-            q = Query(user=current_user)
+            if int(temp) == 1:
+                print 'it is temp'
+                q = TempQuery(user=current_user)
+            else:
+                q = Query(user=current_user)
         else:
-            q = Query(user=User.objects.get(username='BigDataOcean'))
+            if int(temp) == 1:
+                q = TempQuery(user=User.objects.get(username='BigDataOcean'))
+            else:
+                q = Query(user=User.objects.get(username='BigDataOcean'))
     else:
-        q = Query.objects.get(pk=pk)
+        print 'not pk'
+        q = AbstractQuery.objects.get(pk=pk)
 
     # initially assume custom query
     q.generated_by = 'CUSTOM'

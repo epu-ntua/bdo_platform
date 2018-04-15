@@ -19,6 +19,7 @@ $(function () {
             // save
             var obj = {
                 'chartId': chartId,
+                'tempChartId': chartId,
                 'chartTitle': chartTitle
             };
             this.objects.push(obj);
@@ -898,7 +899,7 @@ $(function () {
 
             // hack due to visualizations needing the query id
             // first save
-            QueryToolbox.save(runQuery);
+            QueryToolbox.save(runQuery, 1);
         },
 
         tabMarker: {
@@ -966,7 +967,7 @@ $(function () {
         },
 
         /* Save the current chart */
-        save: function (callback) {
+        save: function (callback, temp) {
             // get current chart (if any)
             var current = this.current();
             if (current < 0) {
@@ -990,13 +991,25 @@ $(function () {
 
             // send the save request
             var that = this;
+            var url;
+            if (temp === 1){
+                url = '/queries/save/' + (this.objects[current].tempChartId ? this.objects[current].tempChartId + '/' : '') + '1/'
+            }
+            else{
+                url = '/queries/save/' + (this.objects[current].chartId ? this.objects[current].chartId + '/' : '') + '0/'
+            }
             $.ajax({
-                url: '/queries/save/' + (this.objects[current].chartId ? this.objects[current].chartId + '/' : ''),
+                url: url,
                 type: 'POST',
                 data: data,
                 success: function (data) {
                     // save id & mark
-                    that.objects[current].chartId = Number(data.pk);
+                    if (temp === 1){
+                        that.objects[current].tempChartId = Number(data.pk);
+                    }
+                    else{
+                        that.objects[current].chartId = Number(data.pk);
+                    }
                     that.tabMarker.currentSaved();
 
                     // update status
@@ -1573,7 +1586,7 @@ $(function () {
 
     /* On chart save */
     $('body').on('click', '#chart-save', function () {
-        QueryToolbox.save();
+        QueryToolbox.save(function (id) {}, 0);
     });
 
     /* On chart open dialog */
@@ -1762,7 +1775,7 @@ $(function () {
     /* Hotkeys */
     document.addEventListener("keydown", function (e) {
         if (e.keyCode == 83 && e.ctrlKey) { //Ctrl+S key pressed
-            QueryToolbox.save();
+            QueryToolbox.save(function (id) {}, 0);
 
             e.preventDefault();
             e.stopPropagation();

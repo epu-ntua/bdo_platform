@@ -574,4 +574,4 @@ class Query(AbstractQuery):
 
 
 class TempQuery(AbstractQuery):
-    original = ForeignKey(Query)
+    original = ForeignKey(Query, null=True)

@@ -23,8 +23,8 @@ urlpatterns = [
     url('load/(?P<pk>\d+)/$', views.load_query, name='load-query'),
 
     # save
-    url('save/$', views.save_query, name='save-query'),
-    url('save/(?P<pk>\d+)/$', views.save_query, name='save-query'),
+    url('save/(?P<temp>\d+)/$', views.save_query, name='save-query'),
+    url('save/(?P<pk>\d+)/(?P<temp>\d+)/$', views.save_query, name='save-query'),
 
     # get select variables
     url('get_query_variables/$', views.get_query_variables, name='get-query-variables'),
