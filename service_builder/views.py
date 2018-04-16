@@ -146,7 +146,7 @@ def load_service(request, pk):
         'output_js': output_js,
         'arguments': json.dumps(arguments),
         'service_id': pk,
-        'published': service.publised})
+        'published': service.published})
 
 
 def load_service_args_form_fields(request):
