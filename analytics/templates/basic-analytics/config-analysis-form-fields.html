@@ -9,7 +9,14 @@
                     {% if argument.type != 'QUERY' %}
                         <label class="control-label">{{ argument.title }}</label>
                     {% endif %}
-                    {% if argument.type == 'QUERY' %}
+                    {% if argument.type == 'SPATIAL_COV' %}
+                         <div id="newmap">
+                            <input type="text" id="min_lat" style="display: none;">
+                            <input type="text" id="max_lat" style="display: none;">
+                            <input type="text" id="min_lon" style="display: none;">
+                            <input type="text" id="max_lon" style="display: none;">
+                         </div>
+                    {% elif argument.type == 'QUERY' %}
                     {% elif argument.type == 'COLUMN' %}
                         <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}" >
                             <option disabled selected value>-- select variable --</option>

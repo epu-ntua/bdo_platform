@@ -8,6 +8,7 @@ urlpatterns = [
     url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium'),
     url('^map_heat/$', views.map_heatmap, name='map_heatmap'),
     url('^map_course/$', views.map_course, name='map_course'),
+    url('^map_plotline/$', views.map_plotline, name='map_plotline'),
     url('^map_course_time/$', views.map_course_time, name='map_course_time'),
 
     url('^map_api/$', views.MapAPI.as_view(), name='map_api'),
@@ -33,6 +34,8 @@ urlpatterns = [
     url('^get_line_chart_am/$', views.get_line_chart_am, name='get_line_chart_am'),
     url('^get_pie_chart_am/$', views.get_pie_chart_am, name='get_pie_chart_am'),
     url('^get_column_chart_am/$', views.get_column_chart_am, name='get_column_chart_am'),
+    url('^get_histogram_chart_am/$', views.get_histogram_chart_am, name='get_histogram_chart_am'),
+    url('^get_histogram_2d_am/$', views.get_histogram_2d_am, name='get_histogram_2d_am'),
 
     url('^get_data_table/$', views.get_data_table, name='get_data_table'),
 

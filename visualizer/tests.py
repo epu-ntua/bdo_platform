@@ -7,6 +7,7 @@ def trim_year(full_date):
     year = year.split("-")
     return int(year[0])
 
+
 def get_data(markers, ship, minyear, maxyear):
     q = Query.objects.get(pk=75)
     q.document['limit'] = markers

@@ -9,6 +9,7 @@
 
 {% block content %}
 
+
     <div class="row">
         <div class="text-center">
             <h1 class="o-blue">Configure analysis</h1>
@@ -85,8 +86,12 @@
 
 
 {% block js %}
+
     <script src="{% static 'basic-analytics/analytics_config.js' %}"></script>
+
+
     <script type="text/javascript">
+
         function updateVariables(element) {
             $('.variable-select').find('option').remove().end();
             $('.variable-select').append($("<option disabled selected>-- select variable --</option>"));
@@ -111,7 +116,9 @@
 
         $('#query-select').on('change', function() {
             updateVariables(this);
+
         })
+
 
         function addNewQuery(title, raw_query, document) {
             $("#query-select option[id='-1']").remove().end();

@@ -1,3 +1,11 @@
+{% load static %}
+{% load leaflet_tags %}
+
+{% block css %}
+     {% leaflet_css %}
+{% endblock %}
+
+
 
     <input id="{{ order }}+++viz_id" type="hidden" class="form-control full-width variable-select" name="viz_id"  value="{{ viz_id }}">
     <input id="action" type="hidden" class="form-control full-width variable-select" name="action"  value="{{ action }}">
@@ -32,4 +40,12 @@
     {% empty %}
         <p>This visualization requires no further arguments.</p>
     {% endfor %}
+
+{% block js %}
+    {% leaflet_js %}
+    <script src="{% static 'dashboard_builder/js/selbound.js' %}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+{% endblock %}
+
+{##}
 

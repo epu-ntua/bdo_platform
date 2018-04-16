@@ -2,7 +2,10 @@
 
 {% load static %}
 
+{% load leaflet_tags %}
+
 {% block css %}
+     {% leaflet_css %}
 
     <style>
         #loadImg{position:absolute;z-index:999;}
@@ -49,6 +52,8 @@
 
 {% block content %}
     {% csrf_token %}
+
+
     <div class="row" style="display: none;">
         <form class="form" id="config-viz-form"></form>
     </div>
@@ -187,6 +192,7 @@
                                 <li class="list-group-item viz_item" id="pie_chart_item" data-component-id="12"><i class="fa fa-pie-chart margin-right-1"></i>Pie chart</li>
                                 <li class="list-group-item viz_item" id="contours_on_map_item" data-component-id="4"><i class="fa fa-map margin-right-1"></i>Contours on map</li>
                                 <li class="list-group-item viz_item" id="ship_course_on_map_item" data-component-id="15"><i class="fa fa-map-marker margin-right-1"></i>Ship's course on map</li>
+
                             </ul>
                             <div id="viz_container" class="col-sm-8" style="width: 85%">
 
@@ -206,6 +212,7 @@
 {% endblock %}
 
 {% block js %}
+    {% leaflet_js %}
     <script type="text/javascript">
         function updateVariables(element) {
             $('#myModal .variable-select').find('option').remove().end();
@@ -242,8 +249,12 @@
 
 
     </script>
+
+    <script src="{% static 'dashboard_builder/js/selbound.js' %}"></script>
+
     <script>
         $(document).ready(function(){
+                load_map();
 
             $("#myModal #select_data_popover").popover({
                 html: true,
@@ -289,6 +300,9 @@
                     success: function(form_fields){
                         $("#conf-container").html(form_fields);
                         $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
+                        move_map();
+                        map.invalidateSize();
+
 
                         $(component_selector).popover({
                             html: true,
@@ -304,6 +318,7 @@
                             submit_conf(component_selector);
                             $(component_selector).popover("hide");
                         });
+
                     }
                 });
             });
@@ -434,6 +449,8 @@
                 }
             }
         });
+
+
 
 
     </script>
