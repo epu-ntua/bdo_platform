@@ -27,9 +27,34 @@
                     </div>
                     <div class="card-footer">
         {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
-                        <a href="/services/{{ item.pk }}/" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
+                        <a href="/services/service/{{ item.pk }}/" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
                         <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
-                            {{  item.created|date:"jS F Y" }}, BigDataOcean <br/>
+                            {{  item.created|date:"jS F Y" }}, by BigDataOcean <br/>
+                            <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% for item in my_dashboards %}
+            <div class="col-md-4 landing-page-tile">
+                <div class="card" style="background: white;">
+                    <div class="card-content">
+                        <h4 class="title">
+        {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
+                            <a href="/services/{{ item.pk }}/" class="text-blue">{{ item.title }}</a>
+                        </h4>
+        {#                {% if item.description %}#}
+        {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
+        {#                {% endif %}#}
+                        <p class="text-blue">{{ item.title }}</p>
+                    </div>
+                    <div class="card-footer">
+        {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
+                        <a href="/services/dashboard/{{ item.pk }}/" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
+                        <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
+                            {{  item.created|date:"jS F Y" }}, by BigDataOcean <br/>
                             <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
                         </p>
                     </div>
@@ -57,7 +82,7 @@
     {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
                     <a href="" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
                     <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
-                        {% now "jS F Y" %}, BigDataOcean <br/>
+                        {% now "jS F Y" %}, by BigDataOcean <br/>
                         <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
                     </p>
                 </div>
