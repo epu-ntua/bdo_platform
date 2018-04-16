@@ -1,0 +1,282 @@
+html{
+    height: 100%;
+}
+
+body{
+    background-color: white;
+    min-height: 100%;
+    height: 100%;
+    margin-bottom: 20px;
+}
+body > h1{
+    color: white;
+}
+
+
+footer{
+    clear: both;
+    background-color: #f2f2f2;
+    margin-top: 25px;
+    padding: 25px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+footer > ul li+li:before{
+    padding: 8px;
+    color: black;
+    content: "|\00a0";
+}
+
+.jumbotron > ul li+li:before{
+    padding: 8px;
+    color: white;
+    content: "|\00a0";
+}
+
+.jumbotron > ul > li > a{
+    color: white;
+}
+
+/* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+
+#about{
+    position: absolute;
+    top: 8px;
+    right: 16px;
+    color: white;
+}
+
+.jumbotron{
+    margin-bottom: 0;
+    /*background: url('images/ocean2.jpg');*/
+    background-size: cover;
+    min-height: 100%;
+}
+
+#content{
+    border: 2px solid gray;
+    width: 80%;
+    min-height: 80%;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.8);
+    padding-bottom: 20px;
+}
+
+.navbar{
+    margin-bottom: 0;
+    background-color: #001c31;
+}
+
+#topcontainer{
+    height: 480px;
+    !important;
+    margin: auto;
+}
+
+#list{
+    background: transparent;
+    width: 70%;
+    float: none;
+}
+
+/*
+#tabs{
+    height: 450px;
+    overflow: auto;
+}
+*/
+#prev {
+  border-right: solid 1px #000000;
+}
+
+/* Set gray background color and 100% height */
+.sidenav {
+    background: #f1f1f1; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(#f1f1f1, #ffffff); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(#f1f1f1, #ffffff); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(#f1f1f1, #ffffff); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(#f1f1f1, #ffffff); /* Standard syntax */
+    height: 100%;
+    width: 20%;
+    min-width: 180px;
+}
+
+.enabled{
+    background: #67b6f1; /* For browsers that do not support gradients */
+    background: -webkit-linear-gradient(left, #d5f1f0, #ffffff, #d5f1f0); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(right, #d5f1f0, #ffffff, #d5f1f0); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(right, #d5f1f0, #ffffff, #d5f1f0); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(to right, #d5f1f0, #ffffff, #d5f1f0); /* Standard syntax */
+}
+
+.table-fixed tbody {
+    height: 300px;
+    overflow-y: auto;
+    width: 100%;
+}
+.table-fixed tbody, .table-fixed tr, .table-fixed td {
+    display: block;
+}
+.table-fixed tbody td{
+    float: left;
+    border-bottom-width: 0;
+}
+
+table {
+	border-collapse:collapse;
+	width: 80%;
+    table-layout: fixed;
+}
+table, td {
+  	background: white;
+}
+
+#data{
+      border: 2px solid transparent;
+      border-radius: 10px;
+      background-image: linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0.3)), linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(255,255,255,0)), linear-gradient(to left, rgba(0,0,0,0), rgba(255,255,255,0)), linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,0.3));
+      background-origin: border-box;
+      background-size: 100% 2px, 2px 100%, 100% 2px, 2px 100%;
+      background-position: top left, top right, bottom right, bottom left;
+      background-repeat: no-repeat;
+}
+
+.primary{
+    width: 40%;
+    display: inline-block;
+}
+
+.secondary{
+    width: 20%;
+    display: inline-block;
+}
+
+.btn-info {
+    text-transform:uppercase;
+    padding:5px;
+    display: inline-block;
+}
+
+input{
+  border-radius:10px;
+}
+textarea{
+  border-radius:10px;
+}
+
+select{
+  border-radius:10px;
+}
+
+td {
+    overflow-x: hidden;
+}
+tbody{
+	max-height:10px;
+	overflow: scroll;
+}
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+    background-color: #99FFCC;
+}
+
+.entry:hover{
+    background-color: #d5f1f0;
+}
+
+#file{
+    width: 100px;
+    height: 100px;
+    color: brown;
+    float: left;
+    margin-right: 40px;
+    margin-left: 20px;
+    margin-top:20px;
+}
+
+.table-wrapper{
+	overflow-y: auto;
+	max-height:300px;
+}
+
+.panel{
+    background: rgba(255,255,255,0.5);
+}
+
+#prevt{
+    overflow-y: auto;
+    max-height:200px;
+}
+
+#relatedt{
+	overflow-y: auto;
+	max-height:200px;
+}
+
+#detailbox{
+    border-radius: 25px;
+    border: 2px solid darkgrey;
+    padding: 20px;
+    width: 82%;
+    overflow: auto;
+}
+
+#messagebox{
+    border-radius: 25px;
+    border: 0px solid;
+    padding: 20px;
+    width: 82%;
+    overflow: auto;
+}
+
+#messaget{
+    overflow-y: auto;
+    height: 200px;
+}
+
+ul.breadcrumb {
+    padding: 10px 16px;
+    list-style: none;
+    background-color: transparent;
+    position: relative;
+    left: 20px;
+}
+ul.breadcrumb li {
+    display: inline;
+    font-size: 15px;
+}
+ul.breadcrumb li+li:before {
+    padding: 8px;
+    color: black;
+    content: "/\00a0";
+}
+ul.breadcrumb li a {
+    color: #0275d8;
+    text-decoration: none;
+}
+ul.breadcrumb li a:hover {
+    color: #01447e;
+    text-decoration: underline;
+}
+
+#usabilities > ul > li.active > a{
+    background-color: #337ab7;
+}
+#usabilities > ul > li > a {
+    background-color: rgba(0,0,0,0.2);
+}
+
+.form-group input[type=file]{
+    opacity: inherit;
+    position: inherit;
+    z-index: inherit;
+}
+
+/* On small screens, set height to 'auto' for the grid */
+@media screen and (max-width: 767px) {
+  .row.content {
+      height: auto;
+  }
+}

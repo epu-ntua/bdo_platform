@@ -3,13 +3,25 @@ import json
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from PIL import Image, ImageChops
-from query_designer.models import Query
+from query_designer.models import Query, AbstractQuery
 import numpy as np
 from math import floor, ceil
 import folium.plugins as plugins
 import folium
 import numpy as np
 import requests
+import collections
+
+
+def convert_unicode_json(data):
+    if isinstance(data, basestring):
+        return str(data)
+    elif isinstance(data, collections.Mapping):
+        return dict(map(convert_unicode_json, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(convert_unicode_json, data))
+    else:
+        return data
 
 
 def fig2data(fig):
@@ -157,6 +169,34 @@ def create_zep_note(name):
     return notebook_id
 
 
+def clone_zep_note(notebook_id, name):
+    data = dict()
+    data['name'] = name
+    str_data = json.dumps(data)
+    # Make a post request
+    response = requests.post("http://localhost:8080/api/notebook/"+notebook_id, data=str_data)
+    print response
+    response_json = response.json()
+    notebook_id = response_json['body']
+    print notebook_id
+    return notebook_id
+
+
+def run_zep_note(notebook_id):
+    response_status = 500
+    # number of tries
+    counter = 1
+    while response_status != 200:
+        response = requests.post("http://localhost:8080/api/notebook/job/" + str(notebook_id))
+        print response
+        if int(response.status_code) == 200:
+            break
+        counter -= 1
+        if counter == 0:
+            return HttpResponse(status=500)
+        response_status = response.status_code
+
+
 def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     data = dict()
     data['title'] = title
@@ -178,17 +218,19 @@ def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     return paragraph_id
 
 
-def create_zep__query_paragraph(notebook_id, title, raw_query):
+def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name="df"):
     data = dict()
+    if index >= 0:
+        data['index'] = index
     data['title'] = title
     data['text'] = '%spark.pyspark' \
-                   '\ndf = spark.read.format("jdbc")' \
+                   '\n'+df_name+'= spark.read.format("jdbc")' \
                    '.option("url", "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234")' \
                    '.option("driver", "org.postgresql.Driver")' \
                    '.option("database", "bdo_platform")' \
                    '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
                    '.load()' \
-                   '\ndf.printSchema()'
+                   '\n'+df_name+'.printSchema()'
 
     str_data = json.dumps(data)
     response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
@@ -197,6 +239,13 @@ def create_zep__query_paragraph(notebook_id, title, raw_query):
     paragraph_id = response_json['body']
     print paragraph_id
     return paragraph_id
+
+
+def delete_zep_paragraph(notebook_id, paragraph_id):
+    data = dict()
+    str_data = json.dumps(data)
+    response = requests.delete("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id), data=str_data)
+    print response
 
 
 def run_zep_paragraph(notebook_id, paragraph_id):
@@ -211,6 +260,7 @@ def run_zep_paragraph(notebook_id, paragraph_id):
         if counter < 0:
             return HttpResponse(status=500)
         response_status = response.status_code
+        # TODO: CHANGE THE ABOVE CODE BECAUSE EVERY TIME STATUS 500 IS RETURNED
 
 
 def create_zep_viz_paragraph(notebook_id, title):
@@ -578,27 +628,41 @@ def create_zep_drop_all_paragraph(notebook_id, title):
     return paragraph_id
 
 
-def create_zep_toJSON_paragraph(notebook_id, title):
+def create_zep_toJSON_paragraph(notebook_id, title, df_name, order_by='', order_type='ASC'):
     data = dict()
     data['title'] = 'bdo_test_paragraph'
-    data['text'] = '%spark.pyspark' \
-                   '\ndf.toJSON().collect()'
+    if order_by != '':
+        if order_type == 'ASC':
+            data['text'] = '%spark.pyspark' \
+                           '\n{0}.orderBy("{1}", ascending=True).toJSON().collect()'.format(df_name, order_by)
+        else:
+            data['text'] = '%spark.pyspark' \
+                           '\n{0}.orderBy("{1}", ascending=False).toJSON().collect()'.format(df_name, order_by)
+    else:
+        data['text'] = '%spark.pyspark' \
+                       '\n{0}.toJSON().collect()'.format(df_name)
 
     str_data = json.dumps(data)
     response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
-    response_json = response.json()
+    response_json = convert_unicode_json(response.json())
     paragraph_id = response_json['body']
     print paragraph_id
     return paragraph_id
 
 
 def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
+    print "request: "+"http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id)
     response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
     print response
-    response_json = response.json()
-    json_data = response_json['body']['results']['msg'][0]['data']
-    print json_data
+    response_json = convert_unicode_json(response.json())
+    json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}"))
+    # print json_data
+    # print type(json_data)
+    json_data = convert_unicode_json(json_data)
+    # print json_data
+    # print type(json_data)
+
     return json_data
 
 

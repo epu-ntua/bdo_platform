@@ -12,6 +12,7 @@ from netCDF4._netCDF4 import num2date
 
 DATASET_STORAGES = (
     ('LOCAL_POSTGRES', 'Local PostgreSQL instance'),
+    ('UBITECH_POSTGRES', 'UBITECH\'s PostgreSQL instance at http://212.101.173.34'),
     ('UBITECH_SOLR', 'Solr instance at http://212.101.173.50:8983'),
 )
 
@@ -20,8 +21,9 @@ class Dataset(Model):
     title = TextField()
     source = TextField()
     description = TextField()
-    references = ArrayField(TextField())
+    references = ArrayField(TextField(), null=True)
     stored_at = CharField(max_length=32, choices=DATASET_STORAGES, default='LOCAL_POSTGRES')
+    table_name = CharField(max_length=200)
 
     class Meta:
         ordering = ['-id']
@@ -43,6 +45,7 @@ class BaseVariable(Model):
     name = CharField(max_length=256)
     title = CharField(max_length=256)
     unit = CharField(max_length=256)
+    description = TextField(null=True)
 
     class Meta:
         abstract = True
@@ -79,7 +82,10 @@ class Dimension(BaseVariable):
 
     @property
     def data_column_name(self):
-        return slugify(self.name, allow_unicode=False).replace('-', '_') + ('_%d' % self.pk)
+        if self.variable.dataset.stored_at == 'UBITECH_POSTGRES':
+            return self.name
+        else:
+            return slugify(self.name, allow_unicode=False).replace('-', '_') + ('_%d' % self.pk)
 
     @property
     def sql_type(self):
@@ -200,7 +206,10 @@ class Variable(BaseVariable):
 
     @property
     def data_table_name(self):
-        return self.safe_name + ('_%d' % self.pk)
+        if self.dataset.stored_at == 'UBITECH_POSTGRES':
+            return self.dataset.table_name
+        else:
+            return self.safe_name + ('_%d' % self.pk)
 
     def create_data_table(self, cursor, with_indices=True):
         # gather columns

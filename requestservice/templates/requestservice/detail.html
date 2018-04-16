@@ -1,0 +1,145 @@
+{% extends 'templates/base.html' %}
+
+{% block title %}Request Details{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid">
+
+        <ul class="breadcrumb">
+            <li><a href="{% url 'requestservice:index' %}">Requests</a></li>
+            <li><a href="#">{{ index.title }}</a></li>
+        </ul>
+
+        <h1 class="text-center">On Demand Data Services</h1>
+        <div class="container" id="detailbox">
+            <div class="row">
+                <h2 style="display: inline;">{{ index.title }}</h2>
+                <a style="float: right; display: inline; margin-right: 20px;" href="{% url 'requestservice:reqdiscusion' index.id %}">
+                    <button type="submit" class="btn btn-success">
+                        View Discussion
+                        <span class="glyphicon glyphicon-edit" style="color: white" aria-hidden="true"></span>
+                    </button>
+                </a>
+                <hr>
+                <div class="col-sm-7">
+                    <p style="color: grey">{{ index.views }} views/ {{ index.downloads }} downloads</p>
+                    <img src="{{ index.file }}" width="100px" height="100px" alt="No File Has Been Uploaded" style="color: brown; float: left; margin-right: 40px;">
+                    <p style="display: inline">
+                        <h4>Provider : {{ index.provider }}</h4>
+                        <h5>Service Type : {{ index.service_type }}</h5>
+                    </p>
+                    <br style="clear: both">
+                    <h3>Keywords : </h3>
+                    <textarea rows="2" cols="40" style="resize: none" disabled>{{ index.keywords }}</textarea>
+                    <h4>Service Description : </h4>
+                    <textarea rows="3" cols="40" style="resize: none;" disabled>{{ index.service_description }}</textarea>
+
+                </div>
+
+                <div class="col-sm-3">
+                    <a href="#">
+                        <button type="submit" class="btn btn-default">
+                            Contact the Provider
+                            <span class="glyphicon glyphicon-envelope" style="color: darkcyan" aria-hidden="true"></span>
+                        </button>
+                    </a>
+                    <h5>Category Type : {{ index.category_type }}</h5>
+                    <h3>DeadLine : <span style="color: darkred;">{{ index.deadline }}</span></h3>
+                    <h3>Budget : {{ index.budget }}</h3>
+                    <h4>Answered : {{ index.closed }}</h4>
+                </div>
+            </div>
+            {% if request.user.is_authenticated %}
+                {% if request.user.username == index.user %}
+                    <div class="col-sm-offset-5">
+                        <a id="update" href="{% url 'requestservice:update' index.id %}">
+                            <button type="submit" class="btn btn-lg btn-primary">
+                                Update Request
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                            </button>
+                        </a>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+        <br>
+        <div class="container-fluid">
+            <div id="prev" class="col-sm-5 col-sm-offset-1">
+                {% if prev|length > 0 %}
+                    <h3 class="text-center">Your Previous Requests</h3>
+                    <div id="prevt" class='table-wrapper'>
+                        <table id='previous' class='table table-hover'>
+                            <tbody id='otbody'>
+                                {% for entry in prev %}
+                                    {% if entry.id != index.id %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'requestservice:detail' entry.id %}">
+                                                    <h4>{{ entry.title }}</h4>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <p>{{ entry.keywords }}</p>
+                                            </td>
+                                            <td>
+                                                <p>{{ entry.deadline }}</p>
+                                            </td>
+                                            <td>
+                                                {% if entry.closed %}
+                                                    <span class="glyphicon glyphicon-ok" style="color: green; float: right;"></span></p>
+                                                {% else %}
+                                                    <span class="glyphicon glyphicon-time" style="color: blue; float: right;"></span></p>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {%  endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <h3 class="text-center">You Have Not Other Requests</h3>
+                {% endif %}
+            </div>
+            <div class="col-sm-5">
+                {% if related|length > 0 %}
+                    <h3 class="text-center">Related Requests ({{ related|length }})</h3>
+                    <div id="relatedt" class='table-wrapper'>
+                        <table id='related' class='table table-hover'>
+                            <tbody id='rtbody'>
+                                {% for entry in related %}
+                                    {% if entry.id != index.id %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'requestservice:detail' entry.id %}">
+                                                    <h4>{{ entry.title }}</h4>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <p>{{ entry.keywords }}</p>
+                                            </td>
+                                            <td>
+                                                <p>{{ entry.user }}</p>
+                                            </td>
+                                            <td>
+                                                {% if entry.hosed %}
+                                                    <span class="glyphicon glyphicon-ok" style="color: green; float: right;"></span></p>
+                                                {% else %}
+                                                    <span class="glyphicon glyphicon-time" style="color: blue; float: right;"></span></p>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                {%  endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <h3 class="text-center">We Have Not Found A Common Request</h3>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

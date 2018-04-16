@@ -1,0 +1,78 @@
+<div id="output_container" class="tab-pane fade">
+    <div id="main-container">
+
+        <h3>Define Service Output</h3>
+        <button type="button" id="add_viz_btn" class="btn btn-md btn-primary" data-toggle="modal" data-target="#addVizModal">
+            Add visualisation
+        </button>
+        <button type="button" id="preview_btn" class="btn btn-md btn-primary">
+            Update Preview
+        </button>
+        <div class="dropdown" style="display: inline-block;">
+          <button type="button" id="load_template_btn" class="btn btn-md btn-primary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Load Template <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="dLabel">
+              {% for template in available_templates %}
+                <li class="template_item" data-template-id="{{ template.id }}">Template {{ template.id }}</li>
+              {% endfor %}
+          </ul>
+        </div>
+        <button type="button" id="publish_service_btn" class="btn btn-md btn-primary pull-right">
+            Publish
+        </button>
+        <div class="checkbox">
+          <label><input type="checkbox" id="showServiceOutputChkbox" value="" checked>Show service output</label>
+        </div>
+
+        <div id="wrap" class="row" style="margin-right: 0; margin-left: 0;">
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#html">HTML</a></li>
+                <li><a data-toggle="tab" href="#css">CSS</a></li>
+                <li><a data-toggle="tab" href="#js">JavaScript</a></li>
+                <li><a data-toggle="tab" href="#output">Preview</a></li>
+            </ul>
+
+            <!-- Code Editors -->
+            <section id="code_editors" class="tab-content">
+                <div id="html" class="code_box tab-pane fade in active">
+                    <h3>HTML</h3>
+                    <textarea name="html"></textarea>
+                </div>
+                <div id="css" class="code_box tab-pane fade">
+                    <h3>CSS</h3>
+                    <textarea name="css"></textarea>
+                </div>
+                <div id="js" class="code_box tab-pane fade">
+                    <h3>JavaScript</h3>
+                    <textarea name="js"></textarea>
+                </div>
+                <div id="output" class="code_box tab-pane fade" style="position: relative">
+                    <div id="outputLoadImg" style="display: none"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div>
+                    <iframe id="outputIframe" src=""></iframe>
+                </div>
+            </section>
+
+            <!-- Sandboxing -->
+{#            <section id="output">#}
+{#                <div id="preview" class="code_box tab-pane fade">#}
+{#                    <iframe id="outputIframe" src=""></iframe>#}
+{#                </div>#}
+{#            </section>#}
+
+        </div>
+
+
+    </div>
+
+
+    <div  style="margin-top: 500px">
+        <div id="conf-container" hidden></div>
+    </div>
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form"></form>
+    </div>
+
+
+</div>
+
