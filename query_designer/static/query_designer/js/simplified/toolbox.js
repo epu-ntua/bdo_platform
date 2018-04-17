@@ -1167,7 +1167,12 @@ $(function () {
             if(cnt===0){
                 $('.after-data-selection').each(function () {
                     $(this).hide();
-                })
+                });
+                $('.chartdiv').hide();
+                $('#paginationDiv').hide();
+                var $table = $("#graph-data-table");
+                $table.find('thead').empty();
+                $table.find('tbody').empty();
             }
         },
 
