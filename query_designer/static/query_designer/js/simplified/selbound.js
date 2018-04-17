@@ -44,8 +44,8 @@ $(document).ready(function() {
     $('#bounds').addClass('after-data-selection');
     /*          Set Up Maps for Modal and Preview       */
     /*          Set Up Time Pickers For Start/End Date  */
-    var startpick = $('#startdatepicker').datetimepicker({autoclose: true});
-    var endpick = $('#enddatepicker').datetimepicker({autoclose: true});
+    var startpick = $('#startdatepicker').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
+    var endpick = $('#enddatepicker').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
 
     startpick.on('changeDate', function(e){
         var minDate = new Date(e.date.valueOf());
