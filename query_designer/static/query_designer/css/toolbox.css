@@ -44,6 +44,10 @@
     display: none;
 }
 
+.coverage-date-filters .form-group{
+    margin-top: -7px;
+}
+
 .clearfix{
     border-top: thin dashed #2171ac73;
     margin-top: 10px;
