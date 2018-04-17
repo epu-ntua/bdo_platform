@@ -53,6 +53,10 @@
     width: 30%;
 }
 
+#mapselection .form-group{
+    margin: 0;
+}
+
 
 .btn.btn-plain {
     background: #fff;

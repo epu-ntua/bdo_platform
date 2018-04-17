@@ -1,5 +1,8 @@
 <div class="coverage-map-filters ">
-    <div style="text-align: left;"><h4 style="margin: 0;">Filter by spatial coverage</h4></div>
+    <div style="text-align: left;">
+        <h4 style="margin: 0; display: inline-block;">Filter by spatial coverage</h4>
+        <button id="resetMapBounds" class="btn btn-default btn-sm pull-right" style="margin: -3px 0px;padding: 2px 19px;">Reset</button>
+    </div>
     <div id="mapselection" class="selection">
             <div class="" style="padding-left: 0; padding-right: 0;">
                 <div id="mappreview" data-toggle="modal" data-target="#mapModal" style="cursor: pointer; height: 150px; margin-top: 15px; margin-bottom: 10px; border: solid 2px grey; border-radius: 1em;">
@@ -20,7 +23,34 @@
 {#                </div>#}
             </div>
             <div class="row" style="margin: 0px;">
-                <button id="resetMapBounds" class="btn btn-default btn-sm pull-left" style="margin: 5px 0px;">Reset</button>
+                <div class="col-sm-12" style="margin: 0px;">
+                    <div class='col-sm-4' style="padding: 0px;">
+                        <p>Latitude, from:</p>
+                    </div>
+                    <div class='col-sm-3' style="padding: 0px;">
+                        <input class="form-control" id="lat_min" type='number' step="0.01" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                    </div>
+                    <div class='col-sm-1' style="padding: 0px;">
+                        <p>to:</p>
+                    </div>
+                    <div class='col-sm-3' style="padding: 0px;">
+                        <input class="form-control" id="lat_max" type='number'  step="0.01" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                    </div>
+                </div>
+                <div class="col-sm-12" style="margin: 0px;">
+                    <div class='col-sm-4' style="padding: 0px;">
+                        <p>Longitude, from:</p>
+                    </div>
+                    <div class='col-sm-3' style="padding: 0px;">
+                        <input class="form-control" id="lon_min" type='number'  step="0.01" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                    </div>
+                    <div class='col-sm-1' style="padding: 0px;">
+                        <p>to:</p>
+                    </div>
+                    <div class='col-sm-3' style="padding: 0px;">
+                        <input class="form-control" id="lon_max" type='number' step="0.01" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                    </div>
+                </div>
                 <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
             </div>
 
