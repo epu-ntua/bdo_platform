@@ -170,6 +170,9 @@ $(document).ready(function() {
         $('#lon_min').val('');
         $('#lon_max').val('');
         bounds = [-90,-180,90,180];
+
+        $('#startdatepicker input').val('');
+        $('#enddatepicker input').val('')
     }
 
     reset_map_selection();
