@@ -165,7 +165,7 @@ $(function () {
                 var $option = $('<option />');
                 if(config.value === choice.value) { // john's addition to have only the selected variable as option
                     $option.attr('value', choice.value);
-                    $option.text(choice.title);
+                    $option.text(choice.title+ ' (' + config.unit + ')');
                     if (typeof(choice.type) !== 'undefined') {
                         $option.data('type', choice.type);
                         $option.attr('data-type', choice.type);
@@ -1480,6 +1480,7 @@ $(function () {
                 name: 'value_field',
                 label: label,
                 value: newField.value,
+                unit: newField.unit,
                 aggregate: newField.aggregate,
                 aggregates: obj.chartPolicy.aggregates,
                 canConfig: true,
