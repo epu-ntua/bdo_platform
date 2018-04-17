@@ -1,5 +1,29 @@
 .outputLoadImg{position:absolute;z-index:999;display:table-cell;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
 
+.form-control[readonly]{
+    background-color: white;
+}
+
+.chart-control ul {
+  list-style: none;
+  margin-left:3px;
+  padding-left: 0;
+}
+
+.chart-control li {
+  padding-left: 1em;
+  text-indent: -1em;
+}
+
+.chart-control li:before {
+  content: ">>";
+  padding-right: 5px;
+}
+
+.fieldset input[readonly]:hover{
+    cursor: pointer;
+}
+
 .popover{
     min-width: 500px;
 }

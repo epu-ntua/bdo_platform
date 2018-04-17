@@ -160,7 +160,7 @@ $(function () {
                 $fieldSelect.append('<option value="">No value</option>');
                 $fieldSelect.append('<option value="">No value</option>');
             }
-
+            var $fieldInputShown;
             $.each(config.choices, function (idx, choice) {
                 var $option = $('<option />');
                 if(config.value === choice.value) { // john's addition to have only the selected variable as option
@@ -177,6 +177,20 @@ $(function () {
 
                     $fieldSelect.append($option);
                 }
+                // $fieldSelect.replaceWith($('<input class="form-control"  style="width: 100%; height: 100%;" value="'+$fieldSelect.val()+'"/>'));
+                $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%;"/>')
+                if (typeof(config.aggregate) !== 'undefined') {$fieldInputShown.attr('data-aggregate', config.aggregate);$fieldInputShown.data('aggregate', config.aggregate);}
+                $fieldInputShown.attr('data-type', $option.attr('data-type'));
+                $fieldInputShown.attr('data-forvariable', $option.attr('data-forvariable'));
+                $fieldInputShown.val(choice.title+ ' (' + config.unit + ')');
+
+                var $fieldInput = $('<input class="hidden" style="width: 100%; height: 100%;"/>').attr('name', config.name);
+                if (config.id) {$fieldInput.attr('id', config.id);}
+                if (typeof(config.aggregate) !== 'undefined') {$fieldInput.attr('data-aggregate', config.aggregate);$fieldInput.data('aggregate', config.aggregate);}
+                $fieldInput.attr('data-type', $option.attr('data-type'));
+                $fieldInput.attr('data-forvariable', $option.attr('data-forvariable'));
+
+                $fieldSelect = $fieldInput;
             });
 
             var inlineLabel = '';
@@ -191,6 +205,7 @@ $(function () {
             $fieldSelect.val(config.value);
             var $fieldset = $('<div class="fieldset">' + (inlineLabel ? '' : config.label + '<br />') + '<div class="row" style="margin: 0"><div class="col-xs-3 col-prefix" style="' + (inlineLabel ? 'padding: 0' : '') +'">' + inlineLabel + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
             $fieldset.find('.col-main').append($fieldSelect);
+            $fieldset.find('.col-main').append($fieldInputShown);
 
             if (config.xy) {
                 $fieldset.addClass('xy')
@@ -203,6 +218,15 @@ $(function () {
             if (config.canDelete) {
                 $fieldset.find('.col-suffix').append('<div class="value-remove-btn" title="Remove value"><i class="fa fa-trash" /></div>')
             }
+
+            $dimensionsDiv = $('<div class="collapse"> <ul></ul></div>');
+            $ul = $dimensionsDiv.find('ul');
+
+            for(var i in config.dimensions){
+                $li = $('<li>'+config.dimensions[i].title+'</li>');
+                $ul.append($li);
+            }
+            $fieldset.find('.col-main').append($dimensionsDiv);
 
             return $fieldset;
         },
@@ -415,7 +439,8 @@ $(function () {
 
         _getChartInfo: function () {
             var values = [], columns = [];
-            var vfs = $('select[name="value_field"]');
+            // var vfs = $('select[name="value_field"]');
+            var vfs = $('input[name="value_field"]');
 
             $.each(vfs, function (idx, vf) {
                 // create the field name (including the aggregate)
@@ -429,7 +454,8 @@ $(function () {
 
                 values.push({
                     name: fname,
-                    type: $(vf).find('option:selected').data('type'),
+                    // type: $(vf).find('option:selected').data('type'),
+                    type: $(vf).attr('data-type'),
                     aggregate: aggregate
                 });
 
@@ -438,7 +464,8 @@ $(function () {
                 if (aggregate != '') {
                     ttl_prefix = $('select[name="field_aggregate"] option[value="' + aggregate + '"]').get(0).textContent + ' '
                 }
-                var ttl = ttl_prefix + $(vf).find('option:selected').text();
+                // var ttl = ttl_prefix + $(vf).find('option:selected').text();
+                var ttl = ttl_prefix + $(vf).val();
 
                 // keep the title of the field for the data table
                 columns.push({name: fname, title: ttl});
@@ -1486,6 +1513,7 @@ $(function () {
                 label: label,
                 value: newField.value,
                 unit: newField.unit,
+                dimensions: newField.dimensions,
                 aggregate: newField.aggregate,
                 aggregates: obj.chartPolicy.aggregates,
                 canConfig: true,
@@ -1802,6 +1830,11 @@ $(function () {
         $(".outputLoadImg").show();
         $('#offset_input').val(parseInt($('#offset_input').val())-50);
         QueryToolbox.fetchQueryData();
+    });
+
+    $('body').on('click', '.fieldset input[readonly]', function () {
+        $(this).closest('.fieldset').find('.collapse').collapse("toggle");
+        // $('.collapse').collapse() ;
     });
 
     function updatePaginationButtons() {
