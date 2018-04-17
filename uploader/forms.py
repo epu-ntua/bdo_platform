@@ -3,6 +3,7 @@ from django import forms
 
 class DatasetsForm(forms.Form):
     choices = (
+        (None, ""),
         (u'{"observation": "trip", "source": "anek", "dataType": "csv"}', "ANEK - Trips"),
         (u'{"observation": "history", "source": "anek", "dataType": "csv"}', "ANEK - History"),
         (u'{"observation": "copernicus-wave-forecast", "source": "copernicus", "dataType": "netcdf"}',

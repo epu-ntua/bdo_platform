@@ -25,14 +25,17 @@ def upload_form(request):
 
         # Retrieve file, if present
         if 'upload' in request.FILES.keys():
-            f = request.FILES['upload']
-            files = {'file': f}
-            req = Request('POST', UPLOAD_URL, data=data, files=files, headers={'Authorization': PARSER_JWT})
-            prep = req.prepare()
-            resp = s.send(prep)
+            try:
+                f = request.FILES['upload']
+                files = {'file': f}
+                req = Request('POST', UPLOAD_URL, data=data, files=files, headers={'Authorization': PARSER_JWT})
+                prep = req.prepare()
+                resp = s.send(prep, timeout=30)
 
-            if resp.status_code == 200:
-                success_alert = True
+                if resp.status_code == 200:
+                    success_alert = True
+            except:
+                pass
         else:
             data["downloadUrl"] = request.POST["download"]
             data["fileName"] = request.POST["name"]

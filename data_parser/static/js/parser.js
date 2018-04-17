@@ -8,7 +8,7 @@ $(document).ready(function(){
         $.ajax({
             async: true,
             crossDomain: true,
-            url: "http://212.101.173.34:8085/file/parsable/" + selected,
+            url: "http://212.101.173.21:8085/file/parsable/" + selected,
             // url: "http://127.0.0.1/file/parsable/" + selected,
             method: "GET",
             headers: {
