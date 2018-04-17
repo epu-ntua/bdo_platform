@@ -743,7 +743,7 @@ $(function () {
                 from: [],
                 distinct: false,
                 offset: 0,
-                "limit": parseInt($('#limit_container select').val()),
+                "limit": ($('#limit_container select').val() !== 'none')? parseInt($('#limit_container select').val()) : [],
                 "orderings": []
             };
 
@@ -833,7 +833,16 @@ $(function () {
             if (doc.from.length === 0) {
                 return
             }
-
+            if($('#limit_container select').val() !== 'none') {
+                if (parseInt($('#limit_container select').val()) > 50) {
+                    doc['limit'] = 50;
+                    doc['offset'] = parseInt($('#offset_input').val());
+                }
+            }
+            else{
+                doc['limit'] = 50;
+                doc['offset'] = parseInt($('#offset_input').val());
+            }
             // get category, values info & filters
             var filterStr = this.constructFiltersParam();
             filterStr = encodeURIComponent(filterStr);
@@ -854,6 +863,7 @@ $(function () {
                     success: function (response) {
                         $('.no-data-message').hide();
                         $('#chartdiv').show();
+                        $('#paginationDiv').show();
 
                         // create the required graphs
                         // todo improve updating iframe
@@ -885,12 +895,14 @@ $(function () {
 
                             $table.find('tbody').append($row);
                         });
+                        updatePaginationButtons();
                         $("#chart-content-tabs li").eq(1).find('a').click();
                         $("#chart-content-tabs li").eq(0).find('a').click();
                     },
                     error: function (response) {
                         hide_gif();
                         $('#chartdiv').hide();
+                        $('#paginationDiv').hide();
                         $('.no-data-message').show();
                         alert('We are sorry, an error occurred.');
                     }
@@ -1769,8 +1781,44 @@ $(function () {
     $('body').on('click', '#run-query-btn', function () {
         $(".outputLoadImg").show();
     // $("#run-query-btn").click(function () {
+        $('#offset_input').val(0);
         QueryToolbox.fetchQueryData();
     });
+
+    /* On next page btn click, increase the offset and execute the query to fetch results */
+    $('body').on('click', '#dataNextBtn', function () {
+        $(".outputLoadImg").show();
+        $('#offset_input').val(parseInt($('#offset_input').val())+50);
+        QueryToolbox.fetchQueryData();
+    });
+    /* On prev page btn click, decrease the offset and execute the query to fetch results */
+    $('body').on('click', '#dataPrevBtn', function () {
+        $(".outputLoadImg").show();
+        $('#offset_input').val(parseInt($('#offset_input').val())-50);
+        QueryToolbox.fetchQueryData();
+    });
+
+    function updatePaginationButtons() {
+        if($("#graph-data-table tbody tr").length < 50){
+            $('#dataNextBtn').prop('disabled', true);
+        }
+        else{
+            $('#dataNextBtn').prop('disabled', false);
+        }
+        if(parseInt($('#offset_input').val()) <= 0){
+            $('#offset_input').val(0);
+            $('#dataPrevBtn').prop('disabled', true);
+        }
+        else{
+            $('#dataPrevBtn').prop('disabled', false);
+        }
+        if($('#limit_container select').val() !== 'none') {
+            if(parseInt($('#limit_container select').val()) - parseInt($('#offset_input').val())  <= 50 ){
+                $('#dataNextBtn').prop('disabled', true);
+            }
+        }
+
+    }
 
     /* Hotkeys */
     document.addEventListener("keydown", function (e) {
