@@ -30,7 +30,7 @@ def upload_form(request):
                 files = {'file': f}
                 req = Request('POST', UPLOAD_URL, data=data, files=files, headers={'Authorization': PARSER_JWT})
                 prep = req.prepare()
-                resp = s.send(prep, timeout=30)
+                resp = s.send(prep, timeout=None)
 
                 if resp.status_code == 200:
                     success_alert = True
