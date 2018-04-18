@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <link href="{% static 'service_builder/css/create_service.css' %}" rel="stylesheet" />
+
+    <link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
+    <style>
+        #loadImg{position:absolute;z-index:999;}
+        #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
+        .popover{
+            width: 500px;
+            max-width: 600px;
+            min-height: 230px;
+        }
+        .popover-content{
+            width: 100%;
+        }
+        .modal-header{
+            padding-top: 0;
+        }
+        .modal .modal-content .modal-body{
+            min-height: 500px;
+            height: 590px;
+            overflow-y: scroll;
+            padding: 0 24px 0 24px;
+        }
+        .modal .modal-dialog{
+            margin-top: 5px;
+            padding-top: 0;
+            padding-bottom: 5px;
+            width: 90%;
+        }
+        #viz_container{
+            background-color: #d8d8d8;
+            height: 500px;
+            width: 80%;
+            padding: 0;
+        }
+        #viz_container iframe, #dynamic_dashboard iframe{
+            background-color: white;
+            height: 96%;
+            min-height: 480px;
+            width: 98%;
+            margin: 1% 1% 1% 1%;
+            padding: 0;
+        }
+    </style>
+{% endblock %}
+
+
+
+{% block content %}
+    {% csrf_token %}
+    <div class="container" id ='service_container'>
+        <input type="text" id="service_id" value="{{ service_id }}" style="display: none;">
+        <ul class="nav nav-pills nav-justified">
+            <li class="active"><a data-toggle="pill" href="#queries_container">Queries</a></li>
+            <li><a data-toggle="pill" href="#arguments_container">Arguments</a></li>
+            <li><a data-toggle="pill" href="#code_container">Code</a></li>
+            <li><a data-toggle="pill" href="#output_container">Output</a></li>
+        </ul>
+
+        <div class="tab-content">
+            {% include "service_builder/queries_tab.html" %}
+
+            {% include "service_builder/arguments_tab.html" %}
+
+            {% include "service_builder/code_tab.html" %}
+
+            {% include "service_builder/output_tab.html" %}
+
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    {# Select2    #}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+
+    {# Code Mirror    #}
+    <script src="http://codemirror.net/lib/codemirror.js"></script>
+    <!-- For HTML/XML -->
+    <script src="http://codemirror.net/mode/xml/xml.js"></script>
+    <script src="http://codemirror.net/mode/htmlmixed/htmlmixed.js"></script>
+    <!-- For CSS -->
+    <script src="http://codemirror.net/mode/css/css.js"></script>
+    <!-- For JS -->
+    <script src="http://codemirror.net/mode/javascript/javascript.js"></script>
+
+    <script src="http://codemirror.net/addon/display/autorefresh.js"></script>
+
+    {# End Code Mirror    #}
+
+
+    <script src="{% static 'service_builder/js/queries_tab.js' %}"></script>
+    <script src="{% static 'service_builder/js/arguments_tab.js' %}"></script>
+    <script src="{% static 'service_builder/js/code_tab.js' %}"></script>
+    <script src="{% static 'service_builder/js/output_tab.js' %}"></script>
+    <script src="{% static 'service_builder/js/publish.js' %}"></script>
+    <script src="{% static 'service_builder/js/templates.js' %}"></script>
+
+{% endblock %}
+
+
+{% block modal %}
+
+    <div id="addVizModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+{#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
+                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
+                </div>
+                <div class="modal-body">
+                        <div class="row text-left">
+                            <div id="load-viz-query-select-container">
+                                <select id="load-viz-query-select" class="form-control" name="load-viz-query">
+                                    <option disabled selected>-- select one of the saved queries --</option>
+                                    {% for query in saved_queries %}
+                                        <option value="{{ query.id }}"
+                                                data-query-id="{{ query.id }}">
+                                            {{ query.title }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+                            </div>
+                            <input type="hidden" id="selected_query" value="">
+
+
+                            <div id="load-viz-df-select-container">
+                                <select id="load-viz-df-select" class="form-control" name="load-viz-df">
+                                    <option disabled selected>-- select one of the created dataframes --</option>
+                                    <option value="df">df</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row" id="viz_config" style="display: none;">
+                            <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                                {% for viz in available_viz %}
+                                    <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                                {% endfor %}
+                            </ul>
+                            <div id="viz_container" class="col-sm-8" style="width: 85%">
+
+                            </div>
+                        </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="submit-modal-btn">Add</button>
+                    <button type="button" class="btn btn-default"  data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,3 +1,13 @@
+#select-data-modal table{
+    table-layout: fixed;
+    width: 100%;
+}
+
+.variable-title{
+    word-wrap:break-word;
+}
+
+
 #data-filter-search {
     width: 100%;
 }
@@ -6,12 +16,22 @@
     font-weight: 600;
 }
 
+.dataset-metadata {
+    font-weight: 300;
+}
+
+.dataset-metadata-btn {
+    color: #c5c5c5;
+    cursor: pointer;
+}
+
 .dataset-name {
     color: #ff9800;
 }
 
 .dataset-section {
     margin-bottom: 10px;
+    width: 100%;
 }
 
 .variable-section {
@@ -19,6 +39,8 @@
     padding: 5px;
     border: 1px solid #fff;
     cursor: pointer;
+    height: 40px;
+    /* min-width: 100%; */
 }
 
 .variable-section:not(:last-of-type) {
@@ -27,7 +49,7 @@
 
 .variable-section:hover,
 .variable-section.selected {
-    background: #fafafa;
+    background: #e9f0ff;
 }
 
 .variable-section.selected {
@@ -45,6 +67,8 @@
 
 .variable-section .variable-title {
     color: #999;
+    /* width: 210px; */
+    width: 35%;
 }
 
 .selection-body {

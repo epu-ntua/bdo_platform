@@ -21,5 +21,6 @@ urlpatterns = [
 
     # service and dashboards
     url('^services/$', views.services, name='services'),
-    url('^services/(?P<pk>\d+)/$', views.view_service, name='view_service'),
+    url('^services/dashboard/(?P<pk>\d+)/$', views.view_dashboard, name='view_dashboard'),
+    url('^services/service/(?P<pk>\d+)/$', views.view_service, name='view_service'),
 ]

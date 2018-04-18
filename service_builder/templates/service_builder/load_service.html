@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+
+{% load static %}
+
+{% block css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <style>
+        body.modal-open, .modal-open .navbar-fixed-top, .modal-open .navbar-fixed-bottom {
+            margin-right: 0;
+        }
+        {% if not published %}
+            .navbar{
+                display: none;
+            }
+            .main-panel > .content {
+                margin-top: 0;
+            }
+            .main-panel > .footer{
+                display: none;
+            }
+        {% endif %}
+    </style>
+    <style>
+        {{ output_css|safe }}
+{#        .modal-header{padding-top: 0;}#}
+{#        .modal .modal-content .modal-body{min-height: 400px;overflow-y: scroll;padding: 0 24px 0 24px;}#}
+{#        .modal{text-align: center;}#}
+{#        .modal .modal-dialog{#}
+{#            margin-top: 5vh;#}
+{#            max-height: 90vh;#}
+{#            min-height: 50vh;#}
+{#            height: 70vh;#}
+{#            padding-top: 0;#}
+{#            padding-bottom: 5px;#}
+{#            width: 90%;#}
+{#            display: inline-block;#}
+{#            text-align: left;#}
+{#            vertical-align: middle;#}
+{#        }#}
+{#        @media screen and (min-width: 768px){.modal:before {display: inline-block;vertical-align: middle;content: " ";height: 100%;}}#}
+{#        .modal-backdrop {z-index:-1;}#}
+{#        #service_result_container{ position: relative; min-height: 500px; width: 100%; display: none;}#}
+{#        .loadingDiv, .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}#}
+{#        .viz_container{position: relative; height: 400px; width: 100%; margin: 1% 0;}#}
+    </style>
+
+{% endblock %}
+
+
+
+{% block content %}
+    {% csrf_token %}
+    <div class="container" style="width: 100%; ">
+        {% autoescape off %}
+            {{ output_html }}
+        {% endautoescape %}
+{#    {% include 'service_builder/service_template_1.html' %}#}
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    <script type="text/javascript">
+        var service_id = {{ service_id }};
+        function get_service_id(){ return parseInt(service_id); }
+    </script>
+
+
+    {{ output_js|safe }}
+
+
+{#    <script type="text/javascript">#}
+{#        // Get form fields of all the service arguments#}
+{#        $(document).ready(function () {#}
+{#          $.ajax({#}
+{#                url: '/service_builder/load_service_args_form_fields/',#}
+{#                data: {#}
+{#                    service_id: get_service_id()#}
+{#                },#}
+{#                type: 'GET',#}
+{#                success: function(form_fields){#}
+{#                    $("#service_args_container").html(form_fields);#}
+{#                }#}
+{#            });#}
+{#        });#}
+{##}
+{##}
+{#        $(".viz_container iframe").on( "load", function(){#}
+{#            $(this).siblings(".loadingFrame").css( "display", "none" )#}
+{#        });#}
+{##}
+{##}
+{#        // Submit the service arguments#}
+{#        $("#submitServiceConfig").click(function (element) {#}
+{#          $.ajax({#}
+{#                url: '/service_builder/service/'+get_service_id()+'/execute/',#}
+{#                data: $('#service_args_container').serialize(),#}
+{#                type: 'GET',#}
+{#                beforeSend: function(){#}
+{#                    $("#service_result_container").show();#}
+{#                    $(".loadingDiv").css( "display", "block" );#}
+{#                },#}
+{#                success: function(result){#}
+{#                    $("iframe").each(function () {#}
+{#                        var src = $( this ).attr('data-src');#}
+{#                        jQuery.each(result['query_mapping'], function(query, temp_query) {#}
+{#                          src = src.replace("query="+query, "query="+temp_query);#}
+{#                        });#}
+{#                        $( this ).attr({'src': src});#}
+{#                    });#}
+{#                    $(".loadingDiv").css( "display", "none" );#}
+{#                    $(".loadingFrame").css( "display", "block" );#}
+{#                }#}
+{#            });#}
+{#        });#}
+{#    </script>#}
+
+{% endblock %}
+
+

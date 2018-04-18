@@ -1,0 +1,28 @@
+{% extends 'templates/base.html' %}
+{% block title %}Register User{% endblock %}
+
+{% block content %}
+<div class="container-fluid text-center">
+
+	<div class="row">
+		<div class="col-sm-10">
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<h3>Create A New Account</h3>
+					{% if error_message %}
+						<p><strong>{{ error_message }}</strong></p>
+					{% endif %}
+					<form class="form-horizontal" role="form" action="" method="post" enctype="multipart/form-data">
+						{% csrf_token %}
+						{% include 'login_form-template.html' %}
+						<div class="form-group">
+                            <button type="submit" class="btn btn-success">Sign Up</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+{% endblock %}

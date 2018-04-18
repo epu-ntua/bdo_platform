@@ -1,0 +1,81 @@
+{% extends 'templates/base.html' %}
+
+{% block title %}Request Discussion{% endblock %}
+
+{% block content %}
+
+    <div class="container-fluid">
+
+        <ul class="breadcrumb">
+            <li><a href="{% url 'requestservice:index' %}">Requests</a></li>
+            <li><a href="{% url 'requestservice:detail' entry.id %}">{{ entry.title }}</a></li>
+            <li><a href="#">Discussion</a></li>
+        </ul>
+
+        <div class="container" id="messagebox">
+            <h2 id="request_header" style="display:inline;">{{ entry.title }}: {{ entry.service_description }}</h2>
+            <h4 style="display: inline; float: right">
+                {% if entry.closed == False %}
+                    <span style="color: limegreen">Request is still Open</span>
+                {% else %}
+                    <span style="color: darkred">Request Has Closed</span>
+                {% endif %}
+            </h4>
+            <br>
+            <h4 style="display: inline">{{ messages|length }} Answers</h4>
+            <h4 style="display: inline; float: right; ">Original Post By: {{ entry.user }}</h4>
+            {% if messages|length > 0%}
+                <div id="messagetable">
+                    <table id='messaget' class="table table-responsive">
+                        <tbody id='mtbody'>
+                            {% for msg in messages %}
+                                <tr>
+                                    <td>
+                                        <p>{{ msg.message }}</p>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <p>{{ msg.upvotes }} upvotes <br>{{ msg.downvotes }} downvotes</p>
+                                            <span class="glyphicon glyphicon-thumbs-up"></span>/
+                                            <span class="glyphicon glyphicon-thumbs-down"></span>
+                                            {% if msg.userreq == request.user.username and msg.userpost != request.user.username and entry.closed == False %}
+                                                <a href="{% url 'requestservice:closereq' msg.requestid %}">
+                                                    <button type="submit" class="btn btn-default">
+                                                        Accept Answer
+                                                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                                                    </button>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <p><b>Posted on:</b> {{ msg.date }}</p>
+                                            <p><b>By:</b>{{ msg.userpost }}</p>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            {%  endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <h4>Be The First To Post A Reply!</h4>
+            {% endif %}
+            <form class="form-horizontal" role="form" action="" method="post" enctype="multipart/form-data" id="messageform">
+                {% csrf_token %}
+                {% if error_message %}
+                    <p style="color:red"><b>{{ error_message }}</b></p>
+                {% endif %}
+                <textarea form="messageform" rows="4" style="resize: none" type="text" class="form-control border-input" placeholder="Write Your Reply Here..." name="message"></textarea>
+                <div class="form-group" style="float: right; margin-right: 5px;">
+                    <button type="submit" class="btn btn-default">
+                        Reply
+                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}

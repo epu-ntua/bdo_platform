@@ -20,6 +20,8 @@ from django.db import connection
 from matplotlib.figure import Figure
 from matplotlib import use
 from PIL import Image, ImageChops
+
+from query_designer.models import AbstractQuery
 from utils import *
 from visualizer.models import Visualization
 import time
@@ -105,35 +107,45 @@ def map_viz_folium(request):
         form = MapForm(request.POST)
         if form.is_valid():
             data = request.data
-            line = request.POST.get("line", False)
+            line = request.POST.get("line", 'no')
             markersum = data["markers"]
             ship = data["ship"]
-            minyear = request.POST.get("min_year", 2000)
-            maxyear = request.POST.get("max_year", 2017)
+            mindate = str(request.POST.get("min_date", '2000-01-01 00:00:00'))
+            maxdate = str(request.POST.get("max_date", '2017-12-31 23:59:59'))
         else:
             markersum = 50
-            line = False
+            line = 'no'
             ship = "all"
-            minyear = 2000
-            maxyear = 2017
+            mindate = 2000
+            maxdate = 2017
 
     else:
         line = request.GET.get("line", 'no')
         markersum = int(request.GET.get("markers", 50))
         ship = request.GET.get("ship", "all")
-        minyear = int(request.POST.get("min_year", 2000))
-        maxyear = int(request.POST.get("max_year", 2017))
+        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
+        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
 
-    data = get_data(markersum, ship, minyear, maxyear)
+    query_pk = int(str(request.GET.get('query', '')))
 
+    data = get_data(query_pk, markersum, ship, mindate, maxdate)
+    # var_index = data['var']
+    ship_index = data['ship']
+    time_index = data['time']
+    lat_index = data['lat']
+    lon_index = data['lon']
+    data = data['data']
 
+    course = []
+    currboat = data[0][ship_index]
+    # import pdb;
+    # pdb.set_trace()
     for index in range(0, len(data)):
         d = data[index]
-        lat = d[0]
-        lon = d[1]
-        id = d[2]
-        date = d[3]
-        #import pdb;pdb.set_trace()
+        lat = float(d[lat_index])
+        lon = float(d[lon_index])
+        ship = int(d[ship_index])
+        date = str(d[time_index])
 
         url = 'https://cdn4.iconfinder.com/data/icons/geo-points-1/154/{}'.format
         icon_image = url('geo-location-gps-sea-location-boat-ship-512.png')
@@ -142,20 +154,17 @@ def map_viz_folium(request):
             icon_size=(40, 40),
             icon_anchor=(20, 20),
         )
-        message = '<b>Ship</b>: ' + id.__str__() + "<br><b>At :</b> [" + lat.__str__() + " , " + lon.__str__() + "] <br><b>On :</b> " + date
+        message = '<b>Ship</b>: ' + ship.__str__() + "<br><b>At :</b> [" + lat.__str__() + " , " + lon.__str__() + "] <br><b>On :</b> " + date
         folium.Marker(
             location=[lat, lon],
             icon=icon,
             popup=message
         ).add_to(marker_cluster)
 
-    if line != 'no':
-
-        course = []
-        currboat = data[0][2]
-        for index in range(0, len(data)-1):
-            d = data[index]
-            if d[2] != currboat:
+        if line != 'no':
+            if ship == currboat:
+                course.append((np.array([lat, lon]) * np.array([1, 1])).tolist())
+            if ship != currboat or index == len(data)-1:
                 boat_line = folium.PolyLine(
                     locations=course,
                     weight=1,
@@ -169,24 +178,10 @@ def map_viz_folium(request):
                     offset=5,
                     attributes=attr,
                 ).add_to(m)
-                course = []
-                currboat = d[2]
-            else:
-                course.append((np.array([float(d[0]), float(d[1])]) * np.array([1, 1])).tolist())
 
-        boat_line = folium.PolyLine(
-            locations=course,
-            weight=1,
-            color='blue'
-        ).add_to(m)
-        attr = "{'font-weight': 'normal', 'font-size': '18', 'fill': 'white', 'letter-spacing': '80'}"
-        plugins.PolyLineTextPath(
-            boat_line,
-            '\u21D2',
-            repeat=True,
-            offset=5,
-            attributes=attr,
-        ).add_to(m)
+                if ship != currboat:
+                    course = (np.array([lat, lon]) * np.array([1, 1])).tolist()
+                    currboat = ship
 
     m.save('templates/map.html')
     map_html = open('templates/map.html', 'r').read()
@@ -270,47 +265,56 @@ def map_course_time(request):
     if request.method == "GET":
         markersum = int(request.GET.get("markers", 50))
         ship = request.GET.get("ship", "all")
-        minyear = int(request.POST.get("min_year", 2000))
-        maxyear = int(request.POST.get("max_year", 2017))
+        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
+        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
 
-    data = get_data(markersum, ship, minyear, maxyear)
+        query_pk = int(str(request.GET.get('query', '')))
+
+
+    data = get_data(query_pk, markersum, ship, mindate, maxdate)
+
+    var_index = data['var']
+    ship_index = data['ship']
+    time_index = data['time']
+    lat_index = data['lat']
+    lon_index = data['lon']
+    data = data['data']
 
     course = []
     times = []
     dates = []
     speeds = []
     colours = []
-    currboat = data[0][2]
+    currboat = int(data[0][ship_index])
     datas = []
 
     for index in range(0, len(data) - 1):
         d = data[index]
 
-        if valid_entry(d, ship, minyear, maxyear):
-            lat = d[0]
-            lon = d[1]
-            date = d[3]
-            cship = d[2]
-            speed = d[4]
-            colour = 'blue'
-            if speed > 75.0:
-                colour = 'red'
+        lat = float(d[lat_index])
+        lon = float(d[lon_index])
+        date = str(d[time_index])
+        cship = int(d[ship_index])
+        speed = float(d[var_index])
+        colour = 'blue'
+        if speed > 75.0:
+            colour = 'red'
 
-            if cship != currboat:
-                geo = createjson(course, times, dates, currboat, speeds, colours)
-                datas.append(geo)
-                currboat = cship
-                colours = []
-                course = []
-                times = []
-                dates = []
-                speeds = []
+        if cship != currboat:
+            geo = createjson(course, times, dates, currboat, speeds, colours)
+            datas.append(geo)
+            currboat = cship
+            colours = []
+            course = []
+            times = []
+            dates = []
+            speeds = []
 
-            colours.append(colour)
-            course.append([lon, lat])
-            times.append(transpose(date))
-            dates.append(date)
-            speeds.append(speed)
+        colours.append(colour)
+        course.append([lon, lat])
+        times.append(transpose(date))
+        dates.append(date)
+        speeds.append(speed)
 
     geo = createjson(course, times, dates, currboat, speeds, colours)
     datas.append(geo)
@@ -366,29 +370,35 @@ def map_course(request):
     if request.method == "GET":
         markersum = int(request.GET.get("markers", 500))
         ship = request.GET.get("ship", "all")
-        minyear = int(request.POST.get("min_year", 2000))
-        maxyear = int(request.POST.get("max_year", 2017))
+        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
+        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
+        query_pk = int(str(request.GET.get('query', '')))
 
-    #import pdb;pdb.set_trace()
 
-    data = get_data(markersum, ship, minyear, maxyear)
-    print data[:3]
+    data = get_data(query_pk, markersum, ship, mindate, maxdate)
+
+    var_index = data['var']
+    ship_index = data['ship']
+    time_index = data['time']
+    lat_index = data['lat']
+    lon_index = data['lon']
+    data = data['data']
 
     jsonobj = []
-    currboat = data[0][2]
-    for index in range(0, len(data)-1):
-        d = data[index]
 
-        if valid_entry(d, currboat, minyear, maxyear):
-            lat = d[0]
-            lon = d[1]
-            date = d[3]
-            ship = d[2]
-            speed = d[4]
-            colour = 'blue'
-            if speed > 75.0:
-                colour = 'red'
-            jsonobj.append({'ship': ship, 'lat': lat, 'lon': lon, 'date': date, 'colour': colour, 'speed': speed})
+    for index in range(0, len(data)-1):
+
+        d = data[index]
+        lat = float(d[lat_index])
+        lon = float(d[lon_index])
+        date = str(d[time_index])
+        ship = int(d[ship_index])
+        speed = float(d[var_index])
+        colour = 'blue'
+        if speed > 75.0:
+            colour = 'red'
+        jsonobj.append({'ship': ship, 'lat': lat, 'lon': lon, 'date': date, 'colour': colour, 'speed': speed})
+
     jsonobj = json.dumps(jsonobj)
 
 
@@ -435,27 +445,32 @@ def map_heatmap(request):
             data = request.data
             markersum = data["markers"]
             ship = data["ship"]
-            minyear = request.POST.get("min_year", 2000)
-            maxyear = request.POST.get("max_year", 2017)
+            mindate = request.POST.get("min_date", 2000)
+            maxdate = request.POST.get("max_date", 2017)
         else:
             markersum = 50
             ship = "all"
-            minyear = 2000
-            maxyear = 2017
+            mindate = 2000
+            maxdate = 2017
 
     else:
         markersum = int(request.GET.get("markers", 5000))
         ship = request.GET.get("ship", "all")
-        minyear = int(request.POST.get("min_year", 2000))
-        maxyear = int(request.POST.get("max_year", 2017))
+        mindate = int(request.POST.get("min_date", 2000))
+        maxdate = int(request.POST.get("max_date", 2017))
 
-    data = get_data(markersum, ship, minyear, maxyear)
+    query_pk = int(str(request.GET.get('query', '')))
+    data = get_data(query_pk, markersum, ship, mindate, maxdate)
     heat = []
-    for d in data:
-        heat.append((np.array([float(d[0]), float(d[1])]) * np.array([1, 1])).tolist())
 
-    HeatMap(heat,
-            name="Heat Map").add_to(m)
+    lat_index = data['lat']
+    lon_index = data['lon']
+    data = data['data']
+
+    for d in data:
+        heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
+
+    HeatMap(heat, name="Heat Map").add_to(m)
 
 
     folium.LayerControl().add_to(m)
@@ -486,7 +501,7 @@ def map_viz_folium_contour(request):
         variable = str(request.GET.get('feat_1', ''))
         query = str(request.GET.get('query', ''))
 
-        q = Query.objects.get(pk=int(query))
+        q = AbstractQuery.objects.get(pk=int(query))
         q = Query(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
@@ -1023,59 +1038,70 @@ def test_request_zep(request):
 
 
 def get_line_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    query = Query(document=query.document)
+    query_pk = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
 
-    doc = query.document
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == y_var:
-                s['aggregate'] = 'avg'
-                s['exclude'] = False
-            elif s['name'] == x_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            else:
-                s['exclude'] = True
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-    query.document = doc
-    raw_query = query.raw_query
-    print doc
-    print raw_query
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = Query(document=query.document)
+        doc = query.document
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == y_var:
+                    s['aggregate'] = 'avg'
+                    s['exclude'] = False
+                elif s['name'] == x_var:
+                    s['groupBy'] = True
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+        query.document = doc
+        raw_query = query.raw_query
+        print doc
+        print raw_query
 
-    #result = query.execute()
-    #result_data = result['results']
-    #result_headers = result['headers']
+        #result = query.execute()
+        #result_data = result['results']
+        #result_headers = result['headers']
 
-    """
-    try:
-        connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
-    except:
-        print "I am unable to connect to the database"
-    """
+        """
+        try:
+            connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
+        except:
+            print "I am unable to connect to the database"
+        """
 
-    cursor = connection.cursor()
-    result_data = cursor.execute(raw_query)
+        cursor = connection.cursor()
+        result_data = cursor.execute(raw_query)
 
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)[0]['headers']
+        cursor = connection.cursor()
+        cursor.execute(raw_query)
+        result_data = cursor.fetchall()
+        result_headers = query.execute(only_headers=True)[0]['headers']
 
-    y_var_index = x_var_index = 0
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == y_var:
-            y_var_index = idx
-        elif c['name'] == x_var:
-            x_var_index = idx
+        y_var_index = x_var_index = 0
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == y_var:
+                y_var_index = idx
+            elif c['name'] == x_var:
+                x_var_index = idx
 
-    json_data = []
-    for d in result_data:
-        json_data.append({y_var: d[y_var_index], x_var: str(d[x_var_index])})
+        json_data = []
+        for d in result_data:
+            json_data.append({y_var: d[y_var_index], x_var: str(d[x_var_index])})
 
+
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print json_data
 
 
     #notebook_id = create_zep_note(name='bdo_test')
@@ -1103,8 +1129,6 @@ def get_line_chart_am(request):
     # print json.loads(str(json_data))
     #
 
-    doc = query.document
-
     if 'time' in x_var:
         isDate = 'true'
     else:
@@ -1115,7 +1139,7 @@ def get_line_chart_am(request):
 
 def get_pie_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
     query = Query(document=query.document)
     key_var = str(request.GET.get('key_var', ''))
     value_var = str(request.GET.get('value_var', ''))
@@ -1168,7 +1192,7 @@ def get_pie_chart_am(request):
 
 def get_column_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
     query = Query(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
@@ -1223,7 +1247,7 @@ def get_column_chart_am(request):
 
 def get_data_table(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
 
     result_data = query.execute()['results']
 

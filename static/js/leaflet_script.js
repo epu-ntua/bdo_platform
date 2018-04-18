@@ -119,22 +119,30 @@ $(document).ready(function() {
 // ========================================================================
     var newroute = [];
     var s,t,u,v;
+    var currship = marray[0][0]
     var linecolor = 'green';
     for(var i=0;i<course.length-1;i++){
         s = new L.marker(course[i],{icon:icon}).bindPopup("<b> Ship: </b>" + marray[i][0] + "<br><b> On: </b>" + marray[i][3] + "<br><b> Speed: </b>" + marray[i][4]);
         if(marray[i+1][5]=='red'){
             linecolor = 'red';
         }
-        t = new L.polyline([course[i], course[i+1]],{color:linecolor, opacity:0.4, weight:5, lineCap: 'round'});
-        //v = new L.polyline([course[i], course[i+1]],{color:linecolor});
-        u = new L.polylineDecorator([course[i], course[i+1]],{
-            patterns: [
-                {offset: '0', repeat: 30, symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {color: linecolor, opacity: 0.5, weight: 5}})}
-            ]
-        });
-        //v.addTo(movinglayer);
-        u.addTo(movinglayer);
-        newroute.push(s,t);
+        if(marray[i+1][0] == currship){
+            t = new L.polyline([course[i], course[i+1]],{color:linecolor, opacity:0.4, weight:5, lineCap: 'round'});
+            //v = new L.polyline([course[i], course[i+1]],{color:linecolor});
+            u = new L.polylineDecorator([course[i], course[i+1]],{
+                patterns: [
+                    {offset: '0', repeat: 30, symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: false, pathOptions: {color: linecolor, opacity: 0.5, weight: 5}})}
+                ]
+            });
+            //v.addTo(movinglayer);
+            u.addTo(movinglayer);
+            newroute.push(s,t);
+        }
+        else{
+            newroute.push(s);
+            currship = marray[i+1][0]
+        }
+
         linecolor = 'green';
     }
     s = new L.marker(course[course.length-1],{icon:icon}).bindPopup("<b> Ship: </b>" + marray[i][0] + "<br><b> On: </b>" + marray[i][3] + "<br><b> Speed: </b>" + marray[i][4]);

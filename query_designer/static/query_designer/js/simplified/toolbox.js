@@ -14,11 +14,12 @@ $(function () {
 
             var chartTitle = chartTitle || 'Query ' + ($('#chart-picker li').length + 1);
 
-            this.chart = $('<iframe />');
+            // this.chart = $('<iframe />');
 
             // save
             var obj = {
                 'chartId': chartId,
+                'tempChartId': chartId,
                 'chartTitle': chartTitle
             };
             this.objects.push(obj);
@@ -43,9 +44,9 @@ $(function () {
             $('#chart-name').removeClass('hidden').find('input').val(chartTitle);
 
             // show graph
-            $('#chartdiv')
-                .empty()
-                .append(this.chart);
+            // $('#chartdiv')
+            //     .empty()
+            //     .append(this.chart);
         },
 
         setChartOptions: function (obj, chartOptions, chartFilters, chartPolicy) {
@@ -128,6 +129,9 @@ $(function () {
             if (config.name === 'category') {
                 $fieldSelect.attr('multiple', 'multiple');
             }
+            if (config.name === 'orderby') {
+                $fieldSelect.attr('multiple', 'multiple');
+            }
 
             if (config.id) {
                 $fieldSelect.attr('id', config.id);
@@ -154,33 +158,38 @@ $(function () {
 
             if (config.emptyChoice) {
                 $fieldSelect.append('<option value="">No value</option>');
+                $fieldSelect.append('<option value="">No value</option>');
             }
 
             $.each(config.choices, function (idx, choice) {
                 var $option = $('<option />');
+                if(config.value === choice.value) { // john's addition to have only the selected variable as option
+                    $option.attr('value', choice.value);
+                    $option.text(choice.title);
+                    if (typeof(choice.type) !== 'undefined') {
+                        $option.data('type', choice.type);
+                        $option.attr('data-type', choice.type);
+                    }
+                    if (typeof(choice.forVariable) !== 'undefined') {
+                        $option.data('forvariable', choice.forVariable);
+                        $option.attr('data-forvariable', choice.forVariable);
+                    }
 
-                $option.attr('value', choice.value);
-                $option.text(choice.title);
-                if (typeof(choice.type) !== 'undefined') {
-                    $option.data('type', choice.type);
-                    $option.attr('data-type', choice.type);
+                    $fieldSelect.append($option);
                 }
-                if (typeof(choice.forVariable) !== 'undefined') {
-                    $option.data('forvariable', choice.forVariable);
-                    $option.attr('data-forvariable', choice.forVariable);
-                }
-
-                $fieldSelect.append($option);
             });
 
             var inlineLabel = '';
             if (config.name === 'category') {
                 inlineLabel = config.label;
             }
+            if (config.name === 'orderby') {
+                inlineLabel = config.label;
+            }
 
             // set field value
             $fieldSelect.val(config.value);
-            var $fieldset = $('<div class="fieldset">' + (inlineLabel ? '' : config.label + '<br />') + '<div class="row"><div class="col-xs-3 col-prefix" style="' + (inlineLabel ? 'padding-left: 15px' : '') +'">' + inlineLabel + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
+            var $fieldset = $('<div class="fieldset">' + (inlineLabel ? '' : config.label + '<br />') + '<div class="row" style="margin: 0"><div class="col-xs-3 col-prefix" style="' + (inlineLabel ? 'padding: 0' : '') +'">' + inlineLabel + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
             $fieldset.find('.col-main').append($fieldSelect);
 
             if (config.xy) {
@@ -207,16 +216,16 @@ $(function () {
             /* empty from previous controls */
             $controlList.empty();
 
-            /* load group */
-            // create group select
-            var $groupSelectContainer = this.renderChartOptionsField({
-                choices: obj.chartPolicy.categories,
-                name: 'category',
-                id: 'id_category',
-                label: 'Group by',
-                value: obj.chartOptions.group.metric
-            });
-            $chartControls.append($groupSelectContainer);
+            // add add filter & draw buttons
+            var $btnContainer = $('<div class="row btn-container">').css('padding', '0').css('margin-left', '0');
+            if (obj.chartOptions.fields.length + 1 < obj.chartPolicy.max) {
+                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" style=""><i class="fa fa-plus"></i> Select data</div>')
+            }
+
+            $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');
+            $btnContainer.append('<div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;"><i class="fa fa-play-circle"></i> Run Query</div>');
+            $controlList.append($btnContainer);
+
 
             /* load fields */
             var that = this;
@@ -270,14 +279,31 @@ $(function () {
             $chartFilters.empty();
             $chartFilters.append(obj.$chartFilters);
 
-            // add add filter & draw buttons
-            var $btnContainer = $('<div class="row btn-container">').css('padding', '0 4px');
-            if (obj.chartOptions.fields.length + 1 < obj.chartPolicy.max) {
-                $btnContainer.append('<div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue"><i class="fa fa-plus"></i> Add data</div>')
-            }
 
-            $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');
-            $controlList.append($btnContainer);
+            // add group by and order by fields
+            var $queryControlsContainer = $('<div class="row after-data-selection" id="query-controls-container">').css('padding', '0').css('margin-left', '0').css('margin-top', '20px');
+
+            // create group select
+            var $groupSelectContainer = this.renderChartOptionsField({
+                choices: obj.chartPolicy.categories,
+                name: 'category',
+                id: 'id_category',
+                label: 'Group by',
+                value: obj.chartOptions.group.metric
+            });
+            $queryControlsContainer.append($groupSelectContainer);
+
+            // create order select
+            var $orderSelectContainer = this.renderChartOptionsField({
+                choices: obj.chartPolicy.categories,
+                name: 'orderby',
+                id: 'id_orderby',
+                label: 'Order by',
+                value: obj.chartOptions.group.metric
+            });
+            $queryControlsContainer.append($orderSelectContainer);
+
+            $controlList.append($queryControlsContainer);
 
             // show filters button & apply plugin
             $('.filter-edit-open').show();
@@ -336,6 +362,18 @@ $(function () {
 
             // gather individual filters
             var filters = this.getFilterArray();
+            var latitude_dim_id = $('#selected_dimensions option[data-type="latitude"]').val();
+            var longitude_dim_id = $('#selected_dimensions option[data-type="longitude"]').val();
+            if (bounds[0] !== -90) filters.push({a: latitude_dim_id, op: 'gte', b: bounds[0].toString()});
+            if (bounds[2] !== 90) filters.push({a: latitude_dim_id, op: 'lte', b: bounds[2].toString()});
+            if (bounds[1] !== -180) filters.push({a: longitude_dim_id, op: 'gte', b: bounds[1].toString()});
+            if (bounds[3] !== 180) filters.push({a: longitude_dim_id, op: 'lte', b: bounds[3].toString()});
+
+
+            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
+            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
+            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
+            console.log(filters);
 
             var filterTree = {};
 
@@ -700,12 +738,12 @@ $(function () {
 
         generateQueryDoc: function() {
             var info = this._getChartInfo();
-
+            console.log(info);
             var result = {
                 from: [],
                 distinct: false,
                 offset: 0,
-                "limit": 100,
+                "limit": parseInt($('#limit_container select').val()),
                 "orderings": []
             };
 
@@ -728,9 +766,10 @@ $(function () {
                 });
 
                 // push dimensions
-                $.each($('select[name="category"] > option[data-forvariable="' + value.type + '"]'), function(jdx, opt) {
+                $.each($('#selected_dimensions > option[data-forvariable="' + value.name + '"]'), function(jdx, opt) {
                     var name = $(opt).data('type');
                     var groupBy = $('select[name="category"]').val().indexOf(String($(opt).attr('value'))) >= 0;
+                    var orderBy = $('select[name="orderby"]').val().indexOf(String($(opt).attr('value'))) >= 0;
 
                     var dimension = {
                         type: $(opt).attr('value'),
@@ -758,21 +797,31 @@ $(function () {
                             }
                         })
                     }
-                    _from.select.push(dimension)
+                    _from.select.push(dimension);
+                    if(orderBy) {
+                        var selected_index = $('select[name="orderby"]').val().indexOf(String($(opt).attr('value')));
+                        var ordering = $('select[name="orderby"]').find('option:selected').eq(selected_index).data('ordering');
+                        result.orderings.push({type: ordering, name: 'i' + String(idx) + '_' + name});
+                    }
                 });
 
                 // add to query
                 result.from.push(_from);
+
             });
 
             // add filters
             result.filters = this.constructFiltersParam(result);
 
+            // add orderings
+
+
             return result;
         },
 
         /* Gets the data based on the fields & options selected by the user */
-        fetchChartData: function () {
+        fetchChartData: function () {},
+        fetchQueryData: function () {
             var that = this;
 
             var obj = this.objects[this.current()];
@@ -791,6 +840,10 @@ $(function () {
 
             // request data
             var runQuery = function(id) {
+                // update data table headers & data
+                var $table = $("#graph-data-table");
+                $table.find('thead').empty();
+                $table.find('tbody').empty();
                 $.ajax({
                     url: '/queries/execute/',
                     type: 'POST',
@@ -799,6 +852,9 @@ $(function () {
                         csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val()
                     },
                     success: function (response) {
+                        $('.no-data-message').hide();
+                        $('#chartdiv').show();
+
                         // create the required graphs
                         // todo improve updating iframe
                         var y_var = doc.from[0].select[0].name;
@@ -808,12 +864,12 @@ $(function () {
                                 x_var = s.name
                             }
                         });
-                        $('iframe').attr('src', 'http://localhost:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
+                        var iframe = $('<iframe  onload="hide_gif();" />');
+                        $("#viz_container iframe").remove();
+                        $("#viz_container").append(iframe);
+                        $('#viz_container iframe').attr('src', 'http://localhost:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
 
-                        // update data table headers & data
-                        var $table = $("#graph-data-table");
-                        $table.find('thead').empty();
-                        $table.find('tbody').empty();
+
 
                         var $header = $('<tr />');
                         $.each(response.headers.columns, function (idx, col) {
@@ -829,13 +885,21 @@ $(function () {
 
                             $table.find('tbody').append($row);
                         });
+                        $("#chart-content-tabs li").eq(1).find('a').click();
+                        $("#chart-content-tabs li").eq(0).find('a').click();
+                    },
+                    error: function (response) {
+                        hide_gif();
+                        $('#chartdiv').hide();
+                        $('.no-data-message').show();
+                        alert('We are sorry, an error occurred.');
                     }
                 })
             };
 
             // hack due to visualizations needing the query id
             // first save
-            QueryToolbox.save(runQuery);
+            QueryToolbox.save(runQuery, 1);
         },
 
         tabMarker: {
@@ -874,7 +938,7 @@ $(function () {
             this.refreshValueFields();
             this.chart = obj.chart;
             $('#chartdiv')
-                .empty()
+                // .empty()
                 .append(this.chart);
 
             // update chart name field
@@ -903,7 +967,7 @@ $(function () {
         },
 
         /* Save the current chart */
-        save: function (callback) {
+        save: function (callback, temp) {
             // get current chart (if any)
             var current = this.current();
             if (current < 0) {
@@ -927,18 +991,31 @@ $(function () {
 
             // send the save request
             var that = this;
+            var url;
+            if (temp === 1){
+                url = '/queries/save/' + (this.objects[current].tempChartId ? this.objects[current].tempChartId + '/' : '') + '1/'
+            }
+            else{
+                url = '/queries/save/' + (this.objects[current].chartId ? this.objects[current].chartId + '/' : '') + '0/'
+            }
             $.ajax({
-                url: '/queries/save/' + (this.objects[current].chartId ? this.objects[current].chartId + '/' : ''),
+                url: url,
                 type: 'POST',
                 data: data,
                 success: function (data) {
                     // save id & mark
-                    that.objects[current].chartId = Number(data.pk);
+                    if (temp === 1){
+                        that.objects[current].tempChartId = Number(data.pk);
+                    }
+                    else{
+                        that.objects[current].chartId = Number(data.pk);
+                    }
                     that.tabMarker.currentSaved();
 
                     // update status
                     that.setStatus('Saved', 'check');
 
+                    $('#selected_query').val(parseInt(data.pk));
                     // run callback
                     if (callback) {
                         callback(data.pk)
@@ -1075,6 +1152,11 @@ $(function () {
             }
 
             $fieldset.remove();
+            if(cnt===0){
+                $('.after-data-selection').each(function () {
+                    $(this).hide();
+                })
+            }
         },
 
         /* Responsible for editing queryset filters */
@@ -1246,7 +1328,7 @@ $(function () {
                 var filterStr = filterVariable + filterOperator + filterValue;
 
                 // humanized title of the filter
-                var filterTitle = $('#new-filter-variable option[value="' + filterVariable + '"]').text() + filterOperator + title;
+                var filterTitle = $('#new-filter-variable option[value="' + filterVariable + '"]').text() + ' ' +filterOperator + ' ' + title;
 
                 // create filter name
                 var filterName = 'F' + ($('#chart-filters .filter').length + 1);
@@ -1260,7 +1342,7 @@ $(function () {
 
                 // re-load popup
                 this.load();
-
+                console.log( filterStr );
                 // mark as unsaved
                 QueryToolbox.tabMarker.currentUnsaved()
             },
@@ -1341,6 +1423,8 @@ $(function () {
     /* Filter dialog should always use select2 */
     $('#filters-modal select').select2();
 
+    $('#limit_container select').select2({tags: true});
+
     /* Add a new query */
     $('#add-chart').on('click', function () {
         QueryToolbox.addChart()
@@ -1356,57 +1440,132 @@ $(function () {
         var $last = $('.chart-control .fieldset:last');
 
         $('#select-data-modal').dialog({
-            width: '40vw',
+            width: '60vw',
             position: {my: 'center'},
             title: 'Select data'
         });
 
     });
 
+    $('#selection-close-btn').on('click', function () {
+        $('#select-data-modal').dialog('close');
+    });
+
     /* Add a value field */
     $('#selection-confirm-btn').on('click', function() {
         var newField = window.getDataSelection();
+        if (newField.value != ""){
 
-        var $chartControls = $('#chart-control-list > .chart-control');
-        var label = 'Metric #<span class="metric-cnt">' + ($chartControls.find('> *').length + 1) + '</span>';
 
-        var obj = QueryToolbox.objects[QueryToolbox.current()];
+            var $chartControls = $('#chart-control-list > .chart-control');
+            var label = 'Metric #<span class="metric-cnt">' + ($chartControls.find('> *').length ) + '</span>';
 
-        var $fieldset = QueryToolbox.renderChartOptionsField({
-            choices: obj.chartPolicy.valueFields,
-            emptyChoice: false,
-            name: 'value_field',
-            label: label,
-            value: newField.value,
-            aggregate: newField.aggregate,
-            aggregates: obj.chartPolicy.aggregates,
-            canConfig: true,
-            canDelete: true,
-            xy: false
-        });
+            var obj = QueryToolbox.objects[QueryToolbox.current()];
 
-        var $category = $('[name="category"]');
+            var $fieldset = QueryToolbox.renderChartOptionsField({
+                choices: obj.chartPolicy.valueFields,
+                emptyChoice: false,
+                name: 'value_field',
+                label: label,
+                value: newField.value,
+                aggregate: newField.aggregate,
+                aggregates: obj.chartPolicy.aggregates,
+                canConfig: true,
+                canDelete: true,
+                xy: false
+            });
 
-        QueryToolbox.filterManager.updateFilters(QueryToolbox._getChartInfo().values);
+            var $category = $('[name="category"]');
+            var $orderby = $('[name="orderby"]');
+            var $dimensions = $('#selected_dimensions');
+            var $filter_variables = $('#new-filter-variable');
 
-        var v = $category.val();
-        $.each(newField.groupBy, function(idx, f) {
-            v.push(f);
-        });
-        $category.val(v).trigger('change.select2');
+            $.each(newField.dimensions, function (id, data) {
+                if ($category.find("option[name='" + data.title + "']").length) {
+                    // Create a DOM Option and pre-select by default
+                    var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
+                    // Append it to the select
+                    // $category.append(newOption).trigger('change');
+                    $dimensions.append(newOption);
+                } else {
+                    // Create a DOM Option and pre-select by default
+                    var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
+                    // Append it to the select
+                    $category.append(newOption).trigger('change');
 
-        $fieldset.find('select').select2();
+                    var newOption = new Option(data.title + ' - ASC', data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('data-ordering', 'ASC');
+                    newOption.setAttribute('name', data.title);
+                    // Append it to the select
+                    $orderby.append(newOption).trigger('change');
 
-        $chartControls.append($fieldset);
+                    var newOption = new Option(data.title + ' - DESC', data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('data-ordering', 'DESC');
+                    newOption.setAttribute('name', data.title);
+                    // Append it to the select
+                    $orderby.append(newOption).trigger('change');
 
-        // mark as unsaved
-        QueryToolbox.tabMarker.currentUnsaved();
+                    var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
+                    $dimensions.append(newOption);
 
-        // redraw
-        QueryToolbox.fetchChartData();
+                    var newOption = new Option(data.title, data.value, false, false);
+                    newOption.setAttribute('data-forVariable', newField.value);
+                    newOption.setAttribute('data-type', data.title);
+                    newOption.setAttribute('name', data.title);
+                    $filter_variables.append(newOption);
+                }
+            });
+
+
+            QueryToolbox.filterManager.updateFilters(QueryToolbox._getChartInfo().values);
+
+            var v = $category.val();
+            $.each(newField.groupBy, function (idx, f) {
+                v.push(f);
+            });
+            $category.val(v).trigger('change.select2');
+
+            $fieldset.find('select').select2();
+
+            $chartControls.append($fieldset);
+
+            // show other query controls
+            if($chartControls.find('> *').length>0) {
+                $('.after-data-selection').each(function () {
+                    $(this).show();
+                });
+            }
+
+            // mark as unsaved
+            QueryToolbox.tabMarker.currentUnsaved();
+
+            // redraw
+            QueryToolbox.fetchChartData();
+        }
 
         // close popup
-        $('#select-data-modal').dialog('close');
+        // $('#select-data-modal').dialog('close');
+        $(".variable-list .selected").removeClass("selected");
+        $("#selection-aggregate").val(null).trigger('change');
+        $("#group-by-select").val(null).trigger('change');
+
+    });
+
+    $('#select-data-modal').on('dialogclose', function(event) {
+        $('.selection-confirm .col-xs-12').addClass('hidden');
     });
 
     /* Switch chart */
@@ -1427,7 +1586,7 @@ $(function () {
 
     /* On chart save */
     $('body').on('click', '#chart-save', function () {
-        QueryToolbox.save();
+        QueryToolbox.save(function (id) {}, 0);
     });
 
     /* On chart open dialog */
@@ -1447,7 +1606,31 @@ $(function () {
     });
 
     /* On value field change */
-    $('body').on('change', 'select[name="value_field"], select[name="category"]', function (e) {
+    $('body').on('change', 'select[name="value_field"]', function (e) {
+
+        // mark as unsaved
+        QueryToolbox.tabMarker.currentUnsaved();
+
+        // redraw
+        QueryToolbox.fetchChartData();
+    });
+
+    /* On category field change */
+    $('body').on('change', 'select[name="category"]', function (e) {
+
+        if($("select[name='category']").val().length > 0){
+            $("select[name='field_aggregate']").each(function () {
+                $(this).val("AVG");
+                $(this).trigger("change");
+            });
+
+        }
+        else{
+            $("select[name='field_aggregate']").each(function () {
+                $(this).val("");
+                $(this).trigger("change");
+            });
+        }
 
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
@@ -1582,10 +1765,17 @@ $(function () {
         QueryToolbox.refreshValueFields()
     });
 
+    /* On run query btn click, execute the query and fetch results */
+    $('body').on('click', '#run-query-btn', function () {
+        $(".outputLoadImg").show();
+    // $("#run-query-btn").click(function () {
+        QueryToolbox.fetchQueryData();
+    });
+
     /* Hotkeys */
     document.addEventListener("keydown", function (e) {
         if (e.keyCode == 83 && e.ctrlKey) { //Ctrl+S key pressed
-            QueryToolbox.save();
+            QueryToolbox.save(function (id) {}, 0);
 
             e.preventDefault();
             e.stopPropagation();

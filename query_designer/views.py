@@ -21,6 +21,8 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render
 
+from visualizer.models import Visualization
+
 # from query_designer.mongo_api import *
 # from query_designer.mongo_query import *
 
@@ -45,21 +47,31 @@ def simplified(request, pk=None):
     return render(request, 'query_designer/simplified.html', {
         'datasets': Dataset.objects.filter(stored_at='LOCAL_POSTGRES').exclude(variables=None),
         'dimensions': Dimension.objects.all(),
+        'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
         'AGGREGATES': AGGREGATES,
     })
 
 
 @csrf_exempt
-def save_query(request, pk=None):
+def save_query(request, pk=None, temp=1):
+    print pk, temp
     # create or update
     if not pk:
         current_user = request.user
         if current_user.is_authenticated():
-            q = Query(user=current_user)
+            if int(temp) == 1:
+                print 'it is temp'
+                q = TempQuery(user=current_user)
+            else:
+                q = Query(user=current_user)
         else:
-            q = Query(user=User.objects.get(username='BigDataOcean'))
+            if int(temp) == 1:
+                q = TempQuery(user=User.objects.get(username='BigDataOcean'))
+            else:
+                q = Query(user=User.objects.get(username='BigDataOcean'))
     else:
-        q = Query.objects.get(pk=pk)
+        print 'not pk'
+        q = AbstractQuery.objects.get(pk=pk)
 
     # initially assume custom query
     q.generated_by = 'CUSTOM'
@@ -222,13 +234,13 @@ def get_field_policy(user):
         'max': 4
     }
 
-    for dimension in Dimension.objects.all():
-        field_policy['categories'].append({
-            'title': '%s (%s)' % (dimension.title, dimension.variable.title),
-            'value': dimension.pk,
-            'type': dimension.name.replace(' ', '_'),
-            'forVariable': dimension.variable.pk,
-        })
+    # for dimension in Dimension.objects.all().distinct('name').order_by('name'):
+    #     field_policy['categories'].append({
+    #         'title': '%s' % (dimension.title),
+    #         'value': dimension.pk,
+    #         'type': dimension.name.replace(' ', '_'),
+    #         'forVariable': dimension.variable.pk,
+    #     })
 
     """
     for formula in Formula.objects.filter(created_by=user, is_valid=True):

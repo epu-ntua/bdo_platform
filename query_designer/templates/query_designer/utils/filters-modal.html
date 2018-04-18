@@ -20,13 +20,14 @@
                             <div class="col-sm-4">
                                 <select id="new-filter-variable">
                                     <option value="">{% trans 'Choose a variable to filter' %}</option>
-                                    {% for dimension in dimensions %}
-                                        <option
-                                                value="{{ dimension.pk }}"
-                                                data-forvariabletype="{{ dimension.variable_id }}">
-                                            {{ dimension.title }} ({{ dimension.variable.title }})
-                                        </option>
-                                    {% endfor %}
+{#                                    {% for dimension in dimensions %}#}
+{#                                        <option#}
+{#                                                value="{{ dimension.pk }}"#}
+{#                                                data-forvariabletype="{{ dimension.variable_id }}">#}
+{#                                            {{ dimension.title }} ({{ dimension.variable.title }})#}
+{#                                        </option>#}
+{#                                    {% endfor %}#}
+
                                 </select>
                             </div>
                             <div class="col-sm-2">
