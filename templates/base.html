@@ -187,6 +187,13 @@
     <!-- Form setup -->
 	<script src="{% static 'js/form.js' %}"></script>
 
+    <script>
+        window.setInterval(function(){
+            $('.form-group input').each(function(){ if($(this).val() != ''){ $(this).closest('.form-group').removeClass('is-empty'); }  });
+            $('.form-group select').each(function(){ if($(this).val() != ''){ $(this).closest('.form-group').removeClass('is-empty'); }  });
+        }, 1000);
+    </script>
+
 	{% block js %}
     {% endblock %}
 
