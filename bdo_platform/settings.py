@@ -21,6 +21,8 @@ else:
                 from bdo_platform.settings_management.development_bdodev import *
             elif settings_file == 'development_tfyts':
                 from bdo_platform.settings_management.development_tfyts import *
+            elif settings_file == 'development_mkontoulis':
+                from bdo_platform.settings_management.development_mkontoulis import *
             elif settings_file == 'development':
                 from bdo_platform.settings_management.development import *
     except IOError:

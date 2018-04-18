@@ -4,6 +4,7 @@
 
 {% block css %}
 
+    <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>
     <style>
         #loadImg{position:absolute;z-index:999;}
         #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
@@ -16,17 +17,122 @@
             margin: 1% 1% 1% 1%;
             padding: 0;
         }
+
+     {#Dashboard Additions#}
+        .gridster .gridster-item {
+            -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            color: #004756;
+            background: darkgrey;
+            padding: 0px;
+        }
+        ul {
+            list-style: none;
+        }
+
+        .wrap1{
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100000;
+            opacity: 0;
+            display: none;
+        }
+
+        .deletebtn{
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: #2172ac url('/static/img/exitBtn.png') center ;
+            height: 37px;
+            border: none;
+            color: white;
+            width: 30px;
+        }
+
+        .deletebtn:hover{
+            background-color: red;
+            cursor: pointer;
+        }
+
+        .iframe1{
+            height: 90%;
+            width: 100%;
+        }
+
+        .iframeHeader{
+            height: 37px;
+            width: 100%;
+            background-color: #2172ac;
+        }
+
+        .iframe-class{
+            height: calc(100% - 37px);
+            padding: 0px;
+            margin: 0% 0% 0% 0% !important;
+        }
+
+
+        .iframeHeader .form-group{
+            margin: 0px 0px 0px 0px !important;
+        }
+
+        .iframeHeader .form-group .form-control{
+            color: #FFFFFF;
+        }
+
+        #scroll_down_area{
+            display: none;
+            width: 100%;
+            height: 30%;
+            position: absolute;
+            bottom: 0;
+            z-index: 100000;
+            opacity: 100;
+            {#background-color: #0b2e13;#}
+            display: none;
+
+        }
+
+        .widget-title{
+            padding-top: 5px;
+            font-size: 200%;
+            color: white;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
 
-    <div id="dynamic_dashboard">
-        <h1 class="text-center">{{ dashboard.title }}</h1>
-        {% for order, url in dashboard.viz_components.items %}
-            <iframe src="{{ url }}"  frameborder="0" ></iframe>
-        {% endfor %}
-
+{#    <div id="dynamic_dashboard">#}
+{#        <h1 class="text-center">{{ dashboard.title }}</h1>#}
+{#        {% for order, url in dashboard.viz_components.items %}#}
+{#            <iframe src="{{ url }}"  frameborder="0" ></iframe>#}
+{#        {% endfor %}#}
+{##}
+{#    </div>#}
+    <h1 class="text-center">{{ dashboard.title }}</h1>
+     <div ng-app="myApp" ng-controller="MainCtrl">
+        <div id="dynamic_dashboard" gridster="gridsterOpts">
+            <ul id="widgetParent">
+                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">
+                    <div class='wrap1'></div>
+                    <header class="iframeHeader">
+{#                        <input id="widgetTitle[[::counter]]" class="form-control text-center" value=" Widget[[::counter]]" >#}
+                        <p class="widget-title"> Widget</p>
+{#                        {% load  static %}#}
+{#                        <input type='button' value='X' class='deletebtn'#}
+{#                               style="background-image: url({% static "images/exitBtn.png" %})"#}
+{#                               ng-click="removeWidget(item);">#}
+                    </header>
+                    <iframe class="iframe-class" src=[[item.url]] frameborder='0' ></iframe>
+                    {#ng-init="SetIframeHeight('iframe[[counter]]')" #}
+                </li>
+            </ul>
+        </div>
     </div>
 
 {% endblock %}
@@ -37,6 +143,123 @@
 {% endblock %}
 
 {% block js %}
+    <script type="text/javascript" src={% static '/js/angular.js' %}></script>
+    <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
+    <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
 
+<script type="text/javascript">
+        var app = angular.module('myApp', ['gridster']);
+
+        app.config(function ($interpolateProvider) {
+            $interpolateProvider.startSymbol('[[');
+            $interpolateProvider.endSymbol(']]');
+        });
+
+        app.directive('repeatDone', function() {
+            return function(scope, element, attrs) {
+                $$scope.flagLoop=1;
+                {#alert("hey");#}
+            }
+        });
+
+        app.controller('MainCtrl', function ($scope) {
+            $scope.flagLoop=0;
+            $scope.counter = "0";
+            $scope.tempInnerHtml="";
+            $scope.iframeSource="";
+
+            $scope.gridsterOpts = {
+                margins: [20, 20],
+                swapping: false,
+                outerMargin: false,
+                pushing: true,
+                floating: true,
+                columns: 4,
+                defaultSizeX: 4,
+	            defaultSizeY: 1,
+                draggable: {
+                    enabled: false,
+                    handle: '.iframeHeader',
+                    start: function (e, ui, $widget) {
+                        $('#scroll_down_area').show();
+                        $('.wrap1').show();
+                    },
+                    stop: function (e, ui, $widget) {
+                        $('#scroll_down_area').hide();
+                        $('.wrap1').hide();
+                    }
+                },
+                resizable: {
+                    enabled: false,
+                    handles: ['se', 'sw'],
+                    start: function (e, ui, $widget) {
+                        $('.wrap1').show();
+                    }
+                    ,
+                    stop: function (e, ui, $widget) {
+                        $('.wrap1').hide();
+                    }
+                },
+            };
+
+            $scope.standardItems = [];
+
+            $scope.clear = function () {
+                $scope.standardItems = [];
+            };
+
+            $scope.removeWidget = function (item) {
+                var index = $scope.standardItems.indexOf(item);
+                $scope.standardItems.splice(index, 1);
+            };
+
+            function setFlagLoop()
+            {
+                $scope.flagLoop = 1;
+            };
+            {#$scope.customItemMap = {#}
+            {#    sizeX: 'item.size.x',#}
+            {#    sizeY: 'item.size.y',#}
+            {#    row: 'item.position[0]',#}
+            {#    col: 'item.position[1]'#}
+            {#{;#}
+
+            var init = function (){
+                 {% for order, url in dashboard.viz_components.items %}
+                     var tempinfo= "{{ url }}";
+                     tempinfo=tempinfo.replace(/u&#39;/g,"");
+                     tempinfo=tempinfo.replace(/&#39;/g,"");
+                     tempinfo=tempinfo.replace("[","");
+                     tempinfo=tempinfo.replace("]","");
+                     var info = tempinfo.split(",");
+
+                    $scope.counter++;
+                    var tempid="widget" + $scope.counter;
+                    $scope.iframeSource = info[0];
+                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] });
+                    {#while($scope.flagLoop == 0) {#}
+                        var x = setTimeout(function () {
+                            var i = 0;
+                        }, 1000);
+
+                    $scope.flagLoop = 0;
+                {% endfor %}
+            };
+
+            var loadAfterInit = function () {
+                var counting = 0;
+                while(counting < $scope.counter) {
+                    var tempid="widget" + counting;
+                    var toAdd = "<iframe src='" + "{{ url }}" + "'frameborder='0' ></iframe>"
+                    $(tempid).append(toAdd);
+                    counting++;
+                }
+            };
+
+            init();
+            {#loadAfterInit();#}
+        });
+
+</script>
 
 {% endblock %}

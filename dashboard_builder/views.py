@@ -6,7 +6,7 @@ from django.template.loader import render_to_string
 from query_designer.models import Query
 from visualizer.models import Visualization
 from dashboard_builder.models import Dashboard
-
+import json
 
 def build_dynamic_dashboard(request):
     if request.method == 'GET':
@@ -49,10 +49,23 @@ def save_dashboard(request, pk=None):
         dashboard = Dashboard.objects.get(pk=pk)
 
     dashboard.title = 'BDO Dashboard'
-
+    print request.POST
     dashboard_data = request.POST.dict()
+    for order in dashboard_data.keys():
+        dashboard_data = json.loads(order)
+    # for k in dashboard_data.keys():
+    #     dashboard_data = k
+    #     break
+    #
+    # json_acceptable_string = dashboard_data.replace("'", "\"")
+    # print "NOW PRINTING json_acceptable_string"
+    # print json_acceptable_string
+    # dashboard_data = json.loads(json_acceptable_string)
+    print "We are now printing dashboard data"
     print dashboard_data
+    print "end of data"
     title = dashboard_data.pop('title', None)
+
     for order in dashboard_data.keys():
         print order
         print dashboard_data[order]
