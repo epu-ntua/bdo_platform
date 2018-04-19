@@ -128,7 +128,7 @@ def get_query_variables(request):
         # existing saved query
         if id >= 0:
             # get the query
-            q = Query.objects.get(pk=id)
+            q = AbstractQuery.objects.get(pk=id)
             # get the document
             doc = q.document
         # new query
