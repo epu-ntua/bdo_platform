@@ -1,38 +1,217 @@
 <div id="arguments_container" class="tab-pane fade">
-    <h3>Arguments Exposed to the User</h3>
-    <button type="button" id="add_argument_popbtn" class="btn btn-md btn-primary" data-toggle="popover" title="" data-placement="right">
-        + Add Argument
-    </button>
+    <div>
+         <h4 style="margin-top:20px">Arguments Exposed to the User:</h4>
+    </div>
+    <div id="filter_arg_div">
+        <div class="edit_hover_filter">
+            <h3 style="display:inline-block;">Filter Arguments</h3>
+            <i id="filter_arg_tip" class="fa fa-info-circle " title="The filter arguments are acquired from the selected query." data-toggle="tooltip" data-placement="right" style=" margin:auto" ></i>
+            <button type="button" id="add_filter_arg_popbtn" style="display:block;" class="btn btn-sm btn-primary btn_pop" data-toggle="popover" title="" data-placement="right" >
+                    + Add New
+            </button>
 
-    <table id="selected-arguments-table" class="table table-full-width">
-        <thead>
-            <tr>
-                <th>Query ID</th>
-                <th>Query</th>
-                <th>Filter</th>
-                <th>Default value</th>
-                <th>Name</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+        </div>
 
-    <div  style="margin-top: 500px">
-        <div id="argument-select-container">
+        <table id="selected-arguments-table1" class="table table-full-width">
+            <thead>
+                <tr>
+                    <th>Query ID</th>
+                    <th>Query</th>
+                    <th>Filter</th>
+                    <th>Default value</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    </br>
+    <div id="alg_arg_div">
+        </div>
+        <div class="edit_hover_alg">
+            <h3 style="display:inline-block;">Algorithm Arguments</h3>
+            <i id="alg_arg_tip" class="fa fa-info-circle " title="The algorithm arguments are additional service variables added by the user." data-toggle="tooltip" data-placement="right" style="margin:auto" ></i>
+            <button type="button" id="add_alg_arg_popbtn" style="display:block;" class="btn btn-sm btn-primary btn_pop" data-toggle="popover" title="" data-placement="right" >
+                    + Add New
+            </button>
+        </div>
+
+        <table id="selected-arguments-table2" class="table table-full-width">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+    <div id="argument-select-container">
+{#     <h4>Choose filter arguments to expose to the user.</h4>#}
+        <div>
+            <select id="query-argument-select"></select>
+            <form>
+                <div class="form-group row">
+                    <label for="filter_def_val" class="col-sm-2 col-form-label">Default Value</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" id="filter_def_val" placeholder="Default Value" >
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="filter_vartitle" class="col-sm-2 col-form-label">Title</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" id="filter_vartitle" placeholder="Title" >
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="filter_descr" class="col-sm-2 col-form-label">Description</label>
+                    <div class="col-sm-10">
+                        <textarea class="form-control" rows="5" id="filter_descr" placeholder="Description" style="min-width: 100%"></textarea>
+                    </div>
+                </div>
+
+            </form>
             <div>
-                <button type="button" id="" class="btn btn-sm btn-primary" data-toggle="popover">Add analysis argument</button>
-                <button type="button" id="" class="btn btn-sm btn-primary" data-toggle="popover">Add argument from query filters</button>
+                <button type="button" id="add_new_argument_btn1" style="margin-bottom: 20px" class="btn btn-sm btn-success " data-toggle="popover">OK</button>
             </div>
-            <div>
-                <select id="query-argument-select">
+        </div>
+    </div>
 
-                </select>
+
+
+
+
+    <div id="argument-newvar-form-container">
+    {#    <h4>Add new variables to the service.</h4>#}
+        <div>
+            <form>
+                <div class="form-group row">
+                    <label for="alg_varname" class="col-sm-2 col-form-label">Name</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" id="alg_varname" placeholder="Name" >
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="alg_vartitle" class="col-sm-2 col-form-label">Title</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" id="alg_vartitle" placeholder="Title" >
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="alg_vartype" class="col-sm-2 col-form-label">Type</label>
+                    <div class="col-sm-10">
+                        <select id="alg_vartype"></select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="alg_vardescr" class="col-sm-2 col-form-label">Description</label>
+                    <div class="col-sm-10">
+                        <textarea class="form-control" rows="5" id="alg_vardescr" placeholder="Description" style="min-width: 100%"></textarea>
+                    </div>
+                </div>
+
+            </form>
+            <div>
+                <button type="button" id="add_new_argument_btn2" style="margin-bottom: 20px" class="btn btn-sm btn-success " data-toggle="popover">OK</button>
             </div>
-            <button type="button" id="add_new_argument_btn" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
         </div>
     </div>
 
 </div>
+
+
+
+
+
+
+
+
+
+
+
+{#    <div  style="margin-top: 500px">#}
+{#        <div id="argument-select-container">#}
+{#            <ul class="nav nav-pills nav-justified">#}
+{#                <li class="active"><a data-toggle="tab" href="#filter_arg">FILTER ARGUMENTS</a></li>#}
+{#                <li><a data-toggle="tab" href="#algorithm_arg">ALGORITHM ARGUMENTS</a></li>#}
+{#            </ul>#}
+{#            <div class="tab-content">#}
+{#                <div id="filter_arg" class="tab-pane fade in active" style="margin-top:20px">#}
+{#                    <h4>Choose filter arguements to expose to the user.</h4>#}
+{#                     <div>#}
+{#                         <select id="query-argument-select"></select>#}
+{#                        <button type="button" id="edit_arg_button" style="margin-bottom: 20px;display:none">EDIT ARGUMENT</button>#}
+{#                    </div>#}
+{#                    <div id ="edit_filter_arg_form" style="display:none">#}
+{#                        <form>#}
+{#                            <div class="form-group row">#}
+{#                                <label for="flter_def_val" class="col-sm-2 col-form-label">Default Value</label>#}
+{#                                <div class="col-sm-10">#}
+{#                                    <input class="form-control" id="varname" placeholder="Default Value" >#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <div class="form-group row">#}
+{#                                <label for="filter_title" class="col-sm-2 col-form-label">Title</label>#}
+{#                                <div class="col-sm-10">#}
+{#                                    <input class="form-control" id="vartitle" placeholder="Title" >#}
+{#                                </div>#}
+{#                            </div>#}
+{#                            <div class="form-group row">#}
+{#                                <label for="filter_descr" class="col-sm-2 col-form-label">Description</label>#}
+{#                                <div class="col-sm-10">#}
+{#                                    <textarea class="form-control" rows="5" id="vardescr" placeholder="Description" style="min-width: 100%"></textarea>#}
+{#                                </div>#}
+{#                            </div>#}
+{##}
+{#                        </form>#}
+{#                    </div>#}
+{#                    <div>#}
+{#                        <button type="button" id="add_new_argument_btn1" style="margin-bottom: 20px" class="btn btn-sm btn-success" data-toggle="popover">OK</button>#}
+{#                    </div>#}
+{#                </div>#}
+{##}
+{#                <div id="algorithm_arg" class="tab-pane fade">#}
+{#                    <h4>Add new variables to the service.</h4>#}
+{#                    <form >#}
+{#                        <div class="form-group row">#}
+{#                            <label for="varname" class="col-sm-2 col-form-label">Name</label>#}
+{#                            <div class="col-sm-10">#}
+{#                                <input class="form-control" id="varname" placeholder="Name" >#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="form-group row">#}
+{#                            <label for="vartitle" class="col-sm-2 col-form-label">Title</label>#}
+{#                            <div class="col-sm-10">#}
+{#                                <input class="form-control" id="vartitle" placeholder="Title" >#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="form-group row">#}
+{#                            <label for="vartype" class="col-sm-2 col-form-label">Type</label>#}
+{#                            <div class="col-sm-10">#}
+{#                                <select id="vartype"></select>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="form-group row">#}
+{#                            <label for="vardescr" class="col-sm-2 col-form-label">Description</label>#}
+{#                            <div class="col-sm-10">#}
+{#                                <textarea class="form-control" rows="5" id="vardescr" placeholder="Description" style="min-width: 100%"></textarea>#}
+{#                            </div>#}
+{#                        </div>#}
+{##}
+{#                    </form>#}
+{#                    <div>#}
+{#                        <button type="button" id="add_new_argument_btn2" style="margin-bottom: 20px" class="btn btn-sm btn-success" data-toggle="popover">OK</button>#}
+{#                    </div>#}
+{##}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+
 

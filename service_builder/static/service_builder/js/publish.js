@@ -1,4 +1,5 @@
     // ******* csrftoken
+
     var csrftoken = Cookies.get('csrftoken');
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -24,8 +25,8 @@
 
     // Gather all the filter arguments that are exposed
     function gather_arguments() {
-        var exposed_args={'filter-arguments': []};
-        $("#selected-arguments-table tbody tr").each(
+         exposed_args={'filter-arguments': [],'algorithm-arguments':[]};
+        $("#selected-arguments-table1 tbody tr").each(
             function(index, elem){
                 console.log($(this).text());
                 var query_name = $(this).children().eq(1).text();
@@ -34,12 +35,21 @@
                     filter_op: $(this).children().eq(2).children().eq(1).text(),
                     filter_b: $(this).children().eq(3).children().eq(0).val(),
                     query: query_name,
-                    name: $(this).children().eq(4).children().eq(0).val(),
-                    title: $(this).children().eq(4).children().eq(0).val(),
-                    default: $(this).children().eq(3).children().eq(0).val()
+                    name: $(this).children().eq(4).text(),
+                    title: $(this).children().eq(4).text(),
+                    default: $(this).children().eq(3).text()
                 });
-            }
-        );
+                });
+         $("#selected-arguments-table2 tbody tr").each(
+            function(index, elem){
+                exposed_args['algorithm-arguments'].push({
+                    name: $(this).children().eq(0).text(),
+                    title: $(this).children().eq(1).text(),
+                    type: $(this).children().eq(2).text(),
+                    description: $(this).children().eq(3).text(),
+                });
+                });
+
         return exposed_args;
     }
 
@@ -62,6 +72,7 @@
 
     function update_service_arguments() {
         var exposed_args = gather_arguments();
+        // alert(JSON.stringify(exposed_args));
         $.ajax({
             "type": "POST",
             "url": "/service_builder/update_service_arguments/",

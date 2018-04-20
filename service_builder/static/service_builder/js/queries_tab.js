@@ -1,4 +1,5 @@
 $(document).ready(function(){
+    $("#query-select-container").hide();
     // How many queries are used from the service
     var number_of_queries = 0;
     $("#add_query_popbtn").popover({

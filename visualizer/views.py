@@ -677,7 +677,6 @@ def map_plotline(request):
     for name in names:
         raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
 
-
     cursor = connection.cursor()
     cursor.execute(raw_query)
     data = cursor.fetchall()
@@ -685,7 +684,7 @@ def map_plotline(request):
     result_headers = q.execute(only_headers=True)[0]['headers']
     lat_index = lon_index = -1
     order_var_index = -1
-    var_index=-1
+    var_index = -1
     for idx, c in enumerate(result_headers['columns']):
         if c['name'] == variable:
             var_index = idx
@@ -720,20 +719,19 @@ def map_plotline(request):
         title_cancel='Exit me',
         force_separate_button=True).add_to(m)
 
-
-    points=[]
+    points = []
     for d in data:
-        points.append([float(d[lat_index]),float(d[lon_index])])
+        points.append([float(d[lat_index]), float(d[lon_index])])
 
-    pol_group_layer=folium.map.FeatureGroup(name='Plotline: ' + str(variable), overlay=True, show=True, control=True).add_to(m)
+    pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(variable), overlay=True, show=True,
+                                              control=True).add_to(m)
     folium.PolyLine(points,
                     color='green',
                     weight=3,
                     opacity=0.9,
-    ).add_to(pol_group_layer)
+                    ).add_to(pol_group_layer)
 
     folium.LayerControl().add_to(m)
-
 
     m.save('templates/map.html')
     map_html = open('templates/map.html', 'r').read()
@@ -834,9 +832,9 @@ def map_viz_folium_contour(request):
         step = float(request.GET.get('step', 0.1))
         variable = str(request.GET.get('feat_1', ''))
         query = str(request.GET.get('query', ''))
-        agg_function= str(request.GET.get('agg_func','avg'))
+        agg_function = str(request.GET.get('agg_func', 'avg'))
 
-        q = AbstractQuery.objects.get(pk=int(query))
+        q = Query.objects.get(pk=int(query))
         q = Query(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
@@ -868,15 +866,14 @@ def map_viz_folium_contour(request):
         # print doc
         q.document = doc
         raw_query = q.raw_query
-        #select_clause = re.findall(r"SELECT.*?\nFROM", raw_query)[0]
-        #names = re.findall(r"round\((.*?)\)", select_clause)
+        # select_clause = re.findall(r"SELECT.*?\nFROM", raw_query)[0]
+        # names = re.findall(r"round\((.*?)\)", select_clause)
         names = re.findall(r"round\((.*?)\)", raw_query)
         for name in names:
             raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
 
-
         # Create a leaflet map using folium
-        m = create_folium_map(location=[0,0], zoom_start=3, max_zoom=10)
+        m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
 
         # try:
         #     connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='sssshmmy'")
@@ -899,14 +896,13 @@ def map_viz_folium_contour(request):
             elif str(c['name']).find('lon') >= 0:
                 lon_index = idx
 
-
         min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
         max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
         min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
         max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
         min_val = float(min(data, key=lambda x: x[var_index])[var_index])
         max_val = float(max(data, key=lambda x: x[var_index])[var_index])
-        print min_lat, max_lat, min_lon, max_lon, min_val, max_val
+        # print min_lat, max_lat, min_lon, max_lon, min_val, max_val
 
         lats_bins = np.arange(min_lat, max_lat + 0.00001, 0.1)
         # print lats_bins
@@ -917,7 +913,7 @@ def map_viz_folium_contour(request):
         # print Lons
 
         # Create grid data needed for the contour plot
-        #final_data = create_grid_data(lats_bins, lons_bins, data)
+        # final_data = create_grid_data(lats_bins, lons_bins, data)
 
         final_data = []
         it = iter(data)
@@ -944,7 +940,6 @@ def map_viz_folium_contour(request):
         levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
         print 'level ok'
 
-
         # Create contour image to lay over the map
         fig = Figure()
         ax = fig.add_subplot(111)
@@ -953,7 +948,7 @@ def map_viz_folium_contour(request):
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         plt.draw()
         ts = str(time.time()).replace(".", "")
-        mappath='visualizer/static/visualizer/img/temp/'+ts+'map.png'
+        mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
         plt.savefig(mappath, bbox_inches=extent, transparent=True, pad_inches=0)
         plt.clf()
         plt.close()
@@ -966,12 +961,12 @@ def map_viz_folium_contour(request):
         img = pl.imshow(a, cmap=plt.cm.coolwarm)
         pl.gca().set_visible(False)
         cax = pl.axes([0.1, 0.2, 0.8, 0.6])
-        cbar=pl.colorbar(orientation="horizontal", cax=cax)
+        cbar = pl.colorbar(orientation="horizontal", cax=cax)
         cbar.ax.tick_params(labelsize=11, colors="#ffffff")
         ts = str(time.time()).replace(".", "")
         legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
-        pl.savefig(legpath, transparent=True, bbox_inches = 'tight')
-        legpath = legpath.split("static/",1)[1]
+        pl.savefig(legpath, transparent=True, bbox_inches='tight')
+        legpath = legpath.split("static/", 1)[1]
         pl.clf()
         pl.close()
 
@@ -980,23 +975,21 @@ def map_viz_folium_contour(request):
         data = trim(data_img)
         data_img.close()
 
-
         # Overlay the image
-        contour_layer = folium.raster_layers.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True, bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
+        contour_layer = folium.raster_layers.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
+                                                          bounds=[[lats_bins.min(), lons_bins.min()],
+                                                                  [lats_bins.max(), lons_bins.max()]])
         contour_layer.layer_name = 'Contour'
         m.add_child(contour_layer)
 
-
         # Overlay an extra coastline field (to be removed
         folium.GeoJson(open('ne_50m_land.geojson').read(),
-                       style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3})\
-            .add_to(m)\
-            .layer_name='Coastline'
-
+                       style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
+            .add_to(m) \
+            .layer_name = 'Coastline'
 
         # Add layer contorl
         folium.LayerControl().add_to(m)
-
 
         # Parse the HTML to pass to template through the render
         m.save('templates/map.html')
@@ -1015,12 +1008,15 @@ def map_viz_folium_contour(request):
         os.remove('templates/map.html')
 
         # Create data grid for javascript pop-up
-        data_grid=[]
+        data_grid = []
         for nlist in final_data:
-            nlist=map(str,nlist)
+            nlist = map(str, nlist)
             data_grid.append(nlist)
 
-        return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all,'step': step, 'data_grid': data_grid, 'min_lat': min_lat, 'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon, 'agg_function': agg_function, 'legend_id': legpath})
+        return render(request, 'visualizer/map_viz_folium.html',
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step, 'data_grid': data_grid,
+                       'min_lat': min_lat, 'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon,
+                       'agg_function': agg_function, 'legend_id': legpath})
     except HttpResponseNotFound:
         return HttpResponseNotFound
     except Exception:
@@ -1361,12 +1357,10 @@ def get_column_chart_am(request):
     print doc
     print raw_query
 
-
     cursor = connection.cursor()
     cursor.execute(raw_query)
     result_data = cursor.fetchall()
     result_headers = query.execute(only_headers=True)[0]['headers']
-
 
     x_var_index = 0
     y_var_index = []
@@ -1391,26 +1385,22 @@ def get_column_chart_am(request):
         json_data.append(dict)
     print (json_data)
 
-
     if 'time' in x_var:
         isDate = 'true'
     else:
         isDate = 'false'
-    return render(request, 'visualizer/column_chart_am.html', {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
-
+    return render(request, 'visualizer/column_chart_am.html',
+                  {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
 
 
 def get_line_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
-
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    query = Query(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     y_var_list = y_var.split(",")
     agg_function = str(request.GET.get('agg_func', 'avg'))
-
 
     doc = query.document
     for f in doc['from']:
@@ -1429,9 +1419,9 @@ def get_line_chart_am(request):
     print doc
     print raw_query
 
-    #result = query.execute()
-    #result_data = result['results']
-    #result_headers = result['headers']
+    # result = query.execute()
+    # result_data = result['results']
+    # result_headers = result['headers']
 
 
     cursor = connection.cursor()
@@ -1444,28 +1434,25 @@ def get_line_chart_am(request):
     y_var_indlist = []
     for idx, c in enumerate(result_headers['columns']):
         if c['name'] in y_var_list:
-            y_var_index.insert(len(y_var_index),idx)
-            y_var_indlist.insert(len(y_var_indlist),c['name'])
+            y_var_index.insert(len(y_var_index), idx)
+            y_var_indlist.insert(len(y_var_indlist), c['name'])
         elif c['name'] == x_var:
             x_var_index = idx
 
     json_data = []
     for d in result_data:
-        count=0
+        count = 0
         dict = {}
         for y_index in y_var_index:
             newvar = str(y_var_indlist[count]).encode('ascii')
-            dict.update({newvar : str(d[y_index]).encode('ascii')})
-            count=count+1
+            dict.update({newvar: str(d[y_index]).encode('ascii')})
+            count = count + 1
 
-        dict.update({x_var : str(d[x_var_index])})
+        dict.update({x_var: str(d[x_var_index])})
         json_data.append(dict)
     print (json_data)
 
-
-
-
-    #notebook_id = create_zep_note(name='bdo_test')
+    # notebook_id = create_zep_note(name='bdo_test')
     # query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
     # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
     # # sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
@@ -1477,16 +1464,16 @@ def get_line_chart_am(request):
     # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
     # # json_data = '{ "data":' + json_data + '}'
 
-    #session_id = create_livy_session(kind='pyspark')
-    #query_statement_id = create_livy_query_statement(session_id=session_id, raw_query=raw_query)
-    #json_data = create_livy_toJSON_paragraph(session_id=session_id)['text/plain']
-    #print json_data
+    # session_id = create_livy_session(kind='pyspark')
+    # query_statement_id = create_livy_query_statement(session_id=session_id, raw_query=raw_query)
+    # json_data = create_livy_toJSON_paragraph(session_id=session_id)['text/plain']
+    # print json_data
 
-    #json_data = json_data.replace("u'{", "{")
-    #json_data = json_data.replace("}'", "}")
-    #json_data = json_data.replace("+03:00", "")
+    # json_data = json_data.replace("u'{", "{")
+    # json_data = json_data.replace("}'", "}")
+    # json_data = json_data.replace("+03:00", "")
     #
-    #print str(json_data)
+    # print str(json_data)
     # print json.loads(str(json_data))
     #
 
@@ -1497,7 +1484,8 @@ def get_line_chart_am(request):
     else:
         isDate = 'false'
 
-    return render(request, 'visualizer/line_chart_am.html', {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
+    return render(request, 'visualizer/line_chart_am.html',
+                  {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
 
 
 def get_pie_chart_am(request):
@@ -1706,7 +1694,6 @@ def get_histogram_2d_am(request):
     y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '3')))
 
-
     # agg_function = str(request.GET.get('agg_func', 'avg'))
 
     doc = query.document
@@ -1723,7 +1710,7 @@ def get_histogram_2d_am(request):
                 s['exclude'] = True
     print doc
     doc['limit'] = 100000
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'},{'name':y_var,'type': 'ASC'}]
+    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
     query.document = doc
     raw_query = query.raw_query
     print doc
@@ -1733,7 +1720,6 @@ def get_histogram_2d_am(request):
     cursor.execute(raw_query)
     result_data = cursor.fetchall()
     result_headers = query.execute(only_headers=True)[0]['headers']
-
 
     x_var_index = -1
     y_var_index = -1
@@ -1773,21 +1759,20 @@ def get_histogram_2d_am(request):
             break
         bin_y_cont.append(temp)
 
-
     # Find Frequency of each combination of bins
-    x_col=[]
-    y_col=[]
+    x_col = []
+    y_col = []
     for d in result_data:
         x_col.append(float(d[x_var_index]))
         y_col.append(float(d[y_var_index]))
-    data_count=len(result_data)
-    freq,npbinx,npbiny=np.histogram2d(x_col, y_col, bins=bins)
-    freq=[[round((s/data_count),5) for s in xs] for xs in freq]
+    data_count = len(result_data)
+    freq, npbinx, npbiny = np.histogram2d(x_col, y_col, bins=bins)
+    freq = [[round((s / data_count), 5) for s in xs] for xs in freq]
     print freq
 
     # Create Color Levels
     cmap = plt.cm.coolwarm
-    colormap=[]
+    colormap = []
     levels_list = np.linspace(start=0, stop=1, num=bins)
     for el in levels_list:
         colormap.append(float(el))
@@ -1802,7 +1787,7 @@ def get_histogram_2d_am(request):
         if (max(rt) > max_lev):
             max_lev = max(rt)
 
-    value_lev=np.linspace(start=min_lev, stop=max_lev, num=bins+1)
+    value_lev = np.linspace(start=min_lev, stop=max_lev, num=bins + 1)
     value_lev_cont = []
     iter3 = iter(value_lev)
     iter3.next()
@@ -1821,27 +1806,31 @@ def get_histogram_2d_am(request):
     count = 0
     for count in range(0, len(freq[0])):
         dict = {}
-        col_var_name=("x").encode('ascii')
-        row_var_name=("y").encode('ascii')
-        row_var_value=str(1).encode('ascii')
-        col_var_value =str(count+1).encode('ascii')
+        col_var_name = ("x").encode('ascii')
+        row_var_name = ("y").encode('ascii')
+        row_var_value = str(1).encode('ascii')
+        col_var_value = str(count + 1).encode('ascii')
         dict.update({col_var_name: col_var_value})
         dict.update({row_var_name: row_var_value})
-        col_count=1
+        col_count = 1
         for row in freq:
-            value_var_name = ("value"+str(col_count)).encode('ascii')
-            dict.update({value_var_name: str(row[count]*100)})
+            value_var_name = ("value" + str(col_count)).encode('ascii')
+            dict.update({value_var_name: str(row[count] * 100)})
             color_var_name = ("color" + str(col_count)).encode('ascii')
-            dict.update({color_var_name: str(convert_to_hex(cmap(color_choice(row[count],colormap,value_lev_cont)))).replace('0x','#').encode('ascii')})
+            dict.update({color_var_name: str(
+                convert_to_hex(cmap(color_choice(row[count], colormap, value_lev_cont)))).replace('0x', '#').encode(
+                'ascii')})
             val_row_cat_name = ("row_cat" + str(col_count)).encode('ascii')
-            dict.update({val_row_cat_name: str(str(x_var)+": "+str(bin_x_contr[count])+"</br>"+str(y_var)+": "+str(bin_y_contr[col_count-1]))})
-            col_count=col_count+1
+            dict.update({val_row_cat_name: str(
+                str(x_var) + ": " + str(bin_x_contr[count]) + "</br>" + str(y_var) + ": " + str(
+                    bin_y_contr[col_count - 1]))})
+            col_count = col_count + 1
         json_data.append(dict)
         count = count + 1
     # print (json_data)
 
     # Create legend for the contour map
-    a = np.array([[min_lev*100, max_lev*100]])
+    a = np.array([[min_lev * 100, max_lev * 100]])
     pl.figure(figsize=(4, 0.5))
     img = pl.imshow(a, cmap=plt.cm.coolwarm)
     pl.gca().set_visible(False)
@@ -1849,7 +1838,7 @@ def get_histogram_2d_am(request):
     cbar = pl.colorbar(orientation="horizontal", cax=cax)
 
     cbar.ax.tick_params(labelsize=10, colors="#000000")
-    pl.xlabel("'Percentage %'",labelpad=10)
+    pl.xlabel("'Percentage %'", labelpad=10)
     ts = str(time.time()).replace(".", "")
     legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png'
     pl.savefig(legpath, transparent=True, bbox_inches='tight')
@@ -1857,11 +1846,9 @@ def get_histogram_2d_am(request):
     pl.clf()
     pl.close()
 
-
-
     return render(request, 'visualizer/histogram_2d_am.html',
-                  {'data': json_data, 'value_col': y_var, 'category_col': x_var, 'bin_count': bins, 'bin_x': bin_x_contr, 'bin_y': bin_y_contr, 'legend_id': legpath})
-
+                  {'data': json_data, 'value_col': y_var, 'category_col': x_var, 'bin_count': bins,
+                   'bin_x': bin_x_contr, 'bin_y': bin_y_contr, 'legend_id': legpath})
 
 
 def get_data_table(request):
