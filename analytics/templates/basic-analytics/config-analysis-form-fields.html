@@ -22,23 +22,23 @@
                             </select>
                         </div>
                         <div class="col-sm-12">
-                            <span class="col-sm-3" style="padding: 10px 0px;">Latitude from </span>
+                            <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Latitude, from: </span>
                             <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
-                                <input type="text" id="min_lat" class="form-control" style="width:100%">
+                                <input step="0.001" type="number" id="min_lat" class="form-control" style="width:100%">
                             </div>
-                            <span class="col-sm-1" style="padding: 10px 0px;">To </span>
+                            <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
                             <div class="form-group col-sm-3" style=";margin: 1px 1px;">
-                                <input type="text" id="max_lat" class="form-control" style="width:100%">
+                                <input step="0.001" type="number" id="max_lat" class="form-control" style="width:100%">
                             </div>
                         </div>
                         <div class="col-sm-12">
-                            <span class="col-sm-3" style="padding: 10px 0px;">Latitude from </span>
+                            <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Longitude, from: </span>
                             <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
-                                <input type="text" id="min_lon" class="form-control" style="width:100%">
+                                <input step="0.001" type="number" id="min_lon" class="form-control" style="width:100%">
                             </div>
-                            <span class="col-sm-1" style="padding: 10px 0px;">To </span>
+                            <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
                             <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
-                                <input type="text" id="max_lon" class="form-control" style="width:100%">
+                                <input step="0.001" type="number" id="max_lon" class="form-control" style="width:100%">
                             </div>
                         </div>
 
@@ -99,10 +99,10 @@
         //Add area_select value to the hidden inputs.Use the inputs later onSubmit.
         areaSelect.on("change", function() {
             var bounds = this.getBounds();
-            $("#min_lat").val(bounds.getSouthWest().lat);
-            $("#max_lat").val(bounds.getNorthEast().lat);
-            $("#min_lon").val(bounds.getSouthWest().lng);
-            $("#max_lon").val(bounds.getNorthEast().lng);
+            $("#min_lat").val(Math.round(bounds.getSouthWest().lat * 1000) / 1000);
+            $("#max_lat").val(Math.round(bounds.getNorthEast().lat * 1000) / 1000);
+            $("#min_lon").val(Math.round(bounds.getSouthWest().lng * 1000) / 1000);
+            $("#max_lon").val(Math.round(bounds.getNorthEast().lng * 1000) / 1000);
         });
 
         /*          Set Up Default Selection of Map         */
@@ -115,6 +115,7 @@
             }
             else {
                 map.setView([selections[i][0]+(selections[i][2]-selections[i][0])/2,selections[i][1]+(selections[i][3]-selections[i][1])/2],3);
+                map.fitBounds([[selections[i][0],selections[i][1]],[selections[i][2],selections[i][3]]]);
                 areaSelect.setDimensions({width: area_size[i][1], height: area_size[i][0]});
             }
         });
