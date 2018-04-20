@@ -172,7 +172,9 @@ $(document).ready(function() {
         bounds = [-90,-180,90,180];
 
         $('#startdatepicker input').val('');
-        $('#enddatepicker input').val('')
+        $('#enddatepicker input').val('');
+        startdate = null;
+        enddate =null;
     }
 
     reset_map_selection();
