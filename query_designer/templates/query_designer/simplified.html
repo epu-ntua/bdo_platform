@@ -60,12 +60,13 @@
         <div class="pull-right" id="limit_container">
             {% trans 'Limit results' %}:
             <select  style="border: 2px solid grey; border-radius: 1em;" id="limit" name="limit">
-                <option value="none">-- None --</option>
-                <option value="100" selected>100</option>
+                <option value="none" selected>- None -</option>
+                <option value="100">100</option>
                 <option value="500">500</option>
                 <option value="1000">1000</option>
             </select>
         </div>
+        <input type="number" class="hidden" id="offset_input" value="0" />
     </div>
 
     <div class="row" id="chart-container" >
@@ -104,7 +105,7 @@
                     <div class="col-md-9">
                         <div class="chart-top-menu">
                             <ul id="chart-content-tabs" class="nav nav-pills" data-tabs="tabs">
-                                <li class="active"><a href="#datatable" data-toggle="tab">{% trans 'Data' %}</a></li>
+                                <li class="active"><a href="#dataDiv" data-toggle="tab">{% trans 'Data' %}</a></li>
                                 <li><a href="#chart" data-toggle="tab">{% trans 'Chart' %}</a></li>
                             </ul>
                         </div>
@@ -116,13 +117,19 @@
                                     {% include "query_designer/utils/chart_editor.html" %}
                                 </div>
                             </div>
-                            <div class="tab-pane" id="datatable" style="position: relative;">
-                                <div class="no-data-message">{% trans 'No data available' %}</div>
-                                <div class="outputLoadImg" style="display: none"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div>
-                                <table id="graph-data-table" class="table">
-                                    <thead></thead>
-                                    <tbody></tbody>
-                                </table>
+                            <div class="tab-pane" id="dataDiv">
+                                <div id="datatable" style="position: relative;">
+                                    <div class="no-data-message">{% trans 'No data available' %}</div>
+                                    <div class="outputLoadImg" style="display: none"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div>
+                                    <table id="graph-data-table" class="table">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div id="paginationDiv" style="display: none;">
+                                    <button id="dataPrevBtn" class="btn btn-default btn-sm">Previous</button>
+                                    <button id="dataNextBtn" class="btn btn-default btn-sm">Next</button>
+                                </div>
                             </div>
                         </div>
                     </div>

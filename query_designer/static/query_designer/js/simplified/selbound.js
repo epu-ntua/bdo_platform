@@ -44,8 +44,8 @@ $(document).ready(function() {
     $('#bounds').addClass('after-data-selection');
     /*          Set Up Maps for Modal and Preview       */
     /*          Set Up Time Pickers For Start/End Date  */
-    var startpick = $('#startdatepicker').datetimepicker({autoclose: true});
-    var endpick = $('#enddatepicker').datetimepicker({autoclose: true});
+    var startpick = $('#startdatepicker').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
+    var endpick = $('#enddatepicker').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
 
     startpick.on('changeDate', function(e){
         var minDate = new Date(e.date.valueOf());
@@ -77,8 +77,12 @@ $(document).ready(function() {
         else{
            areaSelect.setBounds([[selections[i][0],selections[i][1]],[selections[i][2],selections[i][3]]]);
             mapprev.fitBounds([[selections[i][0],selections[i][1]],[selections[i][2],selections[i][3]]]);
-            $('#mapbounds').html("SouthWest {Lat:" + selections[i][0] + ", Lng:" + selections[i][1] + "}</br>NorthEast {Lat:" + selections[i][2] + ", Lng:" + selections[i][3] + "}");
+            // $('#mapbounds').html("SouthWest {Lat:" + selections[i][0] + ", Lng:" + selections[i][1] + "}</br>NorthEast {Lat:" + selections[i][2] + ", Lng:" + selections[i][3] + "}");
             bounds = [selections[i][0],selections[i][1],selections[i][2],selections[i][3]];
+            $('#lat_min').val(bounds[0]);
+            $('#lat_max').val(bounds[2]);
+            $('#lon_min').val(bounds[1]);
+            $('#lon_max').val(bounds[3]);
         }
     });
     /*          Set Up Default Selection of Map         */
@@ -103,11 +107,21 @@ $(document).ready(function() {
             var nelon = Math.round(area_bounds.getNorthEast().lng * 1000) / 1000;
             mapprev.fitBounds([[swlat,swlon],[nelat,nelon]]);
            $('#mapchoices').val('-1').prop('selected', false);
-           $('#mapbounds').html("SouthWest {Lat:" + swlat + ", Lng:" + swlon + "} </br>NorthEast {Lat:" + nelat + ", Lng:" + nelon + "}");
+           // $('#mapbounds').html("SouthWest {Lat:" + swlat + ", Lng:" + swlon + "} </br>NorthEast {Lat:" + nelat + ", Lng:" + nelon + "}");
            bounds = [swlat,swlon,nelat,nelon];
+           $('#lat_min').val(bounds[0]);
+           $('#lat_max').val(bounds[2]);
+           $('#lon_min').val(bounds[1]);
+           $('#lon_max').val(bounds[3]);
            set_bounds_filters()
         });
     });
+
+
+    $('#lat_min, #lat_max, #lon_min, #lon_max').change(function () {
+        bounds = [parseFloat($('#lat_min').val()),parseFloat($('#lon_min').val()),parseFloat($('#lat_max').val()),parseFloat($('#lon_max').val())];
+    });
+
     /*          Modal Open Button For Area Selection    */
 
     $('#project').on('click', function(){
@@ -151,7 +165,16 @@ $(document).ready(function() {
         // mapprev.setView([0, 0], 1);
         $('#mapbounds').html("");
         $('#mapchoices').val('-1').prop('selected', false);
+        $('#lat_min').val('');
+        $('#lat_max').val('');
+        $('#lon_min').val('');
+        $('#lon_max').val('');
         bounds = [-90,-180,90,180];
+
+        $('#startdatepicker input').val('');
+        $('#enddatepicker input').val('');
+        startdate = null;
+        enddate =null;
     }
 
     reset_map_selection();
