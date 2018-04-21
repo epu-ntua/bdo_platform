@@ -247,7 +247,7 @@ $(function () {
             }
 
             $btnContainer.append('<div class="btn btn-sm btn-primary pull-right fetch-graph-data hidden"><i class="fa fa-line-chart"></i> Draw</div>');
-            $btnContainer.append('<div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;"><i class="fa fa-play-circle"></i> Run Query</div>');
+            $btnContainer.append('<div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;"><i class="fa fa-play-circle"></i> Run</div>');
             $controlList.append($btnContainer);
 
 
