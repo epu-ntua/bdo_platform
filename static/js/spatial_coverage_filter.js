@@ -154,18 +154,20 @@ $( "#newmap" ).closest('.modal').on('shown.bs.modal', function (e) {
     load_map();
 });
 $( "#newmap" ).closest('.popover').on('shown.bs.popover', function (e) {
-    map_init();
+    load_map();
 });
 $( "#newmap" ).closest('.collapse').on('shown.bs.collapse', function (e) {
-    map_init();
+    load_map();
 });
 
+
 $( "#newmap" ).ready(function (e) {
-    var inModal = this.closest('.modal').length === 0;
-    var inPopover = this.closest('.popover').length === 0;
-    var inCollapse = this.closest('.collapse').length === 0;
-    if (inModal || inPopover || inCollapse){
-        map_init();
+    var notInModal = $(this).closest('.modal').length === 0;
+    var notInPopover = $(this).closest('.popover').length === 0;
+    var notInCollapse = $(this).closest('.collapse').length === 0;
+    // var containerHidden = $(this).closest('.in').length === 0;
+    if (notInModal && notInPopover && notInCollapse){
+        load_map();
     }
 });
 

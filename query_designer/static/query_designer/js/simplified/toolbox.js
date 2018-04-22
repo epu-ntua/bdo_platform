@@ -386,24 +386,12 @@ $(function () {
 
             // gather individual filters
             var filters = this.getFilterArray();
-            var latitude_dim_id = $('#selected_dimensions option[data-type="latitude"]').val();
-            var longitude_dim_id = $('#selected_dimensions option[data-type="longitude"]').val();
-            if (bounds[0] !== -90) filters.push({a: latitude_dim_id, op: 'gte', b: bounds[0].toString()});
-            if (bounds[2] !== 90) filters.push({a: latitude_dim_id, op: 'lte', b: bounds[2].toString()});
-            if (bounds[1] !== -180) filters.push({a: longitude_dim_id, op: 'gte', b: bounds[1].toString()});
-            if (bounds[3] !== 180) filters.push({a: longitude_dim_id, op: 'lte', b: bounds[3].toString()});
-
-
-            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
-            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
-            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
-            console.log(filters);
 
             var filterTree = {};
 
-            if (filters.length === 0) {
-                return filterTree;
-            }
+            // if (filters.length === 0) {
+            //     return filterTree;
+            // }
 
             // find pattern
             // assume ALL_AND
@@ -433,6 +421,32 @@ $(function () {
                     };
                 }
             });
+
+            var latitude_dim_id = $('#selected_dimensions option[data-type="latitude"]').val();
+            var longitude_dim_id = $('#selected_dimensions option[data-type="longitude"]').val();
+            if ((bounds[0] !== -90) || (bounds[2] !== 90) || (bounds[1] !== -180) || (bounds[3] !== 180)){
+                // filters.push({a: '<'+latitude_dim_id+','+longitude_dim_id+'>', op: 'inside_rect', b: '<<'+bounds[0].toString()+','+bounds[1].toString()+'>,<'+bounds[2].toString()+','+bounds[3].toString()+'>>'});
+                var newFilter = {
+                    a: '<'+latitude_dim_id+','+longitude_dim_id+'>',
+                    op: 'inside_rect',
+                    b: '<<'+bounds[0].toString()+','+bounds[1].toString()+'>,<'+bounds[2].toString()+','+bounds[3].toString()+'>>'
+                };
+                if (Object.keys(filterTree).length === 0){
+                    filterTree = newFilter;
+                }
+                else{
+                    filterTree = {
+                        a: newFilter,
+                        op: 'AND',
+                        b: JSON.parse(JSON.stringify(filterTree))
+                    };
+                }
+            }
+
+            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
+            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
+            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
+            console.log(filters);
 
             return filterTree;
         },
