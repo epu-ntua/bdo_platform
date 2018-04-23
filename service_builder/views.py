@@ -114,6 +114,13 @@ def publish_new_service(request):
 
         service.notebook_id = ''
         service.queries = selected_queries
+
+        for arg in arguments['filter-arguments']:
+            if arg['type'] == "SPATIAL_COV":
+                arg['default_lat_min'] = arg['default'].split('<<')[1].split(',')[0]
+                arg['default_lon_min'] = arg['default'].split('<<')[1].split(',')[1].split('>')[0]
+                arg['default_lat_max'] = arg['default'].split('>,<')[1].split(',')[0]
+                arg['default_lon_max'] = arg['default'].split('>,<')[1].split(',')[1].split('>')[0]
         service.arguments = arguments
 
         service.output_html = output_html
@@ -189,6 +196,12 @@ def update_service_arguments(request):
     service_id = int(request.POST.get('service_id', '0'))
     service = Service.objects.get(pk=int(service_id))
     arguments = convert_unicode_json(json.loads(str(request.POST.get('exposed_args'))))
+    for arg in arguments['filter-arguments']:
+        if arg['type'] == "SPATIAL_COV":
+            arg['default_lat_min'] = arg['default'].split('<<')[1].split(',')[0]
+            arg['default_lon_min'] = arg['default'].split('<<')[1].split(',')[1].split('>')[0]
+            arg['default_lat_max'] = arg['default'].split('>,<')[1].split(',')[0]
+            arg['default_lon_max'] = arg['default'].split('>,<')[1].split(',')[1].split('>')[0]
     service.arguments = arguments
     service.save()
     result = {}

@@ -85,8 +85,11 @@ $(document).ready(function(){
 
         $('.popover-content #add_new_argument_btn').click(function (e) {
             if(selected) {
-                var new_arg_tr_string = "<tr > <td>" + new_arg_query_id + "</td> <td>" + new_arg_query_display_name + "</td> <td> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td><input value='" + new_arg_b + "'/></td> <td><input value=''/></td> <td><textarea rows='3' cols='50'/></td> </tr>";
+                var new_arg_tr_string = "<tr > <td>" + new_arg_query_id + "</td> <td>" + new_arg_query_display_name + "</td> <td> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td><input value=''/></td><td><input value='" + new_arg_b + "'/></td> <td><input value=''/></td> <td><textarea rows='3' cols='50'/></td> </tr>";
                 $('#selected-arguments-table tbody').append(new_arg_tr_string);
+                $('#selected-arguments-table input').change(function () {
+                    update_service_arguments();
+                });
 
                 // Update service arguments on backend
                 update_service_arguments();
@@ -95,6 +98,8 @@ $(document).ready(function(){
             $('#add_argument_popbtn').popover("hide");
         })
     });
+
+
 
 });
 

@@ -32,11 +32,12 @@
                 exposed_args['filter-arguments'].push({
                     filter_a: $(this).children().eq(2).children().eq(0).text(),
                     filter_op: $(this).children().eq(2).children().eq(1).text(),
-                    filter_b: $(this).children().eq(3).children().eq(0).val(),
+                    filter_b: $(this).children().eq(4).children().eq(0).val(),
                     query: query_name,
-                    name: $(this).children().eq(4).children().eq(0).val(),
-                    title: $(this).children().eq(4).children().eq(0).val(),
-                    default: $(this).children().eq(3).children().eq(0).val()
+                    type: $(this).children().eq(3).children().eq(0).val(),
+                    name: $(this).children().eq(5).children().eq(0).val(),
+                    title: $(this).children().eq(5).children().eq(0).val(),
+                    default: $(this).children().eq(4).children().eq(0).val()
                 });
             }
         );

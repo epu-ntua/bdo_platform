@@ -1,4 +1,4 @@
-var selections = [[54, 9, 66, 32], [34, 129, 52, 142], [12, 34, 29, 42], [35, 0, 41, 30]];              // configure some predifined places here
+var selections = [[53.436, 10.898, 66.443, 30.234], [34, 129, 52, 142], [12, 34, 29, 42], [35, 0, 41, 30]];              // configure some predifined places here
 var area_size=[[150,110],[150,100],[150,90],[150,250]];      //[height,width]
 var map;
 var areaSelect;
@@ -10,6 +10,13 @@ var mode = 'pointSelect';
 //     var marker = new L.marker(e.latlng).addTo(map);
 // });
 
+function setAreaSelect(min_lat, min_lon, max_lat, max_lon, areaSelectWidth, areaSelectHeight) {
+    areaSelect._width = areaSelectWidth;
+    areaSelect._height = areaSelectHeight;
+    map.fitBounds([[min_lat, min_lon], [max_lat, max_lon]]);
+    areaSelect.setBounds([[min_lat, min_lon], [max_lat, max_lon]]);
+}
+
 function addAreaSelect() {
     if (mode ==='pointSelect') {
         mode = 'areaSelect';
@@ -17,6 +24,7 @@ function addAreaSelect() {
             width: 150,
             height: 100
         }).addTo(map);
+        setAreaSelect($("#min_lat").attr('data-default'), $("#min_lon").attr('data-default'), $("#max_lat").attr('data-default'), $("#max_lon").attr('data-default'), $("#areaSelectWidth").attr('data-default'), $("#areaSelectHeight").attr('data-default'));
         // var bounds = areaSelect.getBounds();
         // $("#min_lat").val(Math.round(bounds.getSouthWest().lat * 1000) / 1000);
         // $("#max_lat").val(Math.round(bounds.getNorthEast().lat * 1000) / 1000);
@@ -28,6 +36,8 @@ function addAreaSelect() {
             $("#max_lat").val(Math.round(bounds.getNorthEast().lat * 1000) / 1000);
             $("#min_lon").val(Math.round(bounds.getSouthWest().lng * 1000) / 1000);
             $("#max_lon").val(Math.round(bounds.getNorthEast().lng * 1000) / 1000);
+            $("#areaSelectWidth").val(areaSelect._width);
+            $("#areaSelectHeight").val(areaSelect._height);
         });
     }
 }
@@ -56,16 +66,17 @@ function load_map() {
             areaSelect.setDimensions({width: 200, height: 150});
         }
         else {
-            map.setView([selections[i][0]+(selections[i][2]-selections[i][0])/2,selections[i][1]+(selections[i][3]-selections[i][1])/2],3);
-            map.fitBounds([[selections[i][0],selections[i][1]],[selections[i][2],selections[i][3]]]);
-            areaSelect.setDimensions({width: area_size[i][1], height: area_size[i][0]});
+            setAreaSelect(selections[i][0], selections[i][1], selections[i][2], selections[i][3], area_size[i][1], area_size[i][0]);
+            // map.setView([selections[i][0]+(selections[i][2]-selections[i][0])/2,selections[i][1]+(selections[i][3]-selections[i][1])/2],3);
+            // map.fitBounds([[selections[i][0],selections[i][1]],[selections[i][2],selections[i][3]]]);
+            // areaSelect.setDimensions({width: area_size[i][1], height: area_size[i][0]});
         }
     });
 
-    $('#min_lat, #min_lon, #max_lat, #max_lon').on('change', function () {
+    // $('#min_lat, #min_lon, #max_lat, #max_lon').on('change', function () {
             // map.setView([selections[i][0]+(selections[i][2]-selections[i][0])/2,selections[i][1]+(selections[i][3]-selections[i][1])/2],3);
             // areaSelect.setDimensions({width: area_size[i][1], height: area_size[i][0]});
-    });
+    // });
 
 }
 
@@ -176,3 +187,7 @@ $('.row').ready( function () {
 });
 
 $( "#newmap" ).parent().find('label').css("line-height", "0");
+
+// $('#lat_min, #lat_max, #lon_min, #lon_max').change(function () {
+//     setAreaSelect($("#min_lat").val(), $("#min_lon").val(), $("#max_lat").val(), $("#max_lon").val(), $("#areaSelectWidth").val(), $("#areaSelectHeight").val());
+// });

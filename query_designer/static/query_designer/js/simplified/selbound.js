@@ -113,6 +113,9 @@ $(document).ready(function() {
            $('#lat_max').val(bounds[2]);
            $('#lon_min').val(bounds[1]);
            $('#lon_max').val(bounds[3]);
+           $('#areaSelectWidth').val(areaSelect._width);
+           $('#areaSelectHeight').val(areaSelect._height);
+
            set_bounds_filters()
         });
     });
