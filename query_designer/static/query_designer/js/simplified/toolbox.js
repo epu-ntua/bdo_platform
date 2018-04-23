@@ -165,7 +165,7 @@ $(function () {
                 var $option = $('<option />');
                 if(config.value === choice.value) { // john's addition to have only the selected variable as option
                     $option.attr('value', choice.value);
-                    $option.text(choice.title+ ' (' + config.unit + ')');
+                    $option.text(choice.title + ' (' + config.unit + ')');
                     if (typeof(choice.type) !== 'undefined') {
                         $option.data('type', choice.type);
                         $option.attr('data-type', choice.type);
@@ -176,21 +176,30 @@ $(function () {
                     }
 
                     $fieldSelect.append($option);
+
+                    // $fieldSelect.replaceWith($('<input class="form-control"  style="width: 100%; height: 100%;" value="'+$fieldSelect.val()+'"/>'));
+                    $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%;"/>')
+                    if (typeof(config.aggregate) !== 'undefined') {
+                        $fieldInputShown.attr('data-aggregate', config.aggregate);
+                        $fieldInputShown.data('aggregate', config.aggregate);
+                    }
+                    $fieldInputShown.attr('data-type', $option.attr('data-type'));
+                    $fieldInputShown.attr('data-forvariable', $option.attr('data-forvariable'));
+                    $fieldInputShown.val(choice.title + ' (' + config.unit + ')');
+
+                    var $fieldInput = $('<input class="hidden" style="width: 100%; height: 100%;"/>').attr('name', config.name);
+                    if (config.id) {
+                        $fieldInput.attr('id', config.id);
+                    }
+                    if (typeof(config.aggregate) !== 'undefined') {
+                        $fieldInput.attr('data-aggregate', config.aggregate);
+                        $fieldInput.data('aggregate', config.aggregate);
+                    }
+                    $fieldInput.attr('data-type', $option.attr('data-type'));
+                    $fieldInput.attr('data-forvariable', $option.attr('data-forvariable'));
+
+                    $fieldSelect = $fieldInput;
                 }
-                // $fieldSelect.replaceWith($('<input class="form-control"  style="width: 100%; height: 100%;" value="'+$fieldSelect.val()+'"/>'));
-                $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%;"/>')
-                if (typeof(config.aggregate) !== 'undefined') {$fieldInputShown.attr('data-aggregate', config.aggregate);$fieldInputShown.data('aggregate', config.aggregate);}
-                $fieldInputShown.attr('data-type', $option.attr('data-type'));
-                $fieldInputShown.attr('data-forvariable', $option.attr('data-forvariable'));
-                $fieldInputShown.val(choice.title+ ' (' + config.unit + ')');
-
-                var $fieldInput = $('<input class="hidden" style="width: 100%; height: 100%;"/>').attr('name', config.name);
-                if (config.id) {$fieldInput.attr('id', config.id);}
-                if (typeof(config.aggregate) !== 'undefined') {$fieldInput.attr('data-aggregate', config.aggregate);$fieldInput.data('aggregate', config.aggregate);}
-                $fieldInput.attr('data-type', $option.attr('data-type'));
-                $fieldInput.attr('data-forvariable', $option.attr('data-forvariable'));
-
-                $fieldSelect = $fieldInput;
             });
 
             var inlineLabel = '';
