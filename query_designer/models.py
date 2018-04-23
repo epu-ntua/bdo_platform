@@ -152,8 +152,17 @@ class AbstractQuery(Model):
             lon_col_id = int(filters['a'].split('<')[1].split(',')[1].split('>')[0])
             lat_col_name = Dimension.objects.get(pk=lat_col_id).data_column_name
             lon_col_name = Dimension.objects.get(pk=lon_col_id).data_column_name
-            lat = lat_col_name
-            lng = lon_col_name
+
+            table_name = Dimension.objects.get(pk=lat_col_id).variable.dataset.table_name
+
+            v_name = Dimension.objects.get(pk=lat_col_id).variable.name
+            for idx, _from in enumerate(self.document['from']):
+                print 'from name: ' + _from['name']
+                if _from['name'] == (v_name+'_'+str(idx)):
+                    table_name = _from['name']
+
+            lat = table_name + '.' + lat_col_name
+            lng = table_name+'.'+lon_col_name
 
             result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
             result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])

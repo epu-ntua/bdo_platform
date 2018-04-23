@@ -45,7 +45,7 @@ def load_query(request, pk):
 
 def simplified(request, pk=None):
     return render(request, 'query_designer/simplified.html', {
-        'datasets': Dataset.objects.filter(stored_at='LOCAL_POSTGRES').exclude(variables=None),
+        'datasets': Dataset.objects.filter(stored_at='UBITECH_POSTGRES').exclude(variables=None),
         'dimensions': Dimension.objects.all(),
         'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
         'AGGREGATES': AGGREGATES,

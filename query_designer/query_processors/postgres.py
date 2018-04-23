@@ -46,6 +46,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                 sql_type = 'double precision'
 
             selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
+            _from['name'] = v_obj.data_table_name
 
             # if 'joined' not in s:
             c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
@@ -75,8 +76,8 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
 
     # from
-    from_clause = 'FROM %s AS %s\n' % \
-                  (selects[selects.keys()[0]]['table'], self.document['from'][0]['name'])
+    from_clause = 'FROM %s \n' % \
+                  (selects[selects.keys()[0]]['table'])
 
     # join
     join_clause = ''
@@ -101,10 +102,11 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                                   self.document['from'][0]['name'],
                                   selects[j[1]]['column']))
 
-        join_clause += 'JOIN %s AS %s ON %s\n' % \
-                       (selects[_from['select'][0]['name']]['table'],
-                        _from['name'],
-                        ' AND '.join(joins))
+        if selects[_from['select'][0]['name']]['table'] != _from['name']:
+            join_clause += 'JOIN %s AS %s ON %s\n' % \
+                           (selects[_from['select'][0]['name']]['table'],
+                            _from['name'],
+                            ' AND '.join(joins))
 
     # where
     filters = self.document.get('filters', '')

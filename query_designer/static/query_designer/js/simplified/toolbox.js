@@ -467,7 +467,8 @@ $(function () {
 
             $.each(vfs, function (idx, vf) {
                 // create the field name (including the aggregate)
-                var aggregate = $(vf).data('aggregate');
+                // var aggregate = $(vf).data('aggregate');
+                var aggregate = $(vf).closest('.row').find('*[name="field_aggregate"]').val();
                 // if aggregate property was not found
                 if (typeof(aggregate) === "undefined") {
                     aggregate = 'AVG'
