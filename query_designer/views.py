@@ -176,7 +176,12 @@ def filter_info(request, filter_type, pk):
 
     dimension = Dimension.objects.get(pk=pk)
 
-    values = dimension.ranges
+    # values = dimension.ranges
+    # TODO: change this, get proper dimension ranges
+    values = {
+        'type': 'text'
+    }
+    return JsonResponse(values, encoder=DefaultEncoder)
 
     if type(values) == dict and 'min' in values:
         values.update({

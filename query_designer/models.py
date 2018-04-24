@@ -82,7 +82,11 @@ class AbstractQuery(Model):
                             if x['type'] != 'VALUE':
                                 col_name = Dimension.objects.get(pk=x['type']).data_column_name
                             else:
-                                col_name = 'value'
+                                v_obj = Variable.objects.get(pk=int(self.document['from'][from_order]['type']))
+                                if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                                    col_name = v_obj.name
+                                else:
+                                    col_name = 'value'
                     filters = table_name + '.' + col_name
             except:
                 return filters
@@ -102,7 +106,11 @@ class AbstractQuery(Model):
                                 if x['type'] != 'VALUE':
                                     col_name = Dimension.objects.get(pk=x['type']).data_column_name
                                 else:
-                                    col_name = 'value'
+                                    v_obj = Variable.objects.get(pk=int(self.document['from'][from_order]['type']))
+                                    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                                        col_name = v_obj.name
+                                    else:
+                                        col_name = 'value'
                         filters = table_name + '.' + col_name
                 except:
                     return filters
@@ -124,8 +132,13 @@ class AbstractQuery(Model):
                                        (_from['name'], Dimension.objects.get(pk=x['type'],
                                                                              variable_id=v).data_column_name)
                     else:
+                        v_obj = Variable.objects.get(pk=int(_from['type']))
+                        if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                            col_name = v_obj.name
+                        else:
+                            col_name = 'value'
                         filters['a'] = '%s.%s' % \
-                                       (_from['name'], 'value')
+                                       (_from['name'], col_name)
 
         if filters['op'] in ['inside_rect', 'outside_rect', ]:
             print 'inside_rect'
