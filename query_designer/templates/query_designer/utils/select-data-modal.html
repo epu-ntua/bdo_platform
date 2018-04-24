@@ -27,7 +27,7 @@
                             {% for variable in dataset.variables.all %}
                                 <tr class="variable-section">
                                     <td class="variable-name hidden">{{ variable.safe_name }}</td>
-                                    <td class="variable-title">{{ variable.title }} ({{ variable.unit }})</td>
+                                    <td> <span class="variable-title">{{ variable.title }}</span> (<span class="variable-unit">{{ variable.unit }}</span>)</td>
                                     <td>
                                     <div class="dimensions">
                                         {% for dimension in variable.dimensions.all %}

@@ -1,4 +1,4 @@
-
+{% load static %}
 <fieldset name="{{ order }}+++fieldset">
     <input id="{{ order }}+++anal_id" type="hidden" class="form-control full-width variable-select" name="anal_id"  value="{{ anal_id }}">
 
@@ -10,12 +10,39 @@
                         <label class="control-label">{{ argument.title }}</label>
                     {% endif %}
                     {% if argument.type == 'SPATIAL_COV' %}
-                         <div id="newmap">
-                            <input type="text" id="min_lat" style="display: none;">
-                            <input type="text" id="max_lat" style="display: none;">
-                            <input type="text" id="min_lon" style="display: none;">
-                            <input type="text" id="max_lon" style="display: none;">
+                         <div id="newmap" style="min-height: 200px; width: 100%; margin-top: 10px;">
                          </div>
+                        <div id="choices">
+                            <select style="width: 100%; border: 2px solid grey; border-radius: 1em;" id="mapchoices">
+                                <option value="-1">Choose Predefined</option>
+                                <option value="0">Baltic Sea</option>
+                                <option value="1">Sea Of Japan</option>
+                                <option value="2">Red Sea</option>
+                                <option value="3">Mediterranean</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-12">
+                            <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Latitude, from: </span>
+                            <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                <input step="0.001" type="number" id="min_lat" class="form-control" style="width:100%">
+                            </div>
+                            <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
+                            <div class="form-group col-sm-3" style=";margin: 1px 1px;">
+                                <input step="0.001" type="number" id="max_lat" class="form-control" style="width:100%">
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Longitude, from: </span>
+                            <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                <input step="0.001" type="number" id="min_lon" class="form-control" style="width:100%">
+                            </div>
+                            <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
+                            <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                <input step="0.001" type="number" id="max_lon" class="form-control" style="width:100%">
+                            </div>
+                        </div>
+
+
                     {% elif argument.type == 'QUERY' %}
                     {% elif argument.type == 'COLUMN' %}
                         <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}" >
@@ -54,3 +81,6 @@
         <p>This analysis requires no further parameters.</p>
     {% endfor %}
 </fieldset>
+
+<script src="{% static "js/leaflet-areaselect.js" %}"></script>
+<script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}"></script>

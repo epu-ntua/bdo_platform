@@ -84,6 +84,7 @@ $(function() {
         });
         return {
             value: $modal.find('.variable-section.selected').find('.variable-name').text(),
+            unit: $modal.find('.variable-section.selected').find('.variable-unit').text(),
             aggregate: $modal.find('#selection-aggregate').val(),
             groupBy: $modal.find('#group-by-select').val(),
             dimensions: dims

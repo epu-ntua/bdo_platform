@@ -3,43 +3,15 @@
 {% load static %}
 {% load leaflet_tags %}
 
+
 {% block css %}
     {% leaflet_css %}
     <link href="{% static 'css/vis-network.min.css' %}" rel="stylesheet" />
     <link href="{% static 'service_builder/css/basic.css' %}" rel="stylesheet" />
     <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
-
 {% endblock %}
 
 {% block content %}
-    <div id="hiddenelement">
-        <div id="mapframe">
-            <div class="coverage-map-filters" id = "hiddenmap">
-                <div style="text-align: left;"><h4 style="margin: 0;">Filter by spatial coverage</h4></div>
-                <div id="mapselection" class="selection" style="position:relative; ">
-                    <div class="" style="padding-left: 0; padding-right: 0;">
-                        <div id="mappreview" style="position:relative; z-index: 0;cursor: pointer; height: 150px; margin-top: 15px; margin-bottom: 10px; border: solid 2px grey; border-radius: 1em;">
-                        </div>
-                    </div>
-                    <div>
-                        <p id="mapbounds"></p>
-                    </div>
-                </div>
-            </div>
-            <div class="">
-                <div id="choices">
-                    <select style="border: 2px solid grey; border-radius: 1em;" id="mapchoices">
-                        <option value="-1">Choose Predefined</option>
-                        <option value="0">Baltic Sea</option>
-                        <option value="1">Sea Of Japan</option>
-                        <option value="2">Red Sea</option>
-                        <option value="3">Mediterranean</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="row">
         <div class="text-center">
             <h1 class="o-blue">Service Builder</h1>
@@ -60,6 +32,7 @@
             <div><a href="#" id="new_query_link"> + or create a new query </a></div>
             <input id="new_query_doc" type="hidden" value=""/>
         </div>
+
 
         <div id="components-container">
             <label for="components-list-group">Select the analytical components</label>
@@ -89,6 +62,7 @@
             {% csrf_token %}
             <input id="analysis_flow" value="{}" name="analysis_flow" type="hidden"/>
             <input id="query" value="" name="query" type="hidden"/>
+
             <input type="submit" class="btn btn-success" value="Run Service"/>
         </form>
     </div>
@@ -112,8 +86,6 @@
                     <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-args-btn">Submit</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-args-btn">Cancel</button>
                 </div>
-
-
             </div>
         </div>
     </div>
@@ -121,11 +93,205 @@
 
 {% block js %}
     {% leaflet_js %}
-    <script src="{% static "js/leaflet-areaselect.js" %}"></script>
-    <script src="{% static "js/map_functions.js" %}"></script>
     <!-- viz.js Network methods -->
 	<script src="{% static 'js/vis-network.min.js' %}"></script>
-{#    Document-Modal Interaction   #}
-    <script src="{% static "js/doc_modal_interaction.js" %}"></script>
+
+    <script type="text/javascript">
+      var numOfNodes;
+      var analysis_flow = {};
+      var newOutputColumns = [];
+
+      var x = 0;
+      var y = -200;
+
+      // create an array with nodes
+      var nodes = new vis.DataSet([]);
+      // create an array with edges
+      var edges = new vis.DataSet();
+
+      // create a network
+      var container = document.getElementById('dynamic_service');
+      var data = {
+        nodes: nodes,
+        edges: edges
+      };
+      var options = {
+          physics: {
+              enabled: false
+          }
+      };
+      $('document').ready(function(){
+        var network = new vis.Network(container, data, options);
+        numOfNodes = 0;
+        nodes.add({
+              id: 0,
+              label: "Start",
+              x: x,
+              y: y
+        })
+      });
+
+      $('.addNodeBtn').on('click', function() {
+          y += 70;
+          nodes.add({
+              id: numOfNodes+1,
+              label: this.getAttribute("data-component-title"),
+              shape: 'box',
+              widthConstraint: {
+                  minimum: 50
+              },
+              x: x,
+              y: y
+        });
+
+        edges.add({
+            id: numOfNodes+1,
+            from: numOfNodes,
+            to: numOfNodes+1,
+            arrows:'to'
+        });
+
+        numOfNodes++;
+        add_analysis_form_fields(this);
+{#        $('#myModal').modal('show');#}
+
+      });
+
+      function add_analysis_form_fields(element) {
+          var component_id = element.getAttribute('data-component-id');
+          $.ajax({
+                url: '/analytics/get-analysis-form-fields/',
+                data: {
+                    id: parseInt(component_id),
+                    order: numOfNodes
+                    },
+                type: 'GET',
+                success: function(form_fields){
+                    $('#myModal').find('.modal-body').html(form_fields);
+                    $('#myModal').find('h5').html(element.getAttribute('data-component-title'));
+                    updateVariables($('#query-select'));
+                    $( "#modalbtn" ).trigger( "click" );
+                }
+            });
+      }
+
+
+      function updateAnalysisFlow(component_id) {
+          analysis_flow[numOfNodes.toString()] = component_id;
+          $('#analysis_flow').val(JSON.stringify(analysis_flow));
+      }
+
+
+      $('#submit-args-btn').on('click', function() {
+          var submitted_args = $('#myModal').find('.modal-body').clone();
+          var selects = $('#myModal').find('.modal-body').find("select");
+          $(selects).each(function(i) {
+            var select = this;
+            $(submitted_args).find("select").eq(i).val($(select).val());
+          });
+
+          var newOutputCols = $(submitted_args).find("input[name*='outputCol']");
+          $(newOutputCols).each(function(i) {
+              newOutputColumns.push($(this).val()+' (derived)');
+              $(submitted_args).find("input[name*='outputCol']").eq(i).val($(this).val()+' (derived)');
+          });
+
+{#          $('#config-service-form').append('<fieldset id="fieldset'+numOfNodes+' name=fieldset'+numOfNodes+'">' + '</fieldset>');#}
+{#          var newFieldset = '#fieldset'+numOfNodes;#}
+          $('#config-service-form').append(submitted_args);
+
+          var component_id = $('#myModal').find('input[name="anal_id"]').val();
+          updateAnalysisFlow(component_id);
+
+      });
+
+      $('#dismiss-args-btn').on('click', function() {
+          edges.remove(numOfNodes);
+          nodes.remove(numOfNodes);
+          y -= 70;
+          numOfNodes--;
+      });
+
+      $('#removeLastBtn').on('click', function(){
+          if(numOfNodes>0) {
+{#              alert("remove last");#}
+              edges.remove(numOfNodes);
+              nodes.remove(numOfNodes);
+              y -= 70;
+              var findStr = numOfNodes + "+++fieldset";
+{#              alert(findStr);#}
+{#              $(findStr).empty();#}
+              var results = $('#config-service-form').find('fieldset');
+
+              $(results).each(function () {
+                  if (this.getAttribute("name") == findStr) {
+                      $(this).remove();
+                  }
+              });
+              delete analysis_flow[numOfNodes];
+              $('#analysis_flow').val(JSON.stringify(analysis_flow));
+
+              numOfNodes--;
+          }
+      })
+
+    </script>
+
+
+    <script type="text/javascript">
+        function updateVariables(element) {
+            $('#myModal .variable-select').find('option').remove().end();
+            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+            var new_query_id = $(element).children(":selected").attr("id");
+            var new_query_doc = $('#new_query_doc').val();
+            $.ajax({
+                url: '/queries/get_query_variables/',
+                data: {
+                    id: new_query_id,
+                    document: new_query_doc
+                    },
+                type: 'GET',
+                success: function(variables){
+                    $.each(variables['variables'], function(k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", v)
+                            .text(k));
+                    });
+                    $.each(newOutputColumns, function() {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", this)
+                            .text(this));
+                    });
+                }
+            });
+        }
+
+        function addQueryToForm(raw_query){
+            $('#config-service-form #query').val(raw_query);
+        }
+
+        $('#query-select').on('change', function() {
+            updateVariables(this);
+            addQueryToForm(this.options[this.selectedIndex].value.replace(/\n/g, " "));
+{#          TODO: JOHN, when the query is changed all the service must be reset!#}
+        });
+
+        function addNewQuery(title, raw_query, document) {
+            $("#query-select option[id='-1']").remove().end();
+            $('#query-select').append($("<option selected id='-1' value='"+raw_query+"'>"+title+"</option>"));
+            $('#new_query_doc').val(document);
+            updateVariables($('#query-select'));
+            addQueryToForm(raw_query)
+        }
+    </script>
+
+    <script type="text/javascript">
+        $('a#new_query_link').click(function(){
+            var left  = ($(window).width()/2)-(900/2);
+            var top   = ($(window).height()/2)-(600/2);
+            window.open('/queries/', 'window name', 'width=900, height=600, top='+top+', left='+left);
+            return false;
+        });
+    </script>
 
 {% endblock %}
