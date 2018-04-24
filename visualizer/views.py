@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageChops
 
 from query_designer.models import AbstractQuery
+from query_designer.models import TempQuery
 from utils import *
 from visualizer.models import Visualization
 import time
@@ -517,7 +518,8 @@ def map_course(request):
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
     q = Query.objects.get(pk=int(query))
-    q = Query(document=q.document)
+    # q = Query(document=q.document)
+    q = TempQuery(document=q.document)
     doc = q.document
 
     var_query_id = variable[:variable.find('_')]
@@ -547,21 +549,21 @@ def map_course(request):
                 s['exclude'] = True
 
     q.document = doc
-    raw_query = q.raw_query
+    # raw_query = q.raw_query
+    #
+    # names = re.findall(r"round\((.*?)\)", raw_query)
+    # for name in names:
+    #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
 
-    names = re.findall(r"round\((.*?)\)", raw_query)
-    for name in names:
-        raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
+
+    query_data = q.execute()
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
 
 
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    data = cursor.fetchall()
-
-    result_headers = q.execute(only_headers=True)[0]['headers']
     lat_index = lon_index = -1
     order_var_index = -1
-    var_index=-1
+    var_index = -1
     for idx, c in enumerate(result_headers['columns']):
         if c['name'] == variable:
             var_index = idx
@@ -641,7 +643,7 @@ def map_plotline(request):
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
     q = Query.objects.get(pk=int(query))
-    q = Query(document=q.document)
+    q = TempQuery(document=q.document)
     doc = q.document
 
     var_query_id = variable[:variable.find('_')]
@@ -671,17 +673,16 @@ def map_plotline(request):
                 s['exclude'] = True
 
     q.document = doc
-    raw_query = q.raw_query
+    # raw_query = q.raw_query
+    #
+    # names = re.findall(r"round\((.*?)\)", raw_query)
+    # for name in names:
+    #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
 
-    names = re.findall(r"round\((.*?)\)", raw_query)
-    for name in names:
-        raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
+    query_data = q.execute()
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
 
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    data = cursor.fetchall()
-
-    result_headers = q.execute(only_headers=True)[0]['headers']
     lat_index = lon_index = -1
     order_var_index = -1
     var_index = -1
@@ -835,7 +836,7 @@ def map_viz_folium_contour(request):
         agg_function = str(request.GET.get('agg_func', 'avg'))
 
         q = Query.objects.get(pk=int(query))
-        q = Query(document=q.document)
+        q = TempQuery(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
         #     doc['orderings'] = []
@@ -865,25 +866,21 @@ def map_viz_folium_contour(request):
 
         # print doc
         q.document = doc
-        raw_query = q.raw_query
+        # raw_query = q.raw_query
+
         # select_clause = re.findall(r"SELECT.*?\nFROM", raw_query)[0]
         # names = re.findall(r"round\((.*?)\)", select_clause)
-        names = re.findall(r"round\((.*?)\)", raw_query)
-        for name in names:
-            raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
+
+        # names = re.findall(r"round\((.*?)\)", raw_query)
+        # for name in names:
+        #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
 
         # Create a leaflet map using folium
         m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
 
-        # try:
-        #     connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='sssshmmy'")
-        # except:
-        #     print "I am unable to connect to the database"
-        cursor = connection.cursor()
-        cursor.execute(raw_query)
-        data = cursor.fetchall()
-        # print ("Data:")
-        # print data[:3]
+        query_data = q.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
 
         var_index = lat_index = lon_index = 0
         result_headers = q.execute(only_headers=True)[0]['headers']
@@ -1331,7 +1328,7 @@ def test_request_zep(request):
 def get_column_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
     query = Query.objects.get(pk=query_pk)
-    query = Query(document=query.document)
+    query = TempQuery(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     y_var_list = y_var.split(",")
@@ -1353,14 +1350,13 @@ def get_column_chart_am(request):
 
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
     query.document = doc
-    raw_query = query.raw_query
-    print doc
-    print raw_query
+    # raw_query = query.raw_query
+    # print doc
 
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)[0]['headers']
+
+    query_data = query.execute()
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
 
     x_var_index = 0
     y_var_index = []
@@ -1373,7 +1369,7 @@ def get_column_chart_am(request):
             x_var_index = idx
 
     json_data = []
-    for d in result_data:
+    for d in data:
         count = 0
         dict = {}
         for y_index in y_var_index:
@@ -1396,7 +1392,7 @@ def get_column_chart_am(request):
 def get_line_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
     query = Query.objects.get(pk=query_pk)
-    query = Query(document=query.document)
+    query = TempQuery(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     y_var_list = y_var.split(",")
@@ -1415,19 +1411,13 @@ def get_line_chart_am(request):
                 s['exclude'] = True
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
     query.document = doc
-    raw_query = query.raw_query
-    print doc
-    print raw_query
-
-    # result = query.execute()
-    # result_data = result['results']
-    # result_headers = result['headers']
+    # raw_query = query.raw_query
+    # print doc
 
 
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)[0]['headers']
+    query_data = query.execute()
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
 
     x_var_index = 0
     y_var_index = []
@@ -1440,7 +1430,7 @@ def get_line_chart_am(request):
             x_var_index = idx
 
     json_data = []
-    for d in result_data:
+    for d in data:
         count = 0
         dict = {}
         for y_index in y_var_index:
@@ -1491,16 +1481,17 @@ def get_line_chart_am(request):
 def get_pie_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
     query = AbstractQuery.objects.get(pk=query_pk)
-    query = Query(document=query.document)
+    query = TempQuery(document=query.document)
     key_var = str(request.GET.get('key_var', ''))
     value_var = str(request.GET.get('value_var', ''))
+    agg_func=str(request.GET.get('agg_func','avg'))
 
     doc = query.document
     print doc
     for f in doc['from']:
         for s in f['select']:
             if s['name'] == value_var:
-                s['aggregate'] = 'avg'
+                s['aggregate'] = agg_func
                 s['exclude'] = False
             elif s['name'] == key_var:
                 s['groupBy'] = True
@@ -1511,22 +1502,13 @@ def get_pie_chart_am(request):
 
     doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
     query.document = doc
-    raw_query = query.raw_query
-    print doc
-    print raw_query
+    # raw_query = query.raw_query
+    # print doc
 
-    #result_data = query.execute()['results']
-    #print result_data
 
-    """try:
-        connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
-    except:
-        print "I am unable to connect to the database"
-        """
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)[0]['headers']
+    query_data = query.execute()
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
 
     value_var_index = key_var_index = 0
     for idx, c in enumerate(result_headers['columns']):
@@ -1536,64 +1518,64 @@ def get_pie_chart_am(request):
             key_var_index = idx
 
     json_data = []
-    for d in result_data:
+    for d in data:
         json_data.append({value_var: d[0], key_var: str(d[1])})
 
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
 
 
 
-def get_pie_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = AbstractQuery.objects.get(pk=query_pk)
-    query = Query(document=query.document)
-    key_var = str(request.GET.get('key_var', ''))
-    value_var = str(request.GET.get('value_var', ''))
-
-    doc = query.document
-    print doc
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == value_var:
-                s['aggregate'] = 'avg'
-                s['exclude'] = False
-            elif s['name'] == key_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            else:
-                s['exclude'] = True
-    print doc
-
-    doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
-    query.document = doc
-    raw_query = query.raw_query
-    print doc
-    print raw_query
-
-    #result_data = query.execute()['results']
-    #print result_data
-
-    try:
-        connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
-    except:
-        print "I am unable to connect to the database"
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)[0]['headers']
-
-    value_var_index = key_var_index = 0
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == value_var:
-            value_var_index = idx
-        elif c['name'] == key_var:
-            key_var_index = idx
-
-    json_data = []
-    for d in result_data:
-        json_data.append({value_var: d[0], key_var: str(d[1])})
-
-    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
+# def get_pie_chart_am(request):
+#     query_pk = int(str(request.GET.get('query', '')))
+#     query = AbstractQuery.objects.get(pk=query_pk)
+#     query = Query(document=query.document)
+#     key_var = str(request.GET.get('key_var', ''))
+#     value_var = str(request.GET.get('value_var', ''))
+#
+#     doc = query.document
+#     print doc
+#     for f in doc['from']:
+#         for s in f['select']:
+#             if s['name'] == value_var:
+#                 s['aggregate'] = 'avg'
+#                 s['exclude'] = False
+#             elif s['name'] == key_var:
+#                 s['groupBy'] = True
+#                 s['exclude'] = False
+#             else:
+#                 s['exclude'] = True
+#     print doc
+#
+#     doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
+#     query.document = doc
+#     raw_query = query.raw_query
+#     print doc
+#     print raw_query
+#
+#     #result_data = query.execute()['results']
+#     #print result_data
+#
+#     try:
+#         connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
+#     except:
+#         print "I am unable to connect to the database"
+#     cursor = connection.cursor()
+#     cursor.execute(raw_query)
+#     result_data = cursor.fetchall()
+#     result_headers = query.execute(only_headers=True)[0]['headers']
+#
+#     value_var_index = key_var_index = 0
+#     for idx, c in enumerate(result_headers['columns']):
+#         if c['name'] == value_var:
+#             value_var_index = idx
+#         elif c['name'] == key_var:
+#             key_var_index = idx
+#
+#     json_data = []
+#     for d in result_data:
+#         json_data.append({value_var: d[0], key_var: str(d[1])})
+#
+#     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
 
 
 
@@ -1601,7 +1583,7 @@ def get_pie_chart_am(request):
 def get_histogram_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
     query = Query.objects.get(pk=query_pk)
-    query = Query(document=query.document)
+    query = TempQuery(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '2')))
@@ -1612,29 +1594,23 @@ def get_histogram_chart_am(request):
     for f in doc['from']:
         for s in f['select']:
             if s['name'] == y_var:
-                # s['aggregate'] = agg_function
                 s['exclude'] = False
             elif s['name'] == x_var:
-                # s['groupBy'] = True
                 s['exclude'] = False
             else:
                 s['exclude'] = True
     print doc
-    doc['limit'] = 100000
+    doc['limit'] = []
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
     query.document = doc
-    raw_query = query.raw_query
-    print doc
-    print raw_query
+    # raw_query = query.raw_query
+    # print doc
 
 
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)[0]['headers']
+    query_data = query.execute()
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
 
-    print result_data
-    # print len(result_data)
 
     x_var_index = -1
     y_var_index=-1
@@ -1644,8 +1620,8 @@ def get_histogram_chart_am(request):
         elif c['name'] == x_var:
             x_var_index = idx
 
-    min_x_var = float(min(result_data, key=lambda x: x[x_var_index])[x_var_index])
-    max_x_var= float(max(result_data, key=lambda x: x[x_var_index])[x_var_index])
+    min_x_var = float(min(data, key=lambda x: x[x_var_index])[x_var_index])
+    max_x_var= float(max(data, key=lambda x: x[x_var_index])[x_var_index])
 
     # min_y_var = float(min(result_data, key=lambda x: x[y_var_index])[y_var_index])
     # max_y_var = float(max(result_data, key=lambda x: x[y_var_index])[y_var_index])
@@ -1653,24 +1629,24 @@ def get_histogram_chart_am(request):
     # print max_y_var
     # print max_x_var
 
-    mybin=np.linspace(start=min_x_var, stop=max_x_var, num=bins+1)
+    mybin = np.linspace(start=min_x_var, stop=max_x_var, num=bins+1)
     mybin[len(mybin)-1]=mybin[len(mybin)-1]+0.0001
     # print mybin
 
-    bin_container=[]
+    bin_container = []
     iter2=iter(mybin)
     iter2.next()
     for el in mybin:
         try:
-            temp=[el,iter2.next()]
+            temp = [el,iter2.next()]
         except:
             break
         bin_container.append(temp)
 
-    final_data=agg_func_selector(agg_function,result_data,bin_container,y_var_index,x_var_index)
+    final_data=agg_func_selector(agg_function, data, bin_container, y_var_index, x_var_index)
 
     # Create data for graph
-    bin_list = [[round(s,4) for s in xs] for xs in bin_container]
+    bin_list = [[round(s, 4) for s in xs] for xs in bin_container]
 
     json_data=[]
     count = 0
@@ -1689,7 +1665,7 @@ def get_histogram_chart_am(request):
 def get_histogram_2d_am(request):
     query_pk = int(str(request.GET.get('query', '')))
     query = Query.objects.get(pk=query_pk)
-    query = Query(document=query.document)
+    query = TempQuery(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '3')))
@@ -1709,17 +1685,26 @@ def get_histogram_2d_am(request):
             else:
                 s['exclude'] = True
     print doc
-    doc['limit'] = 100000
+    doc['limit'] = []
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
     query.document = doc
-    raw_query = query.raw_query
-    print doc
-    print raw_query
+    # raw_query = query.raw_query
+    # print doc
+    # print raw_query
 
-    cursor = connection.cursor()
-    cursor.execute(raw_query)
-    result_data = cursor.fetchall()
-    result_headers = query.execute(only_headers=True)[0]['headers']
+
+    query_data = query.execute()
+
+    result_data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+
+    # TODO: find out why result_data SOMETIMES contains a [None,None] element in the last position
+
+    try:
+        result_data.remove([None, None])
+    except ValueError:
+        pass
+        print('Error element does not exist in list')
 
     x_var_index = -1
     y_var_index = -1
@@ -1728,6 +1713,7 @@ def get_histogram_2d_am(request):
             y_var_index = idx
         elif c['name'] == x_var:
             x_var_index = idx
+
 
     min_x_var = float(min(result_data, key=lambda x: x[x_var_index])[x_var_index])
     max_x_var = float(max(result_data, key=lambda x: x[x_var_index])[x_var_index])
@@ -1768,7 +1754,7 @@ def get_histogram_2d_am(request):
     data_count = len(result_data)
     freq, npbinx, npbiny = np.histogram2d(x_col, y_col, bins=bins)
     freq = [[round((s / data_count), 5) for s in xs] for xs in freq]
-    print freq
+    # print freq
 
     # Create Color Levels
     cmap = plt.cm.coolwarm

@@ -10,6 +10,41 @@
     bottom:2px;
 }
 
+#query_tip{
+    opacity: .3;
+    position: relative;
+    bottom:2px;
+}
+
+#code_tip{
+    opacity: .3;
+    position: relative;
+    bottom:2px;
+}
+
+#output_tip{
+    opacity: .3;
+    position: relative;
+    bottom:2px;
+}
+
+div.edit_hover_output:hover  #output_tip{
+    opacity: inherit;
+    margin:auto;
+    cursor:help;
+}
+
+div.edit_hover_code:hover  #code_tip{
+    opacity: inherit;
+    margin:auto;
+    cursor:help;
+}
+
+div.edit_hover_query:hover  #query_tip{
+    opacity: inherit;
+    margin:auto;
+    cursor:help;
+}
 
 div.edit_hover_filter:hover  #filter_arg_tip{
     opacity: inherit;

@@ -1,10 +1,16 @@
 <div id="queries_container" class="tab-pane fade in active">
-    <h3>Select Queries to Use</h3>
-    <button type="button" id="add_query_popbtn" class="btn btn-md btn-primary" data-toggle="popover" title="" data-placement="right">
-        + Add Query
-    </button>
 
-    <table id="selected-queries-table" class="table table-full-width">
+    <h4 style="margin-top:40px">Selected Queries Used in the Service:</h4>
+
+    <div class="edit_hover_query">
+            <h3 style="display:inline-block;">Queries</h3>
+            <i id="query_tip" class="fa fa-info-circle " title="Saved queries can be added and used in the service." data-toggle="tooltip" data-placement="right" style="margin:auto" ></i>
+            <button type="button" id="add_query_popbtn" style="display:block;" class="btn btn-sm btn-primary" data-toggle="popover" title="" data-placement="right" >
+                    + Add Query
+            </button>
+    </div>
+
+    <table style="margin-top:20px" id="selected-queries-table" class="table table-full-width">
         <thead>
             <tr>
                 <th>ID</th>

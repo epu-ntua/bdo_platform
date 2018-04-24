@@ -29,24 +29,24 @@
         $("#selected-arguments-table1 tbody tr").each(
             function(index, elem){
                 console.log($(this).text());
-                var query_name = $(this).children().eq(1).text();
+                var query_name = $(this).find($("td[data-columnname='query_name']")).text();
                 exposed_args['filter-arguments'].push({
-                    filter_a: $(this).children().eq(2).children().eq(0).text(),
-                    filter_op: $(this).children().eq(2).children().eq(1).text(),
-                    filter_b: $(this).children().eq(3).children().eq(0).val(),
+                    filter_a: $(this).find($("td[data-columnname='filter']")).children().eq(0).text(),
+                    filter_op: $(this).find($("td[data-columnname='filter']")).children().eq(1).text(),
+                    filter_b: $(this).find($("td[data-columnname='def_val']")).text(),
                     query: query_name,
-                    name: $(this).children().eq(4).text(),
-                    title: $(this).children().eq(4).text(),
-                    default: $(this).children().eq(3).text()
+                    name: $(this).find($("td[data-columnname='title']")).text(),
+                    title: $(this).find($("td[data-columnname='title']")).text(),
+                    default: $(this).find($("td[data-columnname='description']")).text()
                 });
                 });
          $("#selected-arguments-table2 tbody tr").each(
             function(index, elem){
                 exposed_args['algorithm-arguments'].push({
-                    name: $(this).children().eq(0).text(),
-                    title: $(this).children().eq(1).text(),
-                    type: $(this).children().eq(2).text(),
-                    description: $(this).children().eq(3).text(),
+                    name: $(this).find($("td[data-columnname='name']")).text(),
+                    title: $(this).find($("td[data-columnname='title']")).text(),
+                    type: $(this).find($("td[data-columnname='type']")).text(),
+                    description: $(this).find($("td[data-columnname='description']")).text(),
                 });
                 });
 
