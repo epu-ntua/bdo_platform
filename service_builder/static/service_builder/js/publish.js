@@ -35,8 +35,9 @@
                     filter_op: $(this).find($("td[data-columnname='filter']")).children().eq(1).text(),
                     filter_b: $(this).find($("td[data-columnname='def_val']")).text(),
                     query: query_name,
-                    name: $(this).find($("td[data-columnname='title']")).text(),
+                    name: $(this).find($("td[data-columnname='name']")).text(),
                     title: $(this).find($("td[data-columnname='title']")).text(),
+                    type : $(this).find($("td[data-columnname='filter_type']")).text(),
                     default: $(this).find($("td[data-columnname='description']")).text()
                 });
                 });

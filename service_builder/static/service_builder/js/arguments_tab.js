@@ -24,6 +24,9 @@ $(document).ready(function(){
         $('#alg_vartype').append('<option>Integer</option>');
         $('#alg_vartype').append('<option>Float</option>');
         $('#alg_vartype').append('<option>String</option>');
+        $('#alg_vartype').append('<option>Date</option>');
+        $('#alg_vartype').append('<option>Spatial Coverage</option>');
+
 
         $('.popover-content #alg_vartype').select2();
 
@@ -72,6 +75,8 @@ $(document).ready(function(){
                     $('#alg_vartype').append('<option>Integer</option>');
                     $('#alg_vartype').append('<option>Float</option>');
                     $('#alg_vartype').append('<option>String</option>');
+                    $('#alg_vartype').append('<option>Date</option>');
+                    $('#alg_vartype').append('<option>Spatial Coverage</option>');
 
                     $('.popover-content #alg_vartype').select2();
 
@@ -146,6 +151,15 @@ $(document).ready(function(){
         $('.btn_pop').not(this).popover('hide');
         $(this).popover('toggle');
 
+        $('#filter_type').empty();
+        $('#filter_type').append('<option>Integer</option>');
+        $('#filter_type').append('<option>Float</option>');
+        $('#filter_type').append('<option>String</option>');
+        $('#filter_type').append('<option>Date</option>');
+        $('#filter_type').append('<option>Spatial Coverage</option>');
+
+        $('.popover-content #filter_type').select2();
+
 
         available_filter_args = JSON.parse('{}');
         $('#selected-queries-table tbody tr').each(function( index ) {
@@ -197,9 +211,11 @@ $(document).ready(function(){
 
         $('.popover-content #add_new_argument_btn1').click(function (e) {
             countrow=countrow+1;
+            var new_filter_arg_name = $(".popover-content #filter_varname").val();
             var new_filter_arg_title = $(".popover-content #filter_vartitle").val();
             var new_filter_arg_def = $(" .popover-content #filter_def_val").val();
             var new_filter_arg_desc = $(".popover-content #filter_descr").val();
+            var new_filter_arg_type = $("select#filter_type option:checked").val();
             var edit_btn_id="edit_btn_id_" + countrow.toString();
             var del_btn_id="del_btn_id_"+ countrow.toString();
             var del_row_btn='<button id="' + del_btn_id +'" class="btn btn-primary btn-xs a-btn-slide-text">' +
@@ -210,11 +226,11 @@ $(document).ready(function(){
                 ' </button>';
             var edit_sel="#"+edit_btn_id;
             var del_sel="#"+del_btn_id;
-            if(check_duplicate_title_name("",new_filter_arg_title,"")){
+            if(check_duplicate_title_name(new_filter_arg_name,new_filter_arg_title,"")){
                 alert("Argument name or title already exists!")
             }
             else if((selected)&&(new_filter_arg_title!=null)&&(new_filter_arg_def!=null)&&(new_filter_arg_title.trim()!="")&&(new_filter_arg_def.trim()!="")) {
-                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='query_id'>" + new_arg_query_id + "</td> <td data-columnname='query_name'>" + new_arg_query_display_name + "</td> <td data-columnname='filter'> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td data-columnname='def_val'> " +new_filter_arg_def + "</td> <td data-columnname='title'> " + new_filter_arg_title + "</td> <td data-columnname='description'><div  style='min-width: 100%'>" + new_filter_arg_desc + "</div></td><td>" + edit_row_btn +del_row_btn+"</td> </tr>";
+                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='query_id'>" + new_arg_query_id + "</td> <td data-columnname='query_name'>" + new_arg_query_display_name + "</td> <td data-columnname='filter'> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td data-columnname='filter_type'>"+ new_filter_arg_type+"  </td><td data-columnname='def_val'> " +new_filter_arg_def + "</td> <td  data-columnname='name'>"+ new_filter_arg_name+"</td><td data-columnname='title'> " + new_filter_arg_title + "</td> <td data-columnname='description'><div  style='min-width: 100%'>" + new_filter_arg_desc + "</div></td><td>" + edit_row_btn +del_row_btn+"</td> </tr>";
                 $('#selected-arguments-table1 tbody').append(new_arg_tr_string);
 
                 $(edit_sel).popover({
@@ -228,86 +244,56 @@ $(document).ready(function(){
                 }).click(function(e) {
                     $('.btn_pop').not(this).popover('hide');
                     $(this).popover('toggle');
+
+                    $('#filter_type').empty();
+                    $('#filter_type').append('<option>Integer</option>');
+                    $('#filter_type').append('<option>Float</option>');
+                    $('#filter_type').append('<option>String</option>');
+                    $('#filter_type').append('<option>Date</option>');
+                    $('#filter_type').append('<option>Spatial Coverage</option>');
+
+                    $('.popover-content #filter_type').select2();
+
                     $('.popover-content #query-argument-select').remove();
 
                     var temp="#"+$(this).attr('id');
                     temp=temp.replace("#edit_btn_id_","");
                     temp="#row_id_"+temp;
-                    //
-                    //
-                    // available_filter_args = JSON.parse('{}');
-                    // $('#selected-queries-table tbody tr').each(function( index ) {
-                    //     console.log( index + ": " + $( this ).children().eq(3).text());
-                    //     console.log( index + ": " + $( this ).children().eq(3).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
-                    //     console.log( index + ": " + JSON.stringify(JSON.parse($( this ).children().eq(3).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'))['filters']) );
-                    //     var query_doc = JSON.parse($( this ).children().eq(3).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
-                    //     var filters = query_doc['filters'];
-                    //     if (filters != undefined){
-                    //         parse_filters($( this ).children().eq(0).text(), $( this ).children().eq(1).text(), filters) ;
-                    //     }
-                    // });
-                    //
-                    //
-                    // $('#query-argument-select').empty();
-                    // for(var query in available_filter_args){
-                    //     console.log(query);
-                    //     for(var arg_idx in available_filter_args[query]['filter_args']) {
-                    //         var display_name = available_filter_args[query]['display_name'];
-                    //         var arg = available_filter_args[query]['filter_args'][arg_idx];
-                    //         var arg_a = arg['a'];
-                    //         var arg_op = arg['op'];
-                    //         var arg_b = arg['b'];
-                    //         $('#query-argument-select').append('<option  data-query-id="'+query+'" data-display_name="'+display_name+'" data-arg-a="'+arg_a+'" data-arg-op="'+arg_op+'" data-arg-b="'+arg_b+'" title="' + display_name.trim() + '-' + arg_a.trim() +' '+ arg_op.trim() +' '+ arg_b.trim() + '"> ' + display_name.trim() + '-' + arg_a.trim() +' '+ arg_op.trim() +' '+ arg_b.trim() + ' </option>');
-                    //     }
-                    // }
-                    //
-                    // $('.popover-content #query-argument-select').select2();
-                    //
-                    // var new_arg_query_id;
-                    // var new_arg_query_display_name;
-                    // var new_arg_a;
-                    // var new_arg_op;
-                    // var new_arg_b;
-                    // var selected = false;
-                    // $('.popover-content #query-argument-select').on('change', function() {
-                    //     selected = true;
-                    //     new_arg_query_id = $(this).children(":selected").attr("data-query-id");
-                    //     new_arg_query_display_name = $(this).children(":selected").attr("data-display_name");
-                    //     new_arg_a = $(this).children(":selected").attr("data-arg-a");
-                    //     new_arg_op = $(this).children(":selected").attr("data-arg-op");
-                    //     new_arg_b = $(this).children(":selected").attr("data-arg-b");
-                    //     $('.popover-content #filter_def_val').val(new_arg_b)
-                    // });
-
-                    // var temp_query_choice=(" "+$(temp).children().eq(1).text().trim()+"-"+$(temp).children().eq(2).text().trim().replace("  "," ")+" "+$(temp).children().eq(3).text().trim()+" ");
-
 
 
                     var temp_filter_def_val=$(temp).find($("td[data-columnname='def_val']")).text();
+                    var temp_filter_var_name=$(temp).find($("td[data-columnname='name']")).text();
                     var temp_filter_var_title=$(temp).find($("td[data-columnname='title']")).text();
                     var temp_filter_descr=$(temp).find($("td[data-columnname='description']")).text();
+                    var temp_filter_type=$(temp).find($("td[data-columnname='filter_type']")).text();
 
 
                     // $("select#select2-query-argument-select-container ").val(temp_query_choice).change();
 
                     $("#filter_def_val").val(temp_filter_def_val);
+                    $("#filter_varname").val(temp_filter_var_name);
                     $("#filter_vartitle").val(temp_filter_var_title);
                     $("#filter_descr").text(temp_filter_descr);
+                    $("select#filter_type").val(temp_filter_type.trim()).change();
 
 
                     // alert(new_alg_arg_name+" "+new_alg_arg_title+" "+new_alg_arg_type+" "+new_alg_arg_desc);
                     $('.popover-content #add_new_argument_btn1').click(function (e) {
                         var new_filter_def_val = $("#filter_def_val").val();
+                        var new_filter_varname = $("#filter_varname").val();
                         var new_filter_vartitle = $("#filter_vartitle").val();
                         var new_filter_descr =  $("#filter_descr").val();
+                        var new_filter_type = $("select#filter_type option:checked").val();
 
-                         if(check_duplicate_title_name("",new_filter_vartitle,temp.replace("#",""))){
+                         if(check_duplicate_title_name(new_filter_varname,new_filter_vartitle,temp.replace("#",""))){
                             alert("Argument name or title already exists!")
                          }
                          else if((new_filter_arg_title!=null)&&(new_filter_arg_def!=null)&&(new_filter_arg_title.trim()!="")&&(new_filter_arg_def.trim()!="")) {
                             $(temp).find($("td[data-columnname='def_val']")).text(new_filter_def_val);
+                            $(temp).find($("td[data-columnname='name']")).text(new_filter_varname);
                             $(temp).find($("td[data-columnname='title']")).text(new_filter_vartitle);
                             $(temp).find($("td[data-columnname='description']")).text(new_filter_descr);
+                            $(temp).find($("td[data-columnname='filter_type']")).text(new_filter_type);
 
                             $(edit_sel).popover("hide");
                          }else{
@@ -368,7 +354,7 @@ $(document).ready(function(){
         var flag=false;
         $("#selected-arguments-table1 tbody tr").each(
             function(index, elem) {
-                if(arg_title.trim()=== $(this).find($("td[data-columnname='title']")).text().trim()) {
+                if((arg_name.trim()=== $(this).find($("td[data-columnname='name']")).text().trim())||(arg_title.trim()=== $(this).find($("td[data-columnname='title']")).text().trim())) {
                     if((edit_row_id=="")||(edit_row_id!=$(this).attr('id').trim())){
                         flag = true;
                     }
