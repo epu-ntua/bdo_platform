@@ -395,6 +395,9 @@ $(function () {
 
             // gather individual filters
             var filters = this.getFilterArray();
+            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
+            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
+            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
 
             var filterTree = {};
 
@@ -460,10 +463,8 @@ $(function () {
                 }
             }
 
-            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
-            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
-            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
-            console.log(filters);
+
+            // console.log(filters);
 
             return filterTree;
         },
