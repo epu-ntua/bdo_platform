@@ -395,6 +395,9 @@ $(function () {
 
             // gather individual filters
             var filters = this.getFilterArray();
+            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
+            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
+            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
 
             var filterTree = {};
 
@@ -408,8 +411,16 @@ $(function () {
                 var aName;
                 $.each(queryDocument.from, function(idx, _from) {
                     $.each(_from.select, function(jdx, attr) {
-                        if (attr.type == filter.a) {
-                            aName = attr.name;
+                        if(attr.type === "VALUE") {
+                            // if (String(attr.name).split(new RegExp("i[0-9]+_"))[1] === filter.a) {
+                            if (parseInt(_from.type) === parseInt(filter.a)) {
+                                aName = attr.name;
+                            }
+                        }
+                        else{
+                            if (attr.type == filter.a) {
+                                aName = attr.name;
+                            }
                         }
                     })
                 });
@@ -452,10 +463,8 @@ $(function () {
                 }
             }
 
-            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
-            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
-            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
-            console.log(filters);
+
+            // console.log(filters);
 
             return filterTree;
         },
@@ -1289,19 +1298,19 @@ $(function () {
                    variableTypes.push(variable.type);
                 });
 
-                $.each($('#new-filter-variable').find('option'), function(idx, opt) {
-                    var $opt = $(opt);
-
-                    if (
-                        (variableTypes.indexOf($opt.data('forvariabletype')) >= 0) ||
-                        (variableTypes.indexOf($opt.data('forvariable')) >= 0)
-
-                    ) {
-                        $opt.removeAttr('disabled');
-                    } else {
-                        $opt.attr('disabled', 'disabled');
-                    }
-                });
+                // $.each($('#new-filter-variable').find('option'), function(idx, opt) {
+                //     var $opt = $(opt);
+                //
+                //     if (
+                //         (variableTypes.indexOf($opt.data('forvariabletype')) >= 0) ||
+                //         (variableTypes.indexOf($opt.data('forvariable')) >= 0)
+                //
+                //     ) {
+                //         $opt.removeAttr('disabled');
+                //     } else {
+                //         $opt.attr('disabled', 'disabled');
+                //     }
+                // });
             },
 
             /* Open the filter manager popup */
@@ -1318,13 +1327,21 @@ $(function () {
 
             getFilterOptions: function () {
                 var chosenFilter = $('#new-filter-variable').val();
+                var filterType = $('#new-filter-variable option:selected').data('type');
                 var $inputContainer = $('#new-filter-value-container');
                 var $info = $('#new-filter-info-message');
                 $inputContainer.empty();
+                var url = '';
+                if (filterType == 'variable'){
+                    url = '/queries/simplified/filter-info/variable/' + chosenFilter + '/'
+                }
+                else{
+                    url = '/queries/simplified/filter-info/dimension/' + chosenFilter + '/'
+                }
 
                 // get options, comparison type & input type from the backend
                 $.ajax({
-                    url: '/queries/simplified/filter-info/dimension/' + chosenFilter + '/',
+                    url: url,
                     type: 'GET',
                     success: function (data) {
                         var $input,
@@ -1387,6 +1404,8 @@ $(function () {
                 var filterVariable = filterVariable || $('#new-filter-variable').val();
                 var filterOperator = filterOperator || $('#new-filter-operator').val();
                 var filterValue = filterValue || $('[name="new-filter-value"]').val();
+                // type: variable or dimension
+                var filterType = $('[name="new-filter-value"]').attr('data-type');
                 var title = filterValue;
                 if ($('select[name="new-filter-value"]').length > 0) {
                     title = $('select[name="new-filter-value"] option:selected').text()
@@ -1599,6 +1618,12 @@ $(function () {
                 }
             });
 
+            // add variables to filters too
+            var newOption = new Option(newField.title, newField.id, false, false);
+            newOption.setAttribute('data-forVariable', '');
+            newOption.setAttribute('data-type', 'variable');
+            newOption.setAttribute('name', newField.value);
+            $filter_variables.append(newOption);
 
             QueryToolbox.filterManager.updateFilters(QueryToolbox._getChartInfo().values);
 
