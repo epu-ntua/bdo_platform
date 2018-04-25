@@ -47,6 +47,7 @@
                                 <input step="0.001" type="number" id="max_lon" class="form-control" value="{{ argument.default_lon_max }}" data-default="{{ argument.default_lon_max }}" style="width:100%">
                             </div>
                         </div>
+                        <input type="hidden" id="spatialCovInput" name="{{ argument.name }}" value="{{ argument.default }}">
                         <input hidden type="number" id="areaSelectWidth" value="{{ argument.areaSelectWidth }}" data-default="{{ argument.areaSelectWidth }}" style="width:100%">
                         <input hidden type="number" id="areaSelectHeight" value="{{ argument.areaSelectHeight }}" data-default="{{ argument.areaSelectHeight }}" style="width:100%">
 
