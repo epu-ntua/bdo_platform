@@ -1,6 +1,13 @@
 $(document).ready(function(){
+    $("#query-select-container").hide();
     // How many queries are used from the service
     var number_of_queries = 0;
+
+      $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+
+
     $("#add_query_popbtn").popover({
         html: true,
         animation:true,
@@ -30,7 +37,7 @@ $(document).ready(function(){
         $('.popover-content #add_new_query_btn').click(function (e) {
             if(selected) {
                 number_of_queries++;
-                var new_query_tr_string = "<tr> <td>" + new_query_id + "</td> <td>Q" + number_of_queries + "</td> <td>" + new_query_title + "</td> <td>" + new_query_document + "</td><td></td> </tr>";
+                var new_query_tr_string = "<tr> <td data-columnname='query_id'>" + new_query_id + "</td> <td data-columnname='number'>Q" + number_of_queries + "</td> <td data-columnname='title'>" + new_query_title + "</td> <td data-columnname='doc'>" + new_query_document + "</td><td></td> </tr>";
                 $('#selected-queries-table tbody').append(new_query_tr_string);
 
                 // Add the query to the Object that stores all the selected queries

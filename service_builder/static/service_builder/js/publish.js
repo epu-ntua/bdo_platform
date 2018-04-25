@@ -1,4 +1,5 @@
     // ******* csrftoken
+
     var csrftoken = Cookies.get('csrftoken');
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -24,23 +25,32 @@
 
     // Gather all the filter arguments that are exposed
     function gather_arguments() {
-        var exposed_args={'filter-arguments': []};
-        $("#selected-arguments-table tbody tr").each(
+         exposed_args={'filter-arguments': [],'algorithm-arguments':[]};
+        $("#selected-arguments-table1 tbody tr").each(
             function(index, elem){
                 console.log($(this).text());
-                var query_name = $(this).children().eq(1).text();
+                var query_name = $(this).find($("td[data-columnname='query_name']")).text();
                 exposed_args['filter-arguments'].push({
-                    filter_a: $(this).children().eq(2).children().eq(0).text(),
-                    filter_op: $(this).children().eq(2).children().eq(1).text(),
-                    filter_b: $(this).children().eq(4).children().eq(0).val(),
+                    filter_a: $(this).find($("td[data-columnname='filter']")).children().eq(0).text(),
+                    filter_op: $(this).find($("td[data-columnname='filter']")).children().eq(1).text(),
+                    filter_b: $(this).find($("td[data-columnname='def_val']")).text(),
                     query: query_name,
-                    type: $(this).children().eq(3).children().eq(0).val(),
-                    name: $(this).children().eq(5).children().eq(0).val(),
-                    title: $(this).children().eq(5).children().eq(0).val(),
-                    default: $(this).children().eq(4).children().eq(0).val()
+                    name: $(this).find($("td[data-columnname='name']")).text(),
+                    title: $(this).find($("td[data-columnname='title']")).text(),
+                    type : $(this).find($("td[data-columnname='filter_type']")).text(),
+                    default: $(this).find($("td[data-columnname='description']")).text()
                 });
-            }
-        );
+                });
+         $("#selected-arguments-table2 tbody tr").each(
+            function(index, elem){
+                exposed_args['algorithm-arguments'].push({
+                    name: $(this).find($("td[data-columnname='name']")).text(),
+                    title: $(this).find($("td[data-columnname='title']")).text(),
+                    type: $(this).find($("td[data-columnname='type']")).text(),
+                    description: $(this).find($("td[data-columnname='description']")).text(),
+                });
+                });
+
         return exposed_args;
     }
 
@@ -63,6 +73,7 @@
 
     function update_service_arguments() {
         var exposed_args = gather_arguments();
+        // alert(JSON.stringify(exposed_args));
         $.ajax({
             "type": "POST",
             "url": "/service_builder/update_service_arguments/",

@@ -1,4 +1,8 @@
 $(document).ready(function(){
+
+      $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+      })
     // Popover to get a list of the queries to load
     $("#load_query_popbtn").popover({
         html: true,

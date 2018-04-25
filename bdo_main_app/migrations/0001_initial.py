@@ -6,6 +6,7 @@ from django.conf import settings
 import django.contrib.postgres.fields.jsonb
 from django.db import migrations, models
 import django.db.models.deletion
+from datetime import datetime
 
 from bdo_main_app.lists import SERVICE_TYPES
 
@@ -18,7 +19,7 @@ def create_default_services(apps, schema_editor):
 
     from bdo_main_app.models import Service, User
 
-    bdo = User.objects.get_or_create(username='BigDataOcean')[0]
+    bdo = User.objects.get_or_create(username='BigDataOcean', last_login=datetime.now())[0]
 
     def create_base_analysis(title, moto='', args=None):
         base_analysis = Service(user=bdo,
