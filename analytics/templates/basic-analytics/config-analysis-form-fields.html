@@ -1,4 +1,10 @@
 {% load static %}
+
+
+{% block css %}
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+{% endblock %}
+
 <fieldset name="{{ order }}+++fieldset">
     <input id="{{ order }}+++anal_id" type="hidden" class="form-control full-width variable-select" name="anal_id"  value="{{ anal_id }}">
 
@@ -9,6 +15,7 @@
                     {% if argument.type != 'QUERY' %}
                         <label class="control-label">{{ argument.title }}</label>
                     {% endif %}
+
                     {% if argument.type == 'SPATIAL_COV' %}
                          <div id="newmap" style="min-height: 200px; width: 100%; margin-top: 10px;">
                          </div>
@@ -42,7 +49,35 @@
                             </div>
                         </div>
 
-
+                    {% elif argument.type == 'DATETIME' %}
+                    <div class="coverage-date-filters">
+                        <div class="row">
+                            <div class="coverage-date-filters-icon">
+                            </div>
+                            <div class='col-sm-6'>
+                                <div class="form-group">
+                                    <div class='input-group date' id='startdatepicker'>
+                                        <label>Start Date:</label>
+                                        <input type='text' class="form-control" />
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='col-sm-6'>
+                                <div class="form-group">
+                                    <div class='input-group date' id='enddatepicker'>
+                                        <label>End Date:</label>
+                                        <input type='text' class="form-control" />
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% elif argument.type == 'QUERY' %}
                     {% elif argument.type == 'COLUMN' %}
                         <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width variable-select" name="{{ order }}+++{{ argument.name }}" >
@@ -82,5 +117,11 @@
     {% endfor %}
 </fieldset>
 
-<script src="{% static "js/leaflet-areaselect.js" %}"></script>
-<script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}"></script>
+{% block js %}
+
+    <script src="{% static "js/leaflet-areaselect.js" %}"></script>
+    <script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}"></script>
+    <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+    <script type="text/javascript" src="{% static 'js/datepicker.js' %}"></script>
+
+{% endblock %}
