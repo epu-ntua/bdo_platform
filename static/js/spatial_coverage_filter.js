@@ -38,6 +38,7 @@ function addAreaSelect() {
             $("#max_lon").val(Math.round(bounds.getNorthEast().lng * 1000) / 1000);
             $("#areaSelectWidth").val(areaSelect._width);
             $("#areaSelectHeight").val(areaSelect._height);
+            updateSpatialCov($("#min_lat"));
         });
     }
 }
@@ -155,6 +156,7 @@ function map_init() {
             $("#max_lat").val(Math.round(lat * 1000) / 1000);
             $("#min_lon").val(Math.round(lon * 1000) / 1000);
             $("#max_lon").val(Math.round(lon * 1000) / 1000);
+            updateSpatialCov($("#min_lat"));
         }
     });
 }
@@ -188,6 +190,15 @@ $('.row').ready( function () {
 
 $( "#newmap" ).parent().find('label').css("line-height", "0");
 
-// $('#lat_min, #lat_max, #lon_min, #lon_max').change(function () {
-//     setAreaSelect($("#min_lat").val(), $("#min_lon").val(), $("#max_lat").val(), $("#max_lon").val(), $("#areaSelectWidth").val(), $("#areaSelectHeight").val());
-// });
+function updateSpatialCov(elem) {
+    // setAreaSelect($("#min_lat").val(), $("#min_lon").val(), $("#max_lat").val(), $("#max_lon").val(), $("#areaSelectWidth").val(), $("#areaSelectHeight").val());
+    var min_lat = $("#min_lat").val();
+    var max_lat = $("#max_lat").val();
+    var min_lon = $("#min_lon").val();
+    var max_lon = $("#max_lon").val();
+    elem.closest('.row').find('#spatialCovInput').val('<<'+min_lat+','+min_lon+'>,<'+max_lat+','+max_lon+'>>');
+}
+
+$('#min_lat, #max_lat, #min_lon, #max_lon').change(function () {
+    updateSpatialCov($(this));
+});

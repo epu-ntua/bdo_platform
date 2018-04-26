@@ -1,6 +1,4 @@
 {% load static %}
-
-
 {% for argument in arguments %}
     <div class="row">
         <div class="col-xs-12">
@@ -17,41 +15,41 @@
                     <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.title }}" >
                         <option disabled selected value>-- select dimension --</option>
                     </select>
-
                 {% elif argument.type == 'SPATIAL_COV' %}
-                     <div id="newmap" style="min-height: 200px; width: 100%; margin-top: 10px;">
-                     </div>
-                    <div id="choices">
-                        <select style="width: 100%; border: 2px solid grey; border-radius: 1em;" id="mapchoices">
-                            <option value="-1">Choose Predefined</option>
-                            <option value="0">Baltic Sea</option>
-                            <option value="1">Sea Of Japan</option>
-                            <option value="2">Red Sea</option>
-                            <option value="3">Mediterranean</option>
-                        </select>
-                    </div>
-                    <div class="col-sm-12">
-                        <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Latitude, from: </span>
-                        <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
-                            <input step="0.001" type="number" id="min_lat" class="form-control" value="{{ argument.default_lat_min }}" data-default="{{ argument.default_lat_min }}" style="width:100%">
+                         <div id="newmap" style="min-height: 200px; width: 100%; margin-top: 10px;">
+                         </div>
+                        <div id="choices">
+                            <select style="width: 100%; border: 2px solid grey; border-radius: 1em;" id="mapchoices">
+                                <option value="-1">Choose Predefined</option>
+                                <option value="0">Baltic Sea</option>
+                                <option value="1">Sea Of Japan</option>
+                                <option value="2">Red Sea</option>
+                                <option value="3">Mediterranean</option>
+                            </select>
                         </div>
-                        <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
-                        <div class="form-group col-sm-3" style=";margin: 1px 1px;">
-                            <input step="0.001" type="number" id="max_lat" class="form-control" value="{{ argument.default_lat_max }}" data-default="{{ argument.default_lat_max }}" style="width:100%">
+                        <div class="col-sm-12">
+                            <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Latitude, from: </span>
+                            <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                <input step="0.001" type="number" id="min_lat" class="form-control" value="{{ argument.default_lat_min }}" data-default="{{ argument.default_lat_min }}" style="width:100%">
+                            </div>
+                            <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
+                            <div class="form-group col-sm-3" style=";margin: 1px 1px;">
+                                <input step="0.001" type="number" id="max_lat" class="form-control" value="{{ argument.default_lat_max }}" data-default="{{ argument.default_lat_max }}" style="width:100%">
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-sm-12">
-                        <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Longitude, from: </span>
-                        <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
-                            <input step="0.001" type="number" id="min_lon" class="form-control" value="{{ argument.default_lon_min }}" data-default="{{ argument.default_lon_min }}" style="width:100%">
+                        <div class="col-sm-12">
+                            <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Longitude, from: </span>
+                            <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                <input step="0.001" type="number" id="min_lon" class="form-control" value="{{ argument.default_lon_min }}" data-default="{{ argument.default_lon_min }}" style="width:100%">
+                            </div>
+                            <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
+                            <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                <input step="0.001" type="number" id="max_lon" class="form-control" value="{{ argument.default_lon_max }}" data-default="{{ argument.default_lon_max }}" style="width:100%">
+                            </div>
                         </div>
-                        <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
-                        <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
-                            <input step="0.001" type="number" id="max_lon" class="form-control" value="{{ argument.default_lon_max }}" data-default="{{ argument.default_lon_max }}" style="width:100%">
-                        </div>
-                    </div>
-                    <input hidden type="number" id="areaSelectWidth" value="{{ argument.areaSelectWidth }}" data-default="{{ argument.areaSelectWidth }}" style="width:100%">
-                    <input hidden type="number" id="areaSelectHeight" value="{{ argument.areaSelectHeight }}" data-default="{{ argument.areaSelectHeight }}" style="width:100%">
+                        <input type="hidden" id="spatialCovInput" name="{{ argument.name }}" value="{{ argument.default }}">
+                        <input hidden type="number" id="areaSelectWidth" value="{{ argument.areaSelectWidth }}" data-default="{{ argument.areaSelectWidth }}" style="width:100%">
+                        <input hidden type="number" id="areaSelectHeight" value="{{ argument.areaSelectHeight }}" data-default="{{ argument.areaSelectHeight }}" style="width:100%">
 
                 {% elif argument.type == 'INT' %}
                     <input id="{{ argument.name }}" type="number" step="0.00001" class="form-control full-width" name="{{ argument.name }}" autocomplete="off" value="{{ argument.default }}">
@@ -71,4 +69,3 @@
 
 <script src="{% static "js/leaflet-areaselect.js" %}"></script>
 <script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}"></script>
-
