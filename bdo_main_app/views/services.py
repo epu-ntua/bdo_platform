@@ -13,12 +13,12 @@ def services(request):
     user = request.user
     if user.is_authenticated:
         user_dashboards = Dashboard.objects.filter(user=user).order_by('id')
-        user_services = Service.objects.filter(user=user).order_by('id')
+        user_services = Service.objects.filter(user=user, published=True).order_by('id')
     else:
         user_dashboards = []
         user_services = []
     bdo_dashboards = Dashboard.objects.filter(user=User.objects.get(username='BigDataOcean'))
-    bdo_services = Service.objects.filter(user=User.objects.get(username='BigDataOcean'))
+    bdo_services = Service.objects.filter(user=User.objects.get(username='BigDataOcean'), published=True)
 
     return render(request, 'services/services/services_index.html', {
         'my_dashboards': user_dashboards,
