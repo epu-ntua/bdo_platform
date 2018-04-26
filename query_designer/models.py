@@ -292,7 +292,8 @@ class AbstractQuery(Model):
     def raw_query(self):
         # remove several keys from query
         doc = copy.deepcopy(self.document)
-        for key in ['limit', 'offset', 'granularity']:
+        # for key in ['limit', 'offset', 'granularity']:
+        for key in ['offset', 'granularity']:
             if key in self.document:
                 del self.document[key]
 
