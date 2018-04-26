@@ -3,11 +3,11 @@ from bdo_platform.settings_management.development import *
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'derisk',
+        'NAME': 'bdo_platform',
         'USER': 'postgres',
         'PASSWORD': 'engage1!',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 
