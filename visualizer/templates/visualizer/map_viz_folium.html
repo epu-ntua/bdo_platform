@@ -7,6 +7,7 @@
     <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
 </head>
 
+
 {% block css %}
     {% leaflet_css %}
 
@@ -22,7 +23,6 @@
 
     <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
 
-
 {% endblock %}
 
 {% block viz_content %}
@@ -32,19 +32,19 @@
         <img src="{% static legend_id %}" alt="My image" >
 
     </div>
-
 {% endblock %}
 
 
 
 {% block js %}
 
-    {% leaflet_js %}
 
+    {% leaflet_js %}
 {#    <script src="{% static 'js/leaflet-heat.js' %}"></script>#}
     <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>
 
     <script src="{% static 'js/leaflet.markercluster.js'%}"></script>
+
 
     {% for js in js_all %}
         {% autoescape off %}
@@ -101,8 +101,5 @@
         }
 
     </script>
-
-
-
 
 {% endblock %}

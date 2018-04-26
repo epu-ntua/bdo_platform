@@ -15,16 +15,15 @@ import re
 from django.db import connection
 
 from matplotlib import use
+
+from query_designer.models import TempQuery
+
 use('Agg')
 
 import pylab as pl
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
-from PIL import Image, ImageChops
-
-from query_designer.models import AbstractQuery
-from query_designer.models import TempQuery
 from utils import *
 from visualizer.models import Visualization
 import time
@@ -46,6 +45,7 @@ def get_map_simple(request):
 from folium import CustomIcon
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster
+
 from rest_framework.views import APIView
 
 
@@ -346,170 +346,6 @@ def map_course_time(request):
 
 
 
-
-
-# def map_course(request):
-#     marker_limit = int(request.GET.get('m_limit', '100'))
-#     query = str(request.GET.get('query', ''))
-#     order_var = str(request.GET.get('order_var', ''))
-#     variable = str(request.GET.get('col_var', ''))
-#     variable = str(request.GET.get('col_var', ''))
-#     var_list = variable.split(",")
-#     agg_function = str(request.GET.get('agg_func', 'avg'))
-#
-#     q = Query.objects.get(pk=int(query))
-#     q = Query(document=q.document)
-#     doc = q.document
-#
-#     id_list = []
-#     for var_query_id in var_list:
-#        id_list.append(var_query_id[:var_query_id.find('_')])
-#
-#     doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
-#     # doc['orderings']=[]
-#     doc['limit'] = marker_limit
-#
-#     for f in doc['from']:
-#         for s in f['select']:
-#             if s['name'] in var_list:
-#                 s['aggregate'] = agg_function
-#                 s['exclude'] = False
-#             elif s['name'] == order_var:
-#                 s['groupBy'] = True
-#                 s['exclude'] = False
-#             elif str(s['name']).find('lat') >= 0:
-#                for el in id_list:
-#                    if str(s['name']).find(el) >= 0:
-#                         s['groupBy'] = True
-#                         s['aggregate'] = 'round'
-#                         s['exclude'] = False
-#                         doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-#             elif str(s['name']).find('lon') >= 0:
-#                 for el in id_list:
-#                     if str(s['name']).find(el) >= 0:
-#                         s['groupBy'] = True
-#                         s['aggregate'] = 'round'
-#                         s['exclude'] = False
-#                         doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-#             else:
-#                 s['exclude'] = True
-#
-#
-#     q.document = doc
-#     raw_query = q.raw_query
-#
-#     names = re.findall(r"round\((.*?)\)", raw_query)
-#     for name in names:
-#         raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
-#
-#     cursor = connection.cursor()
-#     cursor.execute(raw_query)
-#     data = cursor.fetchall()
-#
-#     result_headers = q.execute(only_headers=True)[0]['headers']
-#
-#     lat_index = lon_index = -1
-#     order_var_index = -1
-#     new_var_list = []
-#     var_indlist = []
-#     for idx, c in enumerate(result_headers['columns']):
-#         if c['name'] in var_list:
-#             var_indlist.insert(len(var_indlist), idx)
-#             new_var_list.insert(len(var_indlist), c['name'])
-#         elif c['name'] == order_var:
-#             order_var_index = idx
-#         elif str(c['name']).find('lat') >= 0:
-#             lat_index = idx
-#         elif str(c['name']).find('lon') >= 0:
-#             lon_index = idx
-#
-#
-#     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-#     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-#     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-#                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-#                'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-#     location = [0, 0]
-#     zoom_start = 2
-#     max_zoom = 30
-#     min_zoom = 2,
-#
-#
-#     m = folium.Map(location=location,
-#                    zoom_start=zoom_start,
-#                    max_zoom=max_zoom,
-#                    min_zoom=min_zoom,
-#                    max_bounds=True,
-#                    tiles=tiles_str + token_str,
-#                    attr=attr_str)
-#
-#     plugins.Fullscreen(
-#         position='topright',
-#         title='Expand me',
-#         title_cancel='Exit me',
-#         force_separate_button=True).add_to(m)
-#
-#
-#     marker_cluster1 = MarkerCluster(
-#         name="Markers: "+ str(new_var_list[0]),
-#         control=True
-#     ).add_to(m)
-#
-#     marker_cluster2 = MarkerCluster(
-#         name="Markers: " + str(new_var_list[1]),
-#         control=True
-#     ).add_to(m)
-#
-#     points=[]
-#
-#     for d in data:
-#         points.append([float(d[lat_index]),float(d[lon_index])])
-#         folium.Marker(
-#         location=[d[lat_index],d[lon_index]],
-#         popup="Value: "+str(d[var_indlist[0]])+"<br>Time: "+str(d[order_var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),            icon=folium.Icon(color='green', icon='remove-sign'),
-#         ).add_to(marker_cluster1)
-#
-#         folium.Marker(
-#             location=[d[lat_index], d[lon_index]],
-#             popup="Value: " + str(d[var_indlist[1]]) + "<br>Time: " + str(d[order_var_index]) + "<br>Latitude: " + str(
-#                 d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),
-#             icon=folium.Icon(color='red', icon='remove-sign'),
-#         ).add_to(marker_cluster2)
-#
-#
-#     pol_group_layer=folium.map.FeatureGroup(name='Plotline: ' + str(variable), overlay=True, show=True, control=True).add_to(m)
-#     folium.PolyLine(points,
-#                     color='green',
-#                     weight=3,
-#                     opacity=0.9,
-#     ).add_to(pol_group_layer)
-#
-#     folium.LayerControl().add_to(m)
-#
-#
-#     m.save('templates/map.html')
-#     map_html = open('templates/map.html', 'r').read()
-#     soup = BeautifulSoup(map_html, 'html.parser')
-#     map_id = soup.find("div", {"class": "folium-map"}).get('id')
-#     # print map_id
-#     js_all = soup.findAll('script')
-#     # print(js_all)
-#     if len(js_all) > 5:
-#         js_all = [js.prettify() for js in js_all[5:]]
-#     # print(js_all)
-#     css_all = soup.findAll('link')
-#     if len(css_all) > 3:
-#         css_all = [css.prettify() for css in css_all[3:]]
-#     # print js
-#     # os.remove('templates/map.html')
-#     return render(request, 'visualizer/map_wjs.html',
-#                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
-
-
-
-
-
-
 def map_course(request):
     marker_limit = int(request.GET.get('m_limit', '100'))
     query = str(request.GET.get('query', ''))
@@ -634,7 +470,6 @@ def map_course(request):
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
 
 
-
 def map_plotline(request):
     marker_limit = int(request.GET.get('m_limit', '100'))
     query = str(request.GET.get('query', ''))
@@ -752,6 +587,7 @@ def map_plotline(request):
     return render(request, 'visualizer/map_plotline.html',
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
 
+
 def map_heatmap(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
@@ -836,7 +672,7 @@ def map_viz_folium_contour(request):
         agg_function = str(request.GET.get('agg_func', 'avg'))
 
         q = AbstractQuery.objects.get(pk=int(query))
-        q = TempQuery(document=q.document)
+        q = Query(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
         #     doc['orderings'] = []
@@ -866,21 +702,21 @@ def map_viz_folium_contour(request):
 
         # print doc
         q.document = doc
-        # raw_query = q.raw_query
-
+        raw_query = q.raw_query
         # select_clause = re.findall(r"SELECT.*?\nFROM", raw_query)[0]
         # names = re.findall(r"round\((.*?)\)", select_clause)
-
-        # names = re.findall(r"round\((.*?)\)", raw_query)
-        # for name in names:
-        #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
-
+        names = re.findall(r"round\((.*?)\)", raw_query)
+        for name in names:
+            raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
+        print raw_query
         # Create a leaflet map using folium
         m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
 
-        query_data = q.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
+        cursor = connection.cursor()
+        cursor.execute(raw_query)
+        data = cursor.fetchall()
+        # print ("Data:")
+        # print data[:3]
 
         var_index = lat_index = lon_index = 0
         result_headers = q.execute(only_headers=True)[0]['headers']
@@ -973,9 +809,8 @@ def map_viz_folium_contour(request):
         data_img.close()
 
         # Overlay the image
-        contour_layer = folium.raster_layers.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
-                                                          bounds=[[lats_bins.min(), lons_bins.min()],
-                                                                  [lats_bins.max(), lons_bins.max()]])
+        contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
+                                                          bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
         contour_layer.layer_name = 'Contour'
         m.add_child(contour_layer)
 
@@ -1011,9 +846,8 @@ def map_viz_folium_contour(request):
             data_grid.append(nlist)
 
         return render(request, 'visualizer/map_viz_folium.html',
-                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step, 'data_grid': data_grid,
-                       'min_lat': min_lat, 'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon,
-                       'agg_function': agg_function, 'legend_id': legpath})
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step, 'data_grid': data_grid, 'min_lat': min_lat,
+                       'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon, 'agg_function': agg_function, 'legend_id': legpath})
     except HttpResponseNotFound:
         return HttpResponseNotFound
     except Exception:
@@ -1309,277 +1143,6 @@ def get_pie_chart_zep(request):
     return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
 
 
-def test_request_zep(request):
-    query = 6
-    raw_query = Query.objects.get(pk=query).raw_query
-    print raw_query
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    # response = requests.delete("http://localhost:8080/api/notebook/"+str(notebook_id))
-    return render(request, 'visualizer/table_zep.html', {'notebook_id': notebook_id, 'paragraph_id': viz_paragraph_id})
-
-
-
-def get_column_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    query = TempQuery(document=query.document)
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-    y_var_list = y_var.split(",")
-    agg_function = str(request.GET.get('agg_func', 'avg'))
-
-    doc = query.document
-    print doc
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] in y_var_list:
-                s['aggregate'] = agg_function
-                s['exclude'] = False
-            elif s['name'] == x_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            else:
-                s['exclude'] = True
-    print doc
-
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-    query.document = doc
-    # raw_query = query.raw_query
-    # print doc
-
-
-    query_data = query.execute()
-    data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
-
-    x_var_index = 0
-    y_var_index = []
-    y_var_indlist = []
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] in y_var_list:
-            y_var_index.insert(len(y_var_index), idx)
-            y_var_indlist.insert(len(y_var_indlist), c['name'])
-        elif c['name'] == x_var:
-            x_var_index = idx
-
-    json_data = []
-    for d in data:
-        count = 0
-        dict = {}
-        for y_index in y_var_index:
-            newvar = str(y_var_indlist[count]).encode('ascii')
-            dict.update({newvar: str(d[y_index]).encode('ascii')})
-            count = count + 1
-
-        dict.update({x_var: str(d[x_var_index])})
-        json_data.append(dict)
-    print (json_data)
-
-    if 'time' in x_var:
-        isDate = 'true'
-    else:
-        isDate = 'false'
-    return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
-
-
-def get_line_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = AbstractQuery.objects.get(pk=query_pk)
-    query = TempQuery(document=query.document)
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-    y_var_list = y_var.split(",")
-    agg_function = str(request.GET.get('agg_func', 'avg'))
-
-    doc = query.document
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] in y_var_list:
-                s['aggregate'] = agg_function
-                s['exclude'] = False
-            elif s['name'] == x_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            else:
-                s['exclude'] = True
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-    query.document = doc
-    # raw_query = query.raw_query
-    # print doc
-
-
-    query_data = query.execute()
-    data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
-
-    x_var_index = 0
-    y_var_index = []
-    y_var_indlist = []
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] in y_var_list:
-            y_var_index.insert(len(y_var_index), idx)
-            y_var_indlist.insert(len(y_var_indlist), c['name'])
-        elif c['name'] == x_var:
-            x_var_index = idx
-
-    json_data = []
-    for d in data:
-        count = 0
-        dict = {}
-        for y_index in y_var_index:
-            newvar = str(y_var_indlist[count]).encode('ascii')
-            dict.update({newvar: str(d[y_index]).encode('ascii')})
-            count = count + 1
-
-        dict.update({x_var: str(d[x_var_index])})
-        json_data.append(dict)
-    print (json_data)
-
-    # notebook_id = create_zep_note(name='bdo_test')
-    # query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    # # sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    # # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    # # reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    # # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='toJSON_paragraph')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    # # json_data = '{ "data":' + json_data + '}'
-
-    # session_id = create_livy_session(kind='pyspark')
-    # query_statement_id = create_livy_query_statement(session_id=session_id, raw_query=raw_query)
-    # json_data = create_livy_toJSON_paragraph(session_id=session_id)['text/plain']
-    # print json_data
-
-    # json_data = json_data.replace("u'{", "{")
-    # json_data = json_data.replace("}'", "}")
-    # json_data = json_data.replace("+03:00", "")
-    #
-    # print str(json_data)
-    # print json.loads(str(json_data))
-    #
-
-    # doc = query.document
-
-    if 'time' in x_var:
-        isDate = 'true'
-    else:
-        isDate = 'false'
-
-    return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
-
-
-def get_pie_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = AbstractQuery.objects.get(pk=query_pk)
-    query = TempQuery(document=query.document)
-    key_var = str(request.GET.get('key_var', ''))
-    value_var = str(request.GET.get('value_var', ''))
-    agg_func=str(request.GET.get('agg_func','avg'))
-
-    doc = query.document
-    print doc
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == value_var:
-                s['aggregate'] = agg_func
-                s['exclude'] = False
-            elif s['name'] == key_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            else:
-                s['exclude'] = True
-    print doc
-
-    doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
-    query.document = doc
-    # raw_query = query.raw_query
-    # print doc
-
-
-    query_data = query.execute()
-    data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
-
-    value_var_index = key_var_index = 0
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == value_var:
-            value_var_index = idx
-        elif c['name'] == key_var:
-            key_var_index = idx
-
-    json_data = []
-    for d in data:
-        json_data.append({value_var: d[0], key_var: str(d[1])})
-
-    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
-
-
-
-# def get_pie_chart_am(request):
-#     query_pk = int(str(request.GET.get('query', '')))
-#     query = AbstractQuery.objects.get(pk=query_pk)
-#     query = Query(document=query.document)
-#     key_var = str(request.GET.get('key_var', ''))
-#     value_var = str(request.GET.get('value_var', ''))
-#
-#     doc = query.document
-#     print doc
-#     for f in doc['from']:
-#         for s in f['select']:
-#             if s['name'] == value_var:
-#                 s['aggregate'] = 'avg'
-#                 s['exclude'] = False
-#             elif s['name'] == key_var:
-#                 s['groupBy'] = True
-#                 s['exclude'] = False
-#             else:
-#                 s['exclude'] = True
-#     print doc
-#
-#     doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
-#     query.document = doc
-#     raw_query = query.raw_query
-#     print doc
-#     print raw_query
-#
-#     #result_data = query.execute()['results']
-#     #print result_data
-#
-#     try:
-#         connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
-#     except:
-#         print "I am unable to connect to the database"
-#     cursor = connection.cursor()
-#     cursor.execute(raw_query)
-#     result_data = cursor.fetchall()
-#     result_headers = query.execute(only_headers=True)[0]['headers']
-#
-#     value_var_index = key_var_index = 0
-#     for idx, c in enumerate(result_headers['columns']):
-#         if c['name'] == value_var:
-#             value_var_index = idx
-#         elif c['name'] == key_var:
-#             key_var_index = idx
-#
-#     json_data = []
-#     for d in result_data:
-#         json_data.append({value_var: d[0], key_var: str(d[1])})
-#
-#     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
-
-
-
-
 def get_histogram_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
     query = AbstractQuery.objects.get(pk=query_pk)
@@ -1597,6 +1160,7 @@ def get_histogram_chart_am(request):
                 s['exclude'] = False
             elif s['name'] == x_var:
                 s['exclude'] = False
+                s['groupBy'] = True
             else:
                 s['exclude'] = True
     print doc
@@ -1677,11 +1241,13 @@ def get_histogram_2d_am(request):
     for f in doc['from']:
         for s in f['select']:
             if s['name'] == y_var:
-                # s['aggregate'] = agg_function
+                s['groupBy'] = False
+                s['aggregate'] = ''
                 s['exclude'] = False
             elif s['name'] == x_var:
-                # s['groupBy'] = False
+                s['groupBy'] = False
                 s['exclude'] = False
+                s['aggregate'] = ''
             else:
                 s['exclude'] = True
     print doc
@@ -1837,8 +1403,255 @@ def get_histogram_2d_am(request):
                    'bin_x': bin_x_contr, 'bin_y': bin_y_contr, 'legend_id': legpath})
 
 
-def get_data_table(request):
+def test_request_zep(request):
+    query = 6
+    raw_query = Query.objects.get(pk=query).raw_query
+    print raw_query
 
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    # response = requests.delete("http://localhost:8080/api/notebook/"+str(notebook_id))
+    return render(request, 'visualizer/table_zep.html', {'notebook_id': notebook_id, 'paragraph_id': viz_paragraph_id})
+
+
+def get_line_chart_am(request):
+    query_pk = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+    y_var_list = y_var.split(",")
+    agg_function = str(request.GET.get('agg_func', 'avg'))
+
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = Query(document=query.document)
+        doc = query.document
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] in y_var_list:
+                    s['aggregate'] = agg_function
+                    s['exclude'] = False
+                elif s['name'] == x_var:
+                    s['groupBy'] = True
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+        query.document = doc
+        # raw_query = query.raw_query
+        # print doc
+
+
+        query_data = query.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+
+        x_var_index = 0
+        y_var_index = []
+        y_var_indlist = []
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] in y_var_list:
+                y_var_index.insert(len(y_var_index), idx)
+                y_var_indlist.insert(len(y_var_indlist), c['name'])
+            elif c['name'] == x_var:
+                x_var_index = idx
+
+        json_data = []
+        for d in data:
+            count = 0
+            dict = {}
+            for y_index in y_var_index:
+                newvar = str(y_var_indlist[count]).encode('ascii')
+                dict.update({newvar: str(d[y_index]).encode('ascii')})
+                count = count + 1
+
+            dict.update({x_var: str(d[x_var_index])})
+            json_data.append(dict)
+        print (json_data)
+
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print json_data
+
+
+    #notebook_id = create_zep_note(name='bdo_test')
+    # query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    # # sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    # # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    # # reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    # # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='toJSON_paragraph')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # # json_data = '{ "data":' + json_data + '}'
+
+    #session_id = create_livy_session(kind='pyspark')
+    #query_statement_id = create_livy_query_statement(session_id=session_id, raw_query=raw_query)
+    #json_data = create_livy_toJSON_paragraph(session_id=session_id)['text/plain']
+    #print json_data
+
+    #json_data = json_data.replace("u'{", "{")
+    #json_data = json_data.replace("}'", "}")
+    #json_data = json_data.replace("+03:00", "")
+    #
+    #print str(json_data)
+    # print json.loads(str(json_data))
+    #
+
+    if 'time' in x_var:
+        isDate = 'true'
+    else:
+        isDate = 'false'
+
+    return render(request, 'visualizer/line_chart_am.html',
+                  {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
+
+def get_pie_chart_am(request):
+    query_pk = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
+    key_var = str(request.GET.get('key_var', ''))
+    value_var = str(request.GET.get('value_var', ''))
+    agg_func = str(request.GET.get('agg_func', 'avg'))
+
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = Query(document=query.document)
+        doc = query.document
+        print doc
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == value_var:
+                    s['aggregate'] = agg_func
+                    s['exclude'] = False
+                elif s['name'] == key_var:
+                    s['groupBy'] = True
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        print doc
+
+        doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
+        query.document = doc
+        # raw_query = query.raw_query
+        # print doc
+
+
+        query_data = query.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+
+        value_var_index = key_var_index = 0
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == value_var:
+                value_var_index = idx
+            elif c['name'] == key_var:
+                key_var_index = idx
+
+        json_data = []
+        for d in data:
+            json_data.append({value_var: d[0], key_var: str(d[1])})
+
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=key_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print json_data
+
+    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
+
+
+def get_column_chart_am(request):
+    query_pk = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
+
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+    y_var_list = y_var.split(",")
+    agg_function = str(request.GET.get('agg_func', 'avg'))
+
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = Query(document=query.document)
+
+        doc = query.document
+        print doc
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] in y_var_list:
+                    s['aggregate'] = agg_function
+                    s['exclude'] = False
+                elif s['name'] == x_var:
+                    s['groupBy'] = True
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        print doc
+
+        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+        query.document = doc
+        # raw_query = query.raw_query
+        # print doc
+
+
+        query_data = query.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+
+        x_var_index = 0
+        y_var_index = []
+        y_var_indlist = []
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] in y_var_list:
+                y_var_index.insert(len(y_var_index), idx)
+                y_var_indlist.insert(len(y_var_indlist), c['name'])
+            elif c['name'] == x_var:
+                x_var_index = idx
+
+        json_data = []
+        for d in data:
+            count = 0
+            dict = {}
+            for y_index in y_var_index:
+                newvar = str(y_var_indlist[count]).encode('ascii')
+                dict.update({newvar: str(d[y_index]).encode('ascii')})
+                count = count + 1
+
+            dict.update({x_var: str(d[x_var_index])})
+            json_data.append(dict)
+        print (json_data)
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print json_data
+
+    if 'time' in x_var:
+        isDate = 'true'
+    else:
+        isDate = 'false'
+    return render(request, 'visualizer/column_chart_am.html',
+                  {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
+
+def get_data_table(request):
     query_pk = int(str(request.GET.get('query', '')))
     query = AbstractQuery.objects.get(pk=query_pk)
 
@@ -1849,8 +1662,6 @@ def get_data_table(request):
     #     json_data.append({y_var: d[y_var_index], x_var: str(d[x_var_index])})
 
     return render(request, 'visualizer/data_table.html', {'data': result_data})
-
-
 
 
 def agg_func_selector(agg_func,data,bins,y_var_index,x_var_index):
@@ -1939,7 +1750,6 @@ def agg_func_selector(agg_func,data,bins,y_var_index,x_var_index):
         return final_data
 
 
-
 def frange(dist,numb):
     start=dist[0]
     end=dist[1]
@@ -1948,11 +1758,13 @@ def frange(dist,numb):
     else:
         return False
 
+
 def convert_to_hex(rgba_color) :
     red = int(rgba_color[0]*255)
     green = int(rgba_color[1]*255)
     blue = int(rgba_color[2]*255)
     return '0x{r:02x}{g:02x}{b:02x}'.format(r=red,g=green,b=blue)
+
 
 def color_choice(value,map,value_level):
     count=0
@@ -1961,5 +1773,4 @@ def color_choice(value,map,value_level):
             return map[count]
         count=count+1
     return map[len(map)-1]
-
 
