@@ -17,7 +17,7 @@ DATABASES = {
         'NAME': 'bigdataocean',
         'USER': 'bdo',
         'PASSWORD': 'df195715HBdhahfP',
-        'HOST': '212.101.173.34',
+        'HOST': '212.101.173.21',
         'PORT': '5432',
     }
 }
