@@ -250,11 +250,9 @@
 
     </script>
 
-    <script src="{% static 'dashboard_builder/js/selbound.js' %}"></script>
 
     <script>
         $(document).ready(function(){
-                load_map();
 
             $("#myModal #select_data_popover").popover({
                 html: true,
@@ -300,9 +298,6 @@
                     success: function(form_fields){
                         $("#conf-container").html(form_fields);
                         $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
-                        move_map();
-                        map.invalidateSize();
-
 
                         $(component_selector).popover({
                             html: true,
