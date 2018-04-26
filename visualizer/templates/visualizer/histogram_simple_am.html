@@ -41,36 +41,16 @@
 var chart = AmCharts.makeChart("chartdiv", {
     "type": "serial",
     "theme": "light",
-    "legend": {
-        "align":"center",
-        "horizontalGap": 10,
-        "maxColumns": 4,
-        "position": "bottom",
-        "markerSize": 15,
-        "marginTop": 20,
-        "switchable": true,
-        "fontSize": 14,
-        "equalWidths": false,
-        "pulled":true,
-        "valueWidth":130,
-    },
     "marginRight": 20,
     "marginLeft": 20,
     "autoMarginOffset": 10,
     "mouseWheelZoomEnabled": true,
     "valueAxes": [
-        {% for item in value_col %}
-            {
-                "id": "v{{ forloop.counter0 }}",
-                "axisAlpha": 0,
-                {% if forloop.counter0 == 0 %}"position": "left",
-                    {% elif forloop.counter0 == 1 %}"position": "right",
-                    {% elif forloop.counter0 == 2 %}"position":"left","offset":60,
-                    {% elif forloop.counter0 == 3 %}"position":"right","offset":40,
-                {% endif %}
-                {#"ignoreAxisWidth": true#}
-            },
-        {% endfor %}
+        {
+            "id": "v0",
+            "axisAlpha": 0,
+            "position": "left",
+        }
     ],
 
     "balloon": {
@@ -80,34 +60,32 @@ var chart = AmCharts.makeChart("chartdiv", {
     "startDuration": 1,
 
     "graphs": [
-        {% for item in value_col %}
-            {
-                "id": "g{{ forloop.counter0 }}",
-                "valueAxis": "v{{ forloop.counter0 }}",
-                "balloon": {
-                    "drop": false,
-                    "adjustBorderColor": false,
-                    "color": "#ffffff"
-                },
-                "fillAlphas": 0.8,
-                "bullet": "round",
-                "bulletBorderAlpha": 1,
-                "bulletColor": "#FFFFFF",
-                "bulletSize": 2,
-                "hideBulletsCount": 50,
-                "lineThickness": 2,
-                "title": "{{ item }}",
-                "type":"column",
-                "useLineColorForBulletBorder": true,
-                "valueField": "{{ item }}",
-                "balloonText": "<span style='font-size:15px;'>[[value]]</span>",
+        {
+            "id": "g0",
+            "valueAxis": "v0",
+            "balloon": {
+                "drop": false,
+                "adjustBorderColor": false,
+                "color": "#ffffff"
             },
-        {% endfor %}
+            "fillAlphas": 0.8,
+            "bullet": "round",
+            "bulletBorderAlpha": 1,
+            "bulletColor": "#FFFFFF",
+            "bulletSize": 2,
+            "hideBulletsCount": 50,
+            "lineThickness": 2,
+            "title": "{{ value_col }}",
+            "type":"column",
+            "useLineColorForBulletBorder": true,
+            "valueField": "{{ value_col }}",
+            "balloonText": "<span style='font-size:15px;'>[[value]]</span>",
+            },
     ],
     "chartScrollbar": {
         "graph": "g0",
         "oppositeAxis": false,
-        "offset": 30,
+        "offset": 100,
         "scrollbarHeight": 80,
         "backgroundAlpha": 0,
         "selectedBackgroundAlpha": 0.1,
@@ -116,7 +94,7 @@ var chart = AmCharts.makeChart("chartdiv", {
         "graphLineAlpha": 0.5,
         "selectedGraphFillAlpha": 0,
         "selectedGraphLineAlpha": 1,
-        "autoGridCount": true,
+{#        "autoGridCount": true,#}
         "color": "#AAAAAA",
         "graphType":"line"
     },
@@ -138,8 +116,7 @@ var chart = AmCharts.makeChart("chartdiv", {
     "categoryField": "{{ category_col }}",
     "categoryAxis": {
         {#"gridPosition": "start",#}
-        "labelRotation": 0,
-        "parseDates": {{ isDate }},
+        "labelRotation": 45,
         "dashLength": 1,
         "minorGridEnabled": true
       },

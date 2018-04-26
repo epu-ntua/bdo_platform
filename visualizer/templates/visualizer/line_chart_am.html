@@ -38,82 +38,108 @@
 <script type="text/javascript">//<![CDATA[
 
 var chart = AmCharts.makeChart("chartdiv", {
-  "type": "serial",
-  "theme": "light",
-  "marginRight": 40,
-  "marginLeft": 40,
-  "autoMarginOffset": 20,
-  "mouseWheelZoomEnabled": true,
-{#  "dataDateFormat": "YYYY-MM-DDTJJ:NN:SS.QQQTZD",#}
-  "valueAxes": [{
-    "id": "v1",
-    "axisAlpha": 0,
-    "position": "left",
-    "ignoreAxisWidth": true
-  }],
-  "balloon": {
-    "borderThickness": 1,
-    "shadowAlpha": 0
-  },
-  "graphs": [{
-    "id": "g1",
-    "balloon": {
-      "drop": false,
-      "adjustBorderColor": false,
-      "color": "#ffffff"
+    "type": "serial",
+    "theme": "light",
+    "legend": {
+        "align":"center",
+        "horizontalGap": 10,
+        "maxColumns": 4,
+        "position": "bottom",
+        "markerSize": 15,
+        "marginTop": 20,
+        "switchable": true,
+        "fontSize": 14,
+        "equalWidths": false,
+        "pulled":true,
+        "valueWidth":130
     },
-    "bullet": "round",
-    "bulletBorderAlpha": 1,
-    "bulletColor": "#FFFFFF",
-    "bulletSize": 2,
-    "hideBulletsCount": 50,
-    "lineThickness": 2,
-    "title": "red line",
-    "useLineColorForBulletBorder": true,
-    "valueField": "{{ value_col }}",
-    "balloonText": "<span style='font-size:15px;'>[[value]]</span>"
-  },],
-  "chartScrollbar": {
-    "graph": "g1",
-    "oppositeAxis": false,
-    "offset": 30,
-    "scrollbarHeight": 80,
-    "backgroundAlpha": 0,
-    "selectedBackgroundAlpha": 0.1,
-    "selectedBackgroundColor": "#888888",
-    "graphFillAlpha": 0,
-    "graphLineAlpha": 0.5,
-    "selectedGraphFillAlpha": 0,
-    "selectedGraphLineAlpha": 1,
-    "autoGridCount": true,
-    "color": "#AAAAAA"
-  },
-  "chartCursor": {
-    "pan": true,
-    "valueLineEnabled": true,
-    "valueLineBalloonEnabled": true,
-    "cursorAlpha": 1,
-    "cursorColor": "#258cbb",
-    "limitToGraph": "g1",
-    "valueLineAlpha": 0.2,
-    "valueZoomable": true
-  },
-  "valueScrollbar": {
-    "oppositeAxis": false,
-    "offset": 50,
-    "scrollbarHeight": 10
-  },
-  "categoryField": "{{ category_col }}",
-  "categoryAxis": {
-    "parseDates": {{ isDate }},
-    {% if isDate %}"minPeriod": "ss",{% endif %}
-    "dashLength": 1,
-    "minorGridEnabled": true
-  },
-  "export": {
-    "enabled": true
-  },
-  "dataProvider": {{ data|safe }}
+    "marginRight": 20,
+    "marginLeft": 20,
+    "autoMarginOffset": 10,
+    "mouseWheelZoomEnabled": true,
+    {#  "dataDateFormat": "YYYY-MM-DDTJJ:NN:SS.QQQTZD",#}
+    "valueAxes": [
+        {% for item in value_col %}
+            {
+                "id": "v{{ forloop.counter0 }}",
+                "axisAlpha": 0,
+                {% if forloop.counter0 == 0 %}"position": "left",
+                    {% elif forloop.counter0 == 1 %}"position": "right",
+                    {% elif forloop.counter0 == 2 %}"position":"left","offset":60,
+                    {% elif forloop.counter0 == 3 %}"position":"right","offset":40,
+                {% endif %}
+                {#"ignoreAxisWidth": true#}
+            },
+        {% endfor %}
+    ],
+    "balloon": {
+        "borderThickness": 1,
+        "shadowAlpha": 0
+    },
+    "graphs": [
+        {% for item in value_col %}
+            {
+                "id": "g{{ forloop.counter0 }}",
+                "valueAxis": "v{{ forloop.counter0 }}",
+                "balloon": {
+                    "drop": false,
+                    "adjustBorderColor": false,
+                    "color": "#ffffff"
+                },
+                "bullet": "round",
+                "bulletBorderAlpha": 1,
+                "bulletColor": "#FFFFFF",
+                "bulletSize": 2,
+                "hideBulletsCount": 50,
+                "lineThickness": 2,
+                "title": "{{ item }}",
+                "useLineColorForBulletBorder": true,
+                "valueField": "{{ item }}",
+                "balloonText": "<span style='font-size:15px;'>[[value]]</span>"
+            },
+        {% endfor %}
+    ],
+    "chartScrollbar": {
+        "graph": "g0",
+        "oppositeAxis": false,
+        "offset": 30,
+        "scrollbarHeight": 80,
+        "backgroundAlpha": 0,
+        "selectedBackgroundAlpha": 0.1,
+        "selectedBackgroundColor": "#888888",
+        "graphFillAlpha": 0,
+        "graphLineAlpha": 0.5,
+        "selectedGraphFillAlpha": 0,
+        "selectedGraphLineAlpha": 1,
+        "autoGridCount": true,
+        "color": "#AAAAAA"
+    },
+    "chartCursor": {
+        "pan": true,
+        "valueLineEnabled": true,
+        "valueLineBalloonEnabled": true,
+        "cursorAlpha": 1,
+        "cursorColor": "#258cbb",
+        "limitToGraph": "g0",
+        "valueLineAlpha": 0.2,
+        "valueZoomable": true
+    },
+    "valueScrollbar": {
+        "oppositeAxis": false,
+        "offset": 50,
+        "scrollbarHeight": 10
+    },
+    "categoryField": "{{ category_col }}",
+    "categoryAxis": {
+        "parseDates": {{ isDate }},
+        {% if isDate %}"minPeriod": "ss",{% endif %}
+        "dashLength": 1,
+        "minorGridEnabled": true,
+    },
+    "export": {
+        "enabled": true
+    },
+    "dataProvider": {{ data|safe }}
 });
 
 chart.addListener("rendered", zoomChart);
