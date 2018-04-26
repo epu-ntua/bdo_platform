@@ -1480,6 +1480,7 @@ def get_line_chart_am(request):
         toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
         run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         print json_data
 
 
@@ -1517,109 +1518,131 @@ def get_line_chart_am(request):
                   {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
 
 def get_pie_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = AbstractQuery.objects.get(pk=query_pk)
-    query = TempQuery(document=query.document)
+    query_pk = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
     key_var = str(request.GET.get('key_var', ''))
     value_var = str(request.GET.get('value_var', ''))
     agg_func = str(request.GET.get('agg_func', 'avg'))
 
-    doc = query.document
-    print doc
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == value_var:
-                s['aggregate'] = agg_func
-                s['exclude'] = False
-            elif s['name'] == key_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            else:
-                s['exclude'] = True
-    print doc
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = Query(document=query.document)
+        doc = query.document
+        print doc
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == value_var:
+                    s['aggregate'] = agg_func
+                    s['exclude'] = False
+                elif s['name'] == key_var:
+                    s['groupBy'] = True
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        print doc
 
-    doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
-    query.document = doc
-    # raw_query = query.raw_query
-    # print doc
+        doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
+        query.document = doc
+        # raw_query = query.raw_query
+        # print doc
 
 
-    query_data = query.execute()
-    data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
+        query_data = query.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
 
-    value_var_index = key_var_index = 0
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == value_var:
-            value_var_index = idx
-        elif c['name'] == key_var:
-            key_var_index = idx
+        value_var_index = key_var_index = 0
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == value_var:
+                value_var_index = idx
+            elif c['name'] == key_var:
+                key_var_index = idx
 
-    json_data = []
-    for d in data:
-        json_data.append({value_var: d[0], key_var: str(d[1])})
+        json_data = []
+        for d in data:
+            json_data.append({value_var: d[0], key_var: str(d[1])})
+
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=key_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print json_data
 
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
 
 
 def get_column_chart_am(request):
     query_pk = int(str(request.GET.get('query', '0')))
-    query = AbstractQuery.objects.get(pk=query_pk)
-    query = TempQuery(document=query.document)
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
 
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     y_var_list = y_var.split(",")
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
-    doc = query.document
-    print doc
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] in y_var_list:
-                s['aggregate'] = agg_function
-                s['exclude'] = False
-            elif s['name'] == x_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            else:
-                s['exclude'] = True
-    print doc
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = Query(document=query.document)
 
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-    query.document = doc
-    # raw_query = query.raw_query
-    # print doc
+        doc = query.document
+        print doc
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] in y_var_list:
+                    s['aggregate'] = agg_function
+                    s['exclude'] = False
+                elif s['name'] == x_var:
+                    s['groupBy'] = True
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        print doc
+
+        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+        query.document = doc
+        # raw_query = query.raw_query
+        # print doc
 
 
-    query_data = query.execute()
-    data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
+        query_data = query.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
 
-    x_var_index = 0
-    y_var_index = []
-    y_var_indlist = []
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] in y_var_list:
-            y_var_index.insert(len(y_var_index), idx)
-            y_var_indlist.insert(len(y_var_indlist), c['name'])
-        elif c['name'] == x_var:
-            x_var_index = idx
+        x_var_index = 0
+        y_var_index = []
+        y_var_indlist = []
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] in y_var_list:
+                y_var_index.insert(len(y_var_index), idx)
+                y_var_indlist.insert(len(y_var_indlist), c['name'])
+            elif c['name'] == x_var:
+                x_var_index = idx
 
-    json_data = []
-    for d in data:
-        count = 0
-        dict = {}
-        for y_index in y_var_index:
-            newvar = str(y_var_indlist[count]).encode('ascii')
-            dict.update({newvar: str(d[y_index]).encode('ascii')})
-            count = count + 1
+        json_data = []
+        for d in data:
+            count = 0
+            dict = {}
+            for y_index in y_var_index:
+                newvar = str(y_var_indlist[count]).encode('ascii')
+                dict.update({newvar: str(d[y_index]).encode('ascii')})
+                count = count + 1
 
-        dict.update({x_var: str(d[x_var_index])})
-        json_data.append(dict)
-    print (json_data)
+            dict.update({x_var: str(d[x_var_index])})
+            json_data.append(dict)
+        print (json_data)
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print json_data
 
     if 'time' in x_var:
         isDate = 'true'
