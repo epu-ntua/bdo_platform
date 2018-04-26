@@ -1,27 +1,29 @@
 from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
-# import matplotlib
-import requests
+from __future__ import division
+
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from bs4 import BeautifulSoup
 
 from datetime import datetime, timedelta
-import time
 import os
 from nvd3 import pieChart, lineChart
 import psycopg2
 import re
 
-import matplotlib.pyplot as plt
-
 from django.db import connection
 
-from matplotlib.figure import Figure
 from matplotlib import use
-from PIL import Image, ImageChops
 
-from query_designer.models import AbstractQuery
+from query_designer.models import TempQuery
+
+use('Agg')
+
+import pylab as pl
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+
 from utils import *
 from visualizer.models import Visualization
 import time
@@ -500,8 +502,9 @@ def map_viz_folium_contour(request):
         step = float(request.GET.get('step', 0.1))
         variable = str(request.GET.get('feat_1', ''))
         query = str(request.GET.get('query', ''))
+        agg_function = str(request.GET.get('agg_func', 'avg'))
 
-        q = AbstractQuery.objects.get(pk=int(query))
+        q = Query.objects.get(pk=int(query))
         q = Query(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
@@ -510,11 +513,11 @@ def map_viz_folium_contour(request):
         doc['limit'] = []
         var_query_id = variable[:variable.find('_')]
 
-        print doc
+        # print doc
         for f in doc['from']:
             for s in f['select']:
                 if s['name'] == variable:
-                    s['aggregate'] = 'avg'
+                    s['aggregate'] = agg_function
                     s['exclude'] = False
                 elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
                     s['groupBy'] = True
@@ -530,32 +533,31 @@ def map_viz_folium_contour(request):
                     s['exclude'] = True
                     s['groupBy'] = False
 
-        print doc
+        # print doc
         q.document = doc
         raw_query = q.raw_query
-        print raw_query
-        #select_clause = re.findall(r"SELECT.*?\nFROM", raw_query)[0]
-        #names = re.findall(r"round\((.*?)\)", select_clause)
+        # select_clause = re.findall(r"SELECT.*?\nFROM", raw_query)[0]
+        # names = re.findall(r"round\((.*?)\)", select_clause)
         names = re.findall(r"round\((.*?)\)", raw_query)
         for name in names:
             raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
 
-
         # Create a leaflet map using folium
-        m = create_folium_map(location=[0,0], zoom_start=3, max_zoom=10)
+        m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
 
-        try:
-            connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='13131313'")
-        except:
-            print "I am unable to connect to the database"
+        # try:
+        #     connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='sssshmmy'")
+        # except:
+        #     print "I am unable to connect to the database"
         cursor = connection.cursor()
         cursor.execute(raw_query)
         data = cursor.fetchall()
-        print data[:3]
+        # print ("Data:")
+        # print data[:3]
 
         var_index = lat_index = lon_index = 0
         result_headers = q.execute(only_headers=True)[0]['headers']
-        print result_headers
+        # print result_headers
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] == variable:
                 var_index = idx
@@ -564,39 +566,24 @@ def map_viz_folium_contour(request):
             elif str(c['name']).find('lon') >= 0:
                 lon_index = idx
 
-        print var_index, lat_index, lon_index
-
-        # cursor = connection.cursor()
-        # cursor.execute(
-        #     """ SELECT  round(min(lat_2), 1) AS min_lat,
-        #                 round(max(lat_2), 1) AS max_lat,
-        #                 round(min(lon_3), 1) AS min_lon,
-        #                 round(max(lon_3), 1) AS max_lon,
-        #                 min(value)           AS min_val,
-        #                 max(value)           AS max_val
-        #         FROM   seabed_temp_1;""")
-        # min_lat, max_lat, min_lon, max_lon, min_val, max_val = map(float, cursor.fetchall()[0])
-        # print min_lat, max_lat, min_lon, max_lon, min_val, max_val
-
-        # TODO: try to create the query above
         min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
         max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
         min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
         max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
         min_val = float(min(data, key=lambda x: x[var_index])[var_index])
         max_val = float(max(data, key=lambda x: x[var_index])[var_index])
-        print min_lat, max_lat, min_lon, max_lon, min_val, max_val
+        # print min_lat, max_lat, min_lon, max_lon, min_val, max_val
 
         lats_bins = np.arange(min_lat, max_lat + 0.00001, 0.1)
         # print lats_bins
         lons_bins = np.arange(min_lon, max_lon + 0.00001, 0.1)
         # print lons_bins
         Lats, Lons = np.meshgrid(lats_bins, lons_bins)
-        #print Lats
-        #print Lons
+        # print Lats
+        # print Lons
 
         # Create grid data needed for the contour plot
-        #final_data = create_grid_data(lats_bins, lons_bins, data)
+        # final_data = create_grid_data(lats_bins, lons_bins, data)
 
         final_data = []
         it = iter(data)
@@ -616,117 +603,88 @@ def map_viz_folium_contour(request):
                 else:
                     row.append(None)
             final_data.append(row)
-        print final_data[:3]
+
+        # print final_data[:3]
 
 
-        # # Perform a query and get data
-        # headers, data = get_test_data(query, request.user)
-        # other_dims = list()
-        # for idx, col in enumerate(headers['columns']):
-        #     if col['isVariable'] == True:
-        #         if str(col['name']) == variable:
-        #             print 'found'
-        #             var_col = idx
-        #     else:
-        #         if str(col['name']).find('latitude') != -1:
-        #             lat_col = idx
-        #         elif str(col['name']).find('longitude') != -1:
-        #             lon_col = idx
-        #         else:
-        #             other_dims.append(idx)
-        # other_dims_first_vals = list()
-        # for d in other_dims:
-        #     other_dims_first_vals.append(str(data[0][d]))
-        #
-        # print other_dims
-        # print other_dims_first_vals
-        # var_col = 0
-        # # Select only data with the same (first) value on any other dimensions except lat/lon
-        # data = [(float(d[lat_col]), float(d[lon_col]), float(d[var_col])) for d in data if filter_data(d, other_dims, other_dims_first_vals) == 0]
-        # print data
-        # # Aggregate data into bins
-        # lats = np.array(sorted(list(set([float(item[0]) for item in data]))))
-        # lats_bins = create_bins(lats, step)
-        # lons = np.array(sorted(list(set([float(item[1]) for item in data]))))
-        # lons_bins = create_bins(lons, step)
-        #
-        # # create meshgrids of the 2 dimensions neede for the contour plot
-        # Lats, Lons = np.meshgrid(lats_bins, lons_bins)
-        #
-        # # Create grid data needed for the contour plot
-        # final_data = create_grid_data(lats_bins, lons_bins, data)
-        #
-        # print Lats
-        # print Lons
-        # print final_data
-        #
-        # # Set the intervals for each contour
-        # min_val = min([float(item[2]) for item in data])
-        # max_val = max([float(item[2]) for item in data])
         levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
         print 'level ok'
 
-
-        # Create a contour plot plot from grid (lat, lon) data
-        use('Agg')
+        # Create contour image to lay over the map
         fig = Figure()
         ax = fig.add_subplot(111)
         plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
         plt.axis('off')
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         plt.draw()
-        plt.savefig('map.png', bbox_inches=extent, transparent=True, pad_inches=0)
+        ts = str(time.time()).replace(".", "")
+        mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
+        plt.savefig(mappath, bbox_inches=extent, transparent=True, pad_inches=0)
+        plt.clf()
+        plt.close()
+        fig = None
+        ax = None
 
-        fig = None
-        ax = None
-        fig = Figure()
-        ax = fig.add_subplot(111)
-        fig = None
-        ax = None
+        # Create legend for the contour map
+        a = np.array([[min_val, max_val]])
+        pl.figure(figsize=(2.8, 0.4))
+        img = pl.imshow(a, cmap=plt.cm.coolwarm)
+        pl.gca().set_visible(False)
+        cax = pl.axes([0.1, 0.2, 0.8, 0.6])
+        cbar = pl.colorbar(orientation="horizontal", cax=cax)
+        cbar.ax.tick_params(labelsize=11, colors="#ffffff")
+        ts = str(time.time()).replace(".", "")
+        legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
+        pl.savefig(legpath, transparent=True, bbox_inches='tight')
+        legpath = legpath.split("static/", 1)[1]
+        pl.clf()
+        pl.close()
 
         # read in png file to numpy array
-        data_img = Image.open("map.png")
+        data_img = Image.open(mappath)
         data = trim(data_img)
         data_img.close()
-        #data = imrotate(data, 180)
 
         # Overlay the image
-        contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True, bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
+        contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
+                                                          bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
         contour_layer.layer_name = 'Contour'
         m.add_child(contour_layer)
 
-        # TODO: add other dimensions' names and values used for the contour along with colorbar
-
         # Overlay an extra coastline field (to be removed
         folium.GeoJson(open('ne_50m_land.geojson').read(),
-                       style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3})\
-            .add_to(m)\
-            .layer_name='Coastline'
-
+                       style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
+            .add_to(m) \
+            .layer_name = 'Coastline'
 
         # Add layer contorl
         folium.LayerControl().add_to(m)
 
-        # Create the map visualization and render it
+        # Parse the HTML to pass to template through the render
         m.save('templates/map.html')
         f = open('templates/map.html', 'r')
         map_html = f.read()
         soup = BeautifulSoup(map_html, 'html.parser')
         map_id = soup.find("div", {"class": "folium-map"}).get('id')
-        # print map_id
         js_all = soup.findAll('script')
-        # print(js_all)
         if len(js_all) > 5:
             js_all = [js.prettify() for js in js_all[5:]]
-        # print(js_all)
         css_all = soup.findAll('link')
         if len(css_all) > 3:
             css_all = [css.prettify() for css in css_all[3:]]
-        # print js
         f.close()
-        os.remove('map.png')
+        os.remove(mappath)
         os.remove('templates/map.html')
-        return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
+        # Create data grid for javascript pop-up
+        data_grid = []
+        for nlist in final_data:
+            nlist = map(str, nlist)
+            data_grid.append(nlist)
+
+        return render(request, 'visualizer/map_viz_folium.html',
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step, 'data_grid': data_grid, 'min_lat': min_lat,
+                       'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon, 'agg_function': agg_function, 'legend_id': legpath})
     except HttpResponseNotFound:
         return HttpResponseNotFound
     except Exception:

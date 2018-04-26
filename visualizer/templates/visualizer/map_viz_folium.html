@@ -2,6 +2,10 @@
 
 {% load static %}
 {% load leaflet_tags %}
+<head>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
+</head>
 
 
 {% block css %}
@@ -23,8 +27,11 @@
 
 {% block viz_content %}
 
-    {% leaflet_map map_id %}
-{#    <div id="{{ map_id }}" style="height: 500px;"></div>#}
+    {% leaflet_map map_id callback="window.map_init_basic"%}
+    <div style="position:absolute; bottom:30px; left:60px; ">
+        <img src="{% static legend_id %}" alt="My image" >
+
+    </div>
 {% endblock %}
 
 
@@ -46,5 +53,53 @@
     {% endfor %}
 
 
+    <script type="text/javascript">
+
+        var map = {{ map_id|safe }};
+        var min_lat = parseFloat("{{ min_lat }}");
+        var min_lon = parseFloat("{{ min_lon }}");
+        var max_lat=parseFloat("{{ max_lat }}");
+        var max_lon=parseFloat("{{ max_lon }}");
+        var step = parseFloat("{{ step }}");
+        var final_data={{ data_grid |safe}};
+        var agg_func= "{{ agg_function }}";
+        var popup = L.popup();
+        map.on('click',latLngPop);
+
+
+        function latLngPop(e) {
+            var cl_lat=e.latlng.lat.toFixed(4);
+            var cl_lon=e.latlng.lng.toFixed(4);
+            var idx_lat=parseInt((cl_lat-min_lat)/step);
+            var idx_lon=parseInt((cl_lon-min_lon)/step);
+
+
+
+            if((cl_lat<max_lat)&&(cl_lon<max_lon)&&(cl_lat>min_lat)&&(cl_lon>min_lon)) {
+
+                for (i=min_lat ; i<cl_lat ; i=i+step){
+                    var sa_lat=i;
+                }
+                sa_lat=Number((sa_lat).toFixed(4));
+                var ea_lat= Number((sa_lat + step).toFixed(4));
+
+                for (i=min_lon ; i<cl_lon ; i=i+step){
+                    var sa_lon=i;
+                }
+                sa_lon=Number((sa_lon).toFixed(4));
+                var ea_lon= Number((sa_lon + step).toFixed(4));
+
+                var value = (final_data[idx_lon])[idx_lat];
+                if (value != "None") {
+                    popup.setLatLng(e.latlng)
+                        .setContent("Latitude Area: [" + sa_lat +"  ,  " + ea_lat +"]"+
+                            "<br>Longitude Area: [" + sa_lon +"  ,  " + ea_lon +"]"+
+                            "<br>Value ("+ agg_func +") : " + value)
+                        .openOn(map);
+                }
+            }
+        }
+
+    </script>
 
 {% endblock %}
