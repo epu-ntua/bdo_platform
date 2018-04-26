@@ -20,12 +20,7 @@ $(document).ready(function(){
         $(this).popover('toggle');
 
 
-        $('#alg_vartype').empty();
-        $('#alg_vartype').append('<option>Integer</option>');
-        $('#alg_vartype').append('<option>Float</option>');
-        $('#alg_vartype').append('<option>String</option>');
-        $('#alg_vartype').append('<option>Date</option>');
-        $('#alg_vartype').append('<option>Spatial Coverage</option>');
+        populate_select("#alg_vartype");
 
 
         $('.popover-content #alg_vartype').select2();
@@ -33,6 +28,7 @@ $(document).ready(function(){
         var new_alg_arg_name;
         var new_alg_arg_title ;
         var new_alg_arg_type;
+        var new_alg_arg_typevalue;
         var new_alg_arg_desc;
         $('.popover-content #add_new_argument_btn2').click(function (e) {
             countrow=countrow+1;
@@ -54,9 +50,11 @@ $(document).ready(function(){
                 var edit_sel="#"+edit_btn_id;
                 var del_sel="#"+del_btn_id;
 
-                new_alg_arg_type = $("select#alg_vartype option:checked").val();
-                new_alg_arg_desc = $("#alg_vardescr").val();
-                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='name'>" + new_alg_arg_name + "</td> <td data-columnname='title'>" + new_alg_arg_title + "</td> <td data-columnname='type'> " + new_alg_arg_type + " </td> <td data-columnname='description'> <div style='min-width: 100%'>" + new_alg_arg_desc + " </div> </td> <td>"+ edit_row_btn +del_row_btn +" </td> </tr>";
+                // new_alg_arg_type = $("select#alg_vartype option:checked").val();
+                new_alg_arg_type = $("select#alg_vartype option:checked").text();
+                new_alg_arg_typevalue=$("#alg_vartype").val();
+                new_alg_arg_desc = $("#alg_vardescr").text();
+                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='name'>" + new_alg_arg_name + "</td> <td data-columnname='title'>" + new_alg_arg_title + "</td> <td data-columnname='type'><span> " + new_alg_arg_type + "</span><span style='display:none;'>"+new_alg_arg_typevalue+"</span>  </td> <td data-columnname='description'> <div style='min-width: 100%'>" + new_alg_arg_desc + " </div> </td> <td>"+ edit_row_btn +del_row_btn +" </td> </tr>";
                 $('#selected-arguments-table2 tbody').append(new_arg_tr_string);
 
                 $(edit_sel).popover({
@@ -71,12 +69,7 @@ $(document).ready(function(){
                     $('.btn_pop').not(this).popover('hide');
                     $(this).popover('toggle');
 
-                    $('#alg_vartype').empty();
-                    $('#alg_vartype').append('<option>Integer</option>');
-                    $('#alg_vartype').append('<option>Float</option>');
-                    $('#alg_vartype').append('<option>String</option>');
-                    $('#alg_vartype').append('<option>Date</option>');
-                    $('#alg_vartype').append('<option>Spatial Coverage</option>');
+                    populate_select("#alg_vartype");
 
                     $('.popover-content #alg_vartype').select2();
 
@@ -84,15 +77,16 @@ $(document).ready(function(){
                     temp=temp.replace("#edit_btn_id_","");
                     temp="#row_id_"+temp;
 
-                    var temp_alg_arg_name=$(temp).find($("td[data-columnname='name']")).text();
-                    var temp_alg_arg_title=$(temp).find($("td[data-columnname='title']")).text();
-                    var temp_alg_arg_type=$(temp).find($("td[data-columnname='type']")).text();
-                    var temp_alg_arg_desc=$(temp).find($("td[data-columnname='description']")).text();
+                    var temp_alg_arg_name=$(temp).find($("td[data-columnname='name']")).text().trim();
+                    var temp_alg_arg_title=$(temp).find($("td[data-columnname='title']")).text().trim();
+                    var temp_alg_arg_type=$(temp).find($("td[data-columnname='type']")).children().eq(0).text().trim();
+                    var temp_alg_arg_typevalue=$(temp).find($("td[data-columnname='type']")).children().eq(1).text().trim();
+                    var temp_alg_arg_desc=$(temp).find($("td[data-columnname='description']")).text().trim();
 
 
                     $("#alg_varname").val(temp_alg_arg_name);
                     $("#alg_vartitle").val(temp_alg_arg_title);
-                    $("select#alg_vartype ").val(temp_alg_arg_type.trim()).change();
+                    $("select#alg_vartype ").val((temp_alg_arg_typevalue).trim()).change();
                     $("#alg_vardescr").text(temp_alg_arg_desc);
 
 
@@ -100,7 +94,8 @@ $(document).ready(function(){
                     $('.popover-content #add_new_argument_btn2').click(function (e) {
                         new_alg_arg_name = $("#alg_varname").val();
                         new_alg_arg_title = $("#alg_vartitle").val();
-                        new_alg_arg_type = $("select#alg_vartype option:checked").val();
+                        new_alg_arg_type = $("select#alg_vartype option:checked").text();
+                        new_alg_arg_typevalue=$("#alg_vartype").val();
                         new_alg_arg_desc = $("#alg_vardescr").val();
                         if(check_duplicate_title_name(new_alg_arg_name,new_alg_arg_title,temp.replace("#",""))){
                             alert("Argument name or title already exists!")
@@ -108,7 +103,8 @@ $(document).ready(function(){
                         else if ((new_alg_arg_name!=null)&&(new_alg_arg_title!=null)&&(new_alg_arg_name.trim() !="")&&(new_alg_arg_title.trim()!="")){
                             $(temp).find($("td[data-columnname='name']")).text(new_alg_arg_name);
                             $(temp).find($("td[data-columnname='title']")).text(new_alg_arg_title);
-                            $(temp).find($("td[data-columnname='type']")).text(new_alg_arg_type);
+                            $(temp).find($("td[data-columnname='type']")).children().eq(0).text(new_alg_arg_type);
+                            $(temp).find($("td[data-columnname='type']")).children().eq(1).text(new_alg_arg_typevalue);
                             $(temp).find($("td[data-columnname='description']")).text(new_alg_arg_desc);
 
                             $(edit_sel).popover("hide");
@@ -151,12 +147,7 @@ $(document).ready(function(){
         $('.btn_pop').not(this).popover('hide');
         $(this).popover('toggle');
 
-        $('#filter_type').empty();
-        $('#filter_type').append('<option>Integer</option>');
-        $('#filter_type').append('<option>Float</option>');
-        $('#filter_type').append('<option>String</option>');
-        $('#filter_type').append('<option>Date</option>');
-        $('#filter_type').append('<option>Spatial Coverage</option>');
+        populate_select("#filter_type");
 
         $('.popover-content #filter_type').select2();
 
@@ -215,7 +206,8 @@ $(document).ready(function(){
             var new_filter_arg_title = $(".popover-content #filter_vartitle").val();
             var new_filter_arg_def = $(" .popover-content #filter_def_val").val();
             var new_filter_arg_desc = $(".popover-content #filter_descr").val();
-            var new_filter_arg_type = $("select#filter_type option:checked").val();
+            var new_filter_arg_type = $("select#filter_type option:checked").text();
+            var new_filter_arg_typevalue = $("#filter_type").val();
             var edit_btn_id="edit_btn_id_" + countrow.toString();
             var del_btn_id="del_btn_id_"+ countrow.toString();
             var del_row_btn='<button id="' + del_btn_id +'" class="btn btn-primary btn-xs a-btn-slide-text">' +
@@ -230,7 +222,7 @@ $(document).ready(function(){
                 alert("Argument name or title already exists!")
             }
             else if((selected)&&(new_filter_arg_title!=null)&&(new_filter_arg_def!=null)&&(new_filter_arg_title.trim()!="")&&(new_filter_arg_def.trim()!="")) {
-                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='query_id'>" + new_arg_query_id + "</td> <td data-columnname='query_name'>" + new_arg_query_display_name + "</td> <td data-columnname='filter'> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td data-columnname='filter_type'>"+ new_filter_arg_type+"  </td><td data-columnname='def_val'> " +new_filter_arg_def + "</td> <td  data-columnname='name'>"+ new_filter_arg_name+"</td><td data-columnname='title'> " + new_filter_arg_title + "</td> <td data-columnname='description'><div  style='min-width: 100%'>" + new_filter_arg_desc + "</div></td><td>" + edit_row_btn +del_row_btn+"</td> </tr>";
+                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='query_id'>" + new_arg_query_id + "</td> <td data-columnname='query_name'>" + new_arg_query_display_name + "</td> <td data-columnname='filter'> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td data-columnname='filter_type'> <span>"+ new_filter_arg_type+"</span><span style='display:none;'>"+new_filter_arg_typevalue+"</span>  </td><td data-columnname='def_val'> " +new_filter_arg_def + "</td> <td  data-columnname='name'>"+ new_filter_arg_name+"</td><td data-columnname='title'> " + new_filter_arg_title + "</td> <td data-columnname='description'><div  style='min-width: 100%'>" + new_filter_arg_desc + "</div></td><td>" + edit_row_btn +del_row_btn+"</td> </tr>";
                 $('#selected-arguments-table1 tbody').append(new_arg_tr_string);
 
                 $(edit_sel).popover({
@@ -245,12 +237,7 @@ $(document).ready(function(){
                     $('.btn_pop').not(this).popover('hide');
                     $(this).popover('toggle');
 
-                    $('#filter_type').empty();
-                    $('#filter_type').append('<option>Integer</option>');
-                    $('#filter_type').append('<option>Float</option>');
-                    $('#filter_type').append('<option>String</option>');
-                    $('#filter_type').append('<option>Date</option>');
-                    $('#filter_type').append('<option>Spatial Coverage</option>');
+                    populate_select("#filter_type");
 
                     $('.popover-content #filter_type').select2();
 
@@ -265,7 +252,8 @@ $(document).ready(function(){
                     var temp_filter_var_name=$(temp).find($("td[data-columnname='name']")).text();
                     var temp_filter_var_title=$(temp).find($("td[data-columnname='title']")).text();
                     var temp_filter_descr=$(temp).find($("td[data-columnname='description']")).text();
-                    var temp_filter_type=$(temp).find($("td[data-columnname='filter_type']")).text();
+                    var temp_filter_type=$(temp).find($("td[data-columnname='filter_type']")).children().eq(0).text();
+                    var temp_filter_typevalue=$(temp).find($("td[data-columnname='filter_type']")).children().eq(1).text();
 
 
                     // $("select#select2-query-argument-select-container ").val(temp_query_choice).change();
@@ -274,7 +262,7 @@ $(document).ready(function(){
                     $("#filter_varname").val(temp_filter_var_name);
                     $("#filter_vartitle").val(temp_filter_var_title);
                     $("#filter_descr").text(temp_filter_descr);
-                    $("select#filter_type").val(temp_filter_type.trim()).change();
+                    $("select#filter_type").val(temp_filter_typevalue.trim()).change();
 
 
                     // alert(new_alg_arg_name+" "+new_alg_arg_title+" "+new_alg_arg_type+" "+new_alg_arg_desc);
@@ -283,7 +271,8 @@ $(document).ready(function(){
                         var new_filter_varname = $("#filter_varname").val();
                         var new_filter_vartitle = $("#filter_vartitle").val();
                         var new_filter_descr =  $("#filter_descr").val();
-                        var new_filter_type = $("select#filter_type option:checked").val();
+                        var new_filter_type = $("select#filter_type option:checked").text();
+                        var new_filter_typevalue = $('#filter_type').val();
 
                          if(check_duplicate_title_name(new_filter_varname,new_filter_vartitle,temp.replace("#",""))){
                             alert("Argument name or title already exists!")
@@ -293,7 +282,8 @@ $(document).ready(function(){
                             $(temp).find($("td[data-columnname='name']")).text(new_filter_varname);
                             $(temp).find($("td[data-columnname='title']")).text(new_filter_vartitle);
                             $(temp).find($("td[data-columnname='description']")).text(new_filter_descr);
-                            $(temp).find($("td[data-columnname='filter_type']")).text(new_filter_type);
+                            $(temp).find($("td[data-columnname='filter_type']")).children().eq(0).text(new_filter_type);
+                            $(temp).find($("td[data-columnname='filter_type']")).children().eq(1).text(new_filter_typevalue);
 
                             $(edit_sel).popover("hide");
                          }else{
@@ -347,6 +337,15 @@ $(document).ready(function(){
 
 
 
+    function populate_select(selector){
+        $(selector).empty();
+        $(selector).append('<option value="INT">Integer</option>');
+        $(selector).append('<option value="FLOAT">Float</option>');
+        $(selector).append('<option value="STRING">String</option>');
+        $(selector).append('<option value="DATETIME">Date</option>');
+        $(selector).append('<option value="SPATIAL_COV">Spatial Coverage</option>');
+
+    }
 
 
 
