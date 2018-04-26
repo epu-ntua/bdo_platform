@@ -517,7 +517,7 @@ def map_course(request):
     variable = str(request.GET.get('col_var', ''))
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
-    q = Query.objects.get(pk=int(query))
+    q = AbstractQuery.objects.get(pk=int(query))
     # q = Query(document=q.document)
     q = TempQuery(document=q.document)
     doc = q.document
@@ -642,7 +642,7 @@ def map_plotline(request):
     variable = str(request.GET.get('col_var', ''))
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
-    q = Query.objects.get(pk=int(query))
+    q = AbstractQuery.objects.get(pk=int(query))
     q = TempQuery(document=q.document)
     doc = q.document
 
@@ -835,7 +835,7 @@ def map_viz_folium_contour(request):
         query = str(request.GET.get('query', ''))
         agg_function = str(request.GET.get('agg_func', 'avg'))
 
-        q = Query.objects.get(pk=int(query))
+        q = AbstractQuery.objects.get(pk=int(query))
         q = TempQuery(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
@@ -1391,7 +1391,7 @@ def get_column_chart_am(request):
 
 def get_line_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
@@ -1582,7 +1582,7 @@ def get_pie_chart_am(request):
 
 def get_histogram_chart_am(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
@@ -1664,7 +1664,7 @@ def get_histogram_chart_am(request):
 
 def get_histogram_2d_am(request):
     query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
+    query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
