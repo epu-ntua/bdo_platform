@@ -671,7 +671,7 @@ def map_viz_folium_contour(request):
         query = str(request.GET.get('query', ''))
         agg_function = str(request.GET.get('agg_func', 'avg'))
 
-        q = Query.objects.get(pk=int(query))
+        q = AbstractQuery.objects.get(pk=int(query))
         q = Query(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
@@ -708,14 +708,10 @@ def map_viz_folium_contour(request):
         names = re.findall(r"round\((.*?)\)", raw_query)
         for name in names:
             raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
-
+        print raw_query
         # Create a leaflet map using folium
         m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
 
-        # try:
-        #     connection = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='sssshmmy'")
-        # except:
-        #     print "I am unable to connect to the database"
         cursor = connection.cursor()
         cursor.execute(raw_query)
         data = cursor.fetchall()
