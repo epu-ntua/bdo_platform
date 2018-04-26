@@ -1652,16 +1652,37 @@ def get_column_chart_am(request):
                   {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
 
 def get_data_table(request):
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    limit = 50
+
     query_pk = int(str(request.GET.get('query', '')))
     query = AbstractQuery.objects.get(pk=query_pk)
+    page = int(request.GET.get('page', 1))
 
-    result_data = query.execute()['results']
+    q = TempQuery(document=query.document)
+    # offset = page * limit
+    # if query.document['limit'] > offset:
+    #     query.document['offset'] = page * limit
+    #
+    # if query.document['limit'] > limit:
+    #     query.document['limit'] = limit
 
-    # json_data = []
-    # for d in result_data:
-    #     json_data.append({y_var: d[y_var_index], x_var: str(d[x_var_index])})
+    result = q.execute()[0]
+    data = result['results']
+    headers = result['headers']['columns']
 
-    return render(request, 'visualizer/data_table.html', {'data': result_data})
+    paginator = Paginator(data, limit)  # Show 25 contacts per page
+
+    try:
+        page_data = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        page_data = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        page_data = paginator.page(paginator.num_pages)
+
+    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': query.id})
 
 
 def agg_func_selector(agg_func,data,bins,y_var_index,x_var_index):
