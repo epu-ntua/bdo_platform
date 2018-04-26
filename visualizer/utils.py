@@ -186,15 +186,13 @@ def run_zep_note(notebook_id):
     response_status = 500
     # number of tries
     counter = 1
-    while response_status != 200:
-        response = requests.post("http://localhost:8080/api/notebook/job/" + str(notebook_id))
-        print response
-        if int(response.status_code) == 200:
-            break
-        counter -= 1
-        if counter == 0:
-            return HttpResponse(status=500)
-        response_status = response.status_code
+    paragraphs = []
+    response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id))
+    response_json = response.json()
+    for p in response_json['body']['paragraphs']:
+        paragraphs.append(p['id'])
+    for p in paragraphs:
+        run_zep_paragraph(notebook_id, p)
 
 
 def create_zep_test_query_paragraph(notebook_id, title, raw_query):
@@ -225,7 +223,7 @@ def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name
     data['title'] = title
     data['text'] = '%spark.pyspark' \
                    '\n'+df_name+'= spark.read.format("jdbc")' \
-                   '.option("url", "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234")' \
+                   '.option("url", "jdbc:postgresql://212.101.173.21:5432/bigdataocean?user=bdo&password=df195715HBdhahfP")' \
                    '.option("driver", "org.postgresql.Driver")' \
                    '.option("database", "bdo_platform")' \
                    '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
