@@ -166,8 +166,7 @@ class AbstractQuery(Model):
             lat_col_name = Dimension.objects.get(pk=lat_col_id).data_column_name
             lon_col_name = Dimension.objects.get(pk=lon_col_id).data_column_name
 
-            # table_name = self.document['from'][from_order]['name']
-            # table_name = Dimension.objects.get(pk=lat_col_id).variable.dataset.table_name
+            table_name = Dimension.objects.get(pk=lat_col_id).variable.dataset.table_name
 
             v_name = Dimension.objects.get(pk=lat_col_id).variable.name
             v_id = Dimension.objects.get(pk=lat_col_id).variable.id
