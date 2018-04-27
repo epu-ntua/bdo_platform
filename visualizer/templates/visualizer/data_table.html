@@ -25,21 +25,33 @@
                 </tr>
             </thead>
             <tbody>
-                {% for row in data %}
-                    <tr>
-                        {% for item in row %}
-                            <td>{{ item }}</td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
+                {% if isJSON %}
+                    {% for row in data %}
+                        <tr>
+                            {% for key, item in row %}
+                                <td>{{ item }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    {% for row in data %}
+                        <tr>
+                            {% for item in row %}
+                                <td>{{ item }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>
 
-    <div class="pagination">
+    <div class="pagination row col-sm-12" style="text-align: center">
         <span class="step-links">
             {% if data.has_previous %}
-                <a href="?page={{ data.previous_page_number }}">previous</a>
+                <button class="btn btn-default">
+                    <a href="?page={{ data.previous_page_number }}&query={{ query_pk }}">previous</a>
+                </button>
             {% endif %}
 
             <span class="current">
@@ -47,7 +59,9 @@
             </span>
 
             {% if data.has_next %}
-                <a href="?page={{ data.next_page_number }}&query={{ query_pk }}">next</a>
+                <button class="btn btn-default">
+                    <a href="?page={{ data.next_page_number }}&query={{ query_pk }}">next</a>
+                </button>
             {% endif %}
         </span>
     </div>

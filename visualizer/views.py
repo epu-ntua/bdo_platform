@@ -1655,21 +1655,37 @@ def get_data_table(request):
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
     limit = 50
 
-    query_pk = int(str(request.GET.get('query', '')))
-    query = AbstractQuery.objects.get(pk=query_pk)
+    query_pk = int(str(request.GET.get('query', '0')))
     page = int(request.GET.get('page', 1))
 
-    q = TempQuery(document=query.document)
-    # offset = page * limit
-    # if query.document['limit'] > offset:
-    #     query.document['offset'] = page * limit
-    #
-    # if query.document['limit'] > limit:
-    #     query.document['limit'] = limit
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
 
-    result = q.execute()[0]
-    data = result['results']
-    headers = result['headers']['columns']
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+
+        q = TempQuery(document=query.document)
+        # offset = page * limit
+        # if query.document['limit'] > offset:
+        #     query.document['offset'] = page * limit
+        #
+        # if query.document['limit'] > limit:
+        #     query.document['limit'] = limit
+
+        result = q.execute()[0]
+        data = result['results']
+        headers = result['headers']['columns']
+        isJSON = False
+
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        isJSON = True
+        print data
+
+        headers = [key for key in data[0].keys()]
 
     paginator = Paginator(data, limit)  # Show 25 contacts per page
 
@@ -1682,7 +1698,7 @@ def get_data_table(request):
         # If page is out of range (e.g. 9999), deliver last page of results.
         page_data = paginator.page(paginator.num_pages)
 
-    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': query.id})
+    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': query_pk, 'isJSON': isJSON})
 
 
 def agg_func_selector(agg_func,data,bins,y_var_index,x_var_index):
