@@ -163,6 +163,9 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = 'staticfiles'
+DATETIME_FORMAT = 'Y-m-d H:i:s'
+DATE_FORMAT = 'Y-m%d'
+USE_L10N = False
 
 # bdo main app settings
 DATASET_DIR = os.path.join(os.path.join(BASE_DIR, 'aggregator'), 'datasets')

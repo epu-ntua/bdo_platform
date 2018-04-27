@@ -12,7 +12,7 @@ from netCDF4._netCDF4 import num2date
 
 DATASET_STORAGES = (
     ('LOCAL_POSTGRES', 'Local PostgreSQL instance'),
-    ('UBITECH_POSTGRES', 'UBITECH\'s PostgreSQL instance at http://212.101.173.34'),
+    ('UBITECH_POSTGRES', 'UBITECH\'s PostgreSQL instance at http://212.101.173.21'),
     ('UBITECH_SOLR', 'Solr instance at http://212.101.173.50:8983'),
 )
 

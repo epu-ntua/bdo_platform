@@ -196,6 +196,7 @@ def update_service_arguments(request):
     service_id = int(request.POST.get('service_id', '0'))
     service = Service.objects.get(pk=int(service_id))
     arguments = convert_unicode_json(json.loads(str(request.POST.get('exposed_args'))))
+    print arguments
     for arg in arguments['filter-arguments']:
         if arg['type'] == "SPATIAL_COV":
             arg['default_lat_min'] = arg['default'].split('<<')[1].split(',')[0]

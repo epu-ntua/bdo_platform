@@ -122,7 +122,7 @@ $(document).ready(function(){
 
                 });
                 // Update service arguments on backend
-                // update_service_arguments();
+                update_service_arguments();
                 //Update backend when the service is published.
                 $('#add_alg_arg_popbtn').popover("hide");
             }else{
@@ -300,7 +300,7 @@ $(document).ready(function(){
 
                 });
                 // Update service arguments on backend
-                // update_service_arguments();
+                update_service_arguments();
                 //Chose to update arguments on backend (create JSON file) when publishing.
                 selected = false;
                 $('#add_filter_arg_popbtn').popover("hide");

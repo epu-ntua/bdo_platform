@@ -102,10 +102,13 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                                   self.document['from'][0]['name'],
                                   selects[j[1]]['column']))
 
-        if selects[_from['select'][0]['name']]['table'] != _from['name']:
-            join_clause += 'JOIN %s AS %s ON %s\n' % \
+        print "LOOK FOR JOIN"
+        print selects
+        print _from['name']
+        if selects[_from['select'][0]['name']]['table'] != selects[self.document['from'][0]['select'][0]['name']]['table']:
+            print "WE HAVE JOIN"
+            join_clause += 'JOIN %s ON %s\n' % \
                            (selects[_from['select'][0]['name']]['table'],
-                            _from['name'],
                             ' AND '.join(joins))
 
     # where
