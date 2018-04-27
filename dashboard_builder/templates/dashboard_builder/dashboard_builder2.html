@@ -6,7 +6,7 @@
 
 {% block css %}
      {% leaflet_css %}
-
+{#    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />#}
     <style>
         #loadImg{position:absolute;z-index:999;}
         #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
@@ -191,8 +191,10 @@
                                 <li class="list-group-item viz_item" id="column_chart_item" data-component-id="13"><i class="fa fa-bar-chart margin-right-1"></i>Column chart</li>
                                 <li class="list-group-item viz_item" id="pie_chart_item" data-component-id="12"><i class="fa fa-pie-chart margin-right-1"></i>Pie chart</li>
                                 <li class="list-group-item viz_item" id="contours_on_map_item" data-component-id="4"><i class="fa fa-map margin-right-1"></i>Contours on map</li>
-                                <li class="list-group-item viz_item" id="ship_course_on_map_item" data-component-id="15"><i class="fa fa-map-marker margin-right-1"></i>Ship's course on map</li>
-
+                                <li class="list-group-item viz_item" id="course_on_map_item" data-component-id="15"><i class="fa fa-map-marker margin-right-1"></i>Course on map</li>
+                                <li class="list-group-item viz_item" id="plotline_on_map_item" data-component-id="18"><i class="fa fa-location-arrow margin-right-1"></i>Plotline on map</li>
+                                <li class="list-group-item viz_item" id="histogram_item" data-component-id="16"><i class="fa fa-bar-chart margin-right-1"></i>Histogram</li>
+                                <li class="list-group-item viz_item" id="histogram2d_item" data-component-id="17"><i class="fa fa-th margin-right-1"></i>Histogram-2d</li>
                             </ul>
                             <div id="viz_container" class="col-sm-8" style="width: 85%">
 
@@ -213,10 +215,12 @@
 
 {% block js %}
     {% leaflet_js %}
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>#}
     <script type="text/javascript">
+
         function updateVariables(element) {
-            $('#myModal .variable-select').find('option').remove().end();
-            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+{#            $('#myModal .variable-select').find('option').remove().end();#}
+            {#            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));#}
             var new_query_id = $('#myModal #selected_query').val();
 {#            var new_query_doc = $('#new_query_doc').val();#}
             var new_query_doc = {};
@@ -241,8 +245,11 @@
                             .attr("value", v)
                             .text(k));
                     });
+
                 }
             });
+
+
         }
 
 
@@ -308,6 +315,7 @@
                         });
                         updateVariables($('#query-select'));
                         $(component_selector).popover('toggle');
+                        $('#myModal .popover-content .variable-select').select2();
                         var popver_id = '#' + $(component_selector).attr('aria-describedby');
                         $(popver_id+' #select_conf_ok').click(function(e){
                             submit_conf(component_selector);
@@ -340,7 +348,7 @@
 
 
                 var myData = $("#config-viz-form").serialize();
-{#                alert(myData);#}
+
                 viz_request += '?';
                 viz_request += myData;
 {#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}

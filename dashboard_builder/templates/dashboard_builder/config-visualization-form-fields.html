@@ -1,7 +1,7 @@
 {% load static %}
 
-    <input id="{{ order }}+++viz_id" type="hidden" class="form-control full-width variable-select" name="viz_id"  value="{{ viz_id }}">
-    <input id="action" type="hidden" class="form-control full-width variable-select" name="action"  value="{{ action }}">
+    <input id="{{ order }}+++viz_id" type="hidden" class="form-control full-width " name="viz_id"  value="{{ viz_id }}">
+    <input id="action" type="hidden" class="form-control full-width " name="action"  value="{{ action }}">
 
     {% for argument in info.arguments %}
         <div class="row">
@@ -12,13 +12,13 @@
                     {% endif %}
                     {% if argument.type == 'QUERY' %}
                     {% elif argument.type == 'COLUMN' %}
-                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >
-                            <option disabled selected value>-- select variable --</option>
+                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}[]" multiple="multiple" >
+{#                            <option disabled selected value>-- select variable --</option>#}
                         </select>
-                    {% elif argument.type == 'DIMENSION' %}
-                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >
-                            <option disabled selected value>-- select dimension --</option>
-                        </select>
+{#                    {% elif argument.type == 'DIMENSION' %}#}
+{#                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >#}
+{#                            <option disabled selected value>-- select dimension --</option>#}
+{#                        </select>#}
                     {% elif argument.type == 'SPATIAL_COV' %}
                          <div id="newmap" style="min-height: 200px; width: 100%; margin-top: 10px;">
                          </div>
@@ -56,7 +56,7 @@
                     {% elif argument.type == 'FLOAT' %}
                         <input id="{{ argument.name }}" type="number" step="0.00001" class="form-control full-width" name="{{ argument.name }}" autocomplete="off" value="{{ argument.default }}">
                     {% else %}
-                        <input id="{{ argument.name }}" type="text" class="form-control full-width variable-select" name="{{ argument.name }}"  value="{{ argument.default }}">
+                        <input id="{{ argument.name }}" type="text" class="form-control full-width " name="{{ argument.name }}"  value="{{ argument.default }}">
                     {% endif %}
                     <span class="material-input"></span>
                 </div>
