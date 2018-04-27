@@ -23,15 +23,12 @@ sympy
 #data visualization
 Pillow==4.2.1
 matplotlib
-django-leaflet
-folium
+django-leaflet==0.22.0
+folium==0.5.0
 django-nvd3
 python-nvd3
 django-bower
 
-#data visualization
-django-leaflet
-folium
 
 # deployment
 dj-config-url==0.1.1
