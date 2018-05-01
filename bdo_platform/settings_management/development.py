@@ -13,3 +13,5 @@ CONTACT_EMAIL = 'dipapaspyros@gmail.com'
 
 # dev server URL
 SERVER_URL = 'http://127.0.0.1:8000'
+
+TEST_SERVICES = False
