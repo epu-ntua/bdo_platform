@@ -3,6 +3,17 @@ body {
     overflow-y: hidden;
 }
 
+.row{
+    margin-right:0px !important;
+    margin-left:0px !important;
+}
+
+.panel-group .panel+.panel {
+     margin-top: 0px !important;
+}
+
+
+
 /* Paddings */
 .padding-1 {
     padding: 5px;

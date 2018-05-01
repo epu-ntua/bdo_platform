@@ -17,4 +17,5 @@ urlpatterns = [
     url('update_service_output/$', views.update_service_output, name='update_service_output'),
 
     url('load_template/$', views.load_template, name='load_template'),
+    url('load_results_to_template/$', views.load_results_to_template, name='load_results_to_template'),
 ]
