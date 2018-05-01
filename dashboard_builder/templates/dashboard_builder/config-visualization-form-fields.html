@@ -20,7 +20,7 @@
                             <option disabled selected value>-- select dimension --</option>
                         </select>
                     {% elif argument.type == 'AGG_FUNCTION' %}
-                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >
+                        <select id="{{ argument.name }}" class="form-control full-width aggregate-select" name="{{ argument.name }}" >
                             <option disabled selected value>-- select aggregation function --</option>
                             <option value="AVG">Average</option>
                             <option value="SUM">Sum</option>
