@@ -38,5 +38,6 @@ urlpatterns = [
     url('^get_histogram_2d_am/$', views.get_histogram_2d_am, name='get_histogram_2d_am'),
 
     url('^get_data_table/$', views.get_data_table, name='get_data_table'),
+    url('^get_aggregate_value/$', views.get_aggregate_value, name='get_aggregate_value'),
 
 ]

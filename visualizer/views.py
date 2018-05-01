@@ -672,7 +672,7 @@ def map_viz_folium_contour(request):
         agg_function = str(request.GET.get('agg_func', 'avg'))
 
         q = AbstractQuery.objects.get(pk=int(query))
-        q = Query(document=q.document)
+        q = TempQuery(document=q.document)
         doc = q.document
         # if 'orderings' not in doc.keys():
         #     doc['orderings'] = []
@@ -1431,7 +1431,7 @@ def get_line_chart_am(request):
 
     if query_pk != 0:
         query = AbstractQuery.objects.get(pk=query_pk)
-        query = Query(document=query.document)
+        query = TempQuery(document=query.document)
         doc = query.document
         for f in doc['from']:
             for s in f['select']:
@@ -1529,7 +1529,7 @@ def get_pie_chart_am(request):
 
     if query_pk != 0:
         query = AbstractQuery.objects.get(pk=query_pk)
-        query = Query(document=query.document)
+        query = TempQuery(document=query.document)
         doc = query.document
         print doc
         for f in doc['from']:
@@ -1589,7 +1589,7 @@ def get_column_chart_am(request):
 
     if query_pk != 0:
         query = AbstractQuery.objects.get(pk=query_pk)
-        query = Query(document=query.document)
+        query = TempQuery(document=query.document)
 
         doc = query.document
         print doc
@@ -1699,6 +1699,54 @@ def get_data_table(request):
         page_data = paginator.page(paginator.num_pages)
 
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': query_pk, 'isJSON': isJSON})
+
+
+def get_aggregate_value(request):
+    query_pk = int(str(request.GET.get('query', '0')))
+    variable = str(request.GET.get('variable', ''))
+    agg_function = str(request.GET.get('agg_function', ''))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = TempQuery(document=query.document)
+        doc = query.document
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == variable:
+                    s['aggregate'] = agg_function
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        query.document = doc
+
+        query_data = query.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+
+        variable_index = 0
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == variable:
+                variable_index = idx
+
+        value = round(data[0][variable_index], 3)
+        unit = result_headers['columns'][variable_index]['unit']
+
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print data
+        value = data
+        unit = '?'
+
+        headers = [key for key in data[0].keys()]
+
+    return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit})
+
 
 
 def agg_func_selector(agg_func,data,bins,y_var_index,x_var_index):

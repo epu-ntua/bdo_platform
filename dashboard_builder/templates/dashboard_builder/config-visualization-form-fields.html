@@ -19,6 +19,15 @@
                         <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >
                             <option disabled selected value>-- select dimension --</option>
                         </select>
+                    {% elif argument.type == 'AGG_FUNCTION' %}
+                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >
+                            <option disabled selected value>-- select aggregation function --</option>
+                            <option value="AVG">Average</option>
+                            <option value="SUM">Sum</option>
+                            <option value="COUNT">Count</option>
+                            <option value="MAX">Maximum</option>
+                            <option value="MIN">Minimum</option>
+                        </select>
                     {% elif argument.type == 'SPATIAL_COV' %}
                          <div id="newmap" style="min-height: 200px; width: 100%; margin-top: 10px;">
                          </div>
