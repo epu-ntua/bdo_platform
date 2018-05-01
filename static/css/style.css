@@ -359,7 +359,7 @@ body {
 }
 
 .ui-widget-header {
-    background-color: #2172ac;
+    background-color: #30526a;
     box-shadow: 0 12px 20px -10px rgba(0, 188, 212, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(0, 188, 212, 0.2);
     color: white;
 }
@@ -438,7 +438,7 @@ label.section-label {
 .navbar .dropdown-menu[data-color="blue"] li a:active, .navbar.navbar-default .dropdown-menu li a:hover,
 .navbar.navbar-default .dropdown-menu[data-color="blue"] li a:focus,
 .navbar.navbar-default .dropdown-menu[data-color="blue"] li a:active {
-  background-color: #2172ac;
+  background-color: #30526a !important;
   color: #FFFFFF;
   box-shadow: 0 12px 20px -10px rgba(0, 188, 212, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(5, 88, 212, 0.2);
 }
