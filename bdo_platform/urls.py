@@ -43,5 +43,8 @@ urlpatterns = [
 
     # dashboards
     url(r'^service_builder/', include('service_builder.urls')),
+
+    # Ckeditor
+    url(r'text', include('note_builder.urls')),
 ]
 

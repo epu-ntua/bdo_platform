@@ -294,6 +294,10 @@
                                 data-toggle="popover" title="Select your data" data-placement="right"
                         >Select data
                         </button>
+                        <button type="button" id="select_note_popover" class="btn btn-lg btn-primary"
+{#                                data-toggle="popover" title="Write your note" data-placement="bottom"#}
+                        >Write Note
+                        </button>
                         <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
                                 data-toggle="popover" title="Select visualization type" data-placement="bottom"
                                 data-container="body" disabled style="display: none">2. Select visualisation
@@ -330,6 +334,15 @@
                         <div id="viz_container" class="col-sm-8" style="width: 85%">
 
                         </div>
+                    </div>
+                    <div class="row" id="viz_note" style="display: none">
+                        Take note:
+                        <form method="post" action="./">
+                            {% csrf_token %}
+                            {{ form.media }}
+                            {{ form.as_p }}
+                            <p><input type="submit" value="post"></p>
+                        </form>
                     </div>
                     <input type="hidden" id="selected_query" value="">
 
@@ -556,6 +569,16 @@
     </script>
     <script>
         $(document).ready(function () {
+
+            $("#myModal #select_note_popover").popover({
+                html: true,
+                animation: true,
+            }).click(function (e) {
+                    $('#viz_config').hide();
+                    $('#viz_note').show();
+                }
+
+            )
 
             $("#myModal #select_data_popover").popover({
                 html: true,

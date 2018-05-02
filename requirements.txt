@@ -28,6 +28,7 @@ folium
 django-nvd3
 python-nvd3
 django-bower
+django-ckeditor
 
 #data visualization
 django-leaflet

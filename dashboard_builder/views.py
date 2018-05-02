@@ -6,6 +6,9 @@ from django.template.loader import render_to_string
 from query_designer.models import Query
 from visualizer.models import Visualization
 from dashboard_builder.models import Dashboard
+
+from . import forms
+
 import json
 
 def build_dynamic_dashboard(request):
@@ -16,11 +19,13 @@ def build_dynamic_dashboard(request):
         else:
             saved_queries = []
         num_of_dashboards = Dashboard.objects.count()
+        form_class = forms.CkEditorForm
         return render(request, 'dashboard_builder/dashboard_builder2.html', {
             'dashboard_title': num_of_dashboards+1,
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
             'components': Visualization.objects.all().order_by('id'),
+            'form_class': form_class,
         })
     return None
 
