@@ -7,6 +7,9 @@ from query_designer.models import Query
 from visualizer.models import Visualization
 from dashboard_builder.models import Dashboard
 
+from . import forms
+
+import json
 
 def build_dynamic_dashboard(request):
     if request.method == 'GET':
@@ -16,11 +19,13 @@ def build_dynamic_dashboard(request):
         else:
             saved_queries = []
         num_of_dashboards = Dashboard.objects.count()
+        form_class = forms.CkEditorForm
         return render(request, 'dashboard_builder/dashboard_builder2.html', {
             'dashboard_title': num_of_dashboards+1,
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
             'components': Visualization.objects.all().order_by('id'),
+            'form_class': form_class,
         })
     return None
 
@@ -49,10 +54,23 @@ def save_dashboard(request, pk=None):
         dashboard = Dashboard.objects.get(pk=pk)
 
     dashboard.title = 'BDO Dashboard'
-
+    print request.POST
     dashboard_data = request.POST.dict()
+    for order in dashboard_data.keys():
+        dashboard_data = json.loads(order)
+    # for k in dashboard_data.keys():
+    #     dashboard_data = k
+    #     break
+    #
+    # json_acceptable_string = dashboard_data.replace("'", "\"")
+    # print "NOW PRINTING json_acceptable_string"
+    # print json_acceptable_string
+    # dashboard_data = json.loads(json_acceptable_string)
+    print "We are now printing dashboard data"
     print dashboard_data
+    print "end of data"
     title = dashboard_data.pop('title', None)
+
     for order in dashboard_data.keys():
         print order
         print dashboard_data[order]

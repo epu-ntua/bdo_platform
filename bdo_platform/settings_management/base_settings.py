@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # vizualisations
     'django_nvd3',
     'djangobower',
+    'ckeditor',
 
     # apps
     'bdo_main_app',
@@ -62,6 +63,7 @@ INSTALLED_APPS = [
     'dashboard_builder',
     'service_builder',
     'requestservice',
+    'note_builder',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -167,6 +169,9 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 DATE_FORMAT = 'Y-m%d'
 USE_L10N = False
 
+#ck editor settings
+# CKEDITOR_BASEPATH = "/staticfiles/ckeditor/ckeditor"
+CKEDITOR_UPLOAD_PATH ='uploads/'
 # bdo main app settings
 DATASET_DIR = os.path.join(os.path.join(BASE_DIR, 'aggregator'), 'datasets')
 if not os.path.isdir(DATASET_DIR):
