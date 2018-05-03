@@ -5,6 +5,10 @@
 {% block css %}
     <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>
     <style>
+        .viz_item{
+            cursor: pointer;
+            font-size: 10.5pt;
+        }
         #loadImg {
             position: absolute;
             z-index: 999;
@@ -56,10 +60,10 @@
 
         #viz_container iframe, #dynamic_dashboard iframe {
             background-color: white;
-            height: 96%;
-            min-height: 480px;
-            width: 98%;
-            margin: 1% 1% 1% 1%;
+            height: 100%;
+{#            min-height: 480px;#}
+            width: 100%;
+            margin: 0;
             padding: 0;
         }
 
@@ -70,7 +74,7 @@
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
             color: #004756;
             background: darkgrey;
-            padding: 0px;
+            padding: 0;
         }
         ul {
             list-style: none;
@@ -91,7 +95,7 @@
             position: absolute;
             right: 0;
             top: 0;
-            background: #2172ac url('/static/img/exitBtn.png') center ;
+            background-color: transparent;
             height: 37px;
             border: none;
             color: white;
@@ -99,29 +103,28 @@
         }
 
         .deletebtn:hover{
-            background-color: red;
+            background-color: #9e0000;
             cursor: pointer;
-        }
-
-        .iframe1{
-            height: 90%;
-            width: 100%;
         }
 
         .iframeHeader{
             height: 37px;
             width: 100%;
             background-color: #2172ac;
+            text-align: center;
+        }
+
+        .iframeHeader .form-group.is-focused .form-control{
+            background-image: linear-gradient(#D2D2D2, #D2D2D2), linear-gradient(#D2D2D2, #D2D2D2);
         }
 
         .iframeHeader:hover{
             cursor: pointer;
         }
 
-        .iframe-class{
-            height: calc(100% - 37px);
-            padding: 0px;
-            margin: 0% 0% 0% 0% !important;
+        #dynamic_dashboard .iframe-class{
+            height: calc(100% - 37px)!important;
+
         }
 
 
@@ -168,12 +171,12 @@
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
     </div>
     <div class="row text-left">
-        <button type="button" id="new_widget_btn" class="btn btn-lg btn-primary" data-toggle="modal"
+        <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
                 data-target="#myModal">
             <i class="fa fa-plus-circle o-white"></i> New visualisation
         </button>
 
-        <button type="button" id="save_dashboard_btn" class="btn btn-lg btn-primary" style="display: none">
+        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" style="display: none">
             Save Dashboard
         </button>
 
@@ -222,6 +225,7 @@
         <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
         <input id="new_query_doc" type="hidden" value=""/>
         <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+        <button type="button" id="select_data_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>
     </div>
 
     <div id="viz-container" hidden>
@@ -296,10 +300,10 @@
                                 data-toggle="popover" title="Select your data" data-placement="right"
                         >Select data
                         </button>
-                        <button type="button" id="select_note_popover" class="btn btn-lg btn-primary"
+{#                        <button type="button" id="select_note_popover" class="btn btn-lg btn-primary"#}
 {#                                data-toggle="popover" title="Write your note" data-placement="bottom"#}
-                        >Write Note
-                        </button>
+{#                        >Write Note#}
+{#                        </button>#}
                         <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
                                 data-toggle="popover" title="Select visualization type" data-placement="bottom"
                                 data-container="body" disabled style="display: none">2. Select visualisation
@@ -317,21 +321,24 @@
                     {#                        </div>#}
                     <div class="row" id="viz_config" style="display: none">
                         <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                            <li class="list-group-item viz_item" id="line_chart_item" data-component-id="5"><i
-                                    class="fa fa-line-chart margin-right-1"></i>Line chart
-                            </li>
-                            <li class="list-group-item viz_item" id="column_chart_item" data-component-id="13"><i
-                                    class="fa fa-bar-chart margin-right-1"></i>Column chart
-                            </li>
-                            <li class="list-group-item viz_item" id="pie_chart_item" data-component-id="12"><i
-                                    class="fa fa-pie-chart margin-right-1"></i>Pie chart
-                            </li>
-                            <li class="list-group-item viz_item" id="contours_on_map_item" data-component-id="4"><i
-                                    class="fa fa-map margin-right-1"></i>Contours on map
-                            </li>
-                            <li class="list-group-item viz_item" id="ship_course_on_map_item" data-component-id="15"><i
-                                    class="fa fa-map-marker margin-right-1"></i>Ship's course on map
-                            </li>
+                            {% for viz in available_viz %}
+                                <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                            {% endfor %}
+{#                            <li class="list-group-item viz_item" id="line_chart_item" data-component-id="5"><i#}
+{#                                    class="fa fa-line-chart margin-right-1"></i>Line chart#}
+{#                            </li>#}
+{#                            <li class="list-group-item viz_item" id="column_chart_item" data-component-id="13"><i#}
+{#                                    class="fa fa-bar-chart margin-right-1"></i>Column chart#}
+{#                            </li>#}
+{#                            <li class="list-group-item viz_item" id="pie_chart_item" data-component-id="12"><i#}
+{#                                    class="fa fa-pie-chart margin-right-1"></i>Pie chart#}
+{#                            </li>#}
+{#                            <li class="list-group-item viz_item" id="contours_on_map_item" data-component-id="4"><i#}
+{#                                    class="fa fa-map margin-right-1"></i>Contours on map#}
+{#                            </li>#}
+{#                            <li class="list-group-item viz_item" id="ship_course_on_map_item" data-component-id="15"><i#}
+{#                                    class="fa fa-map-marker margin-right-1"></i>Ship's course on map#}
+{#                            </li>#}
                         </ul>
                         <div id="viz_container" class="col-sm-8" style="width: 85%">
 
@@ -350,8 +357,8 @@
 
 
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn">Add
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
                     </button>
                     <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
                     </button>
@@ -396,6 +403,7 @@
                 columns: 4,
                 defaultSizeX: 4,
 	            defaultSizeY: 1,
+                rowHeight: 300,
                 draggable: {
                     enabled: true,
                     handle: '.iframeHeader',
@@ -427,6 +435,15 @@
                 $scope.counter++;
                 $scope.standardItems.push({size: {x: 1, y: 1}, position: [0, 0]});
             };{% endcomment %}
+            function toggleSaveBtn() {
+                if ($('#widgetParent li').length > 0 ){
+                    $('#save_dashboard_btn').show();
+                }
+                else{
+                    $('#save_dashboard_btn').hide();
+                }
+            }
+
 
             $("#myModal #submit-modal-btn").click(function () {
                 {#                alert('clicked');#}
@@ -437,17 +454,25 @@
 
                 $scope.standardItems[ $scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
                 $('#viz_container iframe').appendTo(tempid);
+                toggleSaveBtn();
+
                 $('#myModal #viz_container').empty();
-                $('#save_dashboard_btn').show();
+                $('.viz_item').popover('hide');
+                $('#myModal #viz_config').hide();
+                $('#myModal #submit-modal-btn').hide();
             });
 
             $("#dismiss-modal-btn").click (function () {
                 $scope.standardItems.pop();
+                $('#myModal #viz_container').empty();
+                $('.viz_item').popover('hide');
+                $('#myModal #viz_config').hide();
+                $('#myModal #submit-modal-btn').hide();
             });
 
             $('#new_widget_btn').click(function (){
                 $scope.counter++;
-                $scope.standardItems.push({sizeX:4, sizeY:1, row: 0,col: 0 ,url: "" });
+                $scope.standardItems.push({sizeX:4, sizeY:2, row: 0,col: 0 ,url: "" });
             });
 
 
@@ -467,8 +492,8 @@
                  var tempid="widget" + $scope.counter;
 
                 $('#viz_container iframe').appendTo(tempid);
-                $('#myModal #viz_container').empty();
-                $('#save_dashboard_btn').show();
+{#                $('#myModal #viz_container').empty();#}
+{#                $('#save_dashboard_btn').show();#}
             };
 
             $scope.clear = function () {
@@ -478,6 +503,10 @@
             $scope.removeWidget = function (item) {
                 var index = $scope.standardItems.indexOf(item);
                 $scope.standardItems.splice(index, 1);
+                setTimeout(function() {
+                    toggleSaveBtn();
+                }, 500);
+
             };
 
             $('#save_dashboard_btn').click(function () {
@@ -536,6 +565,11 @@
 
     </script>
     <script type="text/javascript">
+        $("#select_data_popover").click(function () {
+            $('.viz_item').popover('hide');
+        });
+
+
         function updateVariables(element) {
             $('#myModal .variable-select').find('option').remove().end();
             $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
@@ -609,12 +643,15 @@
                     $('#myModal #select_data_popover').popover("hide");
                     $('#viz_config').show();
                 })
+                $('.popover-content #select_data_cancel').click(function (e) {
+                    $('#myModal #select_data_popover').popover("hide");
+                })
             });
 
 
             $(".viz_item").click(function (element) {
-                var component_id = $(this).attr('data-component-id');
-                var component_selector = '#' + $(this).attr('id')
+                var component_id = $(this).attr('data-viz-id');
+                var component_selector = 'li[data-viz-id="'+component_id+'"]';
                 {#              alert(component_id);#}
                 {#              var component_id = 5;#}
                 $.ajax({
@@ -624,10 +661,13 @@
                         order: 1
                     },
                     type: 'GET',
+                    beforeSend: function () {
+                        $('.popover').popover('hide');
+                    },
                     success: function (form_fields) {
                         $("#conf-container").html(form_fields);
                         $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
-
+                        $("#conf-container").append('<button type="button" id="select_conf_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>');
                         $(component_selector).popover({
                             html: true,
                             title: 'Configure visualisation',
@@ -640,6 +680,9 @@
                         var popver_id = '#' + $(component_selector).attr('aria-describedby');
                         $(popver_id + ' #select_conf_ok').click(function (e) {
                             submit_conf(component_selector);
+                            $(component_selector).popover("hide");
+                        });
+                        $(popver_id + ' #select_conf_cancel').click(function (e) {
                             $(component_selector).popover("hide");
                         });
 
@@ -687,7 +730,7 @@
                 $("#viz_container").html('<iframe class="iframe-class" id="viz-iframe" ' +
                     'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
                     '></iframe>');
-
+                $('#myModal #submit-modal-btn').show();
             }
 
 

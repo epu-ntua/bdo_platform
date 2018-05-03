@@ -12,9 +12,8 @@
         #dynamic_dashboard iframe{
             background-color: white;
             height: 96%;
-            min-height: 480px;
-            width: 98%;
-            margin: 1% 1% 1% 1%;
+            width: 100%;
+            margin: 0;
             padding: 0;
         }
 
@@ -67,10 +66,11 @@
             height: 37px;
             width: 100%;
             background-color: #2172ac;
+            text-align: center;
         }
 
         .iframe-class{
-            height: calc(100% - 37px);
+            height: calc(100% - 37px)!important;
             padding: 0px;
             margin: 0% 0% 0% 0% !important;
         }
@@ -177,6 +177,7 @@
                 columns: 4,
                 defaultSizeX: 4,
 	            defaultSizeY: 1,
+                rowHeight: 300,
                 draggable: {
                     enabled: false,
                     handle: '.iframeHeader',
