@@ -5,6 +5,7 @@
 {% block css %}
     <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>
     <style>
+        .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
         .viz_item{
             cursor: pointer;
             font-size: 10.5pt;
@@ -56,6 +57,7 @@
             height: 500px;
             width: 80%;
             padding: 0;
+            position: relative;
         }
 
         #viz_container iframe, #dynamic_dashboard iframe {
@@ -341,6 +343,9 @@
 {#                            </li>#}
                         </ul>
                         <div id="viz_container" class="col-sm-8" style="width: 85%">
+                            <div class="loadingFrame">
+                                <img src="{% static 'img/loading_gif.gif' %}"/>
+                            </div>
 
                         </div>
                     </div>
@@ -453,10 +458,19 @@
                 var tempid="#widget" + $scope.counter;
 
                 $scope.standardItems[ $scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
+
+
+                $(tempid).append('<div class="loadingFrame">\n' +
+                    '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
+                    '                </div>');
                 $('#viz_container iframe').appendTo(tempid);
                 toggleSaveBtn();
+                $(tempid).find(".loadingFrame").css( "display", "block" );
+                $(tempid).find("iframe").on( "load", function(){
+                    $(this).siblings(".loadingFrame").css( "display", "none" );
+                });
 
-                $('#myModal #viz_container').empty();
+
                 $('.viz_item').popover('hide');
                 $('#myModal #viz_config').hide();
                 $('#myModal #submit-modal-btn').hide();
@@ -464,7 +478,9 @@
 
             $("#dismiss-modal-btn").click (function () {
                 $scope.standardItems.pop();
-                $('#myModal #viz_container').empty();
+                $('#myModal #viz_container').html('<div class="loadingFrame">\n' +
+                    '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
+                    '                </div>');
                 $('.viz_item').popover('hide');
                 $('#myModal #viz_config').hide();
                 $('#myModal #submit-modal-btn').hide();
@@ -727,10 +743,14 @@
                 {#                                  '                <div id="loadImg" style="display: none"><img src="{% static 'img/loading.gif' %}" width="70" height="70" /></div>\n' +#}
                 {#                                  '            </div>');#}
                 {#                $('#loadImg').show();#}
-                $("#viz_container").html('<iframe class="iframe-class" id="viz-iframe" ' +
+                $("#viz_container").html('<div class="loadingFrame"><img src="{% static 'img/loading_gif.gif' %}"/></div><iframe class="iframe-class" id="viz-iframe" ' +
                     'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
                     '></iframe>');
                 $('#myModal #submit-modal-btn').show();
+                $("#myModal #viz_container .loadingFrame").css( "display", "block" );
+                $("#myModal #viz_container iframe").on( "load", function(){
+                    $(this).siblings(".loadingFrame").css( "display", "none" );
+                });
             }
 
 
@@ -747,7 +767,9 @@
             $("#dismiss-modal-btn").click(function m(e) {
                 $('#select_viz_popover').prop('disabled', true);
                 $('#select_conf_popover').prop('disabled', true);
-                $('#myModal #viz_container').empty();
+                $('#myModal #viz_container').html('<div class="loadingFrame">\n' +
+                    '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
+                    '                </div>');
             });
 
         });
