@@ -35,3 +35,7 @@ $(document).ready(function() {
 
 
 });
+
+$('.coverage-date-filters').ready(function() {
+    $('.coverage-date-filters').parent().find('label').css({'left': '0'})
+});

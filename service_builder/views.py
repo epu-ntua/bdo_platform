@@ -161,7 +161,7 @@ def load_service_args_form_fields(request):
     arguments = str(request.GET.get('arguments', ''))
     if service_id != 0:
         service = Service.objects.get(pk=service_id)
-        html = render_to_string('service_builder/config-service-form-fields.html', {'arguments': service.arguments['filter-arguments']})
+        html = render_to_string('service_builder/config-service-form-fields.html', {'arguments': service.arguments['filter-arguments']+service.arguments['algorithm-arguments']})
     else:
         arguments = convert_unicode_json(json.loads(arguments))
         html = render_to_string('service_builder/config-service-form-fields.html', {'arguments': arguments})
