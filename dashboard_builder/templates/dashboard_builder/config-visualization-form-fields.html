@@ -12,8 +12,12 @@
                     {% endif %}
                     {% if argument.type == 'QUERY' %}
                     {% elif argument.type == 'COLUMN' %}
+                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >
+{#
+                        </select>
+                    {% elif argument.type == 'COLUMNLIST' %}
                         <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}[]" multiple="multiple" >
-{#                            <option disabled selected value>-- select variable --</option>#}
+{#
                         </select>
 {#                    {% elif argument.type == 'DIMENSION' %}#}
 {#                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >#}

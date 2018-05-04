@@ -347,7 +347,8 @@
                 $('#config-viz-form').append(submitted_args);
 
 
-                var myData = $("#config-viz-form").serialize();
+{#                var myData = $("#config-viz-form").serialize().split("%5B%5D").join("");#}
+                 var myData = $("#config-viz-form").serialize().split("%5B%5D").join("[]");;
 
                 viz_request += '?';
                 viz_request += myData;
