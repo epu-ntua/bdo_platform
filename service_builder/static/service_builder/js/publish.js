@@ -82,7 +82,7 @@
                 service_id: service_id,
                 exposed_args: JSON.stringify(exposed_args),
             },
-            "success": function(result) {
+            success: function(result) {
                 console.log(result);
             },
             error: function (jqXHR) {

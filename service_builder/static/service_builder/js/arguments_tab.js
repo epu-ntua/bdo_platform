@@ -29,6 +29,7 @@ $(document).ready(function(){
         var new_alg_arg_title ;
         var new_alg_arg_type;
         var new_alg_arg_typevalue;
+        var new_alg_arg_default;
         var new_alg_arg_desc;
         $('.popover-content #add_new_argument_btn2').click(function (e) {
             countrow=countrow+1;
@@ -53,8 +54,9 @@ $(document).ready(function(){
                 // new_alg_arg_type = $("select#alg_vartype option:checked").val();
                 new_alg_arg_type = $("select#alg_vartype option:checked").text();
                 new_alg_arg_typevalue=$("#alg_vartype").val();
-                new_alg_arg_desc = $("#alg_vardescr").text();
-                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='name'>" + new_alg_arg_name + "</td> <td data-columnname='title'>" + new_alg_arg_title + "</td> <td data-columnname='type'><span> " + new_alg_arg_type + "</span><span style='display:none;'>"+new_alg_arg_typevalue+"</span>  </td> <td data-columnname='description'> <div style='min-width: 100%'>" + new_alg_arg_desc + " </div> </td> <td>"+ edit_row_btn +del_row_btn +" </td> </tr>";
+                new_alg_arg_default=$("#alg_vardefault").val();
+                new_alg_arg_desc = $("#alg_vardescr").val();
+                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='name'>" + new_alg_arg_name + "</td> <td data-columnname='title'>" + new_alg_arg_title + "</td> <td data-columnname='type'><span> " + new_alg_arg_type + "</span><span style='display:none;'>"+new_alg_arg_typevalue+"</span>  </td> <td data-columnname='default'>" + new_alg_arg_default + "</td> <td data-columnname='description'> <div style='min-width: 100%'>" + new_alg_arg_desc + " </div> </td> <td>"+ edit_row_btn +del_row_btn +" </td> </tr>";
                 $('#selected-arguments-table2 tbody').append(new_arg_tr_string);
 
                 $(edit_sel).popover({
@@ -81,12 +83,14 @@ $(document).ready(function(){
                     var temp_alg_arg_title=$(temp).find($("td[data-columnname='title']")).text().trim();
                     var temp_alg_arg_type=$(temp).find($("td[data-columnname='type']")).children().eq(0).text().trim();
                     var temp_alg_arg_typevalue=$(temp).find($("td[data-columnname='type']")).children().eq(1).text().trim();
+                    var temp_alg_arg_default=$(temp).find($("td[data-columnname='default']")).text().trim();
                     var temp_alg_arg_desc=$(temp).find($("td[data-columnname='description']")).text().trim();
 
 
                     $("#alg_varname").val(temp_alg_arg_name);
                     $("#alg_vartitle").val(temp_alg_arg_title);
                     $("select#alg_vartype ").val((temp_alg_arg_typevalue).trim()).change();
+                    $("#alg_vardefault").val(temp_alg_arg_default);
                     $("#alg_vardescr").text(temp_alg_arg_desc);
 
 
@@ -96,6 +100,7 @@ $(document).ready(function(){
                         new_alg_arg_title = $("#alg_vartitle").val();
                         new_alg_arg_type = $("select#alg_vartype option:checked").text();
                         new_alg_arg_typevalue=$("#alg_vartype").val();
+                        new_alg_arg_default = $("#alg_vardefault").val();
                         new_alg_arg_desc = $("#alg_vardescr").val();
                         if(check_duplicate_title_name(new_alg_arg_name,new_alg_arg_title,temp.replace("#",""))){
                             alert("Argument name or title already exists!")
@@ -105,6 +110,7 @@ $(document).ready(function(){
                             $(temp).find($("td[data-columnname='title']")).text(new_alg_arg_title);
                             $(temp).find($("td[data-columnname='type']")).children().eq(0).text(new_alg_arg_type);
                             $(temp).find($("td[data-columnname='type']")).children().eq(1).text(new_alg_arg_typevalue);
+                            $(temp).find($("td[data-columnname='default']")).text(new_alg_arg_default);
                             $(temp).find($("td[data-columnname='description']")).text(new_alg_arg_desc);
 
                             $(edit_sel).popover("hide");
@@ -261,7 +267,7 @@ $(document).ready(function(){
                     $("#filter_def_val").val(temp_filter_def_val);
                     $("#filter_varname").val(temp_filter_var_name);
                     $("#filter_vartitle").val(temp_filter_var_title);
-                    $("#filter_descr").text(temp_filter_descr);
+                    $("#filter_descr").val(temp_filter_descr);
                     $("select#filter_type").val(temp_filter_typevalue.trim()).change();
 
 
