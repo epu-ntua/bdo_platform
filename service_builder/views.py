@@ -15,8 +15,7 @@ from query_designer.models import Query, TempQuery
 from visualizer.models import Visualization
 from service_builder.models import Service, ServiceTemplate
 from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph, run_zep_note, clone_zep_note, delete_zep_paragraph, \
-    create_zep_getDict_paragraph, get_zep_getDict_paragraph_response
-
+    create_zep_getDict_paragraph, get_zep_getDict_paragraph_response, create_zep_arguments_paragraph
 
 
 def create_new_service(request):
@@ -27,8 +26,10 @@ def create_new_service(request):
         saved_queries = []
     available_viz = Visualization.objects.filter(hidden=False)
     available_templates = ServiceTemplate.objects.all()
-    service = Service(user=user, private=False, notebook_id='2D9E8JBBX', published=False)
-    service.save()
+    # service = Service(user=user, private=False, notebook_id='2D9E8JBBX', published=False)
+    # service.save()
+    service = Service.objects.get(pk=89)
+
     # service = Service.objects.get(pk=3)
     return render(request, 'service_builder/create_new_service.html', {
         'saved_queries': saved_queries,
@@ -209,6 +210,9 @@ def update_service_arguments(request):
             arg['default_lon_min'] = arg['default'].split('<<')[1].split(',')[1].split('>')[0]
             arg['default_lat_max'] = arg['default'].split('>,<')[1].split(',')[0]
             arg['default_lon_max'] = arg['default'].split('>,<')[1].split(',')[1].split('>')[0]
+    new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=service.notebook_id, title='', args_json_string=json.dumps(arguments))
+    delete_zep_paragraph(service.notebook_id, new_arguments_paragraph)
+    service.arguments_paragraph_id = new_arguments_paragraph
     service.arguments = arguments
     service.save()
     result = {}

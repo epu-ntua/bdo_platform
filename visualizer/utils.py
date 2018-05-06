@@ -219,6 +219,25 @@ def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     return paragraph_id
 
 
+def create_zep_arguments_paragraph(notebook_id, title, args_json_string):
+    data = dict()
+    data['title'] = title
+    data['index'] = 1
+    data['text'] = '%spark.pyspark' \
+                   '\nimport json' \
+                   '\narguments = dict()' \
+                   '\narguments = json.loads({0})' \
+                   '\ndf.printSchema()'.format(args_json_string)
+
+    str_data = json.dumps(data)
+    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = response.json()
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
 def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name="df"):
     data = dict()
     if index >= 0:
