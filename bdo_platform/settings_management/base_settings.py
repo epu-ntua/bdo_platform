@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     # django
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -64,6 +65,8 @@ INSTALLED_APPS = [
     'service_builder',
     'requestservice',
     'note_builder',
+    'uploader',
+    'data_parser'
 ]
 
 AUTHENTICATION_BACKENDS = (

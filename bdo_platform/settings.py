@@ -11,6 +11,7 @@ else:
                           open('bdo_platform//settings_management/settings-loader.txt', 'r').read().split(',')]
 
         for settings_file in settings_files:
+            print(settings_file)
             if settings_file == 'development_dpap':
                 from bdo_platform.settings_management.development_dpap import *
             elif settings_file == 'development_gtsapelas':
@@ -25,6 +26,8 @@ else:
                 from bdo_platform.settings_management.development_sskalidakis import *
             elif settings_file == 'development_mkontoulis':
                 from bdo_platform.settings_management.development_mkontoulis import *
+            elif settings_file == 'development_spitsios':
+                from bdo_platform.settings_management.development_spitsios import *
             elif settings_file == 'development':
                 from bdo_platform.settings_management.development import *
     except IOError:

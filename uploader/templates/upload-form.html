@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
+    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/uploader.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue">Upload a new dataset</h1>
+        </div>
+
+        <hr>
+
+        {% if submitted_alert %}
+            {% if success_alert %}
+                <div class="alert alert-success" role="alert">
+                    <a class="close" data-dismiss="alert" aria-label="Close">x</a>
+                    Process successfully submitted.
+                </div>
+            {% else %}
+                <div class="alert alert-danger" role="alert">
+                    <a class="close" data-dismiss="alert" aria-label="Close">x</a>
+                    There was an error while submitting the process.
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="jumbotron">
+            <div class="container text-center">
+                <form id="upload-form" action="{% url 'upload-form'%}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <h3>Choose Dataset Type</h3>
+                        {{ dataset_form }}
+                    </div>
+
+                    <br><br><br>
+                    <div class="row">
+                        <div class="col col-md-6">
+                            <input type="radio" id="file-upload-radio">
+                            <label for="file-upload-radio" class="label-radio">Upload File (Up to 100MB)</label>
+                            <br><br>
+                            <div class="row">
+                                <div class="col col-md-9">
+                                    {{ upload_form }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col col-md-6">
+                            <input type="radio" id="file-download-radio">
+                            <label for="file-download-radio" class="label-radio">Download File</label>
+                            <br><br>
+                            {% for field in download_form %}
+                                <div class="row">
+                                    <div class="col col-md-8">
+                                        {{field.label}}:
+                                        <br><br>
+                                    </div>
+                                    <div class="col col-md-4">
+                                        {{field}}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <br><br><br>
+
+                    <button type="submit" class="btn row" style="background:#00bcd4; margin-top: 50px;">Upload</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    <script src="{% static 'js/uploader.js' %}"></script>
+{% endblock %}
