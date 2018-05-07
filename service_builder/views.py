@@ -26,9 +26,11 @@ def create_new_service(request):
         saved_queries = []
     available_viz = Visualization.objects.filter(hidden=False)
     available_templates = ServiceTemplate.objects.all()
-    # service = Service(user=user, private=False, notebook_id='2D9E8JBBX', published=False)
-    # service.save()
-    service = Service.objects.get(pk=89)
+    if settings.TEST_SERVICES:
+        service = Service.objects.get(pk=89)
+    else:
+        service = Service(user=user, private=False, notebook_id='2D9E8JBBX', published=False)
+        service.save()
 
     # service = Service.objects.get(pk=3)
     return render(request, 'service_builder/create_new_service.html', {
@@ -215,7 +217,8 @@ def update_service_arguments(request):
         args_to_note[arg['name']] = arg['default']
     new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=service.notebook_id, title='', args_json_string=json.dumps(args_to_note))
     run_zep_paragraph(notebook_id=service.notebook_id, paragraph_id=new_arguments_paragraph)
-    delete_zep_paragraph(service.notebook_id, service.arguments_paragraph_id)
+    if service.arguments_paragraph_id is not None:
+        delete_zep_paragraph(service.notebook_id, service.arguments_paragraph_id)
     service.arguments_paragraph_id = new_arguments_paragraph
     service.arguments = arguments
     service.save()
@@ -288,7 +291,9 @@ def submit_service_args(request, service_id):
 
     new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=new_notebook_id, title='',
                                                              args_json_string=json.dumps(args_to_note))
-    delete_zep_paragraph(new_notebook_id, service.arguments_paragraph_id)
+    if service.arguments_paragraph_id is not None:
+        delete_zep_paragraph(new_notebook_id, service.arguments_paragraph_id)
+
     if settings.TEST_SERVICES:
         service.arguments_paragraph_id = new_arguments_paragraph
         service.save()

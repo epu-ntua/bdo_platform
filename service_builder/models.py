@@ -17,7 +17,7 @@ class Service(Model):
     published = BooleanField(default=False)
 
     notebook_id = CharField(max_length=100)
-    arguments_paragraph_id = CharField(max_length=100)
+    arguments_paragraph_id = CharField(max_length=100, null=True)
 
     queries = JSONField(default={})
     arguments = JSONField(default={})
