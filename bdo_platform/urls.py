@@ -46,7 +46,6 @@ urlpatterns = [
 
     # Ckeditor
     url(r'text', include('note_builder.urls')),
-]
 
     # uploader
     url(r'^upload/', include('uploader.urls')),
