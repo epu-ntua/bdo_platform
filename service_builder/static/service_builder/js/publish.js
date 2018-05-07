@@ -48,6 +48,7 @@
                     name: $(this).find($("td[data-columnname='name']")).text(),
                     title: $(this).find($("td[data-columnname='title']")).text(),
                     type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
+                    default: $(this).find($("td[data-columnname='default']")).text(),
                     description: $(this).find($("td[data-columnname='description']")).text(),
                 });
             });

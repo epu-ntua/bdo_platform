@@ -112,7 +112,8 @@ $(document).ready(function(){
                             $(temp).find($("td[data-columnname='type']")).children().eq(1).text(new_alg_arg_typevalue);
                             $(temp).find($("td[data-columnname='default']")).text(new_alg_arg_default);
                             $(temp).find($("td[data-columnname='description']")).text(new_alg_arg_desc);
-
+                            // Update service arguments on backend
+                            update_service_arguments();
                             $(edit_sel).popover("hide");
                         }else{
                             alert("Please fill the name and title of the new variable!")
@@ -125,7 +126,8 @@ $(document).ready(function(){
                     temp=temp.replace("#del_btn_id_","");
                     temp="#row_id_"+temp;
                     $(temp).remove();
-
+                    // Update service arguments on backend
+                    update_service_arguments();
                 });
                 // Update service arguments on backend
                 update_service_arguments();
@@ -291,6 +293,8 @@ $(document).ready(function(){
                             $(temp).find($("td[data-columnname='filter_type']")).children().eq(0).text(new_filter_type);
                             $(temp).find($("td[data-columnname='filter_type']")).children().eq(1).text(new_filter_typevalue);
 
+                            // Update service arguments on backend
+                            update_service_arguments();
                             $(edit_sel).popover("hide");
                          }else{
                             alert("Please fill the name and title of the new variable!")
@@ -303,7 +307,8 @@ $(document).ready(function(){
                     temp=temp.replace("#del_btn_id_","");
                     temp="#row_id_"+temp;
                     $(temp).remove();
-
+                    // Update service arguments on backend
+                    update_service_arguments();
                 });
                 // Update service arguments on backend
                 update_service_arguments();

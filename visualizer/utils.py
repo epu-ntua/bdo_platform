@@ -226,9 +226,9 @@ def create_zep_arguments_paragraph(notebook_id, title, args_json_string):
     data['text'] = '%spark.pyspark' \
                    '\nimport json' \
                    '\narguments = dict()' \
-                   '\narguments = json.loads({0})' \
-                   '\ndf.printSchema()'.format(args_json_string)
-
+                   '\narguments = json.loads(\'{0}\')' \
+                   '\nprint arguments'.format(args_json_string)
+    print args_json_string
     str_data = json.dumps(data)
     response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response

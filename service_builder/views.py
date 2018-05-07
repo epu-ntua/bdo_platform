@@ -168,7 +168,7 @@ def load_service_args_form_fields(request):
     arguments = str(request.GET.get('arguments', ''))
     if service_id != 0:
         service = Service.objects.get(pk=service_id)
-        html = render_to_string('service_builder/config-service-form-fields.html', {'arguments': service.arguments['filter-arguments']})
+        html = render_to_string('service_builder/config-service-form-fields.html', {'arguments': service.arguments['filter-arguments']+service.arguments['algorithm-arguments']})
     else:
         arguments = convert_unicode_json(json.loads(arguments))
         html = render_to_string('service_builder/config-service-form-fields.html', {'arguments': arguments})
@@ -210,8 +210,12 @@ def update_service_arguments(request):
             arg['default_lon_min'] = arg['default'].split('<<')[1].split(',')[1].split('>')[0]
             arg['default_lat_max'] = arg['default'].split('>,<')[1].split(',')[0]
             arg['default_lon_max'] = arg['default'].split('>,<')[1].split(',')[1].split('>')[0]
-    new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=service.notebook_id, title='', args_json_string=json.dumps(arguments))
-    delete_zep_paragraph(service.notebook_id, new_arguments_paragraph)
+    args_to_note = dict()
+    for arg in arguments['algorithm-arguments']:
+        args_to_note[arg['name']] = arg['default']
+    new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=service.notebook_id, title='', args_json_string=json.dumps(args_to_note))
+    run_zep_paragraph(notebook_id=service.notebook_id, paragraph_id=new_arguments_paragraph)
+    delete_zep_paragraph(service.notebook_id, service.arguments_paragraph_id)
     service.arguments_paragraph_id = new_arguments_paragraph
     service.arguments = arguments
     service.save()
@@ -231,6 +235,15 @@ def submit_service_args(request, service_id):
         filter_arg['filter_b'] = request.GET.get(filter_arg['name'], filter_arg['default'])
     print 'user args:'
     print service_filter_args
+
+    service_algorithm_args = service_args["algorithm-arguments"]
+    print 'original algorithm args:'
+    print service_algorithm_args
+    args_to_note = dict()
+    for algorithm_arg in service_algorithm_args:
+        args_to_note[algorithm_arg['name']] = request.GET.get(algorithm_arg['name'], algorithm_arg['default'])
+    print 'user algorithm args:'
+    print args_to_note
 
     # 2.CUSTOMIZE THE QUERIES BASED ON THE GATHERED USER ARGUMENTS (AND CREATE TEMPQUERIES)
     # query_mapping is a dict that maps the original queries of the template service to the tempQueries created after the user customisation
@@ -271,6 +284,14 @@ def submit_service_args(request, service_id):
             else:
                 print 'deleting paragraph: {0}'.format(original_paragraph_id)
                 delete_zep_paragraph(notebook_id=str(new_notebook_id), paragraph_id=str(original_paragraph_id))
+
+
+    new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=new_notebook_id, title='',
+                                                             args_json_string=json.dumps(args_to_note))
+    delete_zep_paragraph(new_notebook_id, service.arguments_paragraph_id)
+    if settings.TEST_SERVICES:
+        service.arguments_paragraph_id = new_arguments_paragraph
+        service.save()
 
 
     # 4.RUN THE SERVICE CODE (one by one paragraph, or all together. CHOOSE..)
