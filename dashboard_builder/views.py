@@ -25,7 +25,7 @@ def build_dynamic_dashboard(request):
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
             'components': Visualization.objects.all().order_by('id'),
-            'form_class': form_class,
+            'form': form_class,
         })
     return None
 
