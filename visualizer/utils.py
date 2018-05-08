@@ -649,6 +649,66 @@ def create_zep_toJSON_paragraph(notebook_id, title, df_name, order_by='', order_
     return paragraph_id
 
 
+def create_zep_tempView_paragraph(notebook_id, title, df_name):
+    data = dict()
+    data['title'] = 'bdo_test_paragraph'
+    data['text'] = '%spark.pyspark' \
+                   '\n{0}.createTempView("{0}_scala")'.format(df_name)
+
+    str_data = json.dumps(data)
+    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = convert_unicode_json(response.json())
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def create_zep_scala_histogram_paragraph(notebook_id, title, df_name, hist_col, num_of_bins):
+    data = dict()
+    data['title'] = 'bdo_test_paragraph'
+    data['text'] = '%spark' \
+                   '\nval {0}_scala = spark.table("{0}_scala")' \
+                   '\nval (startValues,counts) = {0}_scala.select("{1}").map(value => value.getDouble(0)).rdd.histogram({2})' \
+                   '\nval {0}_scala = sc.parallelize(startValues zip counts).toDF("startValues","counts").withColumn("startValues", round($"startValues", 3))' \
+                   '\nsqlc.dropTempTable("{0}_scala")'.format(df_name, hist_col, num_of_bins)
+
+    str_data = json.dumps(data)
+    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = convert_unicode_json(response.json())
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def create_zep_scala_toJSON_paragraph(notebook_id, title, df_name):
+    data = dict()
+    data['title'] = 'bdo_test_paragraph'
+
+    data['text'] = '%spark' \
+                   '\n{0}_scala.orderBy("startValues").toJSON.collect'.format(df_name)
+
+
+    str_data = json.dumps(data)
+    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = convert_unicode_json(response.json())
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def get_zep_scala_toJSON_paragraph_response(notebook_id, paragraph_id):
+    print "request: "+"http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id)
+    response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
+    print response
+    response_json = convert_unicode_json(response.json())
+    re = '[' + str(response_json['body']['results']['msg'][0]['data'].split('Array(')[1].split(')\n')[0]) + ']'
+    json_data = json.loads(re)
+    json_data = convert_unicode_json(json_data)
+    return json_data
+
 def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
     print "request: "+"http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id)
     response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))

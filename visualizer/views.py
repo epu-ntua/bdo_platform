@@ -351,6 +351,10 @@ def map_course_time(request):
 def map_course(request):
     marker_limit = int(request.GET.get('m_limit', '100'))
     query = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
     order_var = str(request.GET.get('order_var', ''))
     variable = str(request.GET.get('col_var', ''))
     agg_function = str(request.GET.get('agg_func', 'avg'))
@@ -371,21 +375,21 @@ def map_course(request):
         for f in doc['from']:
             for s in f['select']:
                 if s['name'] == variable:
-                    s['aggregate'] = agg_function
+                    # s['aggregate'] = agg_function
                     s['exclude'] = False
                 elif s['name'] == order_var:
-                    s['groupBy'] = True
+                    # s['groupBy'] = True
                     s['exclude'] = False
                 elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                    s['groupBy'] = True
-                    s['aggregate'] = 'round'
+                    # s['groupBy'] = True
+                    # s['aggregate'] = 'round'
                     s['exclude'] = False
-                    doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
+                    # doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
                 elif str(s['name']).find('lon') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                    s['groupBy'] = True
-                    s['aggregate'] = 'round'
+                    # s['groupBy'] = True
+                    # s['aggregate'] = 'round'
                     s['exclude'] = False
-                    doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
+                    # doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
                 else:
                     s['exclude'] = True
 
@@ -416,21 +420,21 @@ def map_course(request):
                 lon_index = idx
     else:
         print ("json-case")
-        # TODO: data from the dataframe must be sorted according to order_var
-        with open('visualizer/static/visualizer/plotlinemyfile.json', 'r') as json_fd:
-            jsonfile = json_fd.read()
-        print(jsonfile)
-        jsonfile = json.loads(jsonfile)
-        jsondata = []
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # print json_data
+
+        data = []
         lat_index = 0
         lon_index = 1
         order_var_index = 2
         var_index = 3
-        for idy, s in enumerate(jsonfile['data']):
-            jsondata.append([float(s[lat_col].encode('ascii')), float(s[lon_col].encode('ascii')), str(s[order_var].encode('ascii')), float(s[variable].encode('ascii'))])
+        for s in json_data:
+            data.append([float(s[lat_col]), float(s[lon_col]), str(s[order_var]), float(s[variable])])
 
-        data = jsondata
-        print data
+        print data[:4]
 
 
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
@@ -502,6 +506,10 @@ def map_course(request):
 def map_plotline(request):
     marker_limit = int(request.GET.get('m_limit', '100'))
     query = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
     order_var = str(request.GET.get('order_var', ''))
     ship_id = str(request.GET.get('ship_id', ''))
     lat_col = str(request.GET.get('lat_col', ''))
@@ -553,19 +561,20 @@ def map_plotline(request):
                 lon_index = idx
     else:
         print ("json-case")
-        # TODO: data from the dataframe must be sorted according to order_var
-        with open('visualizer/static/visualizer/plotlinemyfile.json', 'r') as json_fd:
-            jsonfile = json_fd.read()
-        print(jsonfile)
-        jsonfile = json.loads(jsonfile)
-        jsondata = []
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # print json_data
+
+        data = []
         lat_index = 0
         lon_index = 1
-        for idy, s in enumerate(jsonfile['data']):
-            jsondata.append([float(s[lat_col].encode('ascii')), float(s[lon_col].encode('ascii'))])
 
-        data = jsondata
-        print data
+        for s in json_data:
+            data.append([float(s[lat_col]), float(s[lon_col])])
+
+        print data[:3]
 
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
@@ -1267,9 +1276,13 @@ def get_pie_chart_zep(request):
 
 def get_histogram_chart_am(request):
     query_pk = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
-    bins = int(str(request.GET.get('bins', '2')))
+    bins = int(str(request.GET.get('bins', '5')))
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
     if query_pk != 0:
@@ -1305,63 +1318,64 @@ def get_histogram_chart_am(request):
                 y_var_index=idx
             elif c['name'] == x_var:
                 x_var_index = idx
+
+        min_x_var = float(min(data, key=lambda x: x[x_var_index])[x_var_index])
+        max_x_var = float(max(data, key=lambda x: x[x_var_index])[x_var_index])
+
+        # min_y_var = float(min(result_data, key=lambda x: x[y_var_index])[y_var_index])
+        # max_y_var = float(max(result_data, key=lambda x: x[y_var_index])[y_var_index])
+        # print min_y_var
+        # print max_y_var
+        # print max_x_var
+
+        mybin = np.linspace(start=min_x_var, stop=max_x_var, num=bins + 1)
+        mybin[len(mybin) - 1] = mybin[len(mybin) - 1] + 0.0001
+        # print mybin
+
+        bin_container = []
+        iter2 = iter(mybin)
+        iter2.next()
+        for el in mybin:
+            try:
+                temp = [el, iter2.next()]
+            except:
+                break
+            bin_container.append(temp)
+
+        final_data = agg_func_selector(agg_function, data, bin_container, y_var_index, x_var_index)
+
+        # Create data for graph
+        bin_list = [[round(s, 4) for s in xs] for xs in bin_container]
+
+        json_data = []
+        count = 0
+        for fd in final_data:
+            dict = {}
+            newvar = str(y_var).encode('ascii')
+            dict.update({newvar: str(fd).encode('ascii')})
+            dict.update({x_var: str(bin_list[count])})
+            json_data.append(dict)
+            count = count + 1
+            # print (json_data)
     else:
-        print ("json-case")
-        # TODO data from the dataframe must be sorted according to x_var (bin variable)
-        with open('visualizer/static/visualizer/histogrammyfile.json','r') as json_fd:
-            jsonfile= json_fd.read()
-        print(jsonfile)
-        jsonfile = json.loads(jsonfile)
-        jsondata = []
-        x_var_index = 0
-        y_var_index = 1
-        for idy, s in enumerate(jsonfile['data']):
-            jsondata.append([float(s[x_var].encode('ascii')),float( s[y_var].encode('ascii'))])
+        bins += 1
+        tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
+        scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col='power', num_of_bins=bins)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
+        toJSON_paragraph_id = create_zep_scala_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_scala_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
-        data = jsondata
-        print data
-
-
-
-    min_x_var = float(min(data, key=lambda x: x[x_var_index])[x_var_index])
-    max_x_var = float(max(data, key=lambda x: x[x_var_index])[x_var_index])
-
-    # min_y_var = float(min(result_data, key=lambda x: x[y_var_index])[y_var_index])
-    # max_y_var = float(max(result_data, key=lambda x: x[y_var_index])[y_var_index])
-    # print min_y_var
-    # print max_y_var
-    # print max_x_var
-
-    mybin = np.linspace(start=min_x_var, stop=max_x_var, num=bins+1)
-    mybin[len(mybin)-1]=mybin[len(mybin)-1]+0.0001
-    # print mybin
-
-    bin_container = []
-    iter2 = iter(mybin)
-    iter2.next()
-    for el in mybin:
-        try:
-            temp = [el,iter2.next()]
-        except:
-            break
-        bin_container.append(temp)
-
-    final_data=agg_func_selector(agg_function, data, bin_container, y_var_index, x_var_index)
-
-    # Create data for graph
-    bin_list = [[round(s, 4) for s in xs] for xs in bin_container]
-
-    json_data=[]
-    count = 0
-    for fd in final_data:
-        dict = {}
-        newvar = str(y_var).encode('ascii')
-        dict.update({newvar : str(fd).encode('ascii')})
-        dict.update({x_var : str(bin_list[count])})
-        json_data.append(dict)
-        count = count + 1
-    # print (json_data)
-
+        for i in range(0, len(json_data) - 1):
+            json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
+        json_data = json_data[:-1]
+        # print json_data
+        y_var = 'counts'
+        x_var = 'startValues'
 
     return render(request, 'visualizer/histogram_simple_am.html', {'data': json_data, 'value_col': y_var, 'category_col': x_var})
 
@@ -1648,7 +1662,12 @@ def get_line_chart_am(request):
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         print json_data
-
+        y_m_unit = []
+        y_title_list = []
+        for x in y_var_list:
+            # TODO: use proper names
+            y_title_list.insert(0, str('title'))
+            y_m_unit.insert(0, str('unknown unit'))
 
     #notebook_id = create_zep_note(name='bdo_test')
     # query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
@@ -1813,6 +1832,13 @@ def get_column_chart_am(request):
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         print json_data
+        y_m_unit = []
+        y_title_list = []
+        for x in y_var_list:
+            # TODO: use proper names
+            y_title_list.insert(0, str('title'))
+            y_m_unit.insert(0, str('unknown unit'))
+
 
     if 'time' in x_var:
         isDate = 'true'
@@ -1820,6 +1846,7 @@ def get_column_chart_am(request):
         isDate = 'false'
     return render(request, 'visualizer/column_chart_am.html',
                   {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_title_list, 'category_col': x_var, 'isDate': isDate})
+
 
 def get_data_table(request):
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
