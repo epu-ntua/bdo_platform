@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
 from __future__ import division
+from decimal import Decimal
 
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
@@ -27,6 +28,7 @@ import matplotlib.pyplot as plt
 from utils import *
 from visualizer.models import Visualization
 import time
+from collections import namedtuple
 
 from django.utils.safestring import SafeString
 
@@ -348,77 +350,104 @@ def map_course_time(request):
 
 def map_course(request):
     marker_limit = int(request.GET.get('m_limit', '100'))
-    query = str(request.GET.get('query', ''))
+    query = int(str(request.GET.get('query', '0')))
     order_var = str(request.GET.get('order_var', ''))
     variable = str(request.GET.get('col_var', ''))
     agg_function = str(request.GET.get('agg_func', 'avg'))
+    lat_col = str(request.GET.get('lat_col', ''))
+    lon_col = str(request.GET.get('lon_col', ''))
 
-    q = AbstractQuery.objects.get(pk=int(query))
-    # q = Query(document=q.document)
-    q = TempQuery(document=q.document)
-    doc = q.document
+    if query != 0:
+        q = AbstractQuery.objects.get(pk=int(query))
+        # q = Query(document=q.document)
+        q = TempQuery(document=q.document)
+        doc = q.document
 
-    var_query_id = variable[:variable.find('_')]
-    doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
-    # doc['orderings']=[]
-    doc['limit'] = marker_limit
+        var_query_id = variable[:variable.find('_')]
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+        # doc['orderings']=[]
+        doc['limit'] = marker_limit
 
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == variable:
-                s['aggregate'] = agg_function
-                s['exclude'] = False
-            elif s['name'] == order_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                s['groupBy'] = True
-                s['aggregate'] = 'round'
-                s['exclude'] = False
-                doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-            elif str(s['name']).find('lon') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                s['groupBy'] = True
-                s['aggregate'] = 'round'
-                s['exclude'] = False
-                doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-            else:
-                s['exclude'] = True
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == variable:
+                    s['aggregate'] = agg_function
+                    s['exclude'] = False
+                elif s['name'] == order_var:
+                    s['groupBy'] = True
+                    s['exclude'] = False
+                elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                    s['groupBy'] = True
+                    s['aggregate'] = 'round'
+                    s['exclude'] = False
+                    doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
+                elif str(s['name']).find('lon') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                    s['groupBy'] = True
+                    s['aggregate'] = 'round'
+                    s['exclude'] = False
+                    doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
+                else:
+                    s['exclude'] = True
 
-    q.document = doc
-    # raw_query = q.raw_query
-    #
-    # names = re.findall(r"round\((.*?)\)", raw_query)
-    # for name in names:
-    #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
-
-
-    query_data = q.execute()
-    data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
+        q.document = doc
+        # raw_query = q.raw_query
+        #
+        # names = re.findall(r"round\((.*?)\)", raw_query)
+        # for name in names:
+        #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
 
 
-    lat_index = lon_index = -1
-    order_var_index = -1
-    var_index = -1
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == variable:
-            var_index = idx
-        elif c['name'] == order_var:
-            order_var_index = idx
-        elif str(c['name']).find('lat') >= 0:
-            lat_index = idx
-        elif str(c['name']).find('lon') >= 0:
-            lon_index = idx
+        query_data = q.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+
+
+        lat_index = lon_index = -1
+        order_var_index = -1
+        var_index = -1
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == variable:
+                var_index = idx
+            elif c['name'] == order_var:
+                order_var_index = idx
+            elif str(c['name']).find('lat') >= 0:
+                lat_index = idx
+            elif str(c['name']).find('lon') >= 0:
+                lon_index = idx
+    else:
+        print ("json-case")
+        # TODO: data from the dataframe must be sorted according to order_var
+        with open('visualizer/static/visualizer/plotlinemyfile.json', 'r') as json_fd:
+            jsonfile = json_fd.read()
+        print(jsonfile)
+        jsonfile = json.loads(jsonfile)
+        jsondata = []
+        lat_index = 0
+        lon_index = 1
+        order_var_index = 2
+        var_index = 3
+        for idy, s in enumerate(jsonfile['data']):
+            jsondata.append([float(s[lat_col].encode('ascii')), float(s[lon_col].encode('ascii')), str(s[order_var].encode('ascii')), float(s[variable].encode('ascii'))])
+
+        data = jsondata
+        print data
+
 
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
                'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    location = [0, 0]
-    zoom_start = 2
+    min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
+    max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
+    zoom_lat = (min_lat + max_lat) / 2
+    min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
+    max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
+    zoom_lon = (min_lon + max_lon) / 2
+    location = [zoom_lat, zoom_lon]
+    zoom_start = 4
     max_zoom = 30
-    min_zoom = 2,
+    min_zoom = 2
 
     m = folium.Map(location=location,
                    zoom_start=zoom_start,
@@ -472,72 +501,85 @@ def map_course(request):
 
 def map_plotline(request):
     marker_limit = int(request.GET.get('m_limit', '100'))
-    query = str(request.GET.get('query', ''))
+    query = int(str(request.GET.get('query', '0')))
     order_var = str(request.GET.get('order_var', ''))
-    variable = str(request.GET.get('col_var', ''))
-    agg_function = str(request.GET.get('agg_func', 'avg'))
+    ship_id = str(request.GET.get('ship_id', ''))
+    lat_col = str(request.GET.get('lat_col', ''))
+    lon_col = str(request.GET.get('lon_col',''))
+    map_id = str(request.GET.get('map_id',''))
+    # variable = str(request.GET.get('col_var', ''))
+    # agg_function = str(request.GET.get('agg_func', 'avg'))
 
-    q = AbstractQuery.objects.get(pk=int(query))
-    q = TempQuery(document=q.document)
-    doc = q.document
+    if query != 0:
+        q = AbstractQuery.objects.get(pk=int(query))
+        # q = Query(document=q.document)
+        q = TempQuery(document=q.document)
+        doc = q.document
 
-    var_query_id = variable[:variable.find('_')]
-    doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
-    # doc['orderings']=[]
-    doc['limit'] = marker_limit
+        # var_query_id = variable[:variable.find('_')]
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
 
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == variable:
-                s['aggregate'] = agg_function
-                s['exclude'] = False
-            elif s['name'] == order_var:
-                s['groupBy'] = True
-                s['exclude'] = False
-            elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                s['groupBy'] = True
-                s['aggregate'] = 'round'
-                s['exclude'] = False
-                doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-            elif str(s['name']).find('lon') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                s['groupBy'] = True
-                s['aggregate'] = 'round'
-                s['exclude'] = False
-                doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-            else:
-                s['exclude'] = True
+        doc['limit'] = marker_limit
+        print(doc)
 
-    q.document = doc
-    # raw_query = q.raw_query
-    #
-    # names = re.findall(r"round\((.*?)\)", raw_query)
-    # for name in names:
-    #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == order_var:
+                    s['exclude'] = False
+                elif str(s['name']).find('lat') >= 0:
+                    s['exclude'] = False
+                    # doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
+                elif str(s['name']).find('lon') >= 0:
+                    s['exclude'] = False
+                    # doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
+                else:
+                    s['exclude'] = True
 
-    query_data = q.execute()
-    data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
+        q.document = doc
 
-    lat_index = lon_index = -1
-    order_var_index = -1
-    var_index = -1
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == variable:
-            var_index = idx
-        elif c['name'] == order_var:
-            order_var_index = idx
-        elif str(c['name']).find('lat') >= 0:
-            lat_index = idx
-        elif str(c['name']).find('lon') >= 0:
-            lon_index = idx
+        query_data = q.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+
+        lat_index = lon_index = -1
+        order_var_index = -1
+        var_index = -1
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == order_var:
+                order_var_index = idx
+            elif str(c['name']).find('lat') >= 0:
+                lat_index = idx
+            elif str(c['name']).find('lon') >= 0:
+                lon_index = idx
+    else:
+        print ("json-case")
+        # TODO: data from the dataframe must be sorted according to order_var
+        with open('visualizer/static/visualizer/plotlinemyfile.json', 'r') as json_fd:
+            jsonfile = json_fd.read()
+        print(jsonfile)
+        jsonfile = json.loads(jsonfile)
+        jsondata = []
+        lat_index = 0
+        lon_index = 1
+        for idy, s in enumerate(jsonfile['data']):
+            jsondata.append([float(s[lat_col].encode('ascii')), float(s[lon_col].encode('ascii'))])
+
+        data = jsondata
+        print data
 
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
                'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    location = [0, 0]
-    zoom_start = 2
+    min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
+    max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
+    zoom_lat= (min_lat + max_lat)/2
+    min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
+    max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
+    zoom_lon = (min_lon + max_lon) / 2
+    location = [zoom_lat, zoom_lon]
+    zoom_start = 4
     max_zoom = 30
     min_zoom = 2,
 
@@ -559,13 +601,22 @@ def map_plotline(request):
     for d in data:
         points.append([float(d[lat_index]), float(d[lon_index])])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(variable), overlay=True, show=True,
+    print(points)
+
+    pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
                                               control=True).add_to(m)
     folium.PolyLine(points,
-                    color='green',
+                    color='#68A7EE',
                     weight=3,
                     opacity=0.9,
                     ).add_to(pol_group_layer)
+
+    # Arrows are created
+    for i in range (1,len(points)-1):
+        arrows = get_arrows(m, 1, locations=[points[i-1],points[i]])
+        for arrow in arrows:
+            arrow.add_to(pol_group_layer)
+
 
     folium.LayerControl().add_to(m)
 
@@ -583,9 +634,76 @@ def map_plotline(request):
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
     # print js
-    # os.remove('templates/map.html')
+    os.remove('templates/map.html')
     return render(request, 'visualizer/map_plotline.html',
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
+
+
+def get_arrows(m, n_arrows, locations, color='#68A7EE', size=7):
+    '''
+    Get a list of correctly placed and rotated
+    arrows/markers to be plotted
+
+    Parameters
+    locations : list of lists of lat lons that represent the
+                start and end of the line.
+                eg [[41.1132, -96.1993],[41.3810, -95.8021]]
+    arrow_color : default is 'blue'
+    size : default is 6
+    n_arrows : number of arrows to create.  default is 3
+    Return
+    list of arrows/markers
+    '''
+
+    Point = namedtuple('Point', field_names=['lat', 'lon'])
+
+    # creating point from our Point named tuple
+    p1 = Point(locations[0][0], locations[0][1])
+    p2 = Point(locations[1][0], locations[1][1])
+
+    # getting the rotation needed for our marker.
+    # Subtracting 90 to account for the marker's orientation
+    # of due East(get_bearing returns North)
+    rotation = get_bearing(p1, p2) - 90
+
+    arrows = []
+
+    arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
+                                                fill_color=color, number_of_sides=3,
+                                                radius=size, rotation=rotation).add_to(m))
+    return arrows
+
+
+def get_bearing(p1, p2):
+    '''
+    Returns compass bearing from p1 to p2
+
+    Parameters
+    p1 : namedtuple with lat lon
+    p2 : namedtuple with lat lon
+
+    Return
+    compass bearing of type float
+
+    Notes
+    Based on https://gist.github.com/jeromer/2005586
+    '''
+
+    long_diff = np.radians(p2.lon - p1.lon)
+
+    lat1 = np.radians(p1.lat)
+    lat2 = np.radians(p2.lat)
+
+    x = np.sin(long_diff) * np.cos(lat2)
+    y = (np.cos(lat1) * np.sin(lat2)
+         - (np.sin(lat1) * np.cos(lat2)
+            * np.cos(long_diff)))
+    bearing = np.degrees(np.arctan2(x, y))
+
+    # adjusting for compass bearing
+    if bearing < 0:
+        return bearing + 360
+    return bearing
 
 
 def map_heatmap(request):
@@ -742,8 +860,9 @@ def map_viz_folium_contour(request):
         lons_bins = np.arange(min_lon, max_lon + 0.00001, 0.1)
         # print lons_bins
         Lats, Lons = np.meshgrid(lats_bins, lons_bins)
-        # print Lats
-        # print Lons
+
+        print Lats
+        print Lons
 
         # Create grid data needed for the contour plot
         # final_data = create_grid_data(lats_bins, lons_bins, data)
@@ -837,7 +956,7 @@ def map_viz_folium_contour(request):
             css_all = [css.prettify() for css in css_all[3:]]
         f.close()
         os.remove(mappath)
-        os.remove('templates/map.html')
+        # os.remove('templates/map.html')
 
         # Create data grid for javascript pop-up
         data_grid = []
@@ -852,6 +971,9 @@ def map_viz_folium_contour(request):
         return HttpResponseNotFound
     except Exception:
         return HttpResponseNotFound
+
+
+
 
 def make_map(bbox):
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -1144,48 +1266,65 @@ def get_pie_chart_zep(request):
 
 
 def get_histogram_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = AbstractQuery.objects.get(pk=query_pk)
-    query = TempQuery(document=query.document)
+    query_pk = int(str(request.GET.get('query', '0')))
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '2')))
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
-    doc = query.document
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = TempQuery(document=query.document)
+        doc = query.document
 
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == y_var:
-                s['exclude'] = False
-            elif s['name'] == x_var:
-                s['exclude'] = False
-                s['groupBy'] = True
-            else:
-                s['exclude'] = True
-    print doc
-    doc['limit'] = []
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-    query.document = doc
-    # raw_query = query.raw_query
-    # print doc
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == y_var:
+                    s['exclude'] = False
+                elif s['name'] == x_var:
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+        print doc
+        doc['limit'] = []
+        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+        query.document = doc
+        # raw_query = query.raw_query
+        # print doc
+
+        query_data = query.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+        print (data[:10])
 
 
-    query_data = query.execute()
-    data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
+        x_var_index = -1
+        y_var_index = -1
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == y_var:
+                y_var_index=idx
+            elif c['name'] == x_var:
+                x_var_index = idx
+    else:
+        print ("json-case")
+        # TODO data from the dataframe must be sorted according to x_var (bin variable)
+        with open('visualizer/static/visualizer/histogrammyfile.json','r') as json_fd:
+            jsonfile= json_fd.read()
+        print(jsonfile)
+        jsonfile = json.loads(jsonfile)
+        jsondata = []
+        x_var_index = 0
+        y_var_index = 1
+        for idy, s in enumerate(jsonfile['data']):
+            jsondata.append([float(s[x_var].encode('ascii')),float( s[y_var].encode('ascii'))])
+
+        data = jsondata
+        print data
 
 
-    x_var_index = -1
-    y_var_index=-1
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == y_var:
-            y_var_index=idx
-        elif c['name'] == x_var:
-            x_var_index = idx
 
     min_x_var = float(min(data, key=lambda x: x[x_var_index])[x_var_index])
-    max_x_var= float(max(data, key=lambda x: x[x_var_index])[x_var_index])
+    max_x_var = float(max(data, key=lambda x: x[x_var_index])[x_var_index])
 
     # min_y_var = float(min(result_data, key=lambda x: x[y_var_index])[y_var_index])
     # max_y_var = float(max(result_data, key=lambda x: x[y_var_index])[y_var_index])
@@ -1198,7 +1337,7 @@ def get_histogram_chart_am(request):
     # print mybin
 
     bin_container = []
-    iter2=iter(mybin)
+    iter2 = iter(mybin)
     iter2.next()
     for el in mybin:
         try:
@@ -1223,62 +1362,82 @@ def get_histogram_chart_am(request):
         count = count + 1
     # print (json_data)
 
+
     return render(request, 'visualizer/histogram_simple_am.html', {'data': json_data, 'value_col': y_var, 'category_col': x_var})
 
 
+
 def get_histogram_2d_am(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = AbstractQuery.objects.get(pk=query_pk)
-    query = TempQuery(document=query.document)
+    query_pk = int(str(request.GET.get('query', '0')))
+
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '3')))
 
     # agg_function = str(request.GET.get('agg_func', 'avg'))
+    if query_pk != 0:
+        query = AbstractQuery.objects.get(pk=query_pk)
+        query = TempQuery(document=query.document)
+        doc = query.document
 
-    doc = query.document
-
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == y_var:
-                s['groupBy'] = False
-                s['aggregate'] = ''
-                s['exclude'] = False
-            elif s['name'] == x_var:
-                s['groupBy'] = False
-                s['exclude'] = False
-                s['aggregate'] = ''
-            else:
-                s['exclude'] = True
-    print doc
-    doc['limit'] = []
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
-    query.document = doc
-    # raw_query = query.raw_query
-    # print doc
-    # print raw_query
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == y_var:
+                    # s['groupBy'] = False
+                    # s['aggregate'] = ''
+                    s['exclude'] = False
+                elif s['name'] == x_var:
+                    # s['groupBy'] = False
+                    s['exclude'] = False
+                    # s['aggregate'] = ''
+                else:
+                    s['exclude'] = True
+        print doc
+        doc['limit'] = []
+        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
+        query.document = doc
+        # raw_query = query.raw_query
+        # print doc
+        # print raw_query
 
 
-    query_data = query.execute()
+        query_data = query.execute()
 
-    result_data = query_data[0]['results']
-    result_headers = query_data[0]['headers']
+        result_data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
 
-    # TODO: find out why result_data SOMETIMES contains a [None,None] element in the last position
+        # TODO: find out why result_data SOMETIMES contains a [None,None] element in the last position
 
-    try:
-        result_data.remove([None, None])
-    except ValueError:
-        pass
-        print('Error element does not exist in list')
+        try:
+            result_data.remove([None, None])
+        except ValueError:
+            pass
+            print('Error element does not exist in list')
 
-    x_var_index = -1
-    y_var_index = -1
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'] == y_var:
-            y_var_index = idx
-        elif c['name'] == x_var:
-            x_var_index = idx
+        x_var_index = -1
+        y_var_index = -1
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == y_var:
+                y_var_index = idx
+            elif c['name'] == x_var:
+                x_var_index = idx
+    else:
+        print ("json-case")
+        with open('visualizer/static/visualizer/histogrammyfile.json', 'r') as json_fd:
+            jsonfile = json_fd.read()
+        print(jsonfile)
+        jsonfile = json.loads(jsonfile)
+        print jsonfile
+        jsondata = []
+        x_var_index = 0
+        y_var_index = 1
+        for idy, s in enumerate(jsonfile['data']):
+            jsondata.append([float(s[x_var].encode('ascii')), float(s[y_var].encode('ascii'))])
+
+        result_data = jsondata
+        print result_data
+
+
 
 
     min_x_var = float(min(result_data, key=lambda x: x[x_var_index])[x_var_index])
@@ -1425,8 +1584,9 @@ def get_line_chart_am(request):
     notebook_id = str(request.GET.get('notebook_id', ''))
 
     x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-    y_var_list = y_var.split(",")
+    y_var = request.GET.getlist('y_var[]')
+
+    y_var_list = y_var
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
     if query_pk != 0:
@@ -1453,16 +1613,22 @@ def get_line_chart_am(request):
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
 
+
+
         x_var_index = 0
         y_var_index = []
         y_var_indlist = []
+        y_m_unit=[]
+        y_title_list=[]
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] in y_var_list:
                 y_var_index.insert(len(y_var_index), idx)
                 y_var_indlist.insert(len(y_var_indlist), c['name'])
+                y_m_unit.insert(len(y_m_unit),c['unit'].encode('ascii'))
+                y_title_list.insert(len(y_title_list),c['title'].encode('ascii'))
             elif c['name'] == x_var:
                 x_var_index = idx
-
+        # print y_m_unit
         json_data = []
         for d in data:
             count = 0
@@ -1505,7 +1671,7 @@ def get_line_chart_am(request):
     #json_data = json_data.replace("}'", "}")
     #json_data = json_data.replace("+03:00", "")
     #
-    #print str(json_data)
+    # print str(json_data)
     # print json.loads(str(json_data))
     #
 
@@ -1515,7 +1681,7 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_title_list, 'category_col': x_var, 'isDate': isDate})
 
 def get_pie_chart_am(request):
     query_pk = int(str(request.GET.get('query', '0')))
@@ -1583,8 +1749,8 @@ def get_column_chart_am(request):
 
 
     x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-    y_var_list = y_var.split(",")
+    y_var = request.GET.getlist('y_var[]')
+    y_var_list = y_var
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
     if query_pk != 0:
@@ -1618,10 +1784,14 @@ def get_column_chart_am(request):
         x_var_index = 0
         y_var_index = []
         y_var_indlist = []
+        y_m_unit = []
+        y_title_list = []
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] in y_var_list:
                 y_var_index.insert(len(y_var_index), idx)
                 y_var_indlist.insert(len(y_var_indlist), c['name'])
+                y_m_unit.insert(len(y_m_unit), c['unit'].encode('ascii'))
+                y_title_list.insert(len(y_title_list), c['title'].encode('ascii'))
             elif c['name'] == x_var:
                 x_var_index = idx
 
@@ -1649,7 +1819,7 @@ def get_column_chart_am(request):
     else:
         isDate = 'false'
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'category_col': x_var, 'isDate': isDate})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_title_list, 'category_col': x_var, 'isDate': isDate})
 
 def get_data_table(request):
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -1859,3 +2029,17 @@ def color_choice(value,map,value_level):
         count=count+1
     return map[len(map)-1]
 
+
+def map_script(htmlmappath):
+    map_html = open(htmlmappath, 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+
+    core_script = js_all[-1]
+    # core_script.replace(map_id, used_map_id)
+    useful_part = \
+    core_script.split("console.log('entered fullscreen');")[1].split("});", 1)[1].strip().split("</script>")[0]
+    js_all[-1] = "<script>" + useful_part + "</script>"
