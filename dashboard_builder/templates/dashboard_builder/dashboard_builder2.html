@@ -174,7 +174,7 @@
             width: 100%;
             height: calc(100% - 37px);
             overflow: auto;
-            
+
         }
     </style>
 {% endblock %}
@@ -216,7 +216,7 @@
                 <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
                     <div class='wrap1'></div>
                     <header class="iframeHeader">
-                        <input id="widgetTitle[[::counter]]" class="form-control text-center" value=" Widget[[::counter]]" ">
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
                         {% load  static %}
                         <input type='button' value='X' class='deletebtn'
                                style="background-image: url({% static "images/exitBtn.png" %})"
@@ -532,7 +532,8 @@
 
             $('#new_widget_btn').click(function (){
                 $scope.counter++;
-                $scope.standardItems.push({sizeX:4, sizeY:1, row: 0,col: 0 ,url: "" , noteData: "" });
+                var tempTitle = "Widget" + $scope.counter;
+                $scope.standardItems.push({sizeX:4, sizeY:1, row: 0,col: 0 ,url: "" , noteData: "" , title: tempTitle});
             });
 
 
@@ -582,7 +583,7 @@
                 var tempcounter= 0;
                 for(var myindex in $scope.standardItems){
                     var tempTitleId= "widgetTitleModel" + myindex.toString();
-                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() ,$scope.standardItems[myindex].noteData.toString() ];
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() ,$scope.standardItems[myindex].noteData.toString() ,$scope.standardItems[myindex].title.toString()];
                     post_data_obj[String(tempcounter)] = temparray;
                     tempcounter++;
                 }

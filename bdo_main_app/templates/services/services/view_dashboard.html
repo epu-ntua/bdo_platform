@@ -98,9 +98,11 @@
         }
 
         .widget-title{
-            padding-top: 5px;
-            font-size: 200%;
+            padding-top: 4px;
+            padding-left: 2px;
+            font-size: 150%;
             color: white;
+
         }
 
         .modal-tab{
@@ -157,7 +159,7 @@
                 <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">
                     <div class='wrap1'></div>
                     <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
-                        <p class="widget-title" ng-class="{'titleNote': item.url == ''}"> Widget</p>
+                        <p class="widget-title" ng-class="{'titleNote': item.url == ''}" ng-bind="item.title"> </p>
                     </header>
                     <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" style="displa: none">
                         <div class="ng-wrapper" ng-switch-when="false">
@@ -277,7 +279,7 @@
                      }
                      noteDataDecoded= noteDataDecoded.slice(0 ,-1);
                      {#noteDataDecode=noteDataDecode.encode("utf-8");#}
-                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded});
+                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded ,title:info[6]});
 
                 {% endfor %}
             };
