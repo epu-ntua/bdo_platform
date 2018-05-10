@@ -84,9 +84,18 @@
                     fillOpacity: 0.8
                     };
 {#                    feature.properties.style#}
-                    return L.circleMarker(latlng,geojsonMarkerOptions)
+                    {% if markerType == 'circle' %}
+                        return L.circleMarker(latlng,geojsonMarkerOptions);
+                    {% else %}
+                        return L.marker(latlng,geojsonMarkerOptions);
+                    {% endif %}
                 }}),
-                {updateTimeDimension: true,addlastPoint: false, duration:'{{ duration }}'}
+                {updateTimeDimension: true,
+                    addlastPoint: true,
+                    {% if duration != '' %}
+                        duration:'{{ duration }}'
+                    {% endif %}
+                }
                 ).addTo(map);
     </script>
 
