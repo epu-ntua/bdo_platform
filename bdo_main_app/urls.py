@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 import bdo_main_app.views as views
+import service_builder.views as sb_views
 
 urlpatterns = [
     # home & signup
@@ -22,5 +23,5 @@ urlpatterns = [
     # service and dashboards
     url('^services/$', views.services, name='services'),
     url('^services/dashboard/(?P<pk>\d+)/$', views.view_dashboard, name='view_dashboard'),
-    url('^services/service/(?P<pk>\d+)/$', views.view_service, name='view_service'),
+    url('^services/service/(?P<pk>\d+)/$', sb_views.load_service, name='load_service'),
 ]
