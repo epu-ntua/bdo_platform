@@ -74,11 +74,11 @@
            map.addControl(map.timeDimensionControl);
 
             var timestamped_geo_json = L.timeDimension.layer.geoJson(
-                L.geoJson({'type':'FeatureCollection','features':[{{ data|safe }}]}, {'pointToLayer': function (feature,latlng) {
+                L.geoJson({'type':'FeatureCollection','features':{{ data|safe }}}, {'pointToLayer': function (feature,latlng) {
                     var geojsonMarkerOptions = {
                     radius: 4,
-                    fillColor: feature.properties.style.iconstyle.fillColor,
-                    color: feature.properties.style.iconstyle.fillColor,
+{#                    fillColor: feature.properties.style.iconstyle.fillColor,#}
+{#                    color: feature.properties.style.iconstyle.fillColor,#}
                     weight: 1,
                     opacity: 1,
                     fillOpacity: 0.8

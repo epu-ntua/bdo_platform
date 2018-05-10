@@ -1,247 +1,35 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 # -*- coding: utf-8 -*-
-from __future__ import division
-from decimal import Decimal
 
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
-from bs4 import BeautifulSoup
-
-from datetime import datetime, timedelta
-import os
-from nvd3 import pieChart, lineChart
-import psycopg2
-import re
-
 from django.db import connection
-
-from matplotlib import use
-
-from query_designer.models import TempQuery
-
-use('Agg')
-
-import pylab as pl
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-
-from utils import *
-from visualizer.models import Visualization
-import time
-from collections import namedtuple
-
-from django.utils.safestring import SafeString
-
-
-def test_request_include(request):
-    return render(request, 'visualizer/test_request_include.html', {})
-
-
-def test_request(request):
-    return render(request, 'visualizer/test_request.html', {})
-
-
-def get_map_simple(request):
-    return render(request, 'visualizer/map_viz.html', {})
-
-from folium import CustomIcon
-from folium.plugins import HeatMap
-from folium.plugins import MarkerCluster
-
 from rest_framework.views import APIView
-
-
-from tests import *
 from forms import MapForm
 
-class MapIndex(APIView):
-    def get(self, request):
-        form = MapForm()
-        return render(request, 'visualizer/map_index.html', {'form': form})
+from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
+from collections import namedtuple
+import os, re, time
+from nvd3 import pieChart, lineChart
+import psycopg2
 
-    def post(self, request):
-        form = MapForm(request.POST)
-        if form.is_valid():
-            tiles = request.data["tiles"]
-            if tiles == "marker clusters":
-                return map_viz_folium(request)
-            else:
-                return map_heatmap(request)
-
-class MapAPI(APIView):
-    def get(self, request):
-
-        tiles = request.GET.get("tiles", "marker clusters")
-        if tiles == "marker clusters":
-            return map_viz_folium(request)
-        else:
-            return map_heatmap(request)
-
-def map_viz(request):
-    return render(request, 'visualizer/map_viz.html', {})
+from matplotlib import use
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import pylab as pl
 
 
-def map_viz_folium(request):
-    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    location = [0, 0]
-    zoom_start = 2
-    max_zoom = 30
-    min_zoom = 2,
+from query_designer.models import TempQuery
+from visualizer.models import Visualization
 
-    m = folium.Map(location=location,
-                   zoom_start=zoom_start,
-                   max_zoom=max_zoom,
-                   min_zoom=min_zoom,
-                   max_bounds=True,
-                   tiles=tiles_str+token_str,
-                   attr=attr_str)
+from utils import *
+from tests import *
 
-    plugins.Fullscreen(
-        position='topright',
-        title='Expand me',
-        title_cancel='Exit me',
-        force_separate_button=True).add_to(m)
+from folium import CustomIcon
+from folium.plugins import HeatMap, MarkerCluster
+use('Agg')
 
-    marker_cluster = plugins.MarkerCluster(name="Markers", popups=False).add_to(m)
-
-    if request.method == "POST":
-
-        form = MapForm(request.POST)
-        if form.is_valid():
-            data = request.data
-            line = request.POST.get("line", 'no')
-            markersum = data["markers"]
-            ship = data["ship"]
-            mindate = str(request.POST.get("min_date", '2000-01-01 00:00:00'))
-            maxdate = str(request.POST.get("max_date", '2017-12-31 23:59:59'))
-        else:
-            markersum = 50
-            line = 'no'
-            ship = "all"
-            mindate = 2000
-            maxdate = 2017
-
-    else:
-        line = request.GET.get("line", 'no')
-        markersum = int(request.GET.get("markers", 50))
-        ship = request.GET.get("ship", "all")
-        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
-        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
-
-    query_pk = int(str(request.GET.get('query', '')))
-
-    data = get_data(query_pk, markersum, ship, mindate, maxdate)
-    # var_index = data['var']
-    ship_index = data['ship']
-    time_index = data['time']
-    lat_index = data['lat']
-    lon_index = data['lon']
-    data = data['data']
-
-    course = []
-    currboat = data[0][ship_index]
-    # import pdb;
-    # pdb.set_trace()
-    for index in range(0, len(data)):
-        d = data[index]
-        lat = float(d[lat_index])
-        lon = float(d[lon_index])
-        ship = int(d[ship_index])
-        date = str(d[time_index])
-
-        url = 'https://cdn4.iconfinder.com/data/icons/geo-points-1/154/{}'.format
-        icon_image = url('geo-location-gps-sea-location-boat-ship-512.png')
-        icon = CustomIcon(
-            icon_image,
-            icon_size=(40, 40),
-            icon_anchor=(20, 20),
-        )
-        message = '<b>Ship</b>: ' + ship.__str__() + "<br><b>At :</b> [" + lat.__str__() + " , " + lon.__str__() + "] <br><b>On :</b> " + date
-        folium.Marker(
-            location=[lat, lon],
-            icon=icon,
-            popup=message
-        ).add_to(marker_cluster)
-
-        if line != 'no':
-            if ship == currboat:
-                course.append((np.array([lat, lon]) * np.array([1, 1])).tolist())
-            if ship != currboat or index == len(data)-1:
-                boat_line = folium.PolyLine(
-                    locations=course,
-                    weight=1,
-                    color='blue'
-                ).add_to(m)
-                attr = "{'font-weight': 'normal', 'font-size': '18', 'fill': 'white', 'letter-spacing': '80'}"
-                plugins.PolyLineTextPath(
-                    boat_line,
-                    '\u21D2',
-                    repeat=True,
-                    offset=5,
-                    attributes=attr,
-                ).add_to(m)
-
-                if ship != currboat:
-                    course = (np.array([lat, lon]) * np.array([1, 1])).tolist()
-                    currboat = ship
-
-    m.save('templates/map.html')
-    map_html = open('templates/map.html', 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    # print map_id
-    js_all = soup.findAll('script')
-    # print(js_all)
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-    # print(js_all)
-    css_all = soup.findAll('link')
-    if len(css_all) > 3:
-        css_all = [css.prettify() for css in css_all[3:]]
-    # print js
-    # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
-
-def valid_entry(entry, ship, minyear, maxyear):
-    entryship = entry[2]
-    entrydate = entry[3]
-    year = entrydate.split('-')
-    year = int(year[0])
-
-    if ship != "all":
-        ship = int(ship)
-        if entryship != ship:
-            return False
-    if year < minyear or year > maxyear:
-        return False
-    return True
-
-def transpose(date):
-    date_time = date
-    pattern = '%Y-%m-%d %H:%M:%S'
-    epoch = int(time.mktime(time.strptime(date_time, pattern)))*1000
-    return epoch
-
-def createjson(course,times,dates,ship,speeds,colours):
-    geo = {
-        "type": "Feature",
-        "geometry": {
-            "type": "MultiPoint",
-            "coordinates": course,
-        },
-        "properties": {
-            "time": times,
-            "date": dates,
-            "ship": ship,
-            "speed": speeds,
-            "colour": colours,
-        }
-    }
-    return geo
 
 def map_course_time(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
@@ -347,7 +135,6 @@ def map_course_time(request):
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': datas})
 
 
-
 def map_course(request):
     marker_limit = int(request.GET.get('m_limit', '100'))
     query = int(str(request.GET.get('query', '0')))
@@ -368,7 +155,7 @@ def map_course(request):
         doc = q.document
 
         var_query_id = variable[:variable.find('_')]
-        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+        doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
         # doc['orderings']=[]
         doc['limit'] = marker_limit
 
@@ -504,16 +291,29 @@ def map_course(request):
 
 
 def map_plotline(request):
-    marker_limit = int(request.GET.get('m_limit', '100'))
+    marker_limit = request.GET.getlist('m_limit[]', '')
+    marker_limit_list = marker_limit
+    print marker_limit
     query = int(str(request.GET.get('query', '0')))
 
-    df = str(request.GET.get('df', ''))
+    df = request.GET.getlist('df[]', '')
+    df_list = df
+    print df
     notebook_id = str(request.GET.get('notebook_id', ''))
 
-    order_var = str(request.GET.get('order_var', ''))
+    color = request.GET.getlist('color[]', 'blue')
+    color_list = color
+    print color
+    order_var = request.GET.getlist('order_var[]', '')
+    order_var_list = order_var
+    print order_var
     ship_id = str(request.GET.get('ship_id', ''))
-    lat_col = str(request.GET.get('lat_col', ''))
-    lon_col = str(request.GET.get('lon_col',''))
+    lat_col = request.GET.getlist('lat_col[]', '')
+    lat_col_list = lat_col
+    print lat_col
+    lon_col = request.GET.getlist('lon_col[]','')
+    lon_col_list = lon_col
+    print lon_col
     map_id = str(request.GET.get('map_id',''))
     # variable = str(request.GET.get('col_var', ''))
     # agg_function = str(request.GET.get('agg_func', 'avg'))
@@ -561,70 +361,75 @@ def map_plotline(request):
                 lon_index = idx
     else:
         print ("json-case")
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+
+        tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+        token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+        attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+                   '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+                   'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+        # min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
+        # max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
+        # zoom_lat= (min_lat + max_lat)/2
+        # min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
+        # max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
+        # zoom_lon = (min_lon + max_lon) / 2
+        location = [37.929411, 23.649708]
+        zoom_start = 4
+        max_zoom = 30
+        min_zoom = 2,
+
+        m = folium.Map(location=location,
+                       zoom_start=zoom_start,
+                       max_zoom=max_zoom,
+                       min_zoom=min_zoom,
+                       max_bounds=True,
+                       tiles=tiles_str + token_str,
+                       attr=attr_str)
+
+        plugins.Fullscreen(
+            position='topright',
+            title='Expand me',
+            title_cancel='Exit me',
+            force_separate_button=True).add_to(m)
+
+        for df, color, lat_col, lon_col, order_var, marker_limit in zip(df_list, color_list, lat_col_list, lon_col_list, order_var_list, marker_limit_list):
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         # print json_data
 
-        data = []
-        lat_index = 0
-        lon_index = 1
+            data = []
+            lat_index = 0
+            lon_index = 1
 
-        for s in json_data:
-            data.append([float(s[lat_col]), float(s[lon_col])])
+            for s in json_data:
+                data.append([float(s[lat_col]), float(s[lon_col])])
 
-        print data[:3]
+            print data[:3]
 
-    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
-    max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
-    zoom_lat= (min_lat + max_lat)/2
-    min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
-    max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
-    zoom_lon = (min_lon + max_lon) / 2
-    location = [zoom_lat, zoom_lon]
-    zoom_start = 4
-    max_zoom = 30
-    min_zoom = 2,
 
-    m = folium.Map(location=location,
-                   zoom_start=zoom_start,
-                   max_zoom=max_zoom,
-                   min_zoom=min_zoom,
-                   max_bounds=True,
-                   tiles=tiles_str + token_str,
-                   attr=attr_str)
 
-    plugins.Fullscreen(
-        position='topright',
-        title='Expand me',
-        title_cancel='Exit me',
-        force_separate_button=True).add_to(m)
 
-    points = []
-    for d in data:
-        points.append([float(d[lat_index]), float(d[lon_index])])
+            points = []
+            for d in data:
+                points.append([float(d[lat_index]), float(d[lon_index])])
 
-    print(points)
+            print(points)
 
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
-                                              control=True).add_to(m)
-    folium.PolyLine(points,
-                    color='#68A7EE',
-                    weight=3,
-                    opacity=0.9,
-                    ).add_to(pol_group_layer)
+            pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
+                                                      control=True).add_to(m)
+            folium.PolyLine(points,
+                            color=color,
+                            weight=3,
+                            opacity=0.9,
+                            ).add_to(pol_group_layer)
 
-    # Arrows are created
-    for i in range (1,len(points)-1):
-        arrows = get_arrows(m, 1, locations=[points[i-1],points[i]])
-        for arrow in arrows:
-            arrow.add_to(pol_group_layer)
+            # Arrows are created
+            for i in range (1,len(points)-1):
+                arrows = get_arrows(m, 1, locations=[points[i-1],points[i]])
+                for arrow in arrows:
+                    arrow.add_to(pol_group_layer)
 
 
     folium.LayerControl().add_to(m)
@@ -648,71 +453,148 @@ def map_plotline(request):
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
 
 
-def get_arrows(m, n_arrows, locations, color='#68A7EE', size=7):
-    '''
-    Get a list of correctly placed and rotated
-    arrows/markers to be plotted
+def map_markers_in_time(request):
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    location = [0, 0]
+    zoom_start = 2
+    max_zoom = 30
+    min_zoom = 2
 
-    Parameters
-    locations : list of lists of lat lons that represent the
-                start and end of the line.
-                eg [[41.1132, -96.1993],[41.3810, -95.8021]]
-    arrow_color : default is 'blue'
-    size : default is 6
-    n_arrows : number of arrows to create.  default is 3
-    Return
-    list of arrows/markers
-    '''
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str + token_str,
+                   attr=attr_str)
 
-    Point = namedtuple('Point', field_names=['lat', 'lon'])
+    plugins.Fullscreen(
+        position='topright',
+        title='Expand me',
+        title_cancel='Exit me',
+        force_separate_button=True).add_to(m)
 
-    # creating point from our Point named tuple
-    p1 = Point(locations[0][0], locations[0][1])
-    p2 = Point(locations[1][0], locations[1][1])
+    marker_limit = int(request.GET.get('markers', 1000))
+    var = str(request.GET.get('var'))
+    order_var = str(request.GET.get('order_var', 'time'))
+    query_pk = int(str(request.GET.get('query', 0)))
 
-    # getting the rotation needed for our marker.
-    # Subtracting 90 to account for the marker's orientation
-    # of due East(get_bearing returns North)
-    rotation = get_bearing(p1, p2) - 90
+    notebook_id = str(request.GET.get('notebook_id', ''))
+    df = str(request.GET.get('df', ''))
 
-    arrows = []
+    if query_pk!=0:
+        q = AbstractQuery.objects.get(pk=int(query_pk))
+        q = Query(document=q.document)
+        doc = q.document
 
-    arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
-                                                fill_color=color, number_of_sides=3,
-                                                radius=size, rotation=rotation).add_to(m))
-    return arrows
+        doc['limit'] =  marker_limit
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == order_var:
+                    s['exclude'] = False
+                elif str(s['name']).find('lat') >= 0:
+                    s['exclude'] = False
+                elif str(s['name']).find('lon') >= 0:
+                    s['exclude'] = False
+                elif s['name'] == var:
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
 
 
-def get_bearing(p1, p2):
-    '''
-    Returns compass bearing from p1 to p2
+        # print doc
+        q.document = doc
 
-    Parameters
-    p1 : namedtuple with lat lon
-    p2 : namedtuple with lat lon
+        query_data = q.execute()
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+        print(result_headers)
 
-    Return
-    compass bearing of type float
+        var_index = order_index = lon_index = lat_index = -1
 
-    Notes
-    Based on https://gist.github.com/jeromer/2005586
-    '''
+        for idx, c in enumerate(result_headers['columns']):
+            if c['name'] == var:
+                var_index = idx
+            elif str(c['name']).find('lat') >= 0:
+                lat_index = idx
+            elif str(c['name']).find('lon') >= 0:
+                lon_index = idx
+            elif c['name'] == order_var:
+                order_index = idx
 
-    long_diff = np.radians(p2.lon - p1.lon)
 
-    lat1 = np.radians(p1.lat)
-    lat2 = np.radians(p2.lat)
+        # geo_list = []
+        geo_list=""
 
-    x = np.sin(long_diff) * np.cos(lat2)
-    y = (np.cos(lat1) * np.sin(lat2)
-         - (np.sin(lat1) * np.cos(lat2)
-            * np.cos(long_diff)))
-    bearing = np.degrees(np.arctan2(x, y))
+        for index in range(0, len(data) - 1):
+            d = data[index]
+            lat = float(d[lat_index])
+            lon = float(d[lon_index])
+            time = (d[order_index]).strftime('%Y-%m-%dT%H:%M:%S')
+            status = str(d[var_index])
+            color = str(d[var_index])
 
-    # adjusting for compass bearing
-    if bearing < 0:
-        return bearing + 360
-    return bearing
+
+            geo_list = geo_list+createjson(([lon,lat]),[time],status, color).encode('ascii')+","
+
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+
+        features = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [float(d['latitude']), float(d['longitude'])],
+                },
+                "properties": {
+                    "times": [str(d['time'])],
+                    "style": {
+                        "color": "blue",
+                    }
+                }
+            }
+            for d in json_data
+        ]
+        features = convert_unicode_json(features)
+    # plugins.TimestampedGeoJson({
+    #     'type': 'FeatureCollection',
+    #     'features': features,
+    # }, period='PT1M', add_last_point=False, auto_play=False, loop=False).add_to(m)
+
+    period='PT1H'
+    duration='PT0H'
+    # plugins.TimestampedGeoJson({
+    #     'type': 'FeatureCollection',
+    #     'features': geo_list,
+    # }, period='PT1H', add_last_point=False, auto_play=False, loop=False).add_to(m)
+    # geo_list= str(geo_list).replace("'","\"")
+    m.save('templates/map.html')
+    f = open('templates/map.html', 'r')
+    map_html = f.read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    f.close()
+
+    os.remove('templates/map.html')
+
+    return render(request, 'visualizer/map_markers_in_time.html',
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration})
 
 
 def map_heatmap(request):
@@ -788,6 +670,7 @@ def map_heatmap(request):
     # print js
     # os.remove('templates/map.html')
     return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
 
 def map_viz_folium_contour(request):
     try:
@@ -982,14 +865,6 @@ def map_viz_folium_contour(request):
         return HttpResponseNotFound
 
 
-
-
-def make_map(bbox):
-    fig, ax = plt.subplots(figsize=(8, 6))
-    # ax.set_extent(bbox)
-    ax.coastlines(resolution='50m')
-    return fig, ax
-
 def map_viz_folium_heatmap(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
@@ -1052,226 +927,6 @@ def map_viz_folium_heatmap(request):
     # print js
     # os.remove('templates/map.html')
     return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
-
-
-def get_pie_chart(request):
-    type = 'pieChart'
-    chart = pieChart(name=type, color_category='category20c', height=450, width=450)
-    xdata = ["Orange", "Banana", "Pear", "Kiwi", "Apple", "Strawberry", "Pineapple"]
-    ydata = [3, 4, 0, 1, 5, 7, 3]
-    extra_serie = {"tooltip": {"y_start": "", "y_end": " cal"}}
-    chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
-    chart.buildcontent()
-    html = chart.htmlcontent
-    return render(request, 'visualizer/piechart.html', {'html': html})
-
-
-def get_line_chart(request):
-    try:
-        # Gather the arguments
-        x_var = str(request.GET.get('x_var', ''))
-        y_var = str(request.GET.get('y_var', ''))
-        query = str(request.GET.get('query', ''))
-
-        # Perform a query and get data
-        headers, data = get_test_data(query, request.user)
-        print data[:100]
-        # Find the columns of the selected variables and the rest dimensions
-        other_dims = list()
-        for idx, col in enumerate(headers['columns']):
-            if str(col['name']) == x_var:
-                x_var_col = idx
-            elif str(col['name']) == y_var:
-                y_var_col = idx
-            else:
-                other_dims.append(idx)
-        print x_var_col
-        print y_var_col
-        print other_dims
-        # Find the first values for each of the rest dimensions
-        other_dims_first_vals = list()
-        for d in other_dims:
-            other_dims_first_vals.append(str(data[0][d]))
-        print other_dims_first_vals
-        # Select only data with the same (first) value on any other dimensions except lat/lon
-        data = [(str(d[x_var_col]), float(d[y_var_col])) for d in data if filter_data(d, other_dims, other_dims_first_vals) == 0]
-        print data[:100]
-
-        xdata = []
-        ydata = []
-        for x, y in sorted(data):
-            xdata.append(time.mktime(datetime.strptime(x, "%Y-%m-%d %H:%M:%S").timetuple()) * 1000)
-            ydata.append(y)
-        print ydata
-        print xdata
-
-        type = "lineChart"
-        chart = lineChart(name=type, x_is_date=True,
-                          x_axis_format="%Y-%m-%d %H:%M:%S", y_axis_format=".3f",
-                          width=1000, height=500,
-                          show_legend=True)
-
-        extra_serie = {"tooltip": {"y_start": "Dummy ", "y_end": " Dummy"},
-                       "date_format": "%Y-%m-%d %H:%M:%S"}
-        chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
-        chart.buildcontent()
-        html = chart.htmlcontent
-        return render(request, 'visualizer/piechart.html', {'html': html})
-    except HttpResponseNotFound:
-        return HttpResponseNotFound
-    except Exception:
-        return HttpResponseNotFound
-
-
-def get_table_zep(request):
-    query = int(str(request.GET.get('query', '')))
-    raw_query = Query.objects.get(pk=query).raw_query
-    # print raw_query
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
-
-
-def get_line_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_line_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
-
-
-def get_bar_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_bar_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
-
-
-def get_area_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_area_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/" + str(notebook_id) + "/paragraph/" + str(viz_paragraph_id) + "?asIframe")
-
-
-def get_scatter_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_scatter_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/" + str(notebook_id) + "/paragraph/" + str(viz_paragraph_id) + "?asIframe")
-
-
-def get_pie_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    key_var = str(request.GET.get('key_var', ''))
-    value_var = str(request.GET.get('value_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=key_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_pie_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, value_vars=value_var, key_var=key_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
 
 
 def get_histogram_chart_am(request):
@@ -1378,7 +1033,6 @@ def get_histogram_chart_am(request):
         x_var = 'startValues'
 
     return render(request, 'visualizer/histogram_simple_am.html', {'data': json_data, 'value_col': y_var, 'category_col': x_var})
-
 
 
 def get_histogram_2d_am(request):
@@ -1607,6 +1261,7 @@ def get_line_chart_am(request):
         query = AbstractQuery.objects.get(pk=query_pk)
         query = TempQuery(document=query.document)
         doc = query.document
+
         for f in doc['from']:
             for s in f['select']:
                 if s['name'] in y_var_list:
@@ -1626,8 +1281,6 @@ def get_line_chart_am(request):
         query_data = query.execute()
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
-
-
 
         x_var_index = 0
         y_var_index = []
@@ -1654,14 +1307,14 @@ def get_line_chart_am(request):
 
             dict.update({x_var: str(d[x_var_index])})
             json_data.append(dict)
-        print (json_data)
+        print json_data[:3]
 
     else:
         toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
         run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print json_data
+        print json_data[:3]
         y_m_unit = []
         y_title_list = []
         for x in y_var_list:
@@ -1701,6 +1354,7 @@ def get_line_chart_am(request):
 
     return render(request, 'visualizer/line_chart_am.html',
                   {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_title_list, 'category_col': x_var, 'isDate': isDate})
+
 
 def get_pie_chart_am(request):
     query_pk = int(str(request.GET.get('query', '0')))
@@ -1898,6 +1552,293 @@ def get_data_table(request):
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': query_pk, 'isJSON': isJSON})
 
 
+def get_pie_chart(request):
+    type = 'pieChart'
+    chart = pieChart(name=type, color_category='category20c', height=450, width=450)
+    xdata = ["Orange", "Banana", "Pear", "Kiwi", "Apple", "Strawberry", "Pineapple"]
+    ydata = [3, 4, 0, 1, 5, 7, 3]
+    extra_serie = {"tooltip": {"y_start": "", "y_end": " cal"}}
+    chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
+    chart.buildcontent()
+    html = chart.htmlcontent
+    return render(request, 'visualizer/piechart.html', {'html': html})
+
+
+def get_line_chart(request):
+    try:
+        # Gather the arguments
+        x_var = str(request.GET.get('x_var', ''))
+        y_var = str(request.GET.get('y_var', ''))
+        query = str(request.GET.get('query', ''))
+
+        # Perform a query and get data
+        headers, data = get_test_data(query, request.user)
+        print data[:100]
+        # Find the columns of the selected variables and the rest dimensions
+        other_dims = list()
+        for idx, col in enumerate(headers['columns']):
+            if str(col['name']) == x_var:
+                x_var_col = idx
+            elif str(col['name']) == y_var:
+                y_var_col = idx
+            else:
+                other_dims.append(idx)
+        print x_var_col
+        print y_var_col
+        print other_dims
+        # Find the first values for each of the rest dimensions
+        other_dims_first_vals = list()
+        for d in other_dims:
+            other_dims_first_vals.append(str(data[0][d]))
+        print other_dims_first_vals
+        # Select only data with the same (first) value on any other dimensions except lat/lon
+        data = [(str(d[x_var_col]), float(d[y_var_col])) for d in data if filter_data(d, other_dims, other_dims_first_vals) == 0]
+        print data[:100]
+
+        xdata = []
+        ydata = []
+        for x, y in sorted(data):
+            xdata.append(time.mktime(datetime.strptime(x, "%Y-%m-%d %H:%M:%S").timetuple()) * 1000)
+            ydata.append(y)
+        print ydata
+        print xdata
+
+        type = "lineChart"
+        chart = lineChart(name=type, x_is_date=True,
+                          x_axis_format="%Y-%m-%d %H:%M:%S", y_axis_format=".3f",
+                          width=1000, height=500,
+                          show_legend=True)
+
+        extra_serie = {"tooltip": {"y_start": "Dummy ", "y_end": " Dummy"},
+                       "date_format": "%Y-%m-%d %H:%M:%S"}
+        chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
+        chart.buildcontent()
+        html = chart.htmlcontent
+        return render(request, 'visualizer/piechart.html', {'html': html})
+    except HttpResponseNotFound:
+        return HttpResponseNotFound
+    except Exception:
+        return HttpResponseNotFound
+
+
+def get_table_zep(request):
+    query = int(str(request.GET.get('query', '')))
+    raw_query = Query.objects.get(pk=query).raw_query
+    # print raw_query
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
+
+
+def get_line_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_line_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
+
+
+def get_bar_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_bar_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
+
+
+def get_area_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_area_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/" + str(notebook_id) + "/paragraph/" + str(viz_paragraph_id) + "?asIframe")
+
+
+def get_scatter_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_scatter_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/" + str(notebook_id) + "/paragraph/" + str(viz_paragraph_id) + "?asIframe")
+
+
+def get_pie_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    key_var = str(request.GET.get('key_var', ''))
+    value_var = str(request.GET.get('value_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=key_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_pie_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, value_vars=value_var, key_var=key_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
+
+
+def get_arrows(m, n_arrows, locations, color='#68A7EE', size=7):
+    '''
+    Get a list of correctly placed and rotated
+    arrows/markers to be plotted
+
+    Parameters
+    locations : list of lists of lat lons that represent the
+                start and end of the line.
+                eg [[41.1132, -96.1993],[41.3810, -95.8021]]
+    arrow_color : default is 'blue'
+    size : default is 6
+    n_arrows : number of arrows to create.  default is 3
+    Return
+    list of arrows/markers
+    '''
+
+    Point = namedtuple('Point', field_names=['lat', 'lon'])
+
+    # creating point from our Point named tuple
+    p1 = Point(locations[0][0], locations[0][1])
+    p2 = Point(locations[1][0], locations[1][1])
+
+    # getting the rotation needed for our marker.
+    # Subtracting 90 to account for the marker's orientation
+    # of due East(get_bearing returns North)
+    rotation = get_bearing(p1, p2) - 90
+
+    arrows = []
+
+    arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
+                                                fill_color=color, number_of_sides=3,
+                                                radius=size, rotation=rotation).add_to(m))
+    return arrows
+
+
+def get_bearing(p1, p2):
+    '''
+    Returns compass bearing from p1 to p2
+
+    Parameters
+    p1 : namedtuple with lat lon
+    p2 : namedtuple with lat lon
+
+    Return
+    compass bearing of type float
+
+    Notes
+    Based on https://gist.github.com/jeromer/2005586
+    '''
+
+    long_diff = np.radians(p2.lon - p1.lon)
+
+    lat1 = np.radians(p1.lat)
+    lat2 = np.radians(p2.lat)
+
+    x = np.sin(long_diff) * np.cos(lat2)
+    y = (np.cos(lat1) * np.sin(lat2)
+         - (np.sin(lat1) * np.cos(lat2)
+            * np.cos(long_diff)))
+    bearing = np.degrees(np.arctan2(x, y))
+
+    # adjusting for compass bearing
+    if bearing < 0:
+        return bearing + 360
+    return bearing
+
+
 def get_aggregate_value(request):
     query_pk = int(str(request.GET.get('query', '0')))
     variable = str(request.GET.get('variable', ''))
@@ -1943,7 +1884,6 @@ def get_aggregate_value(request):
         headers = [key for key in data[0].keys()]
 
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit})
-
 
 
 def agg_func_selector(agg_func,data,bins,y_var_index,x_var_index):
@@ -2070,3 +2010,203 @@ def map_script(htmlmappath):
     useful_part = \
     core_script.split("console.log('entered fullscreen');")[1].split("});", 1)[1].strip().split("</script>")[0]
     js_all[-1] = "<script>" + useful_part + "</script>"
+
+
+def test_request_include(request):
+    return render(request, 'visualizer/test_request_include.html', {})
+
+
+def test_request(request):
+    return render(request, 'visualizer/test_request.html', {})
+
+
+def get_map_simple(request):
+    return render(request, 'visualizer/map_viz.html', {})
+
+
+class MapIndex(APIView):
+    def get(self, request):
+        form = MapForm()
+        return render(request, 'visualizer/map_index.html', {'form': form})
+
+    def post(self, request):
+        form = MapForm(request.POST)
+        if form.is_valid():
+            tiles = request.data["tiles"]
+            if tiles == "marker clusters":
+                return map_viz_folium(request)
+            else:
+                return map_heatmap(request)
+
+class MapAPI(APIView):
+    def get(self, request):
+
+        tiles = request.GET.get("tiles", "marker clusters")
+        if tiles == "marker clusters":
+            return map_viz_folium(request)
+        else:
+            return map_heatmap(request)
+
+def map_viz(request):
+    return render(request, 'visualizer/map_viz.html', {})
+
+
+def map_viz_folium(request):
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    location = [0, 0]
+    zoom_start = 2
+    max_zoom = 30
+    min_zoom = 2,
+
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str+token_str,
+                   attr=attr_str)
+
+    plugins.Fullscreen(
+        position='topright',
+        title='Expand me',
+        title_cancel='Exit me',
+        force_separate_button=True).add_to(m)
+
+    marker_cluster = plugins.MarkerCluster(name="Markers", popups=False).add_to(m)
+
+    if request.method == "POST":
+
+        form = MapForm(request.POST)
+        if form.is_valid():
+            data = request.data
+            line = request.POST.get("line", 'no')
+            markersum = data["markers"]
+            ship = data["ship"]
+            mindate = str(request.POST.get("min_date", '2000-01-01 00:00:00'))
+            maxdate = str(request.POST.get("max_date", '2017-12-31 23:59:59'))
+        else:
+            markersum = 50
+            line = 'no'
+            ship = "all"
+            mindate = 2000
+            maxdate = 2017
+
+    else:
+        line = request.GET.get("line", 'no')
+        markersum = int(request.GET.get("markers", 50))
+        ship = request.GET.get("ship", "all")
+        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
+        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
+
+    query_pk = int(str(request.GET.get('query', '')))
+
+    data = get_data(query_pk, markersum, ship, mindate, maxdate)
+    # var_index = data['var']
+    ship_index = data['ship']
+    time_index = data['time']
+    lat_index = data['lat']
+    lon_index = data['lon']
+    data = data['data']
+
+    course = []
+    currboat = data[0][ship_index]
+    # import pdb;
+    # pdb.set_trace()
+    for index in range(0, len(data)):
+        d = data[index]
+        lat = float(d[lat_index])
+        lon = float(d[lon_index])
+        ship = int(d[ship_index])
+        date = str(d[time_index])
+
+        url = 'https://cdn4.iconfinder.com/data/icons/geo-points-1/154/{}'.format
+        icon_image = url('geo-location-gps-sea-location-boat-ship-512.png')
+        icon = CustomIcon(
+            icon_image,
+            icon_size=(40, 40),
+            icon_anchor=(20, 20),
+        )
+        message = '<b>Ship</b>: ' + ship.__str__() + "<br><b>At :</b> [" + lat.__str__() + " , " + lon.__str__() + "] <br><b>On :</b> " + date
+        folium.Marker(
+            location=[lat, lon],
+            icon=icon,
+            popup=message
+        ).add_to(marker_cluster)
+
+        if line != 'no':
+            if ship == currboat:
+                course.append((np.array([lat, lon]) * np.array([1, 1])).tolist())
+            if ship != currboat or index == len(data)-1:
+                boat_line = folium.PolyLine(
+                    locations=course,
+                    weight=1,
+                    color='blue'
+                ).add_to(m)
+                attr = "{'font-weight': 'normal', 'font-size': '18', 'fill': 'white', 'letter-spacing': '80'}"
+                plugins.PolyLineTextPath(
+                    boat_line,
+                    '\u21D2',
+                    repeat=True,
+                    offset=5,
+                    attributes=attr,
+                ).add_to(m)
+
+                if ship != currboat:
+                    course = (np.array([lat, lon]) * np.array([1, 1])).tolist()
+                    currboat = ship
+
+    m.save('templates/map.html')
+    map_html = open('templates/map.html', 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    # print map_id
+    js_all = soup.findAll('script')
+    # print(js_all)
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # print js
+    # os.remove('templates/map.html')
+    return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
+
+def valid_entry(entry, ship, minyear, maxyear):
+    entryship = entry[2]
+    entrydate = entry[3]
+    year = entrydate.split('-')
+    year = int(year[0])
+
+    if ship != "all":
+        ship = int(ship)
+        if entryship != ship:
+            return False
+    if year < minyear or year > maxyear:
+        return False
+    return True
+
+
+def transpose(date):
+    date_time = date
+    pattern = '%Y-%m-%d %H:%M:%S'
+    epoch = int(time.mktime(time.strptime(date_time, pattern)))*1000
+    return epoch
+
+
+def createjson(lonlat,time,status,color):
+    geo = "{'type': 'Feature', 'geometry':{'type': 'Point','coordinates':" + str(lonlat) + ",}, 'properties': { 'times':" + str(time) + ",'status':'" + str(status) + "','style':{'icon':'circle','iconstyle':{'fillColor':'"+str(color)+"','radius':5},}}}"
+
+    return geo
+
+
+def make_map(bbox):
+    fig, ax = plt.subplots(figsize=(8, 6))
+    # ax.set_extent(bbox)
+    ax.coastlines(resolution='50m')
+    return fig, ax

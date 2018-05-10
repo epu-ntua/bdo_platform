@@ -10,6 +10,8 @@ urlpatterns = [
     url('^map_course/$', views.map_course, name='map_course'),
     url('^map_plotline/$', views.map_plotline, name='map_plotline'),
     url('^map_course_time/$', views.map_course_time, name='map_course_time'),
+    url('^map_markers_in_time/$', views.map_markers_in_time, name='map_markers_in_time'),
+
 
     url('^map_api/$', views.MapAPI.as_view(), name='map_api'),
 

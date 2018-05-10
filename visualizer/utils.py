@@ -745,11 +745,11 @@ def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
     response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
     print response
     response_json = convert_unicode_json(response.json())
-    json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}"))
-    # print json_data
+    json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}").replace("'", '"'))
+    print json_data[:3]
     # print type(json_data)
     json_data = convert_unicode_json(json_data)
-    # print json_data
+    print json_data[:3]
     # print type(json_data)
 
     return json_data
