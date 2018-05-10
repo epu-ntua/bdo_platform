@@ -63,24 +63,10 @@
                 {% elif argument.type == 'DATETIME' %}
                     <div class="coverage-date-filters">
                         <div class="row">
-                            <div class="coverage-date-filters-icon">
-                            </div>
-                            <div class='col-sm-6'>
+                            <div>
                                 <div class="form-group">
-                                    <div class='input-group date' id='startdatepicker'>
-                                        <label>Start Date:</label>
-                                        <input type='text' class="form-control" />
-                                        <span class="input-group-addon">
-                                            <span class="glyphicon glyphicon-calendar"></span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='col-sm-6'>
-                                <div class="form-group">
-                                    <div class='input-group date' id='enddatepicker'>
-                                        <label>End Date:</label>
-                                        <input type='text' class="form-control" />
+                                    <div class='input-group date'>
+                                        <input type='text' class="form-control" name="{{ argument.name }}" id="{{ argument.name }}"/>
                                         <span class="input-group-addon">
                                             <span class="glyphicon glyphicon-calendar"></span>
                                         </span>
