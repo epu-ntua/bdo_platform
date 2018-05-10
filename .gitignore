@@ -102,3 +102,5 @@ ENV/
 settings-loader.txt
 aggregator/datasets
 /bdo_platform/settings_management/development_gtsapelas.py
+/temp/*
+/service_builder/static/services_files/*

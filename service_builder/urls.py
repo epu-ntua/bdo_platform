@@ -18,4 +18,10 @@ urlpatterns = [
 
     url('load_template/$', views.load_template, name='load_template'),
     url('load_results_to_template/$', views.load_results_to_template, name='load_results_to_template'),
+
+    #requests/api/createInputFileForHCMRSpillSimulator/
+    url('api/createInputFileForHCMRSpillSimulator/$', views.APIcreateInputFileForHCMRSpillSimulator, name='createInputFileForHCMRSpillSimulator'),
+    # requests/api/checkIfOutputExistsforHCMRSpillSimulator/
+    url('api/checkIfOutputExistsforHCMRSpillSimulator/$', views.APIcheckIfOutputExistsforHCMRSpillSimulator,
+        name='checkIfOutputExistsforHCMRSpillSimulator'),
 ]

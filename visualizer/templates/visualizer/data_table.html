@@ -28,7 +28,7 @@
                 {% if isJSON %}
                     {% for row in data %}
                         <tr>
-                            {% for key, item in row %}
+                            {% for key, item in row.items %}
                                 <td>{{ item }}</td>
                             {% endfor %}
                         </tr>
@@ -50,7 +50,11 @@
         <span class="step-links">
             {% if data.has_previous %}
                 <button class="btn btn-default">
-                    <a href="?page={{ data.previous_page_number }}&query={{ query_pk }}">previous</a>
+                    {% if query_pk != 0 %}
+                        <a href="?page={{ data.previous_page_number }}&query={{ query_pk }}">previous</a>
+                    {% else %}
+                        <a href="?page={{ data.previous_page_number }}&df={{ df }}&notebook_id={{ notebook_id }}">previous</a>
+                    {% endif %}
                 </button>
             {% endif %}
 
@@ -60,7 +64,11 @@
 
             {% if data.has_next %}
                 <button class="btn btn-default">
-                    <a href="?page={{ data.next_page_number }}&query={{ query_pk }}">next</a>
+                    {% if query_pk != 0 %}
+                        <a href="?page={{ data.next_page_number }}&query={{ query_pk }}">next</a>
+                    {% else %}
+                        <a href="?page={{ data.next_page_number }}&df={{ df }}&notebook_id={{ notebook_id }}">next</a>
+                    {% endif %}
                 </button>
             {% endif %}
         </span>

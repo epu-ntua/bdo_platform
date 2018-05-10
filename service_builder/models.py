@@ -19,8 +19,8 @@ class Service(Model):
     notebook_id = CharField(max_length=100)
     arguments_paragraph_id = CharField(max_length=100, null=True)
 
-    queries = JSONField(default={})
-    arguments = JSONField(default={})
+    queries = JSONField(default={}, null=True)
+    arguments = JSONField(default={}, null=True)
 
     output_html = TextField(null=True)
     output_css = TextField(null=True)

@@ -3,7 +3,7 @@ from __future__ import unicode_literals, division
 
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
-from django.db import connection
+from django.db import connection, connections
 from rest_framework.views import APIView
 from forms import MapForm
 
@@ -15,6 +15,7 @@ from nvd3 import pieChart, lineChart
 import psycopg2
 
 from matplotlib import use
+use('Agg')
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import pylab as pl
@@ -22,13 +23,14 @@ import pylab as pl
 
 from query_designer.models import TempQuery
 from visualizer.models import Visualization
+from aggregator.models import *
 
 from utils import *
 from tests import *
 
 from folium import CustomIcon
 from folium.plugins import HeatMap, MarkerCluster
-use('Agg')
+
 
 
 def map_course_time(request):
@@ -142,20 +144,19 @@ def map_course(request):
     df = str(request.GET.get('df', ''))
     notebook_id = str(request.GET.get('notebook_id', ''))
 
-    order_var = str(request.GET.get('order_var', ''))
+    order_var = str(request.GET.get('order_var', 'time'))
     variable = str(request.GET.get('col_var', ''))
     agg_function = str(request.GET.get('agg_func', 'avg'))
-    lat_col = str(request.GET.get('lat_col', ''))
-    lon_col = str(request.GET.get('lon_col', ''))
+    lat_col = str(request.GET.get('lat_col', 'latitude'))
+    lon_col = str(request.GET.get('lon_col', 'longitude'))
 
     if query != 0:
         q = AbstractQuery.objects.get(pk=int(query))
-        # q = Query(document=q.document)
         q = TempQuery(document=q.document)
         doc = q.document
 
         var_query_id = variable[:variable.find('_')]
-        doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
         # doc['orderings']=[]
         doc['limit'] = marker_limit
 
@@ -164,7 +165,7 @@ def map_course(request):
                 if s['name'] == variable:
                     # s['aggregate'] = agg_function
                     s['exclude'] = False
-                elif s['name'] == order_var:
+                elif str(s['name']).find(order_var) >= 0 and str(s['name']).find(var_query_id) >= 0:
                     # s['groupBy'] = True
                     s['exclude'] = False
                 elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
@@ -181,13 +182,6 @@ def map_course(request):
                     s['exclude'] = True
 
         q.document = doc
-        # raw_query = q.raw_query
-        #
-        # names = re.findall(r"round\((.*?)\)", raw_query)
-        # for name in names:
-        #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
-
-
         query_data = q.execute()
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
@@ -199,7 +193,7 @@ def map_course(request):
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] == variable:
                 var_index = idx
-            elif c['name'] == order_var:
+            elif str(c['name']).find(order_var) >= 0:
                 order_var_index = idx
             elif str(c['name']).find('lat') >= 0:
                 lat_index = idx
@@ -207,7 +201,7 @@ def map_course(request):
                 lon_index = idx
     else:
         print ("json-case")
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
         run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
@@ -269,6 +263,8 @@ def map_course(request):
 
         ).add_to(marker_cluster)
 
+    # Add layer contorl
+    folium.LayerControl().add_to(m)
 
     m.save('templates/map.html')
 
@@ -479,12 +475,18 @@ def map_markers_in_time(request):
         force_separate_button=True).add_to(m)
 
     marker_limit = int(request.GET.get('markers', 1000))
-    var = str(request.GET.get('var'))
+    # var = str(request.GET.get('var'))
     order_var = str(request.GET.get('order_var', 'time'))
     query_pk = int(str(request.GET.get('query', 0)))
 
     notebook_id = str(request.GET.get('notebook_id', ''))
     df = str(request.GET.get('df', ''))
+
+    lat_col = str(request.GET.get('lat_col', 'latitude'))
+    lon_col = str(request.GET.get('lon_col', 'longitude'))
+
+    markerType = str(request.GET.get('markerType', ''))
+    FMT = '%Y-%m-%d %H:%M:%S'
 
     if query_pk!=0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
@@ -502,8 +504,8 @@ def map_markers_in_time(request):
                     s['exclude'] = False
                 elif str(s['name']).find('lon') >= 0:
                     s['exclude'] = False
-                elif s['name'] == var:
-                    s['exclude'] = False
+                # elif s['name'] == var:
+                #     s['exclude'] = False
                 else:
                     s['exclude'] = True
 
@@ -519,34 +521,37 @@ def map_markers_in_time(request):
         var_index = order_index = lon_index = lat_index = -1
 
         for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == var:
-                var_index = idx
-            elif str(c['name']).find('lat') >= 0:
+            # if c['name'] == var:
+            #     var_index = idx
+            if str(c['name']).find('lat') >= 0:
                 lat_index = idx
             elif str(c['name']).find('lon') >= 0:
                 lon_index = idx
             elif c['name'] == order_var:
                 order_index = idx
 
-
-        # geo_list = []
-        geo_list=""
-
-        for index in range(0, len(data) - 1):
-            d = data[index]
-            lat = float(d[lat_index])
-            lon = float(d[lon_index])
-            time = (d[order_index]).strftime('%Y-%m-%dT%H:%M:%S')
-            status = str(d[var_index])
-            color = str(d[var_index])
-
-
-            geo_list = geo_list+createjson(([lon,lat]),[time],status, color).encode('ascii')+","
-
+        features = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [float(d[lon_index]), float(d[lat_index])],
+                },
+                "properties": {
+                    "times": [str(d[order_index])],
+                    "style": {
+                        "color": "blue",
+                    }
+                }
+            }
+            for d in data
+        ]
+        tdelta = data[1][order_index] - data[0][order_index]
+        period = 'PT{0}S'.format(tdelta.seconds)
     else:
         toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
         run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
         features = [
@@ -554,24 +559,27 @@ def map_markers_in_time(request):
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
-                    "coordinates": [float(d['latitude']), float(d['longitude'])],
+                    "coordinates": [float(d[lon_col]), float(d[lat_col])],
                 },
                 "properties": {
-                    "times": [str(d['time'])],
+                    "times": [str(d[order_var])],
                     "style": {
                         "color": "blue",
                     }
                 }
             }
-            for d in json_data
+            for d in data
         ]
-        features = convert_unicode_json(features)
+        tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
+        period = 'PT2H'
+
+    features = convert_unicode_json(features)
     # plugins.TimestampedGeoJson({
     #     'type': 'FeatureCollection',
     #     'features': features,
     # }, period='PT1M', add_last_point=False, auto_play=False, loop=False).add_to(m)
 
-    period='PT1H'
+
     duration='PT0H'
     # plugins.TimestampedGeoJson({
     #     'type': 'FeatureCollection',
@@ -594,7 +602,7 @@ def map_markers_in_time(request):
     os.remove('templates/map.html')
 
     return render(request, 'visualizer/map_markers_in_time.html',
-                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration})
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType})
 
 
 def map_heatmap(request):
@@ -723,6 +731,7 @@ def map_viz_folium_contour(request):
         m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
 
         cursor = connection.cursor()
+        print 'Countour Query: ' + str(raw_query)
         cursor.execute(raw_query)
         data = cursor.fetchall()
         # print ("Data:")
@@ -788,7 +797,7 @@ def map_viz_folium_contour(request):
         fig = Figure()
         ax = fig.add_subplot(111)
         plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
-        plt.axis('off')
+        # plt.axis('off')
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         plt.draw()
         ts = str(time.time()).replace(".", "")
@@ -936,7 +945,7 @@ def get_histogram_chart_am(request):
     notebook_id = str(request.GET.get('notebook_id', ''))
 
     x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
+    # y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '5')))
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
@@ -945,73 +954,62 @@ def get_histogram_chart_am(request):
         query = TempQuery(document=query.document)
         doc = query.document
 
+        from_table = ''
+        table_col = ''
+        cursor = None
         for f in doc['from']:
             for s in f['select']:
-                if s['name'] == y_var:
-                    s['exclude'] = False
-                elif s['name'] == x_var:
-                    s['exclude'] = False
+                if s['name'] == x_var:
+                    if s['type'] == 'VALUE':
+                        v_obj = Variable.objects.get(pk=int(f['type']))
+                        if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+                            from_table = f['name'][:-2] + '_' + f['type']
+                            table_col = 'value'
+                            cursor = connections['default'].cursor()
+                        elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                            from_table = str(v_obj.dataset.table_name)
+                            table_col = str(v_obj.name)
+                            cursor = connections['UBITECH_POSTGRES'].cursor()
+                    else:
+                        d_obj = Dimension.objects.get(pk=int(s['type']))
+                        v_obj = d_obj.variable
+                        if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+                            from_table = f['name'][:-2] + '_' + f['type']
+                            table_col = d_obj.name + '_' + s['type']
+                            cursor = connections['default'].cursor()
+                        elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                            from_table = str(v_obj.dataset.table_name)
+                            table_col = str(d_obj.name)
+                            cursor = connections['UBITECH_POSTGRES'].cursor()
                 else:
                     s['exclude'] = True
-        print doc
-        doc['limit'] = []
-        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-        query.document = doc
-        # raw_query = query.raw_query
         # print doc
+        query.document = doc
+        raw = query.raw_query
+        print raw
+        try:
+            where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
+        except:
+            where_clause = ''
+        bins -= 1
 
-        query_data = query.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-        print (data[:10])
-
-
-        x_var_index = -1
-        y_var_index = -1
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == y_var:
-                y_var_index=idx
-            elif c['name'] == x_var:
-                x_var_index = idx
-
-        min_x_var = float(min(data, key=lambda x: x[x_var_index])[x_var_index])
-        max_x_var = float(max(data, key=lambda x: x[x_var_index])[x_var_index])
-
-        # min_y_var = float(min(result_data, key=lambda x: x[y_var_index])[y_var_index])
-        # max_y_var = float(max(result_data, key=lambda x: x[y_var_index])[y_var_index])
-        # print min_y_var
-        # print max_y_var
-        # print max_x_var
-
-        mybin = np.linspace(start=min_x_var, stop=max_x_var, num=bins + 1)
-        mybin[len(mybin) - 1] = mybin[len(mybin) - 1] + 0.0001
-        # print mybin
-
-        bin_container = []
-        iter2 = iter(mybin)
-        iter2.next()
-        for el in mybin:
-            try:
-                temp = [el, iter2.next()]
-            except:
-                break
-            bin_container.append(temp)
-
-        final_data = agg_func_selector(agg_function, data, bin_container, y_var_index, x_var_index)
-
-        # Create data for graph
-        bin_list = [[round(s, 4) for s in xs] for xs in bin_container]
-
+        raw_query = "with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}), " \
+                    "histogram as (select width_bucket({0}, min, max, {2}) as bucket, " \
+                    "numrange (min({0}::NUMERIC), max({0}::NUMERIC), '[]') as range, " \
+                    "count(*) as freq from {1}, drb_stats {3} " \
+                    "group by bucket " \
+                    "order by bucket) " \
+                    "select range, freq " \
+                    "from histogram; ".format(table_col, from_table, bins, where_clause)
+        # print raw_query
+        cursor.execute(raw_query)
+        data = cursor.fetchall()
         json_data = []
-        count = 0
-        for fd in final_data:
-            dict = {}
-            newvar = str(y_var).encode('ascii')
-            dict.update({newvar: str(fd).encode('ascii')})
-            dict.update({x_var: str(bin_list[count])})
-            json_data.append(dict)
-            count = count + 1
-            # print (json_data)
+        for d in data:
+            json_data.append({"startValues": '['+str(float(d[0].lower)) + ',' + str(float(d[0].upper)) + ']', "counts": str(d[1])})
+        y_var = 'counts'
+        x_var = 'startValues'
+        json_data = convert_unicode_json(json_data)
     else:
         bins += 1
         tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
@@ -1534,7 +1532,8 @@ def get_data_table(request):
         data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         isJSON = True
-        print data
+        print 'table data:'
+        print data[:3]
 
         headers = [key for key in data[0].keys()]
 
@@ -1549,7 +1548,7 @@ def get_data_table(request):
         # If page is out of range (e.g. 9999), deliver last page of results.
         page_data = paginator.page(paginator.num_pages)
 
-    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': query_pk, 'isJSON': isJSON})
+    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': int(query_pk), 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
 
 def get_pie_chart(request):

@@ -1,9 +1,6 @@
 {% load static %}
 <div id="service_container" class="text-center">
     <h2>My Test Service</h2>
-{#    <button type="button" id="argsModalBtn" class="btn btn-md btn-primary" data-toggle="modal" data-target="#serviceConfigModal">#}
-{#        Configure#}
-{#    </button>#}
     <div id="service_config_container" class="text-center">
         <button type="button" id="argsCollapseBtn" class="btn btn-md btn-primary" data-toggle="collapse" data-target="#serviceConfigCollapse">
           Configure
@@ -26,56 +23,30 @@
             <img src="{% static 'img/loading_gif.gif' %}"/>
         </div>
 
-        <table class="table table-full-width">
-            <thead>
-                <tr>
-                    <th>Maximum Height</th><th>Average Height</th><th>Standard Deviation</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.stand_dev_height }}</td>
-                </tr>
-            </tbody>
-        </table>
 
-        <table class="table table-full-width">
-            <thead>
-                <tr>
-                    <th>Maximum Period</th><th>Average Period</th><th>Standard Deviation</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ result.max_period }}</td><td>{{ result.av_period }}</td><td>{{ result.stand_dev_period }}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="panel-group row">
-            <div class="panel panel-default col-sm-3">
-                <div class="panel-heading">Maximum Power</div>
-                <div class="panel-body">{{ result.max_power }}</div>
-            </div>
-            <div class="panel panel-default col-sm-3">
-                <div class="panel-heading">Minimum Power</div>
-                <div class="panel-body">{{ result.min_power }}</div>
-            </div>
-            <div class="panel panel-default col-sm-3">
-                <div class="panel-heading">Average Power</div>
-                <div class="panel-body">{{ result.av_power }}</div>
-            </div>
-            <div class="panel panel-default col-sm-3">
-                <div class="panel-heading">Energy</div>
-                <div class="panel-body">{{ result.energy }}</div>
-            </div>
-        </div>
-
-        <div class="viz_container row">
+        <div class="viz_container row tab-pane fade in active"  id="viz1">
             <div class="loadingFrame">
                 <img src="{% static 'img/loading_gif.gif' %}"/>
             </div>
-            <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?y_var=i0_sea_surface_wave_significant_height&x_var=i0_time&query=313"
+            <iframe src="http://localhost:8000/visualizations/map_markers_in_time/?notebook_id=2DEN8KR1Q&df=parcel_data_df&markerType=circle&lat_col=Lat&lon_col=Lon"
+                    style="width: 100%; height: 100%; background-color: white;">
+            </iframe>
+        </div>
+
+        <div class="viz_container row tab-pane fade in active"  id="viz2">
+            <div class="loadingFrame">
+                <img src="{% static 'img/loading_gif.gif' %}"/>
+            </div>
+            <iframe src="http://localhost:8000/visualizations/get_data_table/?df=spill_data_df&notebook_id=2DEN8KR1Q"
+                    style="width: 100%; height: 100%; background-color: white;">
+            </iframe>
+        </div>
+
+        <div class="viz_container row tab-pane fade in active"  id="viz3">
+            <div class="loadingFrame">
+                <img src="{% static 'img/loading_gif.gif' %}"/>
+            </div>
+            <iframe src="http://localhost:8000/visualizations/get_data_table/?df=parcel_data_df&notebook_id=2DEN8KR1Q"
                     style="width: 100%; height: 100%; background-color: white;">
             </iframe>
         </div>

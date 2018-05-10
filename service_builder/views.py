@@ -151,10 +151,25 @@ def load_service(request, pk):
     queries = service.queries
     arguments = service.arguments
 
-    # output_html = service.output_html.replace('src', 'src-a')
     output_html = service.output_html
     output_css = service.output_css
     output_js = service.output_js
+
+    if settings.TEST_SERVICES:
+        from bdo_platform.settings import BASE_DIR
+        import os
+        path = os.path.join(BASE_DIR + '\\service_builder\\templates\\service_builder\\', 'service_template_1.html')
+        with open(path, 'r') as f:
+            output_html = f.read()
+        path = os.path.join(BASE_DIR + '\\service_builder\\static\\service_builder\\css\\', 'service_template_1.css')
+        with open(path, 'r') as f:
+            output_css = f.read()
+        path = os.path.join(BASE_DIR + '\\service_builder\\static\\service_builder\\js\\', 'service_template_1.js')
+        with open(path, 'r') as f:
+            output_js = f.read()
+
+    output_html = output_html.replace('src', 'src-a')
+
 
     return render(request, 'service_builder/load_service.html', {
         'output_html': output_html,
@@ -252,19 +267,20 @@ def submit_service_args(request, service_id):
     # query_mapping is a dict that maps the original queries of the template service to the tempQueries created after the user customisation
     query_mapping = dict()
     queries = convert_unicode_json(service.queries)
-    for name, q in queries.iteritems():
-        query_id = int(q['query_id'])
-        query = Query.objects.get(pk=query_id)
-        doc = query.document
-        for arg in service_filter_args:
-            arg_query_id = int(queries[arg['query']]['query_id'])
-            if arg_query_id == query_id:
-                filters = convert_unicode_json(doc['filters'])
-                doc['filters'] = update_filter(filters, arg)
-        q_temp = TempQuery(original=query, document=doc, user_id=query.user_id)
-        q_temp.save()
-        q['temp_q'] = q_temp.id
-        query_mapping[query_id] = q_temp.id
+    if queries is not None:
+        for name, q in queries.iteritems():
+            query_id = int(q['query_id'])
+            query = Query.objects.get(pk=query_id)
+            doc = query.document
+            for arg in service_filter_args:
+                arg_query_id = int(queries[arg['query']]['query_id'])
+                if arg_query_id == query_id:
+                    filters = convert_unicode_json(doc['filters'])
+                    doc['filters'] = update_filter(filters, arg)
+            q_temp = TempQuery(original=query, document=doc, user_id=query.user_id)
+            q_temp.save()
+            q['temp_q'] = q_temp.id
+            query_mapping[query_id] = q_temp.id
     print queries
 
     # 3.BRING THE CUSTOMISED QUERIES TO THE SERVICE CODE
@@ -277,16 +293,17 @@ def submit_service_args(request, service_id):
         new_notebook_id = clone_zep_note(original_notebook_id, "")
 
     # customise the respective queries in the code
-    for name, info in queries.iteritems():
-        for original_paragraph_id in info['paragraphs']:
-            raw_query = TempQuery.objects.get(pk=int(info['temp_q'])).raw_query
-            new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=0, df_name="df_"+name)
-            if settings.TEST_SERVICES:
-                excluded_paragraphs.append(original_paragraph_id)
-                new_created_paragraphs.append(new_query_paragraph_id)
-            else:
-                print 'deleting paragraph: {0}'.format(original_paragraph_id)
-                delete_zep_paragraph(notebook_id=str(new_notebook_id), paragraph_id=str(original_paragraph_id))
+    if queries is not None:
+        for name, info in queries.iteritems():
+            for original_paragraph_id in info['paragraphs']:
+                raw_query = TempQuery.objects.get(pk=int(info['temp_q'])).raw_query
+                new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=0, df_name="df_"+name)
+                if settings.TEST_SERVICES:
+                    excluded_paragraphs.append(original_paragraph_id)
+                    new_created_paragraphs.append(new_query_paragraph_id)
+                else:
+                    print 'deleting paragraph: {0}'.format(original_paragraph_id)
+                    delete_zep_paragraph(notebook_id=str(new_notebook_id), paragraph_id=str(original_paragraph_id))
 
 
     new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=new_notebook_id, title='',
@@ -350,12 +367,13 @@ def submit_service_args(request, service_id):
         with open(os.path.join(settings.BASE_DIR, 'service_builder\\templates\\service_builder\\service_template_1.html')) as f:
             output_html = f.read()
 
-    for name, info in queries.iteritems():
-        query = info['query_id']
-        new_query = info['temp_q']
-        # print output_html
-        output_html = re.sub(r"query="+str(query)+"&", "query="+str(new_query)+"&", output_html)
-        output_html = re.sub(r"query="+str(query)+"\"", "query="+str(new_query)+"\"", output_html)
+    if queries is not None:
+        for name, info in queries.iteritems():
+            query = info['query_id']
+            new_query = info['temp_q']
+            # print output_html
+            output_html = re.sub(r"query="+str(query)+"&", "query="+str(new_query)+"&", output_html)
+            output_html = re.sub(r"query="+str(query)+"\"", "query="+str(new_query)+"\"", output_html)
 
     soup = BeautifulSoup(str(output_html), 'html.parser')
     service_result_container = soup.find(id="service_result_container")
@@ -402,3 +420,152 @@ def load_results_to_template(request):
     context = Context({"name": "John"})
     return HttpResponse(template.render(context))
 
+
+#----------HCMR Dummy Service -------------------------------------------------------------------#
+from django.contrib.auth.decorators import login_required
+from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME,FTPPASS
+import ftplib,time,io
+
+#Create the input file for the oil spill simulator and put it on the HCMR ftp size
+#GET Parameters
+#LATLON REQUIRED	(e.g."37.3778 25.9595")		: Position of the oil slick: latitude (positive for North, negative for South) and longitude (positive for East, negative for West) in degrees (decimal number)
+#DEPTH	DEFAULT=0	(e.g."0 0")		: Depth of the oil spill: in m (it is 0 in the case of a surface slick)
+#DATETIME REQUIRED	(e.g."2017 12 27 1000")	: Date and Time start
+#DURATION DEFAULT=0 (e.g."48")			: Duration of the spill release in hours
+#VOLUME	REQUIRED	 (e.g."2500")	: Total amount (volume) of spilled oil in m3
+#SIMULATIONNAME	GENERATEDBYSYSTEM 	(e.g. userid + BDOB171227_1000_F)		: user selected name of the simulation
+#DENSITYOILTYPE	DEFAULT=920.0 (e.g. "920")	: Density of oil (kg/m3) or API number or Type of oil
+#SIM_TYPE	GENERATEDBYSYSTEM ("FORWARD")		:Type of the requested simulation (FORWARD or BACKWARD)
+#SIM_LENGTH DEFAULT=48 	(e.g. "48")		: Length of the requested simulation in hours
+#STEP DEFAULT=2		(e.g. "2")		: requested time interval between 2 outputs in hours (decimal number)
+#GRD_SIZE	GENERATEDBYSYSTEM (e.g. "150")		: Grid size for concentration output reconstruction (m)
+#OCEAN_MODEL DEFAULT=001 (Dropdownlist: 1) POSEIDON High resolution Aegean Model - value "001",2) POSEIDON Mediterranean Model - value "002") 		: Ocean forcing requested (three-digit number, see table 1)
+#WIND_MODEL DEFAULT=101	 (Dropdownlist 1 option only: 1) POSEIDON ETA weather forecasting system - value "101")		: Atmospheric forcing requested (three-digit number, see table 2)
+#WAVE_MODEL DEFAULT=201	(Dropdownlist: 1) POSEIDON WAM Cycle 4 for the Mediterranean - value "201",2) POSEIDON WAM Cycle 4 for the Aegean - value "202") 			: Wave forcing requested (three-digit number, see table 3)
+
+#Example http://localhost:8000/requests/api/createInputFileForHCMRSpillSimulator/?LATLON=37.3778%2025.9595&DATETIME=2017%2012%2027%201000&VOLUME=2500
+# @login_required
+def APIcreateInputFileForHCMRSpillSimulator(request):
+    if request.method == 'GET':
+        if 'LATLON' in request.GET and 'DATETIME' in request.GET and 'VOLUME' in request.GET:
+            #Initialisation with defaults or GET parameters
+            N_SPILL = "1"
+            SPILL_NUM = "1"
+            LATLON = request.GET['LATLON']
+            if 'DEPTH' in request.GET:
+                DEPTH = request.GET['LATLON']
+            else:
+                DEPTH = "0"
+            DATETIME = request.GET['DATETIME']
+            if 'DURATION' in request.GET:
+                DURATION = request.GET['DURATION']
+            else:
+                DURATION = "0"
+            VOLUME = request.GET['VOLUME']
+            SIMULATIONNAME = "USER" + str(request.user.id) + "BDO"
+            if 'DENSITYOILTYPE' in request.GET:
+                DENSITYOILTYPE = request.GET['DENSITYOILTYPE']
+            else:
+                DENSITYOILTYPE = "920.0"
+            SIM_TYPE = "FORWARD"
+            if 'SIM_LENGTH' in request.GET:
+                SIM_LENGTH = request.GET['SIM_LENGTH']
+            else:
+                SIM_LENGTH = "48"
+            if 'STEP' in request.GET:
+                STEP = request.GET['STEP']
+            else:
+                STEP = "2"
+            GRD_SIZE = "150"
+            if 'OCEAN_MODEL' in request.GET:
+                OCEAN_MODEL = request.GET['OCEAN_MODEL']
+            else:
+                OCEAN_MODEL = "001"
+            if 'WIND_MODEL' in request.GET:
+                WIND_MODEL = request.GET['WIND_MODEL']
+            else:
+                WIND_MODEL = "101"
+            if 'WAVE_MODEL' in request.GET:
+                WAVE_MODEL = request.GET['WAVE_MODEL']
+            else:
+                WAVE_MODEL = "201"
+
+            #Create the file input in string format
+            OilSpillInputString = N_SPILL + "\n" + \
+                                  SPILL_NUM + "\n" + \
+                                  LATLON + "\n" + \
+                                  DEPTH + "\n" + \
+                                  DATETIME + "\n" + \
+                                  DURATION + "\n" + \
+                                  VOLUME + "\n" + \
+                                  SIMULATIONNAME + "\n" + \
+                                  DENSITYOILTYPE + "\n" + \
+                                  SIM_TYPE + "\n" + \
+                                  SIM_LENGTH + "\n" + \
+                                  STEP + "\n" + \
+                                  GRD_SIZE + "\n" + \
+                                  OCEAN_MODEL + "\n" + \
+                                  WIND_MODEL + "\n" + \
+                                  WAVE_MODEL + "\n"
+            print 'InputString:{0}'.format(OilSpillInputString)
+            #Save Oil Spill Simulation input string to a text file in ftp
+            ftp = ftplib.FTP(FTPSERVER)
+            ftp.login(FTPUSERNAME, FTPPASS)
+            print 'Logged In'
+            ftp.cwd('/in/')
+            print 'Changed wd'
+            #Convert e.g. "2017 12 27 1000" to "171227_1000"
+            LATLONNAME = LATLON.replace(".","_").replace(" ","__")
+            FILEDATETIME = DATETIME[2:4] + DATETIME[5:7] + DATETIME[8:10]+ "_" + DATETIME[11:15]
+            #filename format xxxxyymmdd_hhmmZZ.inp
+            #where
+            #xxxx is name of the simulation chosen by the user;
+            #yymmdd is the date of the spill;
+            #hhmm the time of the spill;
+            #ZZ is _F for a forecast and _H for a hindcast.
+            filename = LATLONNAME +  SIMULATIONNAME + FILEDATETIME + '_F.inp'
+            binaryofInput = io.BytesIO(OilSpillInputString.encode())
+            ftp.storbinary('STOR ' + filename, binaryofInput)
+            print 'File Stored'
+            ftp.quit()
+            # return HttpResponse("***"+filename+"***")
+            return HttpResponse(json.dumps({"filename": str(filename)}), content_type="application/json")
+        else:
+            return HttpResponse('LATLON, DATETIME, and VOLUME are required', status=400)
+
+
+#Check if an output for the same user and date exists
+#example http://localhost:8000/requests/api/checkIfOutputExistsforHCMRSpillSimulator/?LATLON=37.3778%2025.9595&DATETIME=2017%2012%2027%201000&VOLUME=2500
+# @login_required
+def APIcheckIfOutputExistsforHCMRSpillSimulator(request):
+    if request.method == 'GET':
+        if 'LATLON' in request.GET and 'DATETIME' in request.GET:
+            LATLON = request.GET['LATLON']
+            DATETIME = request.GET['DATETIME']
+            # Check the out directory
+            ftp = ftplib.FTP(FTPSERVER)
+            ftp.login(FTPUSERNAME, FTPPASS)
+            ftp.cwd('/out/BDO/')
+            # Convert "2017 12 27 1000" to "171227_1000"
+            LATLONNAME = LATLON.replace(".", "_").replace(" ", "__")
+            SIMULATIONNAME = "USER" + str(request.user.id) + "BDO"
+            FILEDATETIME = DATETIME[2:4] + DATETIME[5:7] + DATETIME[8:10] + "_" + DATETIME[11:15]
+            filenameToSearchFor = LATLONNAME + SIMULATIONNAME + FILEDATETIME + '_F.out'
+            if filenameToSearchFor in ftp.nlst():
+                #change temp file
+                inputfile = open("service_builder/static/services_files/hcmr_service_1/" + filenameToSearchFor, 'wb')
+                ftp.retrbinary('RETR ' + filenameToSearchFor, inputfile.write, 1024)
+                #Parsing of inputfile
+                #.............
+                ftp.quit()
+                inputfile.close()
+                return HttpResponse('True')
+            else:
+                ftp.quit()
+                return HttpResponse('False', status=300)
+
+        else:
+            return HttpResponse('DATETIME AND LATLON are required', status=400)
+
+
+# ----------END OF HCMR Dummy Service -------------------------------------------------------------------#

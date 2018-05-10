@@ -21,10 +21,10 @@
             }
         {% endif %}
     </style>
-{#    <style>#}
-{#        {{ output_css|safe }}#}
-{#    </style>#}
-    <link href="{% static 'service_builder/css/service_template_1.css' %}" rel="stylesheet"/>
+    <style>
+        {{ output_css|safe }}
+    </style>
+{#    <link href="{% static 'service_builder/css/service_template_1.css' %}" rel="stylesheet"/>#}
 
 {% endblock %}
 
@@ -33,10 +33,10 @@
 {% block content %}
     {% csrf_token %}
     <div class="container" style="width: 100%; ">
-{#        {% autoescape off %}#}
-{#            {{ output_html }}#}
-{#        {% endautoescape %}#}
-    {% include 'service_builder/service_template_1.html' %}
+        {% autoescape off %}
+            {{ output_html }}
+        {% endautoescape %}
+{#    {% include 'service_builder/service_template_1.html' %}#}
     </div>
 {% endblock %}
 
@@ -48,8 +48,8 @@
     </script>
 
 
-{#    {{ output_js|safe }}#}
-    <script type="text/javascript" src="{% static 'service_builder/js/service_template_1.js' %}"></script>
+    {{ output_js|safe }}
+{#    <script type="text/javascript" src="{% static 'service_builder/js/service_template_1.js' %}"></script>#}
 
 {% endblock %}
 
