@@ -48,6 +48,73 @@
             display: inline-block;
             margin: 0 5px;
         }
+        .logo {
+            width: 100px;
+            height: 43px;
+            margin-top: -5px;
+        }
+        .navbar.navbar-transparent {
+            background-color: #30526a;
+            box-shadow: none;
+            border-bottom: 0;
+            color: white;
+        }
+        nav .btn, .navbar .navbar-nav  li  a.btn{
+            border: none;
+            border-radius: 0px;
+            position: relative;
+            padding: 12px 30px;
+            margin: 10px 1px;
+            font-size: 12px;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+            will-change: box-shadow, transform;
+            transition: box-shadow 0.2s cubic-bezier(0.4, 0, 1, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body nav .navbar-header .dropdown a{
+            margin: 6px 0px;
+            background: #30526a00 !important;
+            box-shadow: 0px 1px 0px 0px rgba(153, 153, 153, 0.14), 0px 0px 0px 0px rgba(153, 153, 153, 0.2), 0px 0px 0px 0 rgba(153, 153, 153, 0.12);
+            font-size: 12pt;
+        }
+
+        body nav .navbar-header .dropdown a:hover {
+            box-shadow: 0px 1px 0px 0px rgba(230, 230, 230, 0.97), 0px 0px 0px 0px rgba(153, 153, 153, 0.2), 0px 0px 0px 0 rgba(153, 153, 153, 0.12)
+        }
+
+        nav .btn:not(.btn-just-icon):not(.btn-fab) .fa, .navbar .navbar-nav > li > a.btn:not(.btn-just-icon):not(.btn-fab) .fa {
+            margin-top: 0;
+            top: 0px;
+        }
+
+        .navbar .btn {
+            /* margin-top: 0; */
+            margin-bottom: 0;
+        }
+
+        .navbar-right .dropdown-menu{
+            color: #30526a;
+        }
+
+        .navbar-right{
+            margin-top: 2px;
+        }
+
+        .navbar .form-group.is-focused .form-control {
+          outline: none;
+          background-image: linear-gradient(#D2D2D2, #D2D2D2), linear-gradient(rgba(210, 210, 210, 0.61), rgba(210, 210, 210, 0.6));
+          background-size: 100% 2px, 100% 1px;
+          box-shadow: none;
+          transition-duration: 0.3s;
+        }
+
+        .nav .btn.btn-just-icon, .navbar .navbar-nav > li > a.btn.btn-just-icon {
+            padding: 8px 8px;
+        }
+
+
     </style>
 
     {% block css %}
@@ -67,40 +134,58 @@
 			<nav class="navbar navbar-transparent navbar-absolute">
 				<div class="container-fluid">
 					<div class="navbar-header">
+                        <a class="navbar-brand js-scroll-trigger" href="/bdo/">
+                            <img id="logowhite" class="logo" src="{% static "img/logow.png" %}" alt="BigData Ocean">
+                            <img id="logoblack" style="display:none" class="logo" src="{% static "img/logo.png" %}" alt="BigData Ocean">
+                        </a>
 						<button type="button" class="navbar-toggle" data-toggle="collapse">
 							<span class="sr-only">Toggle navigation</span>
 							<span class="icon-bar"></span>
 							<span class="icon-bar"></span>
 							<span class="icon-bar"></span>
 						</button>
-						<a class="navbar-brand" href="#">How BDO works</a>
-						<a class="navbar-brand" href="#">About us</a>
-					</div>
-					<div class="collapse navbar-collapse">
-						<ul class="nav navbar-nav navbar-right">
-							<li class="dropdown">
-								<a href="/services/" class="btn bg-color--blue dropdown-toggle"
-                                   style="padding: 10px 25px; margin: 5px 0px 5px 40px">
-									<i class="fa fa-cogs o-white"></i>
-									Services &amp; Dashboards
-								</a>
-							</li>
-                            <li class="dropdown">
-								<a href="#" class="btn bg-color--blue dropdown-toggle"
-                                   data-toggle="dropdown" aria-expanded="false"
-                                   style="padding: 10px 25px; margin: 5px 40px;">
-									<i class="fa fa-plus-circle o-white"></i>
-									Upload &amp; create
-								</a>
-								<ul class="dropdown-menu" data-color="blue">
-                                    <li><a href="/upload" style="font-size: 1.1em;"><i class="fa fa-cloud-upload margin-right-4"></i> <span>Upload a dataset</span></a></li>
+{#						<a class="navbar-brand" href="#">How BDO works</a>#}
+{#						<a class="navbar-brand" href="#">About us</a>#}
+                        <span class="dropdown">
+                            <a href="/services/" class="btn bg-color--blue dropdown-toggle"
+                               style="padding: 9px 10px;">
+                                <i class="fa fa-cogs o-white"></i>
+                                Services &amp; Dashboards
+                            </a>
+                        </span>
+                        <span class="dropdown">
+                            <a href="#" class="btn bg-color--blue dropdown-toggle"
+                               data-toggle="dropdown" aria-expanded="false"
+                               style="padding: 9px 20px;">
+                                <i class="fa fa-plus-circle o-white"></i>
+                                Upload &amp; Create
+                            </a>
+                            <ul class="dropdown-menu" data-color="blue">
+                                <li><a href="/upload" style="font-size: 1.1em;"><i class="fa fa-cloud-upload margin-right-4"></i> <span>Upload a dataset</span></a></li>
 									<li><a href="http://212.101.173.21:5000" style="font-size: 1.1em;"><i class="fa fa-code margin-right-4"></i> <span>Process metadata</span></a></li>
 									<li><a href="/parse" style="font-size: 1.1em;"><i class="fa fa-cogs margin-right-4"></i> <span>Parse a dataset</span></a></li>
 									<li><a href="/queries/simplified/" style="font-size: 1.1em;"><i class="fa fa-database margin-right-5"></i> <span>Define a query</span></a></li>
-									<li><a href="/analytics/service-builder/" style="font-size: 1.1em;"><i class="fa fa-industry margin-right-5"></i> <span>Create an analysis</span></a></li>
-								    <li><a href="/dashboards/create/" style="font-size: 1.1em;"><i class="fa fa-bar-chart margin-right-5"></i> <span>Create a dashboard</span></a></li>
-                                </ul>
-							</li>
+                                <li><a href="/analytics/service-builder/" style="font-size: 1.1em;"><i class="fa fa-industry margin-right-5"></i> <span>Create an analysis</span></a></li>
+                                <li><a href="/dashboards/create/" style="font-size: 1.1em;"><i class="fa fa-bar-chart margin-right-5"></i> <span>Create a dashboard</span></a></li>
+                            </ul>
+                        </span>
+					</div>
+					<div class="collapse navbar-collapse">
+						<ul class="nav navbar-nav navbar-right">
+
+
+                            <li>
+                                <form class="navbar-form navbar-right" role="search" method="GET" action="{% url 'search' %}">
+                                    <div class="form-group  is-empty">
+                                        <input type="text" class="form-control" placeholder="Search" name="q">
+                                        <span class="material-input"></span>
+                                    </div>
+                                    <button type="submit" class="btn btn-white btn-round btn-just-icon">
+                                        <i class="material-icons">search</i><div class="ripple-container"></div>
+                                    </button>
+                                </form>
+                            </li>
+
 							<li class="dropdown">
 								<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 									<i class="material-icons">notifications</i>
@@ -127,15 +212,7 @@
 							</li>
 						</ul>
 
-						<form class="navbar-form navbar-right" role="search" method="GET" action="{% url 'search' %}">
-							<div class="form-group  is-empty">
-								<input type="text" class="form-control" placeholder="Search" name="q">
-								<span class="material-input"></span>
-							</div>
-							<button type="submit" class="btn btn-white btn-round btn-just-icon">
-								<i class="material-icons">search</i><div class="ripple-container"></div>
-							</button>
-						</form>
+
 					</div>
 				</div>
 			</nav>

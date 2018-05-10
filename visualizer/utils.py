@@ -182,7 +182,7 @@ def clone_zep_note(notebook_id, name):
     return notebook_id
 
 
-def run_zep_note(notebook_id):
+def run_zep_note(notebook_id, exclude=[]):
     response_status = 500
     # number of tries
     counter = 1
@@ -190,7 +190,10 @@ def run_zep_note(notebook_id):
     response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id))
     response_json = response.json()
     for p in response_json['body']['paragraphs']:
-        paragraphs.append(p['id'])
+        if str(p['id']) not in exclude:
+            paragraphs.append(p['id'])
+        else:
+            print 'excluded paragraph: {0}'.format(str(p['id']))
     for p in paragraphs:
         run_zep_paragraph(notebook_id, p)
 
@@ -216,6 +219,25 @@ def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     return paragraph_id
 
 
+def create_zep_arguments_paragraph(notebook_id, title, args_json_string):
+    data = dict()
+    data['title'] = title
+    data['index'] = 1
+    data['text'] = '%spark.pyspark' \
+                   '\nimport json' \
+                   '\narguments = dict()' \
+                   '\narguments = json.loads(\'{0}\')' \
+                   '\nprint arguments'.format(args_json_string)
+    print args_json_string
+    str_data = json.dumps(data)
+    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = response.json()
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
 def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name="df"):
     data = dict()
     if index >= 0:
@@ -229,6 +251,15 @@ def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name
                    '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
                    '.load()' \
                    '\n'+df_name+'.printSchema()'
+
+    # data['text'] =  '%spark.pyspark' \
+    #                 '\n' + df_name + '= spark.read.format("jdbc")' \
+    #                 '.option("url", "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234")' \
+    #                 '.option("driver", "org.postgresql.Driver")' \
+    #                 '.option("database", "bdo_platform")' \
+    #                 '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
+    #                 '.load()' \
+    #                 '\n' + df_name + '.printSchema()'
 
     str_data = json.dumps(data)
     response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
@@ -721,6 +752,30 @@ def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
     # print json_data
     # print type(json_data)
 
+    return json_data
+
+
+def create_zep_getDict_paragraph(notebook_id, title, dict_name):
+    data = dict()
+    data['title'] = 'bdo_test_paragraph'
+    data['text'] = '%spark.pyspark' \
+                   '\nprint {0}'.format(dict_name)
+
+    str_data = json.dumps(data)
+    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = convert_unicode_json(response.json())
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def get_zep_getDict_paragraph_response(notebook_id, paragraph_id):
+    response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
+    print response
+    response_json = convert_unicode_json(response.json())
+    json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}").replace("'", '"'))
+    json_data = convert_unicode_json(json_data)
     return json_data
 
 

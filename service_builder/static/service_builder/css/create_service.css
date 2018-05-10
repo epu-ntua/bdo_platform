@@ -33,11 +33,11 @@
 }
 
 .nav-pills:not(.nav-pills-icons) > .active > a{
-    background-color: #2671aa;
+    background-color: #30526a;
 }
 
 .nav-pills:not(.nav-pills-icons) > .active > a:hover{
-    background-color: #2671aa;
+    background-color: #30526a;
 }
 
 .table-full-width{

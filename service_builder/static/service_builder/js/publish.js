@@ -48,6 +48,7 @@
                     name: $(this).find($("td[data-columnname='name']")).text(),
                     title: $(this).find($("td[data-columnname='title']")).text(),
                     type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
+                    default: $(this).find($("td[data-columnname='default']")).text(),
                     description: $(this).find($("td[data-columnname='description']")).text(),
                 });
             });
@@ -82,7 +83,7 @@
                 service_id: service_id,
                 exposed_args: JSON.stringify(exposed_args),
             },
-            "success": function(result) {
+            success: function(result) {
                 console.log(result);
             },
             error: function (jqXHR) {

@@ -1,16 +1,21 @@
 import ast
 import json
 
-import collections
+import collections, re
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
+from django.template import Context, Template
+
+from bs4 import BeautifulSoup
+from django.conf import settings
 
 from query_designer.models import Query, TempQuery
 from visualizer.models import Visualization
 from service_builder.models import Service, ServiceTemplate
-from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph, run_zep_note, clone_zep_note, delete_zep_paragraph
+from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph, run_zep_note, clone_zep_note, delete_zep_paragraph, \
+    create_zep_getDict_paragraph, get_zep_getDict_paragraph_response, create_zep_arguments_paragraph
 
 
 def create_new_service(request):
@@ -21,8 +26,12 @@ def create_new_service(request):
         saved_queries = []
     available_viz = Visualization.objects.filter(hidden=False)
     available_templates = ServiceTemplate.objects.all()
-    service = Service(user=user, private=False, notebook_id='2D9E8JBBX', published=False)
-    service.save()
+    if settings.TEST_SERVICES:
+        service = Service.objects.get(pk=89)
+    else:
+        service = Service(user=user, private=False, notebook_id='2D9E8JBBX', published=False)
+        service.save()
+
     # service = Service.objects.get(pk=3)
     return render(request, 'service_builder/create_new_service.html', {
         'saved_queries': saved_queries,
@@ -203,6 +212,14 @@ def update_service_arguments(request):
             arg['default_lon_min'] = arg['default'].split('<<')[1].split(',')[1].split('>')[0]
             arg['default_lat_max'] = arg['default'].split('>,<')[1].split(',')[0]
             arg['default_lon_max'] = arg['default'].split('>,<')[1].split(',')[1].split('>')[0]
+    args_to_note = dict()
+    for arg in arguments['algorithm-arguments']:
+        args_to_note[arg['name']] = arg['default']
+    new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=service.notebook_id, title='', args_json_string=json.dumps(args_to_note))
+    run_zep_paragraph(notebook_id=service.notebook_id, paragraph_id=new_arguments_paragraph)
+    if service.arguments_paragraph_id is not None:
+        delete_zep_paragraph(service.notebook_id, service.arguments_paragraph_id)
+    service.arguments_paragraph_id = new_arguments_paragraph
     service.arguments = arguments
     service.save()
     result = {}
@@ -221,6 +238,15 @@ def submit_service_args(request, service_id):
         filter_arg['filter_b'] = request.GET.get(filter_arg['name'], filter_arg['default'])
     print 'user args:'
     print service_filter_args
+
+    service_algorithm_args = service_args["algorithm-arguments"]
+    print 'original algorithm args:'
+    print service_algorithm_args
+    args_to_note = dict()
+    for algorithm_arg in service_algorithm_args:
+        args_to_note[algorithm_arg['name']] = request.GET.get(algorithm_arg['name'], algorithm_arg['default'])
+    print 'user algorithm args:'
+    print args_to_note
 
     # 2.CUSTOMIZE THE QUERIES BASED ON THE GATHERED USER ARGUMENTS (AND CREATE TEMPQUERIES)
     # query_mapping is a dict that maps the original queries of the template service to the tempQueries created after the user customisation
@@ -243,18 +269,48 @@ def submit_service_args(request, service_id):
 
     # 3.BRING THE CUSTOMISED QUERIES TO THE SERVICE CODE
     original_notebook_id = service.notebook_id
-    # new_notebook_id = clone_zep_note(original_notebook_id, "")
-    new_notebook_id = original_notebook_id
+    if settings.TEST_SERVICES:
+        new_notebook_id = original_notebook_id
+        excluded_paragraphs = []
+        new_created_paragraphs = []
+    else:
+        new_notebook_id = clone_zep_note(original_notebook_id, "")
+
     # customise the respective queries in the code
     for name, info in queries.iteritems():
         for original_paragraph_id in info['paragraphs']:
-            delete_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=original_paragraph_id)
             raw_query = TempQuery.objects.get(pk=int(info['temp_q'])).raw_query
-            paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=0, df_name="df_"+name)
+            new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=0, df_name="df_"+name)
+            if settings.TEST_SERVICES:
+                excluded_paragraphs.append(original_paragraph_id)
+                new_created_paragraphs.append(new_query_paragraph_id)
+            else:
+                print 'deleting paragraph: {0}'.format(original_paragraph_id)
+                delete_zep_paragraph(notebook_id=str(new_notebook_id), paragraph_id=str(original_paragraph_id))
+
+
+    new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=new_notebook_id, title='',
+                                                             args_json_string=json.dumps(args_to_note))
+    if service.arguments_paragraph_id is not None:
+        delete_zep_paragraph(new_notebook_id, service.arguments_paragraph_id)
+
+    if settings.TEST_SERVICES:
+        service.arguments_paragraph_id = new_arguments_paragraph
+        service.save()
 
 
     # 4.RUN THE SERVICE CODE (one by one paragraph, or all together. CHOOSE..)
-    run_zep_note(new_notebook_id)
+    run_zep_note(notebook_id=new_notebook_id, exclude=excluded_paragraphs)
+    if settings.TEST_SERVICES:
+        for p in new_created_paragraphs:
+            print 'deleting paragraph: {0}'.format(p)
+            delete_zep_paragraph(notebook_id=str(new_notebook_id), paragraph_id=str(p))
+
+    # 5. GET THE SERVICE RESULTS
+    result_paragraph_id = create_zep_getDict_paragraph(notebook_id=new_notebook_id, title='', dict_name='result')
+    run_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
+    result = get_zep_getDict_paragraph_response(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
+    delete_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
 
     # 5. BRING THE CUSTOMISED QUERIES TO THE SERVICE OUTPUT
     # print 'Change queries:'
@@ -276,9 +332,41 @@ def submit_service_args(request, service_id):
     #     'arguments': json.dumps(service_args),
     #     'service_id': service_id})
 
-    result = dict()
-    result['query_mapping'] = query_mapping
-    return HttpResponse(json.dumps(result), content_type="application/json")
+    # result = dict()
+    # result['query_mapping'] = query_mapping
+    # return HttpResponse(json.dumps(result), content_type="application/json")
+
+    # template = Template("Hello {{ name }}! ")
+
+    # result = dict()
+    # result['result1'] = "John"
+
+    output_html = service.output_html
+    output_css = service.output_css
+    output_js = service.output_js
+
+    if settings.TEST_SERVICES:
+        import os
+        with open(os.path.join(settings.BASE_DIR, 'service_builder\\templates\\service_builder\\service_template_1.html')) as f:
+            output_html = f.read()
+
+    for name, info in queries.iteritems():
+        query = info['query_id']
+        new_query = info['temp_q']
+        # print output_html
+        output_html = re.sub(r"query="+str(query)+"&", "query="+str(new_query)+"&", output_html)
+        output_html = re.sub(r"query="+str(query)+"\"", "query="+str(new_query)+"\"", output_html)
+
+    soup = BeautifulSoup(str(output_html), 'html.parser')
+    service_result_container = soup.find(id="service_result_container")
+    innerHTML = ''
+    for c in service_result_container.contents:
+        innerHTML += str(c)
+
+    context = Context({"result": result})
+    template = Template(innerHTML)
+
+    return HttpResponse(template.render(context))
 
 
 def load_template(request):
@@ -292,3 +380,25 @@ def load_template(request):
     result['js'] = template.js
 
     return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+def load_results_to_template(request):
+    # from django.template import engines
+    # from django.template.loader import render_to_string
+    # from django.template import Context, Template
+    #
+    # django_engine = engines['django']
+    # # template = django_engine.from_string("Hello {{ name }}!")
+    # template = Template("{% extends 'base.html' %} {% block content %} Hello {{ name }}! {% endblock %}")
+    # context = Context({"name": "John"})
+    # # rendered = render_to_string(template, {'name': 'bar'})
+    # # return render(template, {'name': 'bar'})
+    #
+    # return HttpResponse(template.render(context))
+    # # return render(request, template.render(context))
+
+    from django.template import Context, Template
+    template = Template("Hello {{ name }}! ")
+    context = Context({"name": "John"})
+    return HttpResponse(template.render(context))
+
