@@ -420,7 +420,7 @@
 
         app.controller('MainCtrl', function ($scope) {
             $scope.counter = "0";
-            $scope.tempInnerHtml="";
+            $scope.tempInnerHtml = "";
 
             $scope.gridsterOpts = {
                 margins: [20, 20],
@@ -430,7 +430,7 @@
                 floating: true,
                 columns: 4,
                 defaultSizeX: 4,
-	            defaultSizeY: 1,
+                defaultSizeY: 1,
                 draggable: {
                     enabled: true,
                     handle: '.iframeHeader',
@@ -458,7 +458,7 @@
 
             $scope.standardItems = [];
 
-           {% comment %} $scope.addWidget = function () {
+            {% comment %} $scope.addWidget = function () {
                 $scope.counter++;
                 $scope.standardItems.push({size: {x: 1, y: 1}, position: [0, 0]});
             };{% endcomment %}
@@ -468,52 +468,52 @@
                 {#                $('#select_viz_popover').prop('disabled', true);#}
                 {#                $('#select_conf_popover').prop('disabled', true);#}
                 {#                $('#viz-container').appendTo($('#dynamic_dashboard'));#}
-                var tempid="#widget" + $scope.counter;
+                var tempid = "#widget" + $scope.counter;
 
-                $scope.standardItems[ $scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
+                $scope.standardItems[$scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
                 $('#viz_container iframe').appendTo(tempid);
                 $('#myModal #viz_container').empty();
                 $('#save_dashboard_btn').show();
             });
 
-             $("#myModal #submit-note-btn").click(function () {
+            $("#myModal #submit-note-btn").click(function () {
                 var myData = textEditor.getData();
-                var tempid="#widget" + $scope.counter;
-                var tempidJs="widget" + $scope.counter;
+                var tempid = "#widget" + $scope.counter;
+                var tempidJs = "widget" + $scope.counter;
 
-                var note_wrapper= "<div class='note_wrapper'>"+ myData +" </div>"
-                 $scope.standardItems[ $scope.standardItems.length - 1].noteData = note_wrapper;
+                var note_wrapper = "<div class='note_wrapper'>" + myData + " </div>"
+                $scope.standardItems[$scope.standardItems.length - 1].noteData = note_wrapper;
 
                 $(tempid).append(note_wrapper);
                 $('#save_dashboard_btn').show();
                 textEditor.destroy();
-                textEditor=null;
+                textEditor = null;
 
                 $('#viz_config').show();
                 $('#viz_note').hide();
                 $('#model-button-row').show();
-                $('#modal-tab-notes').css('background-color' , '#617b8e');
-                $('#modal-tab-data').css('background-color' , '#2172ac');
+                $('#modal-tab-notes').css('background-color', '#617b8e');
+                $('#modal-tab-data').css('background-color', '#2172ac');
                 $('#submit-note-btn').hide();
                 $('#submit-modal-btn').show();
 
 
                 var newWidget = document.getElementById(tempidJs);
-                for(var i=0 ; i < newWidget.childNodes.length ;i++){
-                    if(newWidget.childNodes[i].className == "iframeHeader"){
+                for (var i = 0; i < newWidget.childNodes.length; i++) {
+                    if (newWidget.childNodes[i].className == "iframeHeader") {
                         var tempHeader = newWidget.childNodes[i];
                         tempHeader.style.backgroundColor = "white";
-                        $(tempHeader).mouseenter(function(){
-                            this.style.backgroundColor="lightgrey "
+                        $(tempHeader).mouseenter(function () {
+                            this.style.backgroundColor = "lightgrey "
                         });
-                        $(tempHeader).mouseleave(function(){
-                            this.style.backgroundColor="white "
+                        $(tempHeader).mouseleave(function () {
+                            this.style.backgroundColor = "white "
                         });
-                        for(var j =0 ; j < tempHeader.childNodes.length; j++){
-                            if(tempHeader.childNodes[j].className == "form-group"){
+                        for (var j = 0; j < tempHeader.childNodes.length; j++) {
+                            if (tempHeader.childNodes[j].className == "form-group") {
                                 tempHeader.childNodes[j].style.display = "none";
                             }
-                            if(tempHeader.childNodes[j].className == "deletebtn"){
+                            if (tempHeader.childNodes[j].className == "deletebtn") {
                                 tempHeader.childNodes[j].style.backgroundColor = "white";
                                 tempHeader.childNodes[j].style.color = "black";
                             }
@@ -526,31 +526,39 @@
                 {#$(tempid > ".iframeHeader" > ".deletebtn").css("background" , "white");#}
             });
 
-            $("#dismiss-modal-btn").click (function () {
+            $("#dismiss-modal-btn").click(function () {
                 $scope.standardItems.pop();
             });
 
-            $('#new_widget_btn').click(function (){
+            var makeWidget =function (){
                 $scope.counter++;
                 var tempTitle = "Widget" + $scope.counter;
-                $scope.standardItems.push({sizeX:4, sizeY:1, row: 0,col: 0 ,url: "" , noteData: "" , title: tempTitle});
-            });
+                $scope.standardItems.push({
+                    sizeX: 4,
+                    sizeY: 1,
+                    row: 0,
+                    col: 0,
+                    url: "",
+                    noteData: "",
+                    title: tempTitle
+                });
+            };
 
+            $('#new_widget_btn').click(makeWidget);
 
 
             $('#scroll_down_area').mouseenter(function () {
-                    window.scrollBy(0,40);
-                    scrolldelay = setTimeout('pageScroll()',200);
+                window.scrollBy(0, 40);
+                scrolldelay = setTimeout('pageScroll()', 200);
             });
-
 
 
             $('#scroll_down_area').mouseleave(function () {
-                    clearTimeout(scrolldelay);
+                clearTimeout(scrolldelay);
             });
 
             $scope.finished = function () {
-                 var tempid="widget" + $scope.counter;
+                var tempid = "widget" + $scope.counter;
 
                 $('#viz_container iframe').appendTo(tempid);
                 $('#myModal #viz_container').empty();
@@ -564,11 +572,35 @@
             $scope.removeWidget = function (item) {
                 var index = $scope.standardItems.indexOf(item);
                 $scope.standardItems.splice(index, 1);
-                if($scope.standardItems.length == 0)
-                {
+                if ($scope.standardItems.length == 0) {
                     $('#save_dashboard_btn').hide();
                 }
             };
+
+            angular.element(document).ready(function (e) {
+                var prebuiltViz = "{{ toCreate }}";
+                if (prebuiltViz != 'empty') {
+                    makeWidget();
+                    var tempid = "#widget" + $scope.counter;
+                    var decodedViz = decodeURIComponent(prebuiltViz);
+                    var prebuildIFrameString = "<iframe class='iframe-class' id='viz-iframe' " +
+                    "src='" + decodedViz + "' frameborder='0' allowfullscreen='' " +
+                    "></iframe>";
+                    var prebuildIFrameItem= $.parseHTML(prebuildIFrameString);
+                    {#$(prebuildIFrameItem[0]).appendTo(tempid);#}
+
+                    var helperfunc = function(){
+                        $(tempid).append(prebuildIFrameItem[0]);
+                    };
+                    {#$(tempid).on(function () {#}
+                    {#    $(tempid).append(prebuildIFrameItem[0]);#}
+
+                    setTimeout(helperfunc ,500);
+
+                    $scope.standardItems[$scope.standardItems.length - 1].url = decodedViz;
+                    $('#save_dashboard_btn').show();
+                    }
+            });
 
             $('#save_dashboard_btn').click(function () {
                 var postEndpoint = "/dashboards/save/";
@@ -882,8 +914,6 @@
                 }
             }
         });
-
-
     </script>
 
 {% endblock %}
