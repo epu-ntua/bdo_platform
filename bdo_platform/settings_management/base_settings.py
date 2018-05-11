@@ -175,6 +175,13 @@ USE_L10N = False
 #ck editor settings
 # CKEDITOR_BASEPATH = "/staticfiles/ckeditor/ckeditor"
 CKEDITOR_UPLOAD_PATH ='uploads/'
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        # 'skin': 'moono',
+    },
+}
+
 # bdo main app settings
 DATASET_DIR = os.path.join(os.path.join(BASE_DIR, 'aggregator'), 'datasets')
 if not os.path.isdir(DATASET_DIR):

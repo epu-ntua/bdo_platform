@@ -35,7 +35,9 @@
         }
 
         .modal-header {
-            padding-top: 0;
+            padding-top: 16px !important;
+            padding-left: 0px !important;
+            padding-right: 0px !important;
         }
 
         .modal .modal-content .modal-body {
@@ -75,8 +77,8 @@
             -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
             color: #004756;
-            background: darkgrey;
-            padding: 0;
+            background: white;
+            padding: 0px;
         }
         ul {
             list-style: none;
@@ -124,11 +126,11 @@
             cursor: pointer;
         }
 
-        #dynamic_dashboard .iframe-class{
-            height: calc(100% - 37px)!important;
-
+        .iframe-class{
+            height: calc(100% - 37px);
+            padding: 0px;
+            margin: 0% 0% 0% 0% !important;
         }
-
 
         .iframeHeader .form-group{
             margin: 0px 0px 0px 0px !important;
@@ -148,6 +150,36 @@
             opacity: 100;
             {#background-color: #0b2e13;#}
             display: none;
+
+        }
+
+        .modal-tab{
+            width:50%;
+            height: 30px;
+            background-color: #2172ac;
+            color: white;
+            float: left;
+            box-shadow: 0px -1px 5px grey;
+            border-bottom: 1px solid black;
+        }
+
+        .modal-tab:hover{
+            cursor: pointer;
+        }
+
+        #modal-tab-data{
+            border-right: 1px solid black;
+        }
+
+        #modal-tab-notes{
+            background-color: #617b8e;
+        }
+
+        .note_wrapper{
+            padding: 10px;
+            width: 100%;
+            height: calc(100% - 37px);
+            overflow: auto;
 
         }
     </style>
@@ -182,8 +214,6 @@
             Save Dashboard
         </button>
 
-{#        <button type="button" onclick="pageScroll()"> </button>#}
-
     </div>
 
 
@@ -194,7 +224,7 @@
                 <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
                     <div class='wrap1'></div>
                     <header class="iframeHeader">
-                        <input id="widgetTitle[[::counter]]" class="form-control text-center" value=" Widget[[::counter]]" ">
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
                         {% load  static %}
                         <input type='button' value='X' class='deletebtn'
                                style="background-image: url({% static "images/exitBtn.png" %})"
@@ -295,17 +325,20 @@
                 <div class="modal-header text-center">
                     {#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
                     <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
+                    <div class="modal-tab" id="modal-tab-data">Data</div>
+                    <div class="modal-tab" id="modal-tab-notes">Notes</div>
+{#                    <button type="button" id="select_note_popover" class="btn btn-lg btn-primary"#}
+{#                                data-toggle="popover" title="Write your note" data-placement="bottom"#}
+{#                        >Write Note#}
+{#                        </button>#}
                 </div>
                 <div class="modal-body">
-                    <div class="row text-left">
+                    <div class="row text-left" id="model-button-row">
                         <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
                                 data-toggle="popover" title="Select your data" data-placement="right"
                         >Select data
                         </button>
-{#                        <button type="button" id="select_note_popover" class="btn btn-lg btn-primary"#}
-{#                                data-toggle="popover" title="Write your note" data-placement="bottom"#}
-{#                        >Write Note#}
-{#                        </button>#}
+
                         <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
                                 data-toggle="popover" title="Select visualization type" data-placement="bottom"
                                 data-container="body" disabled style="display: none">2. Select visualisation
@@ -350,13 +383,12 @@
                         </div>
                     </div>
                     <div class="row" id="viz_note" style="display: none">
-                        Take note:
-                        <form method="post" action="./">
-                            {% csrf_token %}
-                            {{ form.media }}
-                            {{ form.as_p }}
-                            <p><input type="submit" value="post"></p>
-                        </form>
+{#                        <form method="post" action="./">#}
+{#                            {% csrf_token %}#}
+{#                            {{ form.media }}#}
+{#                            {{ form.as_p }}#}
+{#                            <p><input type="submit" value="post"></p>#}
+{#                        </form>#}
                     </div>
                     <input type="hidden" id="selected_query" value="">
 
@@ -364,6 +396,8 @@
                 </div>
                 <div class="modal-footer" >
                     <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
+                    </button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn" style="display: none">Add
                     </button>
                     <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
                     </button>
@@ -381,8 +415,12 @@
     <script type="text/javascript" src={% static '/js/angular.js' %}></script>
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
+    <script type="text/javascript" src={% static '/ckeditor/ckeditor/ckeditor.js' %}></script>
+
 
     <script type="text/javascript">
+
+        {#var textEditor = null;#}
 
      function pageScroll() {
                 $('#main-panel').scrollTop();
@@ -476,6 +514,56 @@
                 $('#myModal #submit-modal-btn').hide();
             });
 
+             $("#myModal #submit-note-btn").click(function () {
+                var myData = textEditor.getData();
+                var tempid="#widget" + $scope.counter;
+                var tempidJs="widget" + $scope.counter;
+
+                var note_wrapper= "<div class='note_wrapper'>"+ myData +" </div>"
+                 $scope.standardItems[ $scope.standardItems.length - 1].noteData = note_wrapper;
+
+                $(tempid).append(note_wrapper);
+                $('#save_dashboard_btn').show();
+                textEditor.destroy();
+                textEditor=null;
+
+                $('#viz_config').show();
+                $('#viz_note').hide();
+                $('#model-button-row').show();
+                $('#modal-tab-notes').css('background-color' , '#617b8e');
+                $('#modal-tab-data').css('background-color' , '#2172ac');
+                $('#submit-note-btn').hide();
+                $('#submit-modal-btn').show();
+
+
+                var newWidget = document.getElementById(tempidJs);
+                for(var i=0 ; i < newWidget.childNodes.length ;i++){
+                    if(newWidget.childNodes[i].className == "iframeHeader"){
+                        var tempHeader = newWidget.childNodes[i];
+                        tempHeader.style.backgroundColor = "white";
+                        $(tempHeader).mouseenter(function(){
+                            this.style.backgroundColor="lightgrey "
+                        });
+                        $(tempHeader).mouseleave(function(){
+                            this.style.backgroundColor="white "
+                        });
+                        for(var j =0 ; j < tempHeader.childNodes.length; j++){
+                            if(tempHeader.childNodes[j].className == "form-group"){
+                                tempHeader.childNodes[j].style.display = "none";
+                            }
+                            if(tempHeader.childNodes[j].className == "deletebtn"){
+                                tempHeader.childNodes[j].style.backgroundColor = "white";
+                                tempHeader.childNodes[j].style.color = "black";
+                            }
+                        }
+                    }
+
+                }
+                {#$(tempid > ".iframeHeader" > ".form-group").hide();#}
+                {#$(tempid > ".iframeHeader" ).css("background" , "white");#}
+                {#$(tempid > ".iframeHeader" > ".deletebtn").css("background" , "white");#}
+            });
+
             $("#dismiss-modal-btn").click (function () {
                 $scope.standardItems.pop();
                 $('#myModal #viz_container').html('<div class="loadingFrame">\n' +
@@ -488,7 +576,8 @@
 
             $('#new_widget_btn').click(function (){
                 $scope.counter++;
-                $scope.standardItems.push({sizeX:4, sizeY:2, row: 0,col: 0 ,url: "" });
+                var tempTitle = "Widget" + $scope.counter;
+                $scope.standardItems.push({sizeX:4, sizeY:1, row: 0,col: 0 ,url: "" , noteData: "" , title: tempTitle});
             });
 
 
@@ -538,7 +627,7 @@
                 var tempcounter= 0;
                 for(var myindex in $scope.standardItems){
                     var tempTitleId= "widgetTitleModel" + myindex.toString();
-                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() ];
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() ,$scope.standardItems[myindex].noteData.toString() ,$scope.standardItems[myindex].title.toString()];
                     post_data_obj[String(tempcounter)] = temparray;
                     tempcounter++;
                 }
@@ -622,14 +711,40 @@
 
 
     <script>
+        {#Variable to store active ckeditor version #}
+        var textEditor = null;
+        {#Fnction to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
-
-            $("#myModal #select_note_popover").popover({
+            $("#myModal #modal-tab-notes").popover({
                 html: true,
                 animation: true,
             }).click(function (e) {
                     $('#viz_config').hide();
                     $('#viz_note').show();
+                    $('#model-button-row').hide();
+                    $('#submit-note-btn').show();
+                    $('#submit-modal-btn').hide();
+                    $('#modal-tab-notes').css('background-color' , '#2172ac');
+                    $('#modal-tab-data').css('background-color' , '#617b8e');
+                    if(textEditor == null) {
+                        textEditor = CKEDITOR.appendTo('viz_note');
+                    }
+                }
+
+            )
+
+            {#Function to change tabs in modal from notes to data#}
+            $("#myModal #modal-tab-data").popover({
+                html: true,
+                animation: true,
+            }).click(function (e) {
+                    $('#viz_config').show();
+                    $('#viz_note').hide();
+                    $('#model-button-row').show();
+                    $('#modal-tab-notes').css('background-color' , '#617b8e');
+                    $('#modal-tab-data').css('background-color' , '#2172ac');
+                    $('#submit-note-btn').hide();
+                    $('#submit-modal-btn').show();
                 }
 
             )

@@ -23,7 +23,7 @@
             -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
             color: #004756;
-            background: darkgrey;
+            background: white;
             padding: 0px;
         }
         ul {
@@ -98,38 +98,78 @@
         }
 
         .widget-title{
-            padding-top: 5px;
-            font-size: 200%;
+            padding-top: 4px;
+            padding-left: 2px;
+            font-size: 150%;
             color: white;
+
+        }
+
+        .modal-tab{
+            width:50%;
+            height: 30px;
+            background-color: #2172ac;
+            color: white;
+            float: left;
+            box-shadow: 0px -1px 5px grey;
+            border-bottom: 1px solid black;
+        }
+
+        .modal-tab:hover{
+            cursor: pointer;
+        }
+
+        #modal-tab-data{
+            border-right: 1px solid black;
+        }
+
+        #modal-tab-notes{
+            background-color: #617b8e;
+        }
+
+        .note_wrapper{
+            padding: 10px;
+            width: 100%;
+            height: calc(100% - 37px);
+            overflow: auto;
+        }
+
+        .ng-wrapper{
+            width: 100%;
+            height: calc(100% - 37px);
+            display: block;
+        }
+
+         .iframeHeaderNote{
+            background-color: #FFFFFF;
+        }
+
+        .titleNote{
+            display: none;
         }
     </style>
 {% endblock %}
 
 {% block content %}
 
-{#    <div id="dynamic_dashboard">#}
-{#        <h1 class="text-center">{{ dashboard.title }}</h1>#}
-{#        {% for order, url in dashboard.viz_components.items %}#}
-{#            <iframe src="{{ url }}"  frameborder="0" ></iframe>#}
-{#        {% endfor %}#}
-{##}
-{#    </div>#}
     <h1 class="text-center">{{ dashboard.title }}</h1>
      <div ng-app="myApp" ng-controller="MainCtrl">
         <div id="dynamic_dashboard" gridster="gridsterOpts">
             <ul id="widgetParent">
                 <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">
                     <div class='wrap1'></div>
-                    <header class="iframeHeader">
-{#                        <input id="widgetTitle[[::counter]]" class="form-control text-center" value=" Widget[[::counter]]" >#}
-                        <p class="widget-title"> Widget</p>
-{#                        {% load  static %}#}
-{#                        <input type='button' value='X' class='deletebtn'#}
-{#                               style="background-image: url({% static "images/exitBtn.png" %})"#}
-{#                               ng-click="removeWidget(item);">#}
+                    <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
+                        <p class="widget-title" ng-class="{'titleNote': item.url == ''}" ng-bind="item.title"> </p>
                     </header>
-                    <iframe class="iframe-class" src=[[item.url]] frameborder='0' ></iframe>
-                    {#ng-init="SetIframeHeight('iframe[[counter]]')" #}
+                    <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" style="displa: none">
+                        <div class="ng-wrapper" ng-switch-when="false">
+                             <iframe  class="iframe-class" src=[[item.url]] frameborder='0' ></iframe>
+                        </div>
+                    </div>
+                    <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" style="displa: none">
+                        <div class="ng-wrapper" ng-switch-when="false" ng-bind-html="[[item.noteData]]">
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -146,29 +186,28 @@
     <script type="text/javascript" src={% static '/js/angular.js' %}></script>
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
+    <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
+
 
 <script type="text/javascript">
-        var app = angular.module('myApp', ['gridster']);
+        var app = angular.module('myApp', ['gridster' , 'ngSanitize']);
 
+        {# Angular and django conflict with same symbols {{}} replace angular with [[]] #}
         app.config(function ($interpolateProvider) {
             $interpolateProvider.startSymbol('[[');
             $interpolateProvider.endSymbol(']]');
         });
 
-        app.directive('repeatDone', function() {
-            return function(scope, element, attrs) {
-                $$scope.flagLoop=1;
-                {#alert("hey");#}
-            }
-        });
-
+        {#Angular app setup#}
         app.controller('MainCtrl', function ($scope) {
-            $scope.flagLoop=0;
+            {#Declaring global variables used later#}
             $scope.counter = "0";
             $scope.tempInnerHtml="";
-            $scope.iframeSource="";
+            {#$scope.iframeSource="";#}
 
+            {#Angular gidster setup#}
             $scope.gridsterOpts = {
+                {#Margins between the widgets#}
                 margins: [20, 20],
                 swapping: false,
                 outerMargin: false,
@@ -203,28 +242,22 @@
                 },
             };
 
+            {#List where widgets are kept with their data#}
             $scope.standardItems = [];
 
+            {#Clear list of items#}
             $scope.clear = function () {
                 $scope.standardItems = [];
             };
 
+            {#Remove specific item from the list#}
             $scope.removeWidget = function (item) {
                 var index = $scope.standardItems.indexOf(item);
                 $scope.standardItems.splice(index, 1);
             };
 
-            function setFlagLoop()
-            {
-                $scope.flagLoop = 1;
-            };
-            {#$scope.customItemMap = {#}
-            {#    sizeX: 'item.size.x',#}
-            {#    sizeY: 'item.size.y',#}
-            {#    row: 'item.position[0]',#}
-            {#    col: 'item.position[1]'#}
-            {#{;#}
 
+            {#Initializing widgets from database and setting content#}
             var init = function (){
                  {% for order, url in dashboard.viz_components.items %}
                      var tempinfo= "{{ url }}";
@@ -236,29 +269,23 @@
 
                     $scope.counter++;
                     var tempid="widget" + $scope.counter;
-                    $scope.iframeSource = info[0];
-                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] });
-                    {#while($scope.flagLoop == 0) {#}
-                        var x = setTimeout(function () {
-                            var i = 0;
-                        }, 1000);
+                    {#$scope.iframeSource = info[0];#}
+                     var noteDataEncoded = info[5];
+                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();
+                     noteDataDecoded= noteDataDecoded.substr(1);
+                     if(noteDataDecoded.charAt(0)=="u"){
+                         if(noteDataDecoded.charAt(1)=="\""){
+                             noteDataDecoded= noteDataDecoded.substr(2);
+                         }
+                     }
+                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);
+                     {#noteDataDecode=noteDataDecode.encode("utf-8");#}
+                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded ,title:info[6]});
 
-                    $scope.flagLoop = 0;
                 {% endfor %}
             };
 
-            var loadAfterInit = function () {
-                var counting = 0;
-                while(counting < $scope.counter) {
-                    var tempid="widget" + counting;
-                    var toAdd = "<iframe src='" + "{{ url }}" + "'frameborder='0' ></iframe>"
-                    $(tempid).append(toAdd);
-                    counting++;
-                }
-            };
-
             init();
-            {#loadAfterInit();#}
         });
 
 </script>

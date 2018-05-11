@@ -26,6 +26,8 @@ def build_dynamic_dashboard(request):
             'saved_queries': saved_queries,
             'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
             'form_class': form_class,
+            'components': Visualization.objects.all().order_by('id'),
+            'form': form_class,
         })
     return None
 
