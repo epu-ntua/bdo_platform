@@ -5,6 +5,29 @@
 {% block css %}
     <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>
     <style>
+        #cke_editor1 .cke_contents{
+            height: 350px !important;
+        }
+
+        #myModal .nav-pills > li.active a{
+            background-color: #30526a !important;
+        }
+
+        #myModal .nav>li {
+            display: inline-block !important;
+            width: 40% !important;
+        }
+        #myModal .nav-pills>li {
+            float: none !important;
+        }
+        #myModal .nav-pills>li a{
+            background-color: rgba(219, 219, 219, 0.9);
+        }
+        #myModal .nav-pills>li a:hover {
+            float: none !important;
+            background-color: #b6b6b6;
+        }
+
         .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
         .viz_item{
             cursor: pointer;
@@ -63,8 +86,8 @@
         }
 
         #viz_container iframe, #dynamic_dashboard iframe {
-            background-color: white;
-            height: 100%;
+            background-color: darkgray;
+{#            height: 100%;#}
 {#            min-height: 480px;#}
             width: 100%;
             margin: 0;
@@ -131,6 +154,9 @@
             padding: 0px;
             margin: 0% 0% 0% 0% !important;
         }
+        #myModal .iframe-class{
+            height: 100%;
+        }
 
         .iframeHeader .form-group{
             margin: 0px 0px 0px 0px !important;
@@ -138,6 +164,7 @@
 
         .iframeHeader .form-group .form-control{
             color: #FFFFFF;
+            min-width: 70%;
         }
 
         #scroll_down_area{
@@ -156,7 +183,7 @@
         .modal-tab{
             width:50%;
             height: 30px;
-            background-color: #2172ac;
+            background-color: #979a9a;
             color: white;
             float: left;
             box-shadow: 0px -1px 5px grey;
@@ -167,12 +194,9 @@
             cursor: pointer;
         }
 
-        #modal-tab-data{
-            border-right: 1px solid black;
-        }
 
         #modal-tab-notes{
-            background-color: #617b8e;
+{#            background-color: #617b8e;#}
         }
 
         .note_wrapper{
@@ -324,73 +348,82 @@
             <div class="modal-content">
                 <div class="modal-header text-center">
                     {#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
-                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
-                    <div class="modal-tab" id="modal-tab-data">Data</div>
-                    <div class="modal-tab" id="modal-tab-notes">Notes</div>
+                    <h4 class="modal-title">Add a new widget to the dashboard</h4>
+{#                    <div class="modal-tab" id="modal-tab-data">Data</div>#}
+{#                    <div class="modal-tab" id="modal-tab-notes">Notes</div>#}
+                    <ul class="nav nav-pills">
+                      <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
+                      <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
+                    </ul>
 {#                    <button type="button" id="select_note_popover" class="btn btn-lg btn-primary"#}
 {#                                data-toggle="popover" title="Write your note" data-placement="bottom"#}
 {#                        >Write Note#}
 {#                        </button>#}
                 </div>
                 <div class="modal-body">
-                    <div class="row text-left" id="model-button-row">
-                        <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
-                                data-toggle="popover" title="Select your data" data-placement="right"
-                        >Select data
-                        </button>
+                    <div class="tab-content">
+                        <div class="tab-pane fade in active" id="viz_widget">
+                            <div class="row text-left" id="model-button-row">
+                                <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select your data" data-placement="right"
+                                >Select data
+                                </button>
 
-                        <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
-                                data-toggle="popover" title="Select visualization type" data-placement="bottom"
-                                data-container="body" disabled style="display: none">2. Select visualisation
-                        </button>
-                        <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary"
-                                data-toggle="popover" title="Select your data" data-placement="bottom"
-                                data-container="body" disabled style="display: none">3. Configure
-                        </button>
-                    </div>
-
-                    {#                        <div class="row col-sm-12 text-center">#}
-                    {#                            <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?query=17&y_var=i0_sea_floor_potential_temperature&x_var=i0_time"#}
-                    {#                                    class="resizable"frameborder="0" allowfullscreen="">#}
-                    {#                            </iframe>#}
-                    {#                        </div>#}
-                    <div class="row" id="viz_config" style="display: none">
-                        <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                            {% for viz in available_viz %}
-                                <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
-                            {% endfor %}
-{#                            <li class="list-group-item viz_item" id="line_chart_item" data-component-id="5"><i#}
-{#                                    class="fa fa-line-chart margin-right-1"></i>Line chart#}
-{#                            </li>#}
-{#                            <li class="list-group-item viz_item" id="column_chart_item" data-component-id="13"><i#}
-{#                                    class="fa fa-bar-chart margin-right-1"></i>Column chart#}
-{#                            </li>#}
-{#                            <li class="list-group-item viz_item" id="pie_chart_item" data-component-id="12"><i#}
-{#                                    class="fa fa-pie-chart margin-right-1"></i>Pie chart#}
-{#                            </li>#}
-{#                            <li class="list-group-item viz_item" id="contours_on_map_item" data-component-id="4"><i#}
-{#                                    class="fa fa-map margin-right-1"></i>Contours on map#}
-{#                            </li>#}
-{#                            <li class="list-group-item viz_item" id="ship_course_on_map_item" data-component-id="15"><i#}
-{#                                    class="fa fa-map-marker margin-right-1"></i>Ship's course on map#}
-{#                            </li>#}
-                        </ul>
-                        <div id="viz_container" class="col-sm-8" style="width: 85%">
-                            <div class="loadingFrame">
-                                <img src="{% static 'img/loading_gif.gif' %}"/>
+                                <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select visualization type" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">2. Select visualisation
+                                </button>
+                                <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select your data" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">3. Configure
+                                </button>
                             </div>
 
+                            {#                        <div class="row col-sm-12 text-center">#}
+                            {#                            <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?query=17&y_var=i0_sea_floor_potential_temperature&x_var=i0_time"#}
+                            {#                                    class="resizable"frameborder="0" allowfullscreen="">#}
+                            {#                            </iframe>#}
+                            {#                        </div>#}
+                            <div class="row" id="viz_config" style="display: none">
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                                    {% for viz in available_viz %}
+                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                                    {% endfor %}
+        {#                            <li class="list-group-item viz_item" id="line_chart_item" data-component-id="5"><i#}
+        {#                                    class="fa fa-line-chart margin-right-1"></i>Line chart#}
+        {#                            </li>#}
+        {#                            <li class="list-group-item viz_item" id="column_chart_item" data-component-id="13"><i#}
+        {#                                    class="fa fa-bar-chart margin-right-1"></i>Column chart#}
+        {#                            </li>#}
+        {#                            <li class="list-group-item viz_item" id="pie_chart_item" data-component-id="12"><i#}
+        {#                                    class="fa fa-pie-chart margin-right-1"></i>Pie chart#}
+        {#                            </li>#}
+        {#                            <li class="list-group-item viz_item" id="contours_on_map_item" data-component-id="4"><i#}
+        {#                                    class="fa fa-map margin-right-1"></i>Contours on map#}
+        {#                            </li>#}
+        {#                            <li class="list-group-item viz_item" id="ship_course_on_map_item" data-component-id="15"><i#}
+        {#                                    class="fa fa-map-marker margin-right-1"></i>Ship's course on map#}
+        {#                            </li>#}
+                                </ul>
+                                <div id="viz_container" class="col-sm-8" style="width: 85%">
+                                    <div class="loadingFrame">
+                                        <img src="{% static 'img/loading_gif.gif' %}"/>
+                                    </div>
+
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="row tab-pane fade" id="viz_note">
+    {#                        <form method="post" action="./">#}
+    {#                            {% csrf_token %}#}
+    {#                            {{ form.media }}#}
+    {#                            {{ form.as_p }}#}
+    {#                            <p><input type="submit" value="post"></p>#}
+    {#                        </form>#}
+                        </div>
+                        <input type="hidden" id="selected_query" value="">
                     </div>
-                    <div class="row" id="viz_note" style="display: none">
-{#                        <form method="post" action="./">#}
-{#                            {% csrf_token %}#}
-{#                            {{ form.media }}#}
-{#                            {{ form.as_p }}#}
-{#                            <p><input type="submit" value="post"></p>#}
-{#                        </form>#}
-                    </div>
-                    <input type="hidden" id="selected_query" value="">
 
 
                 </div>
@@ -530,13 +563,14 @@
                 $('#viz_config').show();
                 $('#viz_note').hide();
                 $('#model-button-row').show();
-                $('#modal-tab-notes').css('background-color' , '#617b8e');
-                $('#modal-tab-data').css('background-color' , '#2172ac');
+{#                $('#modal-tab-notes').css('background-color' , '#617b8e');#}
+{#                $('#modal-tab-data').css('background-color' , '#2172ac');#}
                 $('#submit-note-btn').hide();
                 $('#submit-modal-btn').show();
 
 
                 var newWidget = document.getElementById(tempidJs);
+                newWidget.classList.add("note_widget");
                 for(var i=0 ; i < newWidget.childNodes.length ;i++){
                     if(newWidget.childNodes[i].className == "iframeHeader"){
                         var tempHeader = newWidget.childNodes[i];
@@ -712,42 +746,35 @@
 
     <script>
         {#Variable to store active ckeditor version #}
-        var textEditor = null;
+        var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
         {#Fnction to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
-            $("#myModal #modal-tab-notes").popover({
-                html: true,
-                animation: true,
-            }).click(function (e) {
-                    $('#viz_config').hide();
-                    $('#viz_note').show();
-                    $('#model-button-row').hide();
+
+            $("#myModal #modal-tab-notes").click(function (e) {
+{#                    $('#viz_config').hide();#}
+{#                    $('#viz_note').show();#}
+{#                    $('#model-button-row').hide();#}
                     $('#submit-note-btn').show();
                     $('#submit-modal-btn').hide();
-                    $('#modal-tab-notes').css('background-color' , '#2172ac');
-                    $('#modal-tab-data').css('background-color' , '#617b8e');
+{#                    $('#modal-tab-notes').css('background-color' , '#2172ac');#}
+{#                    $('#modal-tab-data').css('background-color' , '#617b8e');#}
                     if(textEditor == null) {
                         textEditor = CKEDITOR.appendTo('viz_note');
                     }
-                }
-
-            )
+                });
 
             {#Function to change tabs in modal from notes to data#}
-            $("#myModal #modal-tab-data").popover({
-                html: true,
-                animation: true,
-            }).click(function (e) {
-                    $('#viz_config').show();
-                    $('#viz_note').hide();
-                    $('#model-button-row').show();
-                    $('#modal-tab-notes').css('background-color' , '#617b8e');
-                    $('#modal-tab-data').css('background-color' , '#2172ac');
+
+            $("#myModal #modal-tab-data").click(function (e) {
+{#                    $('#viz_config').show();#}
+{#                    $('#viz_note').hide();#}
+{#                    $('#model-button-row').show();#}
+{#                    $('#modal-tab-notes').css('background-color' , '#617b8e');#}
+{#                    $('#modal-tab-data').css('background-color' , '#2172ac');#}
                     $('#submit-note-btn').hide();
                     $('#submit-modal-btn').show();
-                }
+                });
 
-            )
 
             $("#myModal #select_data_popover").popover({
                 html: true,
@@ -807,7 +834,9 @@
                             }
                         });
                         updateVariables($('#query-select'));
+
                         $(component_selector).popover('toggle');
+                        $('#myModal .popover-content .variable-select').select2();
                         var popver_id = '#' + $(component_selector).attr('aria-describedby');
                         $(popver_id + ' #select_conf_ok').click(function (e) {
                             submit_conf(component_selector);

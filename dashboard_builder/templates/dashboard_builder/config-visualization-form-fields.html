@@ -6,8 +6,8 @@
     <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
 {% endblock %}
 
-    <input id="{{ order }}+++viz_id" type="hidden" class="form-control full-width variable-select" name="viz_id"  value="{{ viz_id }}">
-    <input id="action" type="hidden" class="form-control full-width variable-select" name="action"  value="{{ action }}">
+    <input id="{{ order }}+++viz_id" type="hidden" class="form-control full-width" name="viz_id"  value="{{ viz_id }}">
+    <input id="action" type="hidden" class="form-control full-width" name="action"  value="{{ action }}">
 
     {% for argument in info.arguments %}
         <div class="row">

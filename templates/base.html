@@ -281,6 +281,7 @@
         window.setInterval(function(){
             $('.form-group input').each(function(){ if($(this).val() != ''){ $(this).closest('.form-group').removeClass('is-empty'); }  });
             $('.form-group select').each(function(){ if($(this).val() != ''){ $(this).closest('.form-group').removeClass('is-empty'); }  });
+            $('.form-group .select2-selection--multiple').closest('.form-group').removeClass('is-empty');
         }, 1000);
     </script>
 
