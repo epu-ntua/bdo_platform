@@ -121,8 +121,9 @@
     {% endblock %}
 
     <!--     Fonts and icons     -->
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet"> <!-- keeping it for compatibility for now, should delete it-->
     <link href='https://fonts.googleapis.com/css?family=Roboto:400,700,300|Material+Icons' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
 
 </head>
 
@@ -149,24 +150,25 @@
                         <span class="dropdown">
                             <a href="/services/" class="btn bg-color--blue dropdown-toggle"
                                style="padding: 9px 10px;">
-                                <i class="fa fa-cogs o-white"></i>
-                                Services &amp; Dashboards
+                                <i class="fas fa-store o-white"></i>
+                                Services Marketplace
                             </a>
                         </span>
                         <span class="dropdown">
                             <a href="#" class="btn bg-color--blue dropdown-toggle"
                                data-toggle="dropdown" aria-expanded="false"
                                style="padding: 9px 20px;">
-                                <i class="fa fa-plus-circle o-white"></i>
-                                Upload &amp; Create
+                                <i class="fas fa-stream o-white"></i>
+                                Explore &amp; Create
                             </a>
                             <ul class="dropdown-menu" data-color="blue">
-                                <li><a href="/upload" style="font-size: 1.1em;"><i class="fa fa-cloud-upload margin-right-4"></i> <span>Upload a dataset</span></a></li>
-									<li><a href="http://212.101.173.21:5000" style="font-size: 1.1em;"><i class="fa fa-code margin-right-4"></i> <span>Process metadata</span></a></li>
-									<li><a href="/parse" style="font-size: 1.1em;"><i class="fa fa-cogs margin-right-4"></i> <span>Parse a dataset</span></a></li>
-									<li><a href="/queries/simplified/" style="font-size: 1.1em;"><i class="fa fa-database margin-right-5"></i> <span>Define a query</span></a></li>
-                                <li><a href="/analytics/service-builder/" style="font-size: 1.1em;"><i class="fa fa-industry margin-right-5"></i> <span>Create an analysis</span></a></li>
-                                <li><a href="/dashboards/create/" style="font-size: 1.1em;"><i class="fa fa-bar-chart margin-right-5"></i> <span>Create a dashboard</span></a></li>
+                                <li><a href="/queries/simplified/" style="font-size: 1.1em;"><i class="far fa-eye margin-right-5"></i> <span>Create a query</span></a></li>
+                                <li><a href="/dashboards/create/" style="font-size: 1.1em;"><i class="fas fa-bar-chart margin-right-5"></i> <span>Create a dashboard</span></a></li>
+                                <li><a href="/analytics/service-builder/" style="font-size: 1.1em;"><i class="fas fa-cogs margin-right-5"></i> <span>Create a service</span></a></li>
+                                <li><a href="/upload" style="font-size: 1.1em;"><i class="fas fa-cloud-upload-alt margin-right-4"></i> <span>Upload a dataset</span></a></li>
+								<li><a href="http://212.101.173.21:5000" style="font-size: 1.1em;"><i class="fa fa-code margin-right-4"></i> <span>Process metadata</span></a></li>
+								<li><a href="/parse" style="font-size: 1.1em;"><i class="fas fa-file-medical-alt margin-right-4"></i> <span>Parse a dataset</span></a></li>
+
                             </ul>
                         </span>
 					</div>
