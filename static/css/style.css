@@ -448,3 +448,14 @@ label.section-label {
     box-shadow: 0 0 10px 2px #aaa;
     padding: 40px 80px;
 }
+
+/* ---------------smouzakitis added CSS----------------- */
+.accountheader{
+    margin-top:-40px;
+    margin-left:-80px;
+    margin-right:-80px;
+    text-align:center;
+    padding: 20px 0px;
+}
+
+/* -----------------end of smouzakitis CSS---------------*/
