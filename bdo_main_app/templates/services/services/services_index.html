@@ -3,12 +3,157 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
-{#    <link href="{% static 'css/home.css' %}" rel="stylesheet" />#}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet"/>
+    {#    <link href="{% static 'css/home.css' %}" rel="stylesheet" />#}
 
 {% endblock %}
 
 {% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="o-lighter-gray"><i class="fas fa-store"></i><b> SERVICES MARKETPLACE</b></div>
+            <div class="filterservices form-group">
+                <label for="filterservicesSelect" class="o-lighter-gray"><b>Filter Services</b></label>
+                <select class="form-control" width="300" id="filterservicesSelect">
+                    <option>Latest</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <ul class="nav nav-pills nav-pills-icons" role="tablist">
+        <!--
+            color-classes: "nav-pills-primary", "nav-pills-info", "nav-pills-success", "nav-pills-warning","nav-pills-danger"
+        -->
+        <li class="nav-item active">
+            <a class="nav-link" href="#myservices" role="tab" data-toggle="tab">
+                <i class="fas fa-cogs"></i>
+                My Services
+            </a>
+        </li>
+        <li class="nav-item ">
+            <a class="nav-link active" href="#publicservices" role="tab" data-toggle="tab">
+                <i class="fas fa-users-cog"></i>
+                Public Services
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#mydashboards" role="tab" data-toggle="tab">
+                <i class="fas fa-bar-chart"></i>
+                My Dashboards
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#publicdashboards" role="tab" data-toggle="tab">
+                <i class="fas fa-user-friends"></i>
+                Public Dashboards
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content tab-space">
+        <div class="tab-pane active" id="myservices">
+
+            <div class="card-deck">
+            {% for item in my_services %}
+                <div class="card card-default-width card-default-margin-right">
+                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                    <div class="card-body card-padding-20">
+                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/service/{{item.pk}}">{{ item.title }}</a></h5>
+                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
+                    </ul>
+                    <div class="card-body text-center">
+                        <a class="btn btn-primary blue" href="/service/{{item.pk}}" role="button">SHOW SERVICE</a>
+                    </div>
+                </div>
+            {% empty %}
+                <b>No services are created yet. Click <a class="o-blue" href="/service_builder/create/">here</a> to create a new service.</b>
+            {% endfor %}
+            </div>
+
+
+        </div>
+        <div class="tab-pane" id="publicservices">
+
+            <div class="card-deck">
+            {% for item in bdo_services %}
+                <div class="card card-default-width card-default-margin-right">
+                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                    <div class="card-body card-padding-20">
+                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/service/{{item.pk}}">{{ item.title }}</a></h5>
+                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
+                    </ul>
+                    <div class="card-body text-center">
+                        <a class="btn btn-primary blue" href="/service/{{item.pk}}" role="button">SHOW SERVICE</a>
+                    </div>
+                </div>
+            {% empty %}
+                <b>No services are created yet. Click <a class="o-blue" href="/service_builder/create/">here</a> to create a new service.</b>
+            {% endfor %}
+            </div>
+
+
+        </div>
+        <div class="tab-pane" id="mydashboards">
+            <div class="card-deck">
+            {% for item in my_dashboards %}
+                <div class="card card-default-width card-default-margin-right">
+                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                    <div class="card-body card-padding-20">
+                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/service/{{item.pk}}">{{ item.title }}</a></h5>
+                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
+                    </ul>
+                    <div class="card-body text-center">
+                        <a class="btn btn-primary blue" href="/service/{{item.pk}}" role="button">SHOW DASHBOARD</a>
+                    </div>
+                </div>
+            {% empty %}
+                <b>No dashboards are created yet. Click <a class="o-blue" href="/dashboards/create/">here</a> to create a new dashboard.</b>
+            {% endfor %}
+            </div>
+        </div>
+        <div class="tab-pane" id="publicdashboards">
+            <div class="card-deck">
+            {% for item in bdo_dashboards %}
+                <div class="card card-default-width card-default-margin-right">
+                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                    <div class="card-body card-padding-20">
+                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/service/{{item.pk}}">{{ item.title }}</a></h5>
+                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
+                    </ul>
+                    <div class="card-body text-center">
+                        <a class="btn btn-primary blue" href="/service/{{item.pk}}" role="button">SHOW DASHBOARD</a>
+                    </div>
+                </div>
+            {% empty %}
+                <b>No dashboards are created yet. Click <a class="o-blue" href="/dashboards/create/">here</a> to create a new dashboard.</b>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div style="margin-bottom:1400px"></div>
 
     <div class="container container-fluid row col-md-12">
         <h1 class="o-blue" style="font-size: 2.1em;">My Services / Dashboards</h1>
@@ -17,19 +162,20 @@
                 <div class="card" style="background: white;">
                     <div class="card-content">
                         <h4 class="title">
-        {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
+                            {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
                             <a href="/services/service/{{ item.pk }}/" class="text-blue">{{ item.title }}</a>
                         </h4>
-        {#                {% if item.description %}#}
-        {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
-        {#                {% endif %}#}
+                        {#                {% if item.description %}#}
+                        {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
+                        {#                {% endif %}#}
                         <p class="text-blue">{{ item.title }}</p>
                     </div>
                     <div class="card-footer">
-        {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
-                        <a href="/services/service/{{ item.pk }}/" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
+                        {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
+                        <a href="/services/service/{{ item.pk }}/"
+                           class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
                         <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
-                            {{  item.created|date:"jS F Y" }}, by BigDataOcean <br/>
+                            {{ item.created|date:"jS F Y" }}, by BigDataOcean <br/>
                             <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
                         </p>
                     </div>
@@ -42,19 +188,20 @@
                 <div class="card" style="background: white;">
                     <div class="card-content">
                         <h4 class="title">
-        {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
+                            {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
                             <a href="/services/dashboard/{{ item.pk }}/" class="text-blue">{{ item.title }}</a>
                         </h4>
-        {#                {% if item.description %}#}
-        {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
-        {#                {% endif %}#}
+                        {#                {% if item.description %}#}
+                        {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
+                        {#                {% endif %}#}
                         <p class="text-blue">{{ item.title }}</p>
                     </div>
                     <div class="card-footer">
-        {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
-                        <a href="/services/dashboard/{{ item.pk }}/" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
+                        {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
+                        <a href="/services/dashboard/{{ item.pk }}/"
+                           class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
                         <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
-                            {{  item.created|date:"jS F Y" }}, by BigDataOcean <br/>
+                            {{ item.created|date:"jS F Y" }}, by BigDataOcean <br/>
                             <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
                         </p>
                     </div>
@@ -66,28 +213,28 @@
     <div class="container container-fluid row col-md-12" style="margin-top: 40px;">
         <h1 class="o-blue" style="font-size: 2.1em;">BDO Services / Dashboards</h1>
         {% for item in 'xxxxxx' %}
-        <div class="col-md-4 landing-page-tile">
-            <div class="card" style="background: white;">
-                <div class="card-content">
-                    <h4 class="title">
-    {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
-                        <a href="#" class="text-blue">Dashboard 1</a>
-                    </h4>
-    {#                {% if item.description %}#}
-    {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
-    {#                {% endif %}#}
-                    <p class="text-blue">A dummy description for Dashboard 1</p>
-                </div>
-                <div class="card-footer">
-    {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
-                    <a href="" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
-                    <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
-                        {% now "jS F Y" %}, by BigDataOcean <br/>
-                        <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
-                    </p>
+            <div class="col-md-4 landing-page-tile">
+                <div class="card" style="background: white;">
+                    <div class="card-content">
+                        <h4 class="title">
+                            {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
+                            <a href="#" class="text-blue">Dashboard 1</a>
+                        </h4>
+                        {#                {% if item.description %}#}
+                        {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
+                        {#                {% endif %}#}
+                        <p class="text-blue">A dummy description for Dashboard 1</p>
+                    </div>
+                    <div class="card-footer">
+                        {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
+                        <a href="" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
+                        <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
+                            {% now "jS F Y" %}, by BigDataOcean <br/>
+                            <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
         {% endfor %}
     </div>
 

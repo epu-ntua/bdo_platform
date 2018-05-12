@@ -21,7 +21,9 @@ urlpatterns = [
     url('^on-demand/create/$', views.on_demand_create, name='on-demand-create'),
 
     # service and dashboards
-    url('^services/$', views.services, name='services'),
+    url('^services/$', views.services, name='services'), #Service Marketplace
     url('^services/dashboard/(?P<pk>\d+)/$', views.view_dashboard, name='view_dashboard'),
     url('^services/service/(?P<pk>\d+)/$', sb_views.load_service, name='load_service'),
+
+
 ]

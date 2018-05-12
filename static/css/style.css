@@ -457,5 +457,32 @@ label.section-label {
     text-align:center;
     padding: 20px 0px;
 }
+.o-lighter-gray{
+    color: #555 !important;
+}
+.o-lighter-green{
+    color: #47e159 !important;
+}
+.filterservices{
+    margin-top:0px;
+    margin-left:20px;
+}
+
+.card-default-width {
+    width:300px;
+}
+.card-padding-20{
+    padding: 0px 20px;
+}
+.card-default-margin-right{
+    margin-right:20px;
+}
+.card-text-default-height{
+    height:80px;
+    padding-top:5px;
+}
+.card-title-default-height{
+    height:30px;
+}
 
 /* -----------------end of smouzakitis CSS---------------*/
