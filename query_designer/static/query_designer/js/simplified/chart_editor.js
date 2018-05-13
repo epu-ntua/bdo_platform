@@ -58,7 +58,7 @@ function updateVariables(element) {
             success: function(form_fields){
                 $("#conf-container").html(form_fields);
                 $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
-
+                $("#conf-container").append('<button type="button" id="select_conf_cancel" class="btn btn-sm " data-toggle="popover">Cancel</button>');
                 $(component_selector).popover({
                     html: true,
                     title: 'Configure visualisation',
@@ -74,6 +74,9 @@ function updateVariables(element) {
                 $(popver_id+' #select_conf_ok').click(function(e){
                     $(".outputLoadImg").show();
                     submit_conf(component_selector);
+                    $(component_selector).popover("hide");
+                });
+                $(popver_id+' #select_conf_cancel').click(function(e){
                     $(component_selector).popover("hide");
                 });
             }
