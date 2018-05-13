@@ -160,8 +160,8 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
 
     import re
-    print 'Trying to fix round'
-    if str(subquery).find(r'round\d(') > 0:
+    if len(re.findall(r'round\d', subquery)) > 0:
+        print 'Trying to fix round'
         round_num = str(subquery.split('round')[1][0])
         # print
         names = re.findall(r"round"+round_num+"\((.*?)\)", subquery)
