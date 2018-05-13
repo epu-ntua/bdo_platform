@@ -15,7 +15,7 @@
                         <div class="dataset-info">
                             <div class="dataset-name">
                                 <i class="fa fa-database"></i>
-                                {{ dataset.title }}
+                                <span class="dataset-title" title="show/hide variables">{{ dataset.title }}</span>
                                 <i class="fa fa-info-circle dataset-metadata-btn"></i>
                             </div>
                             <div class="dataset-metadata collapse well">
@@ -23,21 +23,23 @@
                                 <div>{{ dataset.description }}</div>
                             </div>
                         </div>
-                        <table class="variable-list">
-                            {% for variable in dataset.variables.all %}
-                                <tr class="variable-section">
-                                    <td class="variable-name hidden">{{ variable.safe_name }}</td>
-                                    <td> <span class="variable-id hidden">{{ variable.id }}</span><span class="variable-title">{{ variable.title }}</span> (<span class="variable-unit">{{ variable.unit }}</span>)</td>
-                                    <td>
-                                    <div class="dimensions">
-                                        {% for dimension in variable.dimensions.all %}
-                                            <span data-type="{{ dimension.pk }}">{{ dimension.name }}, </span>
-                                        {% endfor %}
-                                    </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </table>
+                        <div class="collapse dataset_collapse_div">
+                            <table class="variable-list">
+                                {% for variable in dataset.variables.all %}
+                                    <tr class="variable-section  ">
+                                        <td class="variable-name hidden">{{ variable.id}}_pk_{{variable.safe_name }}</td>
+                                        <td> <span class="variable-id hidden">{{ variable.id }}</span><span class="variable-title">{{ variable.title }}</span> (<span class="variable-unit">{{ variable.unit }}</span>)</td>
+                                        <td>
+                                        <div class="dimensions">
+                                            {% for dimension in variable.dimensions.all %}
+                                                <span data-type="{{ dimension.pk }}">{{ dimension.name }}, </span>
+                                            {% endfor %}
+                                        </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        </div>
                     </div>
                 {% endfor %}
             </div>
@@ -61,8 +63,8 @@
                             </div>
                         </div>
                         <div class="col-xs-4">
-                            <button id="selection-confirm-btn" class="btn btn-primary pull-right">Add</button>
-                            <button id="selection-close-btn" class="btn btn-default pull-right">Close</button>
+                            <button id="selection-confirm-btn" class="btn btn-sm btn-primary pull-right">Add</button>
+                            <button id="selection-close-btn" class="btn btn-sm btn-default pull-right">Close</button>
                         </div>
                     </div>
                 </div>
