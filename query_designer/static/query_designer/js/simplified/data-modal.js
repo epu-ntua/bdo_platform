@@ -95,5 +95,8 @@ $(function() {
     
     $(".dataset-metadata-btn").click(function () {
         $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
-    })
+    });
+     $(".dataset-title").click(function () {
+        $(this).closest(".dataset-section").find('.dataset_collapse_div').collapse("toggle");
+    });
 });
