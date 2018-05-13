@@ -17,8 +17,8 @@ def services(request):
     else:
         user_dashboards = []
         user_services = []
-    bdo_dashboards = Dashboard.objects.filter(user=User.objects.get(username='BigDataOcean'))
-    bdo_services = Service.objects.filter(user=User.objects.get(username='BigDataOcean'), published=True)
+    bdo_dashboards = Dashboard.objects.all()
+    bdo_services = Service.objects.filter(published=True)
 
     return render(request, 'services/services/services_index.html', {
         'my_dashboards': user_dashboards,

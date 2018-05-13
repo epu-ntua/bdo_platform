@@ -22,7 +22,8 @@ class Dashboard(Model):
     viz_components = JSONField(default=dict())
     private = BooleanField(default=True)
 
-
+    description = CharField(blank=True, max_length=512, null=True, default=None)
+    imageurl = URLField(blank=True, null=True, default=None)
 class ExampleModel(Model):
     content = RichTextUploadingField()
 

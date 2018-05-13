@@ -448,3 +448,99 @@ label.section-label {
     box-shadow: 0 0 10px 2px #aaa;
     padding: 40px 80px;
 }
+
+/* ---------------smouzakitis added CSS----------------- */
+.accountheader{
+    margin-top:-40px;
+    margin-left:-80px;
+    margin-right:-80px;
+    text-align:center;
+    padding: 20px 0px;
+}
+.o-lighter-gray{
+    color: #555 !important;
+}
+.o-lighter-green{
+    color: #47e159 !important;
+}
+.filterservices{
+    margin-top:0px;
+    margin-left:0px;
+}
+
+.card-default-width {
+    width:300px;
+}
+.card-padding-20{
+    padding: 0px 20px;
+}
+.card-default-margin-right{
+    margin-right:20px;
+}
+.card-text-default-height{
+    height:80px;
+    padding-top:5px;
+}
+.card-title-default-height{
+    height:30px;
+}
+.makerequestbtn {
+    background-color:#32879c !important;
+}
+
+.mysmallcaps{
+    font-variant: small-caps;
+}
+.subheader-frontpage{
+    font-size:1.6em
+}
+.hr-frontpage{
+    height:1px;
+    border:none;
+    color:#125688;
+    background-color:#125688;
+}
+.frontpage-item-marketplace{
+    margin-right:20px;
+}
+
+.frontpage-item-subtitle{
+text-align:center;
+    color:#56626b;
+    font-size:20px;
+    font-weight:bold;
+    padding: 10px 0px;
+}
+.frontpage-item-subtitle-left{
+text-align:left;
+    color:#56626b;
+    font-size:20px;
+    font-weight:bold;
+    padding: 10px 0px;
+        margin-top:57px;
+}
+.frontpage-item-subtitle-right{
+text-align:right;
+    color:#56626b;
+    font-size:20px;
+    font-weight:bold;
+    padding: 10px 0px;
+    margin-top:57px;
+}
+.front-page-fixed-width{
+    width:800px;
+}
+.frontpage-item{
+    width:300px;
+}
+.frontpage-item-description{
+    text-align:center;
+}
+.animation:hover {
+    -webkit-animation: pulse 0.5s;
+    animation: pulse 1s;
+}
+.explore-middle-img{
+    margin-top:10px;
+}
+/* -----------------end of smouzakitis CSS---------------*/

@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+{#    <link href="{% static 'css/home.css' %}" rel="stylesheet" />#}
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="container container-fluid row col-md-12">
+        <h1 class="o-blue" style="font-size: 2.1em;">My Services / Dashboards</h1>
+        {% for item in my_services %}
+            <div class="col-md-4 landing-page-tile">
+                <div class="card" style="background: white;">
+                    <div class="card-content">
+                        <h4 class="title">
+        {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
+                            <a href="/services/service/{{ item.pk }}/" class="text-blue">{{ item.title }}</a>
+                        </h4>
+        {#                {% if item.description %}#}
+        {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
+        {#                {% endif %}#}
+                        <p class="text-blue">{{ item.title }}</p>
+                    </div>
+                    <div class="card-footer">
+        {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
+                        <a href="/services/service/{{ item.pk }}/" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
+                        <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
+                            {{  item.created|date:"jS F Y" }}, by BigDataOcean <br/>
+                            <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% for item in my_dashboards %}
+            <div class="col-md-4 landing-page-tile">
+                <div class="card" style="background: white;">
+                    <div class="card-content">
+                        <h4 class="title">
+        {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
+                            <a href="/services/dashboard/{{ item.pk }}/" class="text-blue">{{ item.title }}</a>
+                        </h4>
+        {#                {% if item.description %}#}
+        {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
+        {#                {% endif %}#}
+                        <p class="text-blue">{{ item.title }}</p>
+                    </div>
+                    <div class="card-footer">
+        {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
+                        <a href="/services/dashboard/{{ item.pk }}/" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
+                        <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
+                            {{  item.created|date:"jS F Y" }}, by BigDataOcean <br/>
+                            <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="container container-fluid row col-md-12" style="margin-top: 40px;">
+        <h1 class="o-blue" style="font-size: 2.1em;">BDO Services / Dashboards</h1>
+        {% for item in 'xxxxxx' %}
+        <div class="col-md-4 landing-page-tile">
+            <div class="card" style="background: white;">
+                <div class="card-content">
+                    <h4 class="title">
+    {#                    <a href="{{ item.link }}" style="color: white;">{{ item.title }}</a>#}
+                        <a href="#" class="text-blue">Dashboard 1</a>
+                    </h4>
+    {#                {% if item.description %}#}
+    {#                    <p style="color: white;">{{ item.description|safe }}</p>#}
+    {#                {% endif %}#}
+                    <p class="text-blue">A dummy description for Dashboard 1</p>
+                </div>
+                <div class="card-footer">
+    {#                <a href="{{ item.link }}" class="btn btn-sm bg-color--blue pull-right select-link">Read more</a>#}
+                    <a href="" class="btn btn-sm bg-color--blue pull-right select-link ">Explore</a>
+                    <p class="text-blue" style="padding: 0px 0px 0px 0px; margin: 2px 1px 0px 1px;">
+                        {% now "jS F Y" %}, by BigDataOcean <br/>
+                        <i class="fa fa-search margin-right-2 text-blue"> 42 </i>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+{% endblock %}
+
+{% block js %}
+
+{% endblock %}
