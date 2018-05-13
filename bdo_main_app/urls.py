@@ -14,7 +14,7 @@ urlpatterns = [
 
 
     # datasets
-    url('^datasets/(?P<slug>[\w-]+)/$', views.dataset, name='dataset-details'),
+    url('^datasets/(?P<dataset_id>[\w-]+)/$', views.dataset, name='dataset-details'),
 
     # on demand
     url('^on-demand/$', views.on_demand_search, name='on-demand'),

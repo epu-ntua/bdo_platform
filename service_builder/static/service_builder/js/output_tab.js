@@ -182,7 +182,7 @@ function show_hide_results(){
                 var variables = result['variables'];
                 var dimensions = result['dimensions'];
                 $('.variable-select').append($("<option></option>")
-                .attr("", v)
+                .attr("value", '')
                 .text('-- column select --'));
 
                 $.each(variables, function(k, v) {
