@@ -181,6 +181,10 @@ function show_hide_results(){
             success: function(result){
                 var variables = result['variables'];
                 var dimensions = result['dimensions'];
+                $('.variable-select').append($("<option></option>")
+                .attr("", v)
+                .text('-- column select --'));
+
                 $.each(variables, function(k, v) {
                     $('#addVizModal .variable-select').append($("<option></option>")
                         .attr("value", v)

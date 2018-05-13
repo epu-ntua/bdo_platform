@@ -17,6 +17,8 @@ import psycopg2
 from matplotlib import use
 use('Agg')
 from matplotlib.figure import Figure
+from matplotlib.cm import get_cmap
+from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 import pylab as pl
 
@@ -31,7 +33,8 @@ from tests import *
 from folium import CustomIcon
 from folium.plugins import HeatMap, MarkerCluster
 
-
+FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
+                 'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray', 'black']
 
 def map_course_time(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
@@ -138,20 +141,21 @@ def map_course_time(request):
 
 
 def map_course(request):
-    try:
-        marker_limit = int(request.GET.get('m_limit', '200'))
-    except:
-        marker_limit = 200
     query = int(str(request.GET.get('query', '0')))
 
     df = str(request.GET.get('df', ''))
     notebook_id = str(request.GET.get('notebook_id', ''))
 
-    order_var = str(request.GET.get('order_var', 'time'))
+    order_var = str(request.GET.get('order_var', ''))
     variable = str(request.GET.get('col_var', ''))
-    agg_function = str(request.GET.get('agg_func', 'avg'))
+
     lat_col = str(request.GET.get('lat_col', 'latitude'))
     lon_col = str(request.GET.get('lon_col', 'longitude'))
+    color_col = str(request.GET.get('color_col', ''))
+    try:
+        marker_limit = int(request.GET.get('m_limit', '200'))
+    except:
+        marker_limit = 200
 
     if query != 0:
         q = AbstractQuery.objects.get(pk=int(query))
@@ -159,7 +163,11 @@ def map_course(request):
         doc = q.document
 
         var_query_id = variable[:variable.find('_')]
-        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+        if order_var != '':
+            if len(doc['orderings']) == 0:
+                doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+            else:
+                doc['orderings'].append({'name': order_var, 'type': 'ASC'})
         # doc['orderings']=[]
         if marker_limit > 0:
             doc['limit'] = marker_limit
@@ -170,23 +178,26 @@ def map_course(request):
                     # s['aggregate'] = agg_function
                     s['exclude'] = False
                 # elif str(s['name']).find(order_var) >= 0 and str(s['name']).find(var_query_id) >= 0:
-                elif str(s['name']).find(order_var) >= 0:
+                elif str(s['name']) == order_var:
+                    # s['groupBy'] = True
+                    s['exclude'] = False
+                elif str(s['name']) == color_col:
                     # s['groupBy'] = True
                     s['exclude'] = False
                 # elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                elif str(s['name']).find('latitude') >= 0:
+                elif str(s['name']).find(lat_col) >= 0:
                     # s['groupBy'] = True
                     # s['aggregate'] = 'round'
                     s['exclude'] = False
                     # doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
                 # elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                elif str(s['name']).find('longitude') >= 0:
+                elif str(s['name']).find(lon_col) >= 0:
                     # s['groupBy'] = True
                     # s['aggregate'] = 'round'
                     s['exclude'] = False
                     # doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-                else:
-                    s['exclude'] = True
+                # else:
+                #     s['exclude'] = True
 
         q.document = doc
         query_data = q.execute()
@@ -194,21 +205,24 @@ def map_course(request):
         result_headers = query_data[0]['headers']
 
 
-        lat_index = lon_index = -1
-        order_var_index = -1
-        var_index = -1
+        lat_index = lon_index = order_var_index = var_index = color_index = -1
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] == variable:
                 var_index = idx
-            elif str(c['name']).find(order_var) >= 0:
+            elif str(c['name']) == order_var:
                 order_var_index = idx
-            elif str(c['name']).find('latitude') >= 0:
+            elif str(c['name']).find(lat_col) >= 0:
                 lat_index = idx
-            elif str(c['name']).find('longitude') >= 0:
+            elif str(c['name']).find(lon_col) >= 0:
                 lon_index = idx
+            elif str(c['name']) == color_col:
+                color_index = idx
     else:
         print ("json-case")
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        if order_var != "":
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        else:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_var=order_var)
         run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
@@ -219,8 +233,22 @@ def map_course(request):
         lon_index = 1
         order_var_index = 2
         var_index = 3
+        color_index = 4
         for s in json_data:
-            data.append([float(s[lat_col]), float(s[lon_col]), str(s[order_var]), float(s[variable])])
+            row = [float(s[lat_col]), float(s[lon_col])]
+            if order_var != '':
+                row.append(str(s[order_var]))
+            else:
+                row.append('')
+            if variable != '':
+                row.append(str(s[variable]))
+            else:
+                row.append('')
+            if color_col != '':
+                row.append(s[color_col])
+            else:
+                row.append('')
+            data.append(row)
 
         print data[:4]
 
@@ -261,13 +289,26 @@ def map_course(request):
     #     control=True
     # ).add_to(m)
 
+    color_dict = dict()
+    color_cnt = 0
+
     print "Map course top 10 points"
     print data[:10]
     for d in data:
+        if color_col != '':
+            if d[color_index] not in color_dict.keys():
+                if color_cnt < len(FOLIUM_COLORS):
+                    color_dict[d[color_index]] = FOLIUM_COLORS[color_cnt]
+                else:
+                    color_dict[d[color_index]] = FOLIUM_COLORS[len(FOLIUM_COLORS)-1]
+                color_cnt += 1
+            marker_color = color_dict[d[color_index]]
+        else:
+            marker_color = 'blue'
         folium.Marker(
             location=[d[lat_index],d[lon_index]],
-            popup="Value: "+str(d[var_index])+"<br>Time: "+str(d[order_var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
-            icon=folium.Icon(color='green', icon='remove-sign'),
+            popup="Variable: "+str(d[var_index])+"<br>Order col: "+str(d[order_var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
+            icon=folium.Icon(color=marker_color, icon='remove-sign'),
 
         ).add_to(m)
 
@@ -313,6 +354,22 @@ def map_plotline(request):
     print marker_limit
     print marker_limit_list
 
+    order_var = request.GET.get('order_var', '')
+    order_var_list = request.GET.getlist('order_var[]', '')
+    # if order_var is None or str(order_var).strip() == "":
+    #     order_var_list = request.GET.getlist('order_var[]', '')
+    #     if order_var_list is None or len(order_var_list) == 0:
+    #         print 'order_var_list none'
+    #         order_var = ''
+    #         order_var_list = []
+    #     else:
+    #         print 'order_var_list not none'
+    #         order_var_list = [int(m) for m in order_var_list]
+    # else:
+    #     order_var_list = [order_var]
+    print order_var
+    print order_var_list
+
     query = int(str(request.GET.get('query', '0')))
 
     df = request.GET.getlist('df[]', '')
@@ -324,12 +381,7 @@ def map_plotline(request):
     color_list = color
     print color
 
-    order_var = request.GET.get('order_var')
-    if order_var is None:
-        order_var_list = request.GET.getlist('order_var[]', '')
-    else:
-        order_var_list = [order_var]
-    print order_var
+
     ship_id = str(request.GET.get('ship_id', ''))
     lat_col = request.GET.getlist('lat_col[]', '')
     lat_col_list = lat_col
@@ -378,9 +430,14 @@ def map_plotline(request):
         doc = q.document
 
         # var_query_id = variable[:variable.find('_')]
-        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+        # if order_var != '':
+        #     if len(doc['orderings']) == 0:
+        #         doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+        #     else:
+        #         doc['orderings'].append({'name': order_var, 'type': 'ASC'})
 
-        doc['limit'] = marker_limit
+        if doc['limit'] > marker_limit:
+            doc['limit'] > marker_limit
         print(doc)
 
         for f in doc['from']:
@@ -393,8 +450,8 @@ def map_plotline(request):
                 elif str(s['name']).find('longitude') >= 0:
                     s['exclude'] = False
                     # doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-                else:
-                    s['exclude'] = True
+                # else:
+                #     s['exclude'] = True
 
         q.document = doc
 
@@ -416,15 +473,15 @@ def map_plotline(request):
         points = [[float(s[lat_index]), float(s[lon_index])] for s in data]
         print(points[:5])
 
-        pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
-                                                  control=True).add_to(m)
-
-        # print data[:5]
-        folium.PolyLine(points,
-                        color=color,
-                        weight=3,
-                        opacity=0.9,
-                        ).add_to(pol_group_layer)
+        # pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
+        #                                           control=True).add_to(m)
+        #
+        # # print data[:5]
+        # folium.PolyLine(points,
+        #                 color=color,
+        #                 weight=3,
+        #                 opacity=0.9,
+        #                 ).add_to(pol_group_layer)
 
         # Arrows are created
         # for i in range(1, len(points) - 1):
@@ -444,19 +501,19 @@ def map_plotline(request):
             points = [[float(s[lat_col]), float(s[lon_col])] for s in json_data]
             print(points[:5])
 
-            pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
-                                                      control=True).add_to(m)
-            folium.PolyLine(points,
-                            color=color,
-                            weight=3,
-                            opacity=0.9,
-                            ).add_to(pol_group_layer)
+    pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
+                                              control=True).add_to(m)
+    folium.PolyLine(points,
+                    color=color,
+                    weight=2.5,
+                    opacity=0.9,
+                    ).add_to(pol_group_layer)
 
-            # Arrows are created
-            for i in range (1,len(points)-1):
-                arrows = get_arrows(m, 1, locations=[points[i-1],points[i]])
-                for arrow in arrows:
-                    arrow.add_to(pol_group_layer)
+    # Arrows are created
+    for i in range (1,len(points)-1):
+        arrows = get_arrows(m, 1, locations=[points[i-1],points[i]])
+        for arrow in arrows:
+            arrow.add_to(pol_group_layer)
 
 
     folium.LayerControl().add_to(m)

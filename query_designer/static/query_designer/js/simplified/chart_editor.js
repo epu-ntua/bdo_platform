@@ -15,6 +15,9 @@ function updateVariables(element) {
         success: function(result){
             var variables = result['variables'];
             var dimensions = result['dimensions'];
+            $('.variable-select').append($("<option></option>")
+                .attr("value", '')
+                .text('-- column select --'));
             $.each(variables, function(k, v) {
                 $('.variable-select').append($("<option></option>")
                     .attr("value", v)
