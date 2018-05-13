@@ -7,6 +7,14 @@
     word-wrap:break-word;
 }
 
+.dataset-title{
+    cursor: pointer;
+}
+
+.modal-content {
+    max-height: 75vh;
+    overflow: auto;
+}
 
 #data-filter-search {
     width: 100%;
