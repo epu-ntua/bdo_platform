@@ -138,7 +138,10 @@ def map_course_time(request):
 
 
 def map_course(request):
-    marker_limit = int(request.GET.get('m_limit', '100'))
+    try:
+        marker_limit = int(request.GET.get('m_limit', '200'))
+    except:
+        marker_limit = 200
     query = int(str(request.GET.get('query', '0')))
 
     df = str(request.GET.get('df', ''))
@@ -158,22 +161,26 @@ def map_course(request):
         var_query_id = variable[:variable.find('_')]
         doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
         # doc['orderings']=[]
-        doc['limit'] = marker_limit
+        if marker_limit > 0:
+            doc['limit'] = marker_limit
 
         for f in doc['from']:
             for s in f['select']:
                 if s['name'] == variable:
                     # s['aggregate'] = agg_function
                     s['exclude'] = False
-                elif str(s['name']).find(order_var) >= 0 and str(s['name']).find(var_query_id) >= 0:
+                # elif str(s['name']).find(order_var) >= 0 and str(s['name']).find(var_query_id) >= 0:
+                elif str(s['name']).find(order_var) >= 0:
                     # s['groupBy'] = True
                     s['exclude'] = False
-                elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                # elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                elif str(s['name']).find('latitude') >= 0:
                     # s['groupBy'] = True
                     # s['aggregate'] = 'round'
                     s['exclude'] = False
                     # doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                elif str(s['name']).find('lon') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                # elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                elif str(s['name']).find('longitude') >= 0:
                     # s['groupBy'] = True
                     # s['aggregate'] = 'round'
                     s['exclude'] = False
@@ -195,9 +202,9 @@ def map_course(request):
                 var_index = idx
             elif str(c['name']).find(order_var) >= 0:
                 order_var_index = idx
-            elif str(c['name']).find('lat') >= 0:
+            elif str(c['name']).find('latitude') >= 0:
                 lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
+            elif str(c['name']).find('longitude') >= 0:
                 lon_index = idx
     else:
         print ("json-case")
@@ -249,19 +256,20 @@ def map_course(request):
         title_cancel='Exit me',
         force_separate_button=True).add_to(m)
 
-    marker_cluster = MarkerCluster(
-        name="Markers: "+ str(variable),
-        control=True
-    ).add_to(m)
+    # marker_cluster = MarkerCluster(
+    #     name="Markers: "+ str(variable),
+    #     control=True
+    # ).add_to(m)
 
-
+    print "Map course top 10 points"
+    print data[:10]
     for d in data:
         folium.Marker(
             location=[d[lat_index],d[lon_index]],
             popup="Value: "+str(d[var_index])+"<br>Time: "+str(d[order_var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
             icon=folium.Icon(color='green', icon='remove-sign'),
 
-        ).add_to(marker_cluster)
+        ).add_to(m)
 
     # Add layer contorl
     folium.LayerControl().add_to(m)
@@ -287,9 +295,24 @@ def map_course(request):
 
 
 def map_plotline(request):
-    marker_limit = request.GET.getlist('m_limit[]', '')
-    marker_limit_list = marker_limit
+    marker_limit = request.GET.get('m_limit')
+    if marker_limit is None or str(marker_limit).strip() == "":
+        print 'marker limit none'
+        marker_limit_list = request.GET.getlist('m_limit[]')
+        if marker_limit_list is None or len(marker_limit_list) == 0:
+            print 'marker_limit_list none'
+            marker_limit = 200
+            marker_limit_list = [marker_limit]
+        else:
+            print 'marker_limit_list not none'
+            marker_limit_list = [int(m) for m in marker_limit_list]
+    else:
+        print 'marker limit none'
+        marker_limit = int(marker_limit)
+        marker_limit_list = [marker_limit]
     print marker_limit
+    print marker_limit_list
+
     query = int(str(request.GET.get('query', '0')))
 
     df = request.GET.getlist('df[]', '')
@@ -297,11 +320,15 @@ def map_plotline(request):
     print df
     notebook_id = str(request.GET.get('notebook_id', ''))
 
-    color = request.GET.getlist('color[]', 'blue')
+    color = request.GET.getlist('color[]', 'green')
     color_list = color
     print color
-    order_var = request.GET.getlist('order_var[]', '')
-    order_var_list = order_var
+
+    order_var = request.GET.get('order_var')
+    if order_var is None:
+        order_var_list = request.GET.getlist('order_var[]', '')
+    else:
+        order_var_list = [order_var]
     print order_var
     ship_id = str(request.GET.get('ship_id', ''))
     lat_col = request.GET.getlist('lat_col[]', '')
@@ -313,6 +340,36 @@ def map_plotline(request):
     map_id = str(request.GET.get('map_id',''))
     # variable = str(request.GET.get('col_var', ''))
     # agg_function = str(request.GET.get('agg_func', 'avg'))
+
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    # min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
+    # max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
+    # zoom_lat= (min_lat + max_lat)/2
+    # min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
+    # max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
+    # zoom_lon = (min_lon + max_lon) / 2
+    location = [37.929411, 23.649708]
+    zoom_start = 4
+    max_zoom = 30
+    min_zoom = 2,
+
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str + token_str,
+                   attr=attr_str)
+
+    plugins.Fullscreen(
+        position='topright',
+        title='Expand me',
+        title_cancel='Exit me',
+        force_separate_button=True).add_to(m)
 
     if query != 0:
         q = AbstractQuery.objects.get(pk=int(query))
@@ -330,10 +387,10 @@ def map_plotline(request):
             for s in f['select']:
                 if s['name'] == order_var:
                     s['exclude'] = False
-                elif str(s['name']).find('lat') >= 0:
+                elif str(s['name']).find('latitude') >= 0:
                     s['exclude'] = False
                     # doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                elif str(s['name']).find('lon') >= 0:
+                elif str(s['name']).find('longitude') >= 0:
                     s['exclude'] = False
                     # doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
                 else:
@@ -351,67 +408,41 @@ def map_plotline(request):
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] == order_var:
                 order_var_index = idx
-            elif str(c['name']).find('lat') >= 0:
+            elif str(c['name']).find('latitude') >= 0:
                 lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
+            elif str(c['name']).find('longitude') >= 0:
                 lon_index = idx
+
+        points = [[float(s[lat_index]), float(s[lon_index])] for s in data]
+        print(points[:5])
+
+        pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
+                                                  control=True).add_to(m)
+
+        # print data[:5]
+        folium.PolyLine(points,
+                        color=color,
+                        weight=3,
+                        opacity=0.9,
+                        ).add_to(pol_group_layer)
+
+        # Arrows are created
+        # for i in range(1, len(points) - 1):
+        #     arrows = get_arrows(m, 1, locations=[points[i - 1], points[i]])
+        #     for arrow in arrows:
+        #         arrow.add_to(pol_group_layer)
     else:
         print ("json-case")
-
-        tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-        token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-        attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-                   '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-                   'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-        # min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
-        # max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
-        # zoom_lat= (min_lat + max_lat)/2
-        # min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
-        # max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
-        # zoom_lon = (min_lon + max_lon) / 2
-        location = [37.929411, 23.649708]
-        zoom_start = 4
-        max_zoom = 30
-        min_zoom = 2,
-
-        m = folium.Map(location=location,
-                       zoom_start=zoom_start,
-                       max_zoom=max_zoom,
-                       min_zoom=min_zoom,
-                       max_bounds=True,
-                       tiles=tiles_str + token_str,
-                       attr=attr_str)
-
-        plugins.Fullscreen(
-            position='topright',
-            title='Expand me',
-            title_cancel='Exit me',
-            force_separate_button=True).add_to(m)
 
         for df, color, lat_col, lon_col, order_var, marker_limit in zip(df_list, color_list, lat_col_list, lon_col_list, order_var_list, marker_limit_list):
             toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
             run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
             json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
             delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        # print json_data
+            # print json_data
 
-            data = []
-            lat_index = 0
-            lon_index = 1
-
-            for s in json_data:
-                data.append([float(s[lat_col]), float(s[lon_col])])
-
-            print data[:3]
-
-
-
-
-            points = []
-            for d in data:
-                points.append([float(d[lat_index]), float(d[lon_index])])
-
-            print(points)
+            points = [[float(s[lat_col]), float(s[lon_col])] for s in json_data]
+            print(points[:5])
 
             pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
                                                       control=True).add_to(m)
@@ -500,9 +531,9 @@ def map_markers_in_time(request):
             for s in f['select']:
                 if s['name'] == order_var:
                     s['exclude'] = False
-                elif str(s['name']).find('lat') >= 0:
+                elif str(s['name']).find('latitude') >= 0:
                     s['exclude'] = False
-                elif str(s['name']).find('lon') >= 0:
+                elif str(s['name']).find('longitude') >= 0:
                     s['exclude'] = False
                 # elif s['name'] == var:
                 #     s['exclude'] = False
@@ -523,9 +554,9 @@ def map_markers_in_time(request):
         for idx, c in enumerate(result_headers['columns']):
             # if c['name'] == var:
             #     var_index = idx
-            if str(c['name']).find('lat') >= 0:
+            if str(c['name']).find('latitude') >= 0:
                 lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
+            elif str(c['name']).find('longitude') >= 0:
                 lon_index = idx
             elif c['name'] == order_var:
                 order_index = idx
@@ -685,6 +716,16 @@ def map_viz_folium_contour(request):
         # Gather the arguments
         n_contours = int(request.GET.get('n_contours', 20))
         step = float(request.GET.get('step', 0.1))
+        round_num = 0
+        if step == 1:
+            round_num = 0
+        elif step == 0.1:
+            round_num = 1
+        elif step == 0.01:
+            round_num = 2
+        elif step == 0.001:
+            round_num = 3
+
         variable = str(request.GET.get('feat_1', ''))
         query = str(request.GET.get('query', ''))
         agg_function = str(request.GET.get('agg_func', 'avg'))
@@ -704,42 +745,53 @@ def map_viz_folium_contour(request):
                 if s['name'] == variable:
                     s['aggregate'] = agg_function
                     s['exclude'] = False
-                elif str(s['name']).find('lat') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
                     s['groupBy'] = True
-                    s['aggregate'] = 'round'
+                    s['aggregate'] = 'round' + str(round_num)
                     s['exclude'] = False
                     doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                elif str(s['name']).find('lon') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
                     s['groupBy'] = True
-                    s['aggregate'] = 'round'
+                    s['aggregate'] = 'round' + str(round_num)
                     s['exclude'] = False
                     doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
                 else:
                     s['exclude'] = True
                     s['groupBy'] = False
 
+        # import pdb
+        # pdb.set_trace()
         # print doc
         q.document = doc
         raw_query = q.raw_query
+        # print 'q ray query'
+        # print raw_query
         # select_clause = re.findall(r"SELECT.*?\nFROM", raw_query)[0]
         # names = re.findall(r"round\((.*?)\)", select_clause)
-        names = re.findall(r"round\((.*?)\)", raw_query)
-        for name in names:
-            raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
-        print raw_query
+
+        # THIS IS ADDED TO QUERY MODEL PROCESSOR
+        # names = re.findall(r"round\((.*?)\)", raw_query)
+        # for name in names:
+        #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
+        # print raw_query
+
         # Create a leaflet map using folium
         m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
 
-        cursor = connection.cursor()
-        print 'Countour Query: ' + str(raw_query)
-        cursor.execute(raw_query)
-        data = cursor.fetchall()
+        cursor = connections["UBITECH_POSTGRES"].cursor()
+        # print 'Countour Query: '
+        # print str(raw_query)
+        # cursor.execute(raw_query)
+        # data = cursor.fetchall()
         # print ("Data:")
         # print data[:3]
 
         var_index = lat_index = lon_index = 0
-        result_headers = q.execute(only_headers=True)[0]['headers']
-        # print result_headers
+        result = q.execute()[0]
+        result_data = result['results']
+        result_headers = result['headers']
+
+        print result_headers
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] == variable:
                 var_index = idx
@@ -747,23 +799,54 @@ def map_viz_folium_contour(request):
                 lat_index = idx
             elif str(c['name']).find('lon') >= 0:
                 lon_index = idx
+        # lat_index = 1
+        # lon_index = 2
+        data = result_data
 
-        min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
-        max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
-        min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
-        max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
-        min_val = float(min(data, key=lambda x: x[var_index])[var_index])
-        max_val = float(max(data, key=lambda x: x[var_index])[var_index])
-        # print min_lat, max_lat, min_lon, max_lon, min_val, max_val
+        # data = []
+        # for d in result_data:
+        #     data.append([d[var_index], d[lon_index], d[lat_index]])
+        #     # data = result_data
+        # lat_index = 2
+        # lon_index = 1
 
-        lats_bins = np.arange(min_lat, max_lat + 0.00001, 0.1)
-        # print lats_bins
-        lons_bins = np.arange(min_lon, max_lon + 0.00001, 0.1)
-        # print lons_bins
+        min_lat = 90
+        max_lat = -90
+        min_lon = 180
+        max_lon = -180
+        min_val = 9999999999
+        max_val = -9999999999
+        print data[:3]
+        for row in data:
+            if row[lat_index] > max_lat:
+                max_lat = row[lat_index]
+            if row[lat_index] < min_lat:
+                min_lat = row[lat_index]
+            if row[lon_index] > max_lon:
+                max_lon = row[lon_index]
+            if row[lon_index] < min_lon:
+                min_lon = row[lon_index]
+            if row[var_index] > max_val:
+                max_val = row[var_index]
+            if row[var_index] < min_val:
+                min_val = row[var_index]
+
+        # min_lat = min(data, key=lambda x: x[lat_index])
+        # max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
+        # min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
+        # max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
+        # min_val = float(min(data, key=lambda x: x[var_index])[var_index])
+        # max_val = float(max(data, key=lambda x: x[var_index])[var_index])
+        print min_lat, max_lat, min_lon, max_lon, min_val, max_val
+
+        lats_bins = np.arange(min_lat, max_lat + 0.00001, step)
+        print lats_bins[:3]
+        lons_bins = np.arange(min_lon, max_lon + 0.00001, step)
+        print lons_bins[:3]
         Lats, Lons = np.meshgrid(lats_bins, lons_bins)
 
-        print Lats
-        print Lons
+        print Lats[:3]
+        print Lons[:3]
 
         # Create grid data needed for the contour plot
         # final_data = create_grid_data(lats_bins, lons_bins, data)
@@ -774,19 +857,44 @@ def map_viz_folium_contour(request):
             val = map(float, next(it))
         except:
             val = [-300, -300, -300]
+        # import pdb
+        # pdb.set_trace()
+        # if lat_index > lon_index:
         for lon in lons_bins:
             row = list()
             for lat in lats_bins:
-                if abs(lon - val[lon_index]) < 0.1 and abs(lat - val[lat_index]) < 0.1:
-                    row.append(val[var_index])
-                    try:
-                        val = map(float, next(it))
-                    except:
-                        val = [-300, -300, -300]
-                else:
+                # if abs(lon - val[lon_index]) < 0.1 and abs(lat - val[lat_index]) < 0.1:
+                #     row.append(val[var_index])
+                #     try:
+                #         val = map(float, next(it))
+                #     except:
+                #         val = [-300, -300, -300]
+                # else:
                     row.append(None)
             final_data.append(row)
+        for d in data:
+            lon_pos = int((d[lon_index] - min_lon)/step)
+            lat_pos = int((d[lat_index] - min_lat) / step)
+            final_data[lon_pos][lat_pos] = d[var_index]
+        # else:
+        #     for lat in lats_bins:
+        #         row = list()
+        #         for lon in lons_bins:
+        #             # import pdb
+        #             # pdb.set_trace()
+        #             if abs(lon - val[lon_index]) < 0.1 and abs(lat - val[lat_index]) < 0.1:
+        #                 row.append(val[var_index])
+        #                 try:
+        #                     val = map(float, next(it))
+        #                 except:
+        #                     val = [-300, -300, -300]
+        #             else:
+        #                 row.append(None)
+        #         final_data.append(row)
 
+        # final_data = data
+        # for row in final_data:
+        #     print final_data
         # print final_data[:3]
 
 
@@ -797,12 +905,17 @@ def map_viz_folium_contour(request):
         fig = Figure()
         ax = fig.add_subplot(111)
         plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
+        print 'contour made'
         # plt.axis('off')
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         plt.draw()
+        print 'contour draw'
+        # plt.show()
         ts = str(time.time()).replace(".", "")
         mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
+        print 'mappath'
         plt.savefig(mappath, bbox_inches=extent, transparent=True, pad_inches=0)
+        print 'saved'
         plt.clf()
         plt.close()
         fig = None
@@ -871,6 +984,7 @@ def map_viz_folium_contour(request):
     except HttpResponseNotFound:
         return HttpResponseNotFound
     except Exception:
+        print Exception.message.capitalize()
         return HttpResponseNotFound
 
 
@@ -1009,7 +1123,9 @@ def get_histogram_chart_am(request):
             json_data.append({"startValues": '['+str(float(d[0].lower)) + ',' + str(float(d[0].upper)) + ']', "counts": str(d[1])})
         y_var = 'counts'
         x_var = 'startValues'
+        # print data
         json_data = convert_unicode_json(json_data)
+        # print json_data
     else:
         bins += 1
         tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)

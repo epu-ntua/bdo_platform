@@ -282,8 +282,16 @@
             $('.form-group input').each(function(){ if($(this).val() != ''){ $(this).closest('.form-group').removeClass('is-empty'); }  });
             $('.form-group select').each(function(){ if($(this).val() != ''){ $(this).closest('.form-group').removeClass('is-empty'); }  });
             $('.form-group .select2-selection--multiple').closest('.form-group').removeClass('is-empty');
+
+
         }, 1000);
+
+        $( "body" ).on('shown.bs.popover', function (e) {
+            $('.popover-content select').select2();
+        });
     </script>
+
+
 
 	{% block js %}
     {% endblock %}
