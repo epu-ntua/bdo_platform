@@ -137,7 +137,7 @@
         .iframeHeader{
             height: 37px;
             width: 100%;
-            background-color: #2172ac;
+            background-color: #30526a;
             text-align: center;
         }
 
@@ -576,7 +576,7 @@
                         var tempHeader = newWidget.childNodes[i];
                         tempHeader.style.backgroundColor = "white";
                         $(tempHeader).mouseenter(function(){
-                            this.style.backgroundColor="lightgrey "
+{#                            this.style.backgroundColor="lightgrey "#}
                         });
                         $(tempHeader).mouseleave(function(){
                             this.style.backgroundColor="white "
@@ -726,7 +726,7 @@
                     var variables = result['variables'];
                     var dimensions = result['dimensions'];
                     $('.variable-select').append($("<option></option>")
-                    .attr("", v)
+                    .attr("value", '')
                     .text('-- column select --'));
                     $.each(variables, function (k, v) {
                         $('#myModal .variable-select').append($("<option></option>")
