@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <style>
+        .landing-page-tile > .card{
+            background-size: cover;
+        }
+
+        .landing-page-tile .card-content {
+            min-height: 180px;
+        }
+
+        .landing-page-tile h4 {
+            margin-bottom: 20px;
+        }
+
+        .landing-page-tile h4 > a {
+            font-size: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue">BIG DATA OCEAN</h1>
+            <h5>Welcome to the greatest marketplace for maritime data and insights</h5>
+            <form class="home-search-form" method="GET" action="{% url 'search' %}">
+                <div class="form-group  is-empty">
+                    <input type="text" class="form-control" placeholder="Search datasets, analytics, reports..." name="q" autocomplete="off">
+                    <span class="material-input"></span>
+                    <button type="submit" class="btn btn-white btn-round btn-just-icon">
+                        <i class="material-icons">search</i><div class="ripple-container"></div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <h4 class="text-center o-blue" style="margin: 5px 0 20px 0; font-size: 1.65em;">Find out how we can help stakeholders in the maritime domain</h4>
+        {% for item in items %}
+            {% include 'landing_page_items/tile.html' %}
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <!-- Material Dashboard DEMO methods, don't include it in your project! -->
+	<script src="{% static 'js/demo.js' %}"></script>
+
+    <script type="text/javascript">
+    	$(document).ready(function(){
+
+			// Javascript method's body can be found in js/demos.js
+        	demo.initDashboardPageCharts();
+
+    	});
+	</script>
+{% endblock %}

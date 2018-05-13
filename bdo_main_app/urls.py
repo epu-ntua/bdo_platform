@@ -8,7 +8,7 @@ urlpatterns = [
     url('^$', views.home, name='home'),
     url('^bdo/$', views.bdohome, name='bdo'),
     url('^search/$', views.search, name='search'),
-
+    url('^exploretools/$', views.exploretools, name='exploretools'),
 
     url('^analytics-environment/$', views.search, name='search'),
 
