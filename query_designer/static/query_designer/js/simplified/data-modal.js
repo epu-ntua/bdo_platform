@@ -42,8 +42,8 @@ $(function() {
 
         var $selectionCol = $modal.find('.selection-confirm > div');
         $selectionCol.removeClass('hidden');
-        // $selectionCol.find('#selection-aggregate').val('AVG');
-        $selectionCol.find('#selection-aggregate').val(null).trigger('change');
+        $selectionCol.find('#selection-aggregate').val('AVG').trigger('change');
+        // $selectionCol.find('#selection-aggregate').val(null).trigger('change');
 
 
         // remove old group by

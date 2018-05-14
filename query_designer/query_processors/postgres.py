@@ -179,6 +179,28 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             q = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", q)
         # print q
 
+
+    if len(re.findall(r'date_trunc_(.*?)', subquery)) > 0:
+        print 'Trying to fix date_trunc'
+        time_trunc = str(subquery.split('date_trunc_')[1].split('(')[0])
+        # print
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", subquery)
+        for name in names:
+            subquery = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", subquery)
+        # print subquery
+
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", subquery_cnt)
+        for name in names:
+            subquery_cnt = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", subquery_cnt)
+        # print subquery_cnt
+
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", q)
+        for name in names:
+            q = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", q)
+        # print q
+
+
+
     # cursor = connection.cursor()
     if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
         cursor = connections['UBITECH_POSTGRES'].cursor()

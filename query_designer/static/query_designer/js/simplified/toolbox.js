@@ -824,11 +824,48 @@ $(function () {
                    groupBy: false,
                    exclude: false
                 });
-
+                // alert(value.name);
                 // push dimensions
                 $.each($('#selected_dimensions > option[data-forvariable="' + value.name + '"]'), function(jdx, opt) {
+                    // alert("Dimension" + $(opt).data('type'));
                     var name = $(opt).data('type');
                     var groupBy = $('select[name="category"]').val().indexOf(String($(opt).attr('value'))) >= 0;
+                    var dimAggregate = '';
+                    // var dimName = String($(opt).attr('value'));
+                    if ((name.indexOf('latitude') >= 0) || (name.indexOf('longitude') >= 0)) {
+                        // alert("Lat on Lon");
+                        if ($("#spatial_resolution").val() !== "none"){
+                            // alert("spatial_resolution is not None");
+                            groupBy = true;
+                            if ($("#spatial_resolution").val() === "1")
+                                dimAggregate = 'round0';
+                            else if($("#spatial_resolution").val() === "0.1")
+                                dimAggregate = 'round1';
+                            else if($("#spatial_resolution").val() === "0.01")
+                                dimAggregate = 'round2';
+                        }
+                    }
+                    if (name.indexOf('time') >= 0) {
+                        // alert("Lat on Lon");
+                        if ($("#temporal_resolution").val() !== "none"){
+                            // alert("temporal_resolution is not None");
+                            groupBy = true;
+                            if ($("#temporal_resolution").val() === "minute")
+                                dimAggregate = 'date_trunc_minute';
+                            else if($("#temporal_resolution").val() === "hour")
+                                dimAggregate = 'date_trunc_hour';
+                            else if($("#temporal_resolution").val() === "day")
+                                dimAggregate = 'date_trunc_day';
+                            else if($("#temporal_resolution").val() === "month")
+                                dimAggregate = 'date_trunc_month';
+                            else if($("#temporal_resolution").val() === "year")
+                                dimAggregate = 'date_trunc_year';
+
+                            // alert(dimAggregate);
+
+                        }
+                    }
+
                     var orderBy = $('select[name="orderby"]').val().indexOf(String($(opt).attr('value'))) >= 0;
 
                     var dimension = {
@@ -836,6 +873,7 @@ $(function () {
                         name: 'i' + String(idx) + '_' + name,
                         title: $(opt).text(),
                         groupBy: groupBy,
+                        aggregate: dimAggregate,
                         exclude: !groupBy && value.aggregate
                     };
 
@@ -1710,6 +1748,42 @@ $(function () {
         QueryToolbox.fetchChartData();
     });
 
+    /* On spatial resolution field change */
+    $('body').on('change', '#spatial_resolution', function (e) {
+
+        if($("#spatial_resolution").val() != "none"){
+            $("select[name='field_aggregate']").each(function () {
+                $(this).val("AVG");
+                $(this).trigger("change");
+            });
+
+        }
+
+        // mark as unsaved
+        QueryToolbox.tabMarker.currentUnsaved();
+
+        // redraw
+        QueryToolbox.fetchChartData();
+    });
+
+    /* On temporal resolution field change */
+    $('body').on('change', '#temporal_resolution', function (e) {
+
+        if($("#temporal_resolution").val() != "none"){
+            $("select[name='field_aggregate']").each(function () {
+                $(this).val("AVG");
+                $(this).trigger("change");
+            });
+
+        }
+
+        // mark as unsaved
+        QueryToolbox.tabMarker.currentUnsaved();
+
+        // redraw
+        QueryToolbox.fetchChartData();
+    });
+
     /* On category field change */
     $('body').on('change', 'select[name="category"]', function (e) {
 
@@ -1720,12 +1794,12 @@ $(function () {
             });
 
         }
-        else{
-            $("select[name='field_aggregate']").each(function () {
-                $(this).val("");
-                $(this).trigger("change");
-            });
-        }
+        // else{
+        //     $("select[name='field_aggregate']").each(function () {
+        //         $(this).val("");
+        //         $(this).trigger("change");
+        //     });
+        // }
 
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
