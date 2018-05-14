@@ -1,4 +1,19 @@
 $(document).ready(function(){
+     $.ajax({
+            "type": "POST",
+            "url": "/service_builder/run_initial_zep_paragraph/",
+            "data": {
+                service_id: get_service_id()
+            },
+            "success": function(result) {
+                console.log(result);
+            },
+            error: function (jqXHR) {
+                alert('error');
+            }
+        });
+
+
     $("#query-select-container").hide();
     // How many queries are used from the service
     var number_of_queries = 0;

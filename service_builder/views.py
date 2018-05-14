@@ -29,7 +29,9 @@ def create_new_service(request):
     if settings.TEST_SERVICES:
         service = Service.objects.get(pk=89)
     else:
-        service = Service(user=user, private=False, notebook_id='2D9E8JBBX', published=False)
+        new_notebook_id = clone_zep_note("2DD9PT2CD", "BigDataOceanService")
+        # run_zep_paragraph(new_notebook_id, paragraph_id='20180514-011802_1275384604')
+        service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id='20180514-011802_1275384604')
         service.save()
 
     # service = Service.objects.get(pk=3)
@@ -39,6 +41,13 @@ def create_new_service(request):
         'available_templates': available_templates,
         'notebook_id': service.notebook_id,
         'service_id': service.id,})
+
+
+def run_initial_zep_paragraph(request):
+    service_id = request.POST.get('service_id')
+    service = Service.objects.get(pk=service_id)
+    run_zep_paragraph(service.notebook_id, paragraph_id='20180514-011802_1275384604')
+    return HttpResponse("OK")
 
 
 def convert_unicode_json(data):
@@ -137,7 +146,6 @@ def publish_new_service(request):
         service.output_js = output_js
 
         service.save()
-
 
     result = {}
     return HttpResponse(json.dumps(result), content_type="application/json")
@@ -290,6 +298,7 @@ def submit_service_args(request, service_id):
         excluded_paragraphs = []
         new_created_paragraphs = []
     else:
+        excluded_paragraphs = []
         new_notebook_id = clone_zep_note(original_notebook_id, "")
 
     # customise the respective queries in the code
