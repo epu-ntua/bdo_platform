@@ -160,6 +160,8 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
 
     import re
+    print 'Initial Query:'
+    print subquery
     if len(re.findall(r'round\d', subquery)) > 0:
         print 'Trying to fix round'
         round_num = str(subquery.split('round')[1][0])
@@ -169,12 +171,12 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             subquery = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", subquery)
         # print subquery
 
-        names = re.findall(r"round" + round_num + "\((.*?)\)", subquery_cnt)
+        names = re.findall(r"round" + round_num +"\((.*?)\)", subquery_cnt)
         for name in names:
             subquery_cnt = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", subquery_cnt)
         # print subquery_cnt
 
-        names = re.findall(r"round" + round_num + "\((.*?)\)", q)
+        names = re.findall(r"round" + round_num +"\((.*?)\)", q)
         for name in names:
             q = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", q)
         # print q
