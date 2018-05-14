@@ -693,7 +693,145 @@ def map_markers_in_time(request):
                       {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType})
 
 
+# def map_heatmap(request):
+#     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+#     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+#     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+#                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+#                'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+#     location = [0, 0]
+#     zoom_start = 2
+#     max_zoom = 15
+#     min_zoom = 2
+#
+#     m = folium.Map(location=location,
+#                    zoom_start=zoom_start,
+#                    max_zoom=max_zoom,
+#                    min_zoom=min_zoom,
+#                    max_bounds=True,
+#                    tiles=tiles_str + token_str,
+#                    attr=attr_str)
+#
+#     if request.method == "POST":
+#
+#         form = MapForm(request.POST)
+#         if form.is_valid():
+#             data = request.data
+#             markersum = data["markers"]
+#             ship = data["ship"]
+#             mindate = request.POST.get("min_date", 2000)
+#             maxdate = request.POST.get("max_date", 2017)
+#         else:
+#             markersum = 50
+#             ship = "all"
+#             mindate = 2000
+#             maxdate = 2017
+#
+#     else:
+#         markersum = int(request.GET.get("markers", 5000))
+#         ship = request.GET.get("ship", "all")
+#         mindate = int(request.POST.get("min_date", 2000))
+#         maxdate = int(request.POST.get("max_date", 2017))
+#
+#     query_pk = int(str(request.GET.get('query', '')))
+#     data = get_data(query_pk, markersum, ship, mindate, maxdate)
+#     heat = []
+#
+#     lat_index = data['lat']
+#     lon_index = data['lon']
+#     data = data['data']
+#
+#     for d in data:
+#         heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
+#
+#     HeatMap(heat, name="Heat Map").add_to(m)
+#
+#
+#     folium.LayerControl().add_to(m)
+#
+#
+#     m.save('templates/map.html')
+#     map_html = open('templates/map.html', 'r').read()
+#     soup = BeautifulSoup(map_html, 'html.parser')
+#     map_id = soup.find("div", {"class": "folium-map"}).get('id')
+#     # print map_id
+#     js_all = soup.findAll('script')
+#     # print(js_all)
+#     if len(js_all) > 5:
+#         js_all = [js.prettify() for js in js_all[5:]]
+#     # print(js_all)
+#     css_all = soup.findAll('link')
+#     if len(css_all) > 3:
+#         css_all = [css.prettify() for css in css_all[3:]]
+#     # print js
+#     # os.remove('templates/map.html')
+#     return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
+
+
 def map_heatmap(request):
+    # Gather the arguments
+
+    # variable = str(request.GET.get('feat_1', ''))
+    query = int(str(request.GET.get('query', '0')))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+    lat_col = str(request.GET.get('lat_col', 'latitude'))
+    lon_col = str(request.GET.get('lon_col', 'longitude'))
+
+    if query != 0:
+        q = AbstractQuery.objects.get(pk=int(query))
+        q = TempQuery(document=q.document)
+        doc = q.document
+
+        doc['orderings'] = []
+        doc['limit'] = []
+
+        for f in doc['from']:
+            for s in f['select']:
+                if str(s['name']).find('latitude') >= 0:
+                    s['exclude'] = False
+                elif str(s['name']).find('longitude') >= 0:
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+
+        q.document = doc
+
+        lat_index = lon_index = 0
+        result = q.execute()[0]
+        result_data = result['results']
+        result_headers = result['headers']
+
+        print result_headers
+        for idx, c in enumerate(result_headers['columns']):
+            if str(c['name']).find('lat') >= 0:
+                lat_index = idx
+            elif str(c['name']).find('lon') >= 0:
+                lon_index = idx
+
+        data = result_data
+    else:
+        print ("json-case")
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # print json_data
+
+        data = []
+        lat_index = 0
+        lon_index = 1
+        order_var_index = 2
+        var_index = 3
+        color_index = 4
+        for s in json_data:
+            row = [float(s[lat_col]), float(s[lon_col])]
+            data.append(row)
+
+
+
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
@@ -712,34 +850,9 @@ def map_heatmap(request):
                    tiles=tiles_str + token_str,
                    attr=attr_str)
 
-    if request.method == "POST":
 
-        form = MapForm(request.POST)
-        if form.is_valid():
-            data = request.data
-            markersum = data["markers"]
-            ship = data["ship"]
-            mindate = request.POST.get("min_date", 2000)
-            maxdate = request.POST.get("max_date", 2017)
-        else:
-            markersum = 50
-            ship = "all"
-            mindate = 2000
-            maxdate = 2017
-
-    else:
-        markersum = int(request.GET.get("markers", 5000))
-        ship = request.GET.get("ship", "all")
-        mindate = int(request.POST.get("min_date", 2000))
-        maxdate = int(request.POST.get("max_date", 2017))
-
-    query_pk = int(str(request.GET.get('query', '')))
-    data = get_data(query_pk, markersum, ship, mindate, maxdate)
     heat = []
 
-    lat_index = data['lat']
-    lon_index = data['lon']
-    data = data['data']
 
     for d in data:
         heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
@@ -766,6 +879,8 @@ def map_heatmap(request):
     # print js
     # os.remove('templates/map.html')
     return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
+
 
 
 def map_viz_folium_contour(request):
