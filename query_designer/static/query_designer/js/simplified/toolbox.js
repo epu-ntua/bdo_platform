@@ -1936,7 +1936,8 @@ $(function () {
 
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
-        $(".outputLoadImg").show();
+        $(".outputLoadImg").hide();
+        $(".outputLoadImg").delay(100).show();
     // $("#run-query-btn").click(function () {
         $('#offset_input').val(0);
         QueryToolbox.fetchQueryData();

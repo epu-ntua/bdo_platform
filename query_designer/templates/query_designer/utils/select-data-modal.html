@@ -52,7 +52,7 @@
                             <select id="selection-aggregate">
                                 {% for aggregate in AGGREGATES %}
                                     <option value="{{ aggregate.0 }}"
-                                            {% if aggregate.0 == 'AVG' %} selected="selected"{% endif %}>
+                                            {% if aggregate.0 == 'AVG' %} {# selected="selected" #}{% endif %}>
                                         {{ aggregate.1 }}
                                     </option>
                                 {% endfor %}
