@@ -110,14 +110,14 @@
                             </ul>
                         </div>
                         <div id="chart-tab-content" class="tab-content">
-                            <div class="tab-pane active toggle-chart" id="chart">
+                            <div class="tab-pane toggle-chart" id="chart">
                                 <div class="no-data-message">{% trans 'No data available' %}</div>
 
                                 <div id="chartdiv" class="chartdiv" style="display: none;">
                                     {% include "query_designer/utils/chart_editor.html" %}
                                 </div>
                             </div>
-                            <div class="tab-pane" id="dataDiv">
+                            <div class="tab-pane active" id="dataDiv">
                                 <div id="datatable" style="position: relative;">
                                     <div class="no-data-message">{% trans 'No data available' %}</div>
                                     <div class="outputLoadImg" style="display: none"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div>
