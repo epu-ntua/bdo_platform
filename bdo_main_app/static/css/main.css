@@ -4,6 +4,10 @@
     overflow: hidden;
 }
 
+.card-deck{
+    text-align: center;
+}
+
 .service-tile label {
     min-width: 80px;
 }
