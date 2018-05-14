@@ -19,6 +19,7 @@ def build_dynamic_dashboard(request):
         else:
             saved_queries = []
         num_of_dashboards = Dashboard.objects.count()
+        toCreate = request.GET.get('toCreate')
         form_class = forms.CkEditorForm
         return render(request, 'dashboard_builder/dashboard_builder2.html', {
             'dashboard_title': num_of_dashboards+1,
@@ -28,6 +29,7 @@ def build_dynamic_dashboard(request):
             'form_class': form_class,
             'components': Visualization.objects.all().order_by('id'),
             'form': form_class,
+            'toCreate': toCreate,
         })
     return None
 

@@ -24,6 +24,23 @@
 
 
     <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+
+
+    <style>
+        #createPreBuildLink{
+            float: right;
+            margin-top: 10px;
+            padding: 6px 12px 6px;
+            border-radius: 3px;
+            color: white;
+            background-color: #2172ac;
+        }
+
+        #createPreBuildLink:hover{
+            cursor: pointer;
+            box-shadow: 1px 1px 10px grey;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -107,7 +124,12 @@
                             <ul id="chart-content-tabs" class="nav nav-pills" data-tabs="tabs">
                                 <li class="active"><a href="#dataDiv" data-toggle="tab">{% trans 'Data' %}</a></li>
                                 <li><a href="#chart" data-toggle="tab">{% trans 'Chart' %}</a></li>
+                                <div id="createPreBuildLink"  style="font-size: 0.7em;">
+                                    <i class="fa fa-plus-circle o-white"></i>
+                                    <span>Add this chart to a new Dashboard </span>
+                                </div>
                             </ul>
+
                         </div>
                         <div id="chart-tab-content" class="tab-content">
                             <div class="tab-pane toggle-chart" id="chart">
@@ -192,4 +214,19 @@
             });
         </script>
     {% endif %}
+
+
+    <script type="text/javascript">
+        $('#createPreBuildLink').click(function (e) {
+                if($('#viz_container > iframe').length) {
+                    var tempLink = $('#viz_container > iframe');
+                    var helperVar = (tempLink[0].contentDocument || tempLink[0].contentWindow);
+                    tempLink = helperVar.URL;
+                    var encodedUrl = encodeURIComponent(tempLink);
+                    window.location = "/dashboards/create?toCreate=" + encodedUrl;
+                }
+            }
+
+        )
+    </script>
 {% endblock %}
