@@ -23,3 +23,8 @@ UPLOAD_URL = PARSER_URL + '/file/upload'
 DOWNLOAD_URL = PARSER_URL + '/file/download'
 PARSE_URL = PARSER_URL + '/parse'
 PARSABLE_FILES_URL = PARSER_URL + "/parsable"
+
+
+
+ZEPPELIN_URL = 'http://localhost:8080'
+ZEPPELIN_DB = 'default'

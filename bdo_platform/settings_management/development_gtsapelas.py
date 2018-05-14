@@ -2,7 +2,10 @@ from bdo_platform.settings_management.development import *
 
 SPARK_SUBMIT_PATH = 'C:\\spark\\bin\\spark-submit'
 
-TEST_SERVICES = True
+TEST_SERVICES = False
+
+ZEPPELIN_URL = 'http://localhost:8080'
+ZEPPELIN_DB = 'UBITECH_POSTGRES'
 
 
 DATABASES = {
