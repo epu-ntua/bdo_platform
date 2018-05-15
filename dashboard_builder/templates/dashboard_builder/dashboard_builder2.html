@@ -251,7 +251,7 @@
                         <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
                         {% load  static %}
                         <input type='button' value='X' class='deletebtn'
-                               style="background-image: url({% static "images/exitBtn.png" %})"
+{#                               style="background-image: url({% static "images/exitBtn.png" %})"#}
                                ng-click="removeWidget(item);">
                     </header>
                     <input type="text" integer ng-model="item.row" size="1" class="widget-x-loc" hidden/>
