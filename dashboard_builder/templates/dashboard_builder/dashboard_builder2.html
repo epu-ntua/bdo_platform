@@ -579,7 +579,7 @@
 
             angular.element(document).ready(function (e) {
                 var prebuiltViz = "{{ toCreate }}";
-                if (prebuiltViz != 'empty') {
+                if (prebuiltViz != 'None') {
                     makeWidget();
                     var tempid = "#widget" + $scope.counter;
                     var decodedViz = decodeURIComponent(prebuiltViz);
