@@ -227,6 +227,7 @@ def create_zep_arguments_paragraph(notebook_id, title, args_json_string):
     data['text'] = '%spark.pyspark' \
                    '\nimport json' \
                    '\narguments = dict()' \
+                   '\nresult = dict()' \
                    '\narguments = json.loads(\'{0}\')' \
                    '\nprint arguments'.format(args_json_string)
     print args_json_string
@@ -244,19 +245,15 @@ def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name
     if index >= 0:
         data['index'] = index
     data['title'] = title
-    conn = connections[settings.ZEPPELIN_DB]
+    conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
     data['text'] = '%spark.pyspark' \
                    '\n'+df_name+'= spark.read.format("jdbc")' \
-                   '.option("url", "jdbc:postgresql://{0}:{1}/{2}?user={3}&password={4}")' \
+                   '.option("url", "jdbc:postgresql://'+conn_dict["HOST"]+':'+conn_dict["PORT"]+'/'+conn_dict["NAME"]+'?user='+conn_dict["USER"]+'&password='+conn_dict["PASSWORD"]+'")' \
                    '.option("driver", "org.postgresql.Driver")' \
-                   '.option("database", "{2}")' \
+                   '.option("database", "'+conn_dict["NAME"]+'")' \
                    '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
                    '.load()' \
-                   '\n'+df_name+'.printSchema()'.format(conn['HOST'],
-                                                        conn['PORT'],
-                                                        conn['NAME'],
-                                                        conn['USER'],
-                                                        conn['PASSWORD'])
+                   '\n'+df_name+'.printSchema()'
 
     # data['text'] =  '%spark.pyspark' \
     #                 '\n' + df_name + '= spark.read.format("jdbc")' \

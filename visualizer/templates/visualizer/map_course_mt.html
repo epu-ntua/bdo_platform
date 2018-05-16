@@ -1,0 +1,112 @@
+{% extends 'visualizer/viz_base.html' %}
+
+{% load static %}
+{% load leaflet_tags %}
+
+
+{% block css %}
+    {% leaflet_css %}
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" rel="stylesheet"/>
+    <link href="https://rawgit.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css" rel="stylesheet"/>
+    <link href="http://apps.socib.es/Leaflet.TimeDimension/dist/leaflet.timedimension.control.min.css" rel="stylesheet"/>
+
+
+    {% for css in css_all %}
+        {% autoescape off %}
+            {{ css }}
+        {% endautoescape %}
+    {% endfor %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}"/>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/control.css' %}"/>
+
+
+{% endblock %}
+
+{% block viz_content %}
+
+    <div id="info">
+        <ul id="displayed-list"></ul>
+    </div>
+    {% leaflet_map map_id %}
+
+{% endblock %}
+
+
+
+{% block js %}
+
+    {% leaflet_js %}
+{#    <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>#}
+{#    <script src="{% static 'js/leaflet.markercluster.js'%}"></script>#}
+
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+
+
+    {% for js in js_all %}
+        {% autoescape off %}
+            {{ js }}
+        {% endautoescape %}
+    {% endfor %}
+
+    <script>
+         var map = {{ map_id|safe }};
+
+           L.geoJson({{ centroids|safe }},
+               {'pointToLayer': function (feature,latlng) {
+                    var geojsonMarkerOptions = {
+                    radius: feature.properties.style.radius,
+                    fillColor: feature.properties.style.fillColor,
+                    color: feature.properties.style.fillColor,
+{#                    weight: 1,#}
+                    opacity: feature.properties.style.opacity,
+                    fillOpacity: feature.properties.style.opacity,
+                    };
+
+{#                    feature.properties.style#}
+                    if (feature.properties.icon === 'circle')
+                        return L.circle(latlng,geojsonMarkerOptions);
+                    else
+                        return L.rectangle(latlng,geojsonMarkerOptions).bindPopup(feature.properties.popup).openPopup();
+{#                    {% if markerType == 'circle' %}#}
+{#                        return L.circleMarker(latlng,geojsonMarkerOptions);#}
+{#                    {% else %}#}
+{#                        return L.marker(latlng,geojsonMarkerOptions);#}
+{#                    {% endif %}#}
+                }}).addTo(map);
+
+
+            L.geoJson({{ data_points|safe }},
+               {'pointToLayer': function (feature,latlng) {
+                    var geojsonMarkerOptions = {
+                    radius: feature.properties.style.radius,
+                    fillColor: feature.properties.style.fillColor,
+                    color: feature.properties.style.fillColor,
+{#                    weight: 1,#}
+                    opacity: feature.properties.style.opacity,
+                    fillOpacity: feature.properties.style.opacity,
+                    };
+
+{#                    feature.properties.style#}
+                    if (feature.properties.icon === 'circle')
+                        return L.circle(latlng,geojsonMarkerOptions).bindPopup(feature.properties.popup).openPopup();
+                    else
+                        return L.circle(latlng,geojsonMarkerOptions).bindPopup(feature.properties.popup).openPopup();
+{#                    {% if markerType == 'circle' %}#}
+{#                        return L.circleMarker(latlng,geojsonMarkerOptions);#}
+{#                    {% else %}#}
+{#                        return L.marker(latlng,geojsonMarkerOptions);#}
+{#                    {% endif %}#}
+                }}).addTo(map);
+    </script>
+
+
+
+{% endblock %}

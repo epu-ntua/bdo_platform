@@ -34,7 +34,7 @@ from folium import CustomIcon
 from folium.plugins import HeatMap, MarkerCluster
 
 FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
-                 'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray', 'black']
+                 'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
 
 def map_course_time(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
@@ -222,7 +222,7 @@ def map_course(request):
         if order_var != "":
             toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
         else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_var=order_var)
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var)
         run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
@@ -258,11 +258,17 @@ def map_course(request):
     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
                'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
-    max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
+    if len(data) > 0:
+        min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
+        max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
+        min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
+        max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
+    else:
+        min_lat = -90
+        max_lat = 90
+        min_lon = -180
+        max_lon = 180
     zoom_lat = (min_lat + max_lat) / 2
-    min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
-    max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
     zoom_lon = (min_lon + max_lon) / 2
     location = [zoom_lat, zoom_lon]
     zoom_start = 4
@@ -305,10 +311,11 @@ def map_course(request):
             marker_color = color_dict[d[color_index]]
         else:
             marker_color = 'blue'
-        folium.Marker(
+        folium.CircleMarker(
             location=[d[lat_index],d[lon_index]],
-            popup="Variable: "+str(d[var_index])+"<br>Order col: "+str(d[order_var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
-            icon=folium.Icon(color=marker_color, icon='remove-sign'),
+            # popup="Variable: "+str(d[var_index])+"<br>Order col: "+str(d[order_var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
+            # icon=folium.Icon(color=marker_color, icon='star'),
+            radius=2,
 
         ).add_to(m)
 
@@ -333,6 +340,254 @@ def map_course(request):
     # os.remove('templates/map.html')
     return render(request, 'visualizer/map_wjs.html',
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
+
+
+def map_course_mt(request):
+    df1 = str(request.GET.get('df1', ''))
+    df2 = str(request.GET.get('df2', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
+    order_var1 = str(request.GET.get('order_var1', ''))
+    order_var2 = str(request.GET.get('order_var2', ''))
+    variable1 = str(request.GET.get('col_var1', ''))
+    variable2 = str(request.GET.get('col_var2', ''))
+
+    lat_col1 = str(request.GET.get('lat_col1', 'latitude'))
+    lon_col1 = str(request.GET.get('lon_col1', 'longitude'))
+    lat_col2 = str(request.GET.get('lat_col2', 'latitude'))
+    lon_col2 = str(request.GET.get('lon_col2', 'longitude'))
+
+    color_col1 = str(request.GET.get('color_col1', ''))
+    color_col2 = str(request.GET.get('color_col2', ''))
+
+    diameter_col1 = str(request.GET.get('diameter_col1', ''))
+
+    try:
+        marker_limit = int(request.GET.get('m_limit', '200'))
+    except:
+        marker_limit = 1000
+
+
+    print ("json-case")
+    if order_var1 != "":
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df1)
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df1, order_by=order_var1)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # print json_data
+
+    data1 = []
+    lat_index = 0
+    lon_index = 1
+    order_var_index = 2
+    var_index = 3
+    color_index = 4
+    diameter_index = 5
+    for s in json_data:
+        row = [float(s[lat_col1]), float(s[lon_col1])]
+        if order_var1 != '':
+            row.append(str(s[order_var1]))
+        else:
+            row.append('')
+        if variable1 != '':
+            row.append(str(s[variable1]))
+        else:
+            row.append('')
+        if color_col1 != '':
+            row.append(s[color_col1])
+        else:
+            row.append('')
+        if diameter_col1 != '':
+                row.append(float(s[diameter_col1]))
+        else:
+            row.append('')
+        data1.append(row)
+
+    print data1[:4]
+
+
+
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    if len(data1) > 0:
+        min_lat = float(min(data1, key=lambda x: x[lat_index])[lat_index])
+        max_lat = float(max(data1, key=lambda x: x[lat_index])[lat_index])
+        min_lon = float(min(data1, key=lambda x: x[lon_index])[lon_index])
+        max_lon = float(max(data1, key=lambda x: x[lon_index])[lon_index])
+    else:
+        min_lat = -90
+        max_lat = 90
+        min_lon = -180
+        max_lon = 180
+    zoom_lat = (min_lat + max_lat) / 2
+    zoom_lon = (min_lon + max_lon) / 2
+    location = [zoom_lat, zoom_lon]
+    zoom_start = 4
+    max_zoom = 30
+    min_zoom = 2
+
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str + token_str,
+                   attr=attr_str,
+                   )
+
+    plugins.Fullscreen(
+        position='topright',
+        title='Expand me',
+        title_cancel='Exit me',
+        force_separate_button=True).add_to(m)
+
+    color_dict = dict()
+    color_cnt = 0
+
+    print "Map course top 10 points"
+    print data1[:10]
+
+    featureCollection1 = {'type': 'FeatureCollection', 'features': []}
+
+    features = []
+    for d in data1:
+        # if color_col1 != '':
+        #     if d[color_index] not in color_dict.keys():
+        #         if color_cnt < len(FOLIUM_COLORS):
+        #             color_dict[d[color_index]] = FOLIUM_COLORS[color_cnt]
+        #         else:
+        #             # color_dict[d[color_index]] = FOLIUM_COLORS[len(FOLIUM_COLORS)-1]
+        #             color_dict[d[color_index]] = FOLIUM_COLORS[color_cnt % (len(FOLIUM_COLORS))]
+        #         color_cnt += 1
+        #     marker_color = color_dict[d[color_index]]
+        # else:
+        #     marker_color = 'blue'
+        marker_color = 'green'
+
+        featureCollection1['features'].append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [float(d[lon_index]), float(d[lat_index])],
+            },
+            "properties": {
+                "style": {
+                    "fillColor": marker_color,
+                    # 'fillColor': 'green',
+                    'opacity': 0.6,
+                    'stroke': 'false',
+                    'radius': int(d[diameter_index]*1000)
+                },
+                'icon': 'circle',
+                'popup': str(d[var_index]),
+            }
+        })
+
+
+
+    print ("json-case")
+    if order_var2 != "":
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df2)
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df2, order_by=order_var2)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # print json_data
+
+    data2 = []
+    lat_index = 0
+    lon_index = 1
+    order_var_index = 2
+    var_index = 3
+    color_index = 4
+    for s in json_data:
+        row = [float(s[lat_col2]), float(s[lon_col2])]
+        if order_var2 != '':
+            row.append(str(s[order_var2]))
+        else:
+            row.append('')
+        if variable2 != '':
+            row.append(str(int(s[variable2])))
+        else:
+            row.append('')
+        if color_col2 != '':
+            row.append(s[color_col2])
+        else:
+            row.append('')
+        data2.append(row)
+
+    print data2[:4]
+
+    color_dict = dict()
+    color_cnt = 0
+
+    print "Map course top 10 points"
+    print data2[:10]
+
+    featureCollection2 = {'type': 'FeatureCollection', 'features': []}
+
+    features = []
+    for d in data2:
+        if color_col2 != '':
+            if d[color_index] not in color_dict.keys():
+                if color_cnt < len(FOLIUM_COLORS):
+                    color_dict[d[color_index]] = FOLIUM_COLORS[color_cnt]
+                else:
+                    # color_dict[d[color_index]] = FOLIUM_COLORS[len(FOLIUM_COLORS)-1]
+                    color_dict[d[color_index]] = FOLIUM_COLORS[color_cnt % (len(FOLIUM_COLORS))]
+                color_cnt += 1
+            marker_color = color_dict[d[color_index]]
+        else:
+            marker_color = 'blue'
+
+        featureCollection2['features'].append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [float(d[lon_index]), float(d[lat_index])],
+            },
+            "properties": {
+                "style": {
+                    "fillColor": marker_color,
+                    # 'fillColor': 'green',
+                    'opacity': 0.6,
+                    'stroke': 'false',
+                    'radius': 100
+                },
+                'icon': 'circle',
+                'popup': 'Ship ID: '+str(d[var_index]),
+            }
+        })
+
+    # m.add_child(folium.features.GeoJson(featureCollection))
+
+    # Add layer contorl
+    folium.LayerControl().add_to(m)
+
+    m.save('templates/map.html')
+
+    map_html = open('templates/map.html', 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    # print map_id
+    js_all = soup.findAll('script')
+    # print(js_all)
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # print js
+    # os.remove('templates/map.html')
+    return render(request, 'visualizer/map_course_mt.html',
+                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'markerType':'circle', 'centroids': convert_unicode_json(featureCollection1), 'data_points': convert_unicode_json(featureCollection2)})
 
 
 def map_plotline(request):
