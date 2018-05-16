@@ -172,7 +172,8 @@ class DefaultEncoder(json.JSONEncoder):
 
 def filter_info(request, filter_type, pk):
     if filter_type == 'variable':
-        return JsonResponse({'type': 'number', 'orderable': True})
+        return JsonResponse({'type': 'text'})
+        # return JsonResponse({'type': 'number', 'orderable': True})
 
     dimension = Dimension.objects.get(pk=pk)
 
