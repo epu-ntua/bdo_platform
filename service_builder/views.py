@@ -178,8 +178,8 @@ def load_service(request, pk):
 
     output_html = output_html.replace('src', 'src-a')
 
-
     return render(request, 'service_builder/load_service.html', {
+        'service_title': service.title,
         'output_html': output_html,
         'output_css': output_css,
         'output_js': output_js,
