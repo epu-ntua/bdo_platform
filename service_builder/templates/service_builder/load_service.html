@@ -33,6 +33,7 @@
 {% block content %}
     {% csrf_token %}
     <div class="container" style="width: 100%; ">
+        <h2 style="text-align: center">{{ service_title }}</h2>
         {% autoescape off %}
             {{ output_html }}
         {% endautoescape %}
