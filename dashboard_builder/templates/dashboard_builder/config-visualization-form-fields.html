@@ -77,6 +77,12 @@
                     {% elif argument.type == 'BOOLEAN' %}
                         <input id="{{ argument.name }}" type="checkbox" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}"
                             {% if argument.default ==  "TRUE" %}checked {% endif %}><br>
+                    {% elif argument.type == 'SELECT' %}
+                        <select id="{{ order }}+++{{ argument.name }}" class="form-control full-width select-select" name="{{ order }}+++{{ argument.name }}" >
+                            {% for option in argument.options %}
+                                 <option value="{{ option.value }}">{{ option.text }}</option>
+                            {% endfor %}
+                        </select>
                     {% else %}
                         <input id="{{ argument.name }}" type="text" class="form-control full-width " name="{{ argument.name }}"  value="{{ argument.default }}">
                     {% endif %}
