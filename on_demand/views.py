@@ -12,7 +12,27 @@ from .forms import *
 class OnDemandRequestListView(ListView):
     template_name = 'on_demand/list.html'
     model = OnDemandRequest
-    paginate_by = 1
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = super(OnDemandRequestListView, self).get_queryset()
+
+        # text search
+        q = self.request.GET.get('q', '')
+        if q:
+            queryset = queryset.filter(
+                Q(title__icontains=q) | Q(description__icontains=q) | Q(keywords_raw__icontains=q)
+            )
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super(OnDemandRequestListView, self).get_context_data(**kwargs)
+
+        # add search term
+        context['q'] = self.request.GET.get('q', '')
+
+        return context
 
 
 @login_required

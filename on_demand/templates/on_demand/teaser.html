@@ -24,6 +24,10 @@
             <p>
                 Posted by
                 <a href="#">{{ req.user.username }}</a>
+                / <i class="fa fa-gift o-blue"></i> {{ req.get_pricing_display }}
+                {% if req.price %}
+                    / € {{ req.price|intcomma }}
+                {% endif %}
                 <span class="pull-right">
                     <span class="margin-horizontal-2 o-darkgray"><i class="fa fa-clock-o"></i> {{ req.created|naturaltime }}</span>
                     <span class="margin-horizontal-2 o-blue"><i class="fa fa-thumbs-up"></i> {{ req.votes }}</span>

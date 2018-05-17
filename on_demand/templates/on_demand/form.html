@@ -22,7 +22,7 @@
                                     <label class="section-label o-blue">Title</label>
                                     <div class="form-group label-floating is-empty">
                                         <label class="control-label"> Make sure to use a title that will help users understand as much as possible about your request.</label>
-                                        <input type="text" name="title" class="form-control full-width" value="{{ form.title.value }}"/>
+                                        <input type="text" name="title" class="form-control full-width" value="{{ form.title.value|default:"" }}"/>
                                     <span class="material-input"></span></div>
                                 </div>
                             </div>
@@ -35,7 +35,7 @@
                                     <div class="form-group label-floating is-empty">
                                         <textarea name="description" class="form-control full-width" rows="4"
                                             placeholder="Please provide a short description of the expected service and what data you need."
-                                        >{{ form.description.value }}</textarea>
+                                        >{{ form.description.value|default:"" }}</textarea>
                                     <span class="material-input"></span></div>
                                 </div>
                             </div>
@@ -45,7 +45,7 @@
                             <div class="col-xs-12">
                                 <div class="form-group label-floating is-empty">
                                     <label class="control-label">Keyword(s) / optional, will help BigDataOcean analysts find your request faster - user commas to separate more than one</label>
-                                    <input name="keywords_raw" type="text" class="form-control full-width" value="{{ form.keywords_raw.value }}">
+                                    <input name="keywords_raw" type="text" class="form-control full-width" value="{{ form.keywords_raw.value|default:"" }}">
                                     <span class="material-input"></span>
                                 </div>
                             </div>
@@ -67,13 +67,13 @@
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row pricing-row hidden">
                             <div class="col-xs-12">
                                 <div class="form-group">
                                     <label class="section-label o-blue">Pricing</label>
                                     <div class="form-group label-floating is-empty">
                                         <label class="control-label">Reward (€)</label>
-                                        <input name="price" type="number" step="0.01" class="form-control full-width" value="{{ form.price.value }}">
+                                        <input name="price" type="number" step="0.01" class="form-control full-width" value="{{ form.price.value|default:"" }}">
                                     <span class="material-input"></span></div>
                                 </div>
                             </div>
@@ -84,7 +84,7 @@
                                 {% if action == 'update' %}
                                     <a href="{{ form.instance.get_absolute_url }}" class="btn btn-default pull-left">Cancel</a>
                                 {% endif %}
-                            
+
                                 <button type="submit" class="btn btn-success pull-right">{% if action == 'create' %}Submit request{% else %}Save changes{% endif %}</button>
                             </div>
                         </div>
@@ -93,4 +93,28 @@
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(function() {
+            var $pricing = $('select[name="pricing"]');
+
+            var togglePrice = function() {
+                if ($pricing.val() === 'FIXED') {
+                    $('.pricing-row').removeClass('hidden');
+                } else {
+                    $('.pricing-row').addClass('hidden');
+                }
+            }
+
+            // initially call
+            togglePrice();
+
+            // call on pricing change
+            $pricing.on('change', function() {
+               togglePrice();
+            });
+        })
+    </script>
 {% endblock %}

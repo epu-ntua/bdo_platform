@@ -17,7 +17,7 @@ class OnDemandRequest(Model):
     description = TextField(blank=True)
     keywords_raw = TextField(blank=True)  # comma-separated list of keywords
     pricing = CharField(max_length=8, choices=(
-        ('FREE', 'Free'),
+        ('FREE', 'No reward'),
         ('FIXED', 'Fixed price'),
         ('TBD', 'Negotiable'),
     ), db_index=True)

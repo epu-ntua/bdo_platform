@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                 ('title', models.TextField(db_index=True)),
                 ('description', models.TextField(blank=True)),
                 ('keywords_raw', models.TextField(blank=True)),
-                ('pricing', models.CharField(choices=[('FREE', 'Free'), ('FIXED', 'Fixed price'), ('TBD', 'Negotiable')], db_index=True, max_length=8)),
+                ('pricing', models.CharField(choices=[('FREE', 'No reward'), ('FIXED', 'Fixed price'), ('TBD', 'Negotiable')], db_index=True, max_length=8)),
                 ('price', models.DecimalField(blank=True, decimal_places=2, default=None, max_digits=8, null=True)),
                 ('closed_by', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, to='on_demand.OnDemandReply')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='on_demand_requests', to=settings.AUTH_USER_MODEL)),
