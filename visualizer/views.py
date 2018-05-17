@@ -1,6 +1,6 @@
 from __future__ import unicode_literals, division
 # -*- coding: utf-8 -*-
-
+import pdb
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.db import connection, connections
@@ -774,6 +774,7 @@ def map_heatmap(request):
 
     # variable = str(request.GET.get('feat_1', ''))
     query = int(str(request.GET.get('query', '0')))
+    heat_col = str(request.GET.get('heat_col', 'frequency'))
 
     df = str(request.GET.get('df', ''))
     notebook_id = str(request.GET.get('notebook_id', ''))
@@ -786,7 +787,7 @@ def map_heatmap(request):
         doc = q.document
 
         doc['orderings'] = []
-        doc['limit'] = []
+
 
         for f in doc['from']:
             for s in f['select']:
@@ -794,12 +795,14 @@ def map_heatmap(request):
                     s['exclude'] = False
                 elif str(s['name']).find('longitude') >= 0:
                     s['exclude'] = False
+                elif s['name'] == heat_col:
+                    s['exclude'] = False
                 else:
                     s['exclude'] = True
 
         q.document = doc
 
-        lat_index = lon_index = 0
+        lat_index = lon_index = var_index = 0
         result = q.execute()[0]
         result_data = result['results']
         result_headers = result['headers']
@@ -810,6 +813,8 @@ def map_heatmap(request):
                 lat_index = idx
             elif str(c['name']).find('lon') >= 0:
                 lon_index = idx
+            elif c['name'] == heat_col:
+                var_index = idx
 
         data = result_data
     else:
@@ -823,11 +828,10 @@ def map_heatmap(request):
         data = []
         lat_index = 0
         lon_index = 1
-        order_var_index = 2
-        var_index = 3
-        color_index = 4
+        var_index = 2
+
         for s in json_data:
-            row = [float(s[lat_col]), float(s[lon_col])]
+            row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
             data.append(row)
 
 
@@ -852,11 +856,19 @@ def map_heatmap(request):
 
 
     heat = []
-
-
+    maximum = -1
     for d in data:
-        heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
+        if d[var_index]>maximum :
+            maximum = d[var_index]
 
+    if (heat_col=='frequency'):
+        for d in data:
+            heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
+    else:
+        for d in data:
+            heat.append((np.array([float(d[lat_index]), float(d[lon_index]),float(d[var_index])/maximum])).tolist())
+
+    # check out
     HeatMap(heat, name="Heat Map").add_to(m)
 
 
@@ -878,7 +890,7 @@ def map_heatmap(request):
         css_all = [css.prettify() for css in css_all[3:]]
     # print js
     # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+    return render(request, 'visualizer/map_wjs.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
 
 
 
@@ -910,7 +922,7 @@ def map_viz_folium_contour(request):
         doc['orderings'] = []
         doc['limit'] = []
         var_query_id = variable[:variable.find('_')]
-
+        print doc
         # print doc
         for f in doc['from']:
             for s in f['select']:
@@ -950,7 +962,8 @@ def map_viz_folium_contour(request):
         # Create a leaflet map using folium
         m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
 
-        cursor = connections["UBITECH_POSTGRES"].cursor()
+        # cursor = connections["UBITECH_POSTGRES"].cursor()
+
         # print 'Countour Query: '
         # print str(raw_query)
         # cursor.execute(raw_query)
@@ -1160,7 +1173,78 @@ def map_viz_folium_contour(request):
         return HttpResponseNotFound
 
 
-def map_viz_folium_heatmap(request):
+def map_viz_folium_heatmap_time(request):
+    query = int(str(request.GET.get('query', '0')))
+    heat_col = str(request.GET.get('heat_col', 'frequency'))
+    order_var = str(request.GET.get('order_var', 'time'))
+
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+    lat_col = str(request.GET.get('lat_col', 'latitude'))
+    lon_col = str(request.GET.get('lon_col', 'longitude'))
+
+    FMT = '%Y-%m-%d %H:%M:%S'
+
+    if query != 0:
+        q = AbstractQuery.objects.get(pk=int(query))
+        q = TempQuery(document=q.document)
+        doc = q.document
+
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == order_var:
+                    s['exclude'] = False
+                elif str(s['name']).find('latitude') >= 0:
+                    s['exclude'] = False
+                elif str(s['name']).find('longitude') >= 0:
+                    s['exclude'] = False
+                elif s['name'] == heat_col:
+                    s['exclude'] = False
+                else:
+                    s['exclude'] = True
+
+        q.document = doc
+
+        lat_index = lon_index = var_index = 0
+        result = q.execute()[0]
+        result_data = result['results']
+        result_headers = result['headers']
+
+        print result_headers
+        for idx, c in enumerate(result_headers['columns']):
+            if str(c['name']).find('lat') >= 0:
+                lat_index = idx
+            elif str(c['name']).find('lon') >= 0:
+                lon_index = idx
+            elif c['name'] == heat_col:
+                var_index = idx
+            elif c['name'] == order_var:
+                order_index = idx
+
+        data = result_data
+    else:
+        print ("json-case")
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var,
+                                                          order_type='ASC')
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+
+        # print json_data
+
+        data = []
+        lat_index = 0
+        lon_index = 1
+        var_index = 2
+        order_index = 3
+
+        for s in json_data:
+            row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col]),str(s[order_var])]
+            data.append(row)
+
+
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
@@ -1180,28 +1264,49 @@ def map_viz_folium_heatmap(request):
                    tiles=tiles_str+token_str,
                    attr=attr_str)
 
-    np.random.seed(3141592)
-    initial_data = (
-        np.random.normal(size=(100, 2)) * np.array([[1, 1]]) +
-        np.array([[48, 5]])
-    )
-    move_data = np.random.normal(size=(100, 2)) * 0.01
-    data = [(initial_data + move_data * i).tolist() for i in range(100)]
+    curr_time = data[0][order_index]
+    data_list = []
+    time_list = []
+    data_moment_list=[]
+    # pdb.set_trace()
+    for d in data:
+        if (d[order_index] == curr_time):
+            data_moment_list.append([float(d[lat_index]),float(d[lon_index]),float(d[var_index])])
+        else:
+            data_list.append(data_moment_list)
+            time_list.append(curr_time.strftime("%Y-%m-%dT%H:%M:%S"))
+            data_moment_list = []
+            data_moment_list.append([float(d[lat_index]), float(d[lon_index]), float(d[var_index])])
+            curr_time = d[order_index]
+    data_list.append(data_moment_list)
+    time_list.append(curr_time.strftime("%Y-%m-%dT%H:%M:%S"))
+
+
+    print data_list
+    print time_list
+    # initial_data = (
+    #     np.random.normal(size=(100, 2)) * np.array([[1, 1]]) +
+    #     np.array([[48, 5]])
+    # )
+    # move_data = np.random.normal(size=(100, 2)) * 0.01
+    # data = [(initial_data + move_data * i).tolist() for i in range(100)]
 
     # hm = plugins.HeatMapWithTime(data)
     # hm.add_to(m)
-
-    time_index = [
-        (datetime.now() + k * timedelta(1)).strftime('%Y-%m-%d') for
-        k in range(len(data))
-    ]
+    #
+    # time_index = [
+    #     (datetime.now() + k * timedelta(1)).strftime('%Y-%m-%d') for
+    #     k in range(len(data))
+    # ]
     hm = plugins.HeatMapWithTime(
-        data,
-        index=time_index,
+        data_list,
+        index=time_list,
         radius=0.5,
         scale_radius=True,
         auto_play=True,
-        max_opacity=0.3
+        max_opacity=0.9,
+
+
     )
 
     hm.add_to(m)
@@ -1221,7 +1326,7 @@ def map_viz_folium_heatmap(request):
         css_all = [css.prettify() for css in css_all[3:]]
     # print js
     # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+    return render(request, 'visualizer/map_wjs.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
 
 
 def get_histogram_chart_am(request):
