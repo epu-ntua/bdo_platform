@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/on-demand.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+
+    <div class="row text-center">
+        <div class="col-xs-12">
+            <h1 class="o-blue" style="font-size: 2.5em;">On Demand Data and Services</h1>
+
+            <div class="col-xs-12">
+                <div class="form-group is-empty">
+                    <input type="text" class="form-control" style="width: 50%" placeholder="Search for existing requests">
+                    <span class="material-input"></span>
+                    <button type="submit" class="btn btn-white btn-round btn-just-icon">
+								<i class="material-icons">search</i><div class="ripple-container"></div>
+							</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row margin-top-5">
+        {% include 'on_demand/step.html' with step=1 title="Explore" text="open or solved data &amp; service requests from other BigDataOcean users" class='col-xs-4' %}
+        {% include 'on_demand/step.html' with step=2 title="Create" text="a new service request describing exactly from what you need" class='col-xs-4' link='/on-demand/create/' %}
+        {% include 'on_demand/step.html' with step=3 title="Contact" text="analysts who solved other similar requests and get an offer from them, or" class='col-xs-4' %}
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="card">
+                <div class="card-header" data-background-color="blue" style="font-size: 1.4em;">
+                    <div class="margin-vertical-3">
+                        Not finding what you need?
+                        <a href="/on-demand/create/" style="text-decoration: underline;">Create a new request</a>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <h3 class="o-blue">Requests</h3>
+
+                            {% for req in object_list %}
+                                {% include 'on_demand/teaser.html' %}
+                            {% empty %}
+                                <p>No requests found</p>
+                            {% endfor %}
+
+                            {% if is_paginated %}
+                                <div class="pagination">
+                                    <span class="page-links">
+                                        {% if page_obj.has_previous %}
+                                            <a href="/on-demand/?page={{ page_obj.previous_page_number }}">previous</a>
+                                        {% endif %}
+                                        <span class="page-current">
+                                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                                        </span>
+                                        {% if page_obj.has_next %}
+                                            <a href="/on-demand/?page={{ page_obj.next_page_number }}">next</a>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

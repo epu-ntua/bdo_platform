@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/on-demand.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <div class="col-md-3 col-xs-1"></div>
+
+    <div class="col-md-6 col-xs-10">
+        <div class="card">
+            <div class="card-header" data-background-color="blue" style="font-size: 1.4em;">
+                Request
+            </div>
+            <div class="card-content">
+                {% include 'on_demand/teaser.html' with req=object %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header" data-background-color="blue" style="font-size: 1.4em;">
+                Responses (0)
+            </div>
+            <div class="card-content">
+                <p>No responses</p>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

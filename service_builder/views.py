@@ -432,7 +432,6 @@ def load_results_to_template(request):
 
 #----------HCMR Dummy Service -------------------------------------------------------------------#
 from django.contrib.auth.decorators import login_required
-from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME,FTPPASS
 import ftplib,time,io
 
 #Create the input file for the oil spill simulator and put it on the HCMR ftp size
@@ -517,6 +516,8 @@ def APIcreateInputFileForHCMRSpillSimulator(request):
                                   WIND_MODEL + "\n" + \
                                   WAVE_MODEL + "\n"
             print 'InputString:{0}'.format(OilSpillInputString)
+            from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME, FTPPASS
+
             #Save Oil Spill Simulation input string to a text file in ftp
             ftp = ftplib.FTP(FTPSERVER)
             ftp.login(FTPUSERNAME, FTPPASS)
@@ -551,6 +552,9 @@ def APIcheckIfOutputExistsforHCMRSpillSimulator(request):
         if 'LATLON' in request.GET and 'DATETIME' in request.GET:
             LATLON = request.GET['LATLON']
             DATETIME = request.GET['DATETIME']
+
+            from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME, FTPPASS
+
             # Check the out directory
             ftp = ftplib.FTP(FTPSERVER)
             ftp.login(FTPUSERNAME, FTPPASS)

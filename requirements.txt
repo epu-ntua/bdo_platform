@@ -39,3 +39,4 @@ gunicorn
 
 # misc
 scipy
+unidecode

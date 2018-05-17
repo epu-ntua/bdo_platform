@@ -63,10 +63,10 @@ INSTALLED_APPS = [
     'visualizer',
     'dashboard_builder',
     'service_builder',
-    'requestservice',
     'note_builder',
     'uploader',
-    'data_parser'
+    'on_demand',
+    'data_parser',
 ]
 
 AUTHENTICATION_BACKENDS = (

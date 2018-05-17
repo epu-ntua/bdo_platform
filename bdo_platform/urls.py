@@ -38,11 +38,11 @@ urlpatterns = [
     # dashboards
     url(r'^dashboards/', include('dashboard_builder.urls')),
 
-    # requestservice
-    url(r'^requests/', include('requestservice.urls')),
-
     # dashboards
     url(r'^service_builder/', include('service_builder.urls')),
+
+    # on demand
+    url(r'^on-demand/', include('on_demand.urls')),
 
     # uploader
     url(r'^upload/', include('uploader.urls')),

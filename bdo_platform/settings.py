@@ -11,7 +11,6 @@ else:
                           open('bdo_platform//settings_management/settings-loader.txt', 'r').read().split(',')]
 
         for settings_file in settings_files:
-            print(settings_file)
             if settings_file == 'development_dpap':
                 from bdo_platform.settings_management.development_dpap import *
             elif settings_file == 'development_gtsapelas':
