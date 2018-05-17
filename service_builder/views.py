@@ -163,18 +163,18 @@ def load_service(request, pk):
     output_css = service.output_css
     output_js = service.output_js
 
-    if settings.TEST_SERVICES:
-        from bdo_platform.settings import BASE_DIR
-        import os
-        path = os.path.join(BASE_DIR + '\\service_builder\\templates\\service_builder\\', 'service_template_1.html')
-        with open(path, 'r') as f:
-            output_html = f.read()
-        path = os.path.join(BASE_DIR + '\\service_builder\\static\\service_builder\\css\\', 'service_template_1.css')
-        with open(path, 'r') as f:
-            output_css = f.read()
-        path = os.path.join(BASE_DIR + '\\service_builder\\static\\service_builder\\js\\', 'service_template_1.js')
-        with open(path, 'r') as f:
-            output_js = f.read()
+    # if settings.TEST_SERVICES:
+    #     from bdo_platform.settings import BASE_DIR
+    #     import os
+    #     path = os.path.join(BASE_DIR + '\\service_builder\\templates\\service_builder\\', 'service_template_1.html')
+    #     with open(path, 'r') as f:
+    #         output_html = f.read()
+    #     path = os.path.join(BASE_DIR + '\\service_builder\\static\\service_builder\\css\\', 'service_template_1.css')
+    #     with open(path, 'r') as f:
+    #         output_css = f.read()
+    #     path = os.path.join(BASE_DIR + '\\service_builder\\static\\service_builder\\js\\', 'service_template_1.js')
+    #     with open(path, 'r') as f:
+    #         output_js = f.read()
 
     output_html = output_html.replace('src', 'src-a')
 
@@ -371,10 +371,10 @@ def submit_service_args(request, service_id):
     output_css = service.output_css
     output_js = service.output_js
 
-    if settings.TEST_SERVICES:
-        import os
-        with open(os.path.join(settings.BASE_DIR, 'service_builder\\templates\\service_builder\\service_template_1.html')) as f:
-            output_html = f.read()
+    # if settings.TEST_SERVICES:
+    #     import os
+    #     with open(os.path.join(settings.BASE_DIR, 'service_builder\\templates\\service_builder\\service_template_1.html')) as f:
+    #         output_html = f.read()
 
     if queries is not None:
         for name, info in queries.iteritems():
