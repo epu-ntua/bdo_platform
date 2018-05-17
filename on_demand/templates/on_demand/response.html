@@ -1,0 +1,8 @@
+{% load humanize %}
+
+<div class="on-demand--reply">
+    <p class="o-gray">
+        <i class="fa fa-user-circle"></i>
+        {{ reply.user.username }}, {{ reply.created|naturaltime }}</p>
+    <p>{{ reply.text }}</p>
+</div>

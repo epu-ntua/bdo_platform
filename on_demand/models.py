@@ -46,6 +46,10 @@ class OnDemandReply(Model):
     updated = DateTimeField(auto_now=True)
     user = ForeignKey('auth.User', related_name='on_demand_replies', on_delete=CASCADE)
     text = TextField()
+    request = ForeignKey('OnDemandRequest', related_name='replies', on_delete=CASCADE)
+
+    def __unicode__(self):
+        return self.text
 
 
 class OnDemandUpvote(Model):
@@ -56,3 +60,5 @@ class OnDemandUpvote(Model):
     user = ForeignKey('auth.User', related_name='on_demand_upvotes', on_delete=CASCADE)
     request = ForeignKey('OnDemandRequest', related_name='upvotes', on_delete=CASCADE)
 
+    def __unicode__(self):
+        return '+1 on %s' % self.request

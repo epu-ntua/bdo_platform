@@ -19,3 +19,9 @@ class OnDemandRequestForm(ModelForm):
             cleaned_data['price'] = Decimal(0)
 
         return cleaned_data
+
+
+class OnDemandReplyForm(ModelForm):
+    class Meta:
+        model = OnDemandReply
+        fields = ('text', )

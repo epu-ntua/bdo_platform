@@ -13,7 +13,7 @@
                 <div class="card-content">
                     <h1 class="o-blue" style="font-size: 3em;">On Demand Data and Services</h1>
 
-                    <form class="form" method="POST" action=".">
+                    <form class="form" method="POST" action="/on-demand/{% if action == 'create' %}create{% else %}{{ form.instance.pk }}/edit{% endif %}/">
                         {% csrf_token %}
 
                         <div class="row">
@@ -22,7 +22,7 @@
                                     <label class="section-label o-blue">Title</label>
                                     <div class="form-group label-floating is-empty">
                                         <label class="control-label"> Make sure to use a title that will help users understand as much as possible about your request.</label>
-                                        <input type="text" name="title" class="form-control full-width" />
+                                        <input type="text" name="title" class="form-control full-width" value="{{ form.title.value }}"/>
                                     <span class="material-input"></span></div>
                                 </div>
                             </div>
@@ -33,8 +33,9 @@
                                 <div class="form-group">
                                     <label class="section-label o-blue">Service description</label>
                                     <div class="form-group label-floating is-empty">
-                                        <label class="control-label"> Please provide a short description of the expected service and what data you need.</label>
-                                        <textarea name="description" class="form-control full-width" rows="4"></textarea>
+                                        <textarea name="description" class="form-control full-width" rows="4"
+                                            placeholder="Please provide a short description of the expected service and what data you need."
+                                        >{{ form.description.value }}</textarea>
                                     <span class="material-input"></span></div>
                                 </div>
                             </div>
@@ -44,7 +45,7 @@
                             <div class="col-xs-12">
                                 <div class="form-group label-floating is-empty">
                                     <label class="control-label">Keyword(s) / optional, will help BigDataOcean analysts find your request faster - user commas to separate more than one</label>
-                                    <input name="keywords_raw" type="text" class="form-control full-width">
+                                    <input name="keywords_raw" type="text" class="form-control full-width" value="{{ form.keywords_raw.value }}">
                                     <span class="material-input"></span>
                                 </div>
                             </div>
@@ -57,9 +58,9 @@
                                     <div class="form-group label-floating is-empty">
                                         <label class="control-label">Pricing</label>
                                         <select name="pricing" class="form-control full-width">
-                                            <option value="FREE">Community feedback (free)</option>
-                                            <option value="FIXED">Fixed reward</option>
-                                            <option value="TDB">Negotiable</option>
+                                            <option value="FREE" {% if form.pricing.value == 'FREE' %}selected{% endif %}>Community feedback (free)</option>
+                                            <option value="FIXED" {% if form.pricing.value == 'FIXED' %}selected{% endif %}>Fixed reward</option>
+                                            <option value="TDB" {% if form.pricing.value == 'TBD' %}selected{% endif %}>Negotiable</option>
                                         </select>
                                     <span class="material-input"></span></div>
                                 </div>
@@ -72,7 +73,7 @@
                                     <label class="section-label o-blue">Pricing</label>
                                     <div class="form-group label-floating is-empty">
                                         <label class="control-label">Reward (€)</label>
-                                        <input name="price" type="number" step="0.01" class="form-control full-width">
+                                        <input name="price" type="number" step="0.01" class="form-control full-width" value="{{ form.price.value }}">
                                     <span class="material-input"></span></div>
                                 </div>
                             </div>
@@ -80,7 +81,11 @@
 
                         <div class="row">
                             <div class="col-xs-12">
-                                <button type="submit" class="btn btn-success">Submit request</button>
+                                {% if action == 'update' %}
+                                    <a href="{{ form.instance.get_absolute_url }}" class="btn btn-default pull-left">Cancel</a>
+                                {% endif %}
+                            
+                                <button type="submit" class="btn btn-success pull-right">{% if action == 'create' %}Submit request{% else %}Save changes{% endif %}</button>
                             </div>
                         </div>
                     </form>

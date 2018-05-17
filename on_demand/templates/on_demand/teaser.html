@@ -8,6 +8,14 @@
                 <div class="pull-right">
                     {% if not req.solved_by %}
                         <span class="label label-warning"><i class="fa fa-spinner"></i> OPEN</span>
+
+                        {% if request.user == req.user %}
+                            <span class="label label-info">
+                                <a href="/on-demand/{{ req.pk }}/edit/" style="margin-right: 5px;">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                            </span>
+                        {% endif %}
                     {% else %}
                         <span class="label label-success"><i class="fa fa-check"></i> SOLVED</span>
                     {% endif %}
@@ -22,14 +30,23 @@
                 </span>
             </p>
             <p>
-                <a href="{{ req.get_absolute_url }}" class="btn btn-sm btn-default">View request</a>
+                {% if not details %}
+                    <a href="{{ req.get_absolute_url }}" class="btn btn-sm btn-success">View request</a>
+                {% endif %}
+
                 {% if req.closed_by %}Solved by <a href="#" style="margin: 8px 0;">{{ req.closed_by.user.username }}{% endif %}
             </p>
         </div>
     </div>
     <div class="row">
         <div class="col-xs-12">
-            <p class="o-lightgray" style="margin-left: 0;"><i class="fa fa-comment margin-right-2"></i> {{ req.description }}</p>
+            <p class="o-lightgray" style="margin-left: 0;"><i class="fa fa-comment margin-right-2"></i>
+                {% if details %}
+                    {{ req.description|linebreaksbr }}
+                {% else %}
+                    {{ req.description|slice:"100"|linebreaksbr }}
+                {% endif %}
+            </p>
         </div>
     </div>
 </div>
