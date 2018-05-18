@@ -11,89 +11,76 @@
         <div class="col-md-push-3 col-md-6 col-sm-12">
             <div class="card">
                 <div class="card-content">
-                    <h1 class="o-blue" style="font-size: 3em;">{{ user.profile.name }}</h1>
+                    <h1 class="o-blue profile-page-title">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="avatar avatar-lg"
+                                     style="background-image: url({{ user.profile.avatar }});">
+                                </div>
+                                <span class="name">
+                                    {{ user.profile.name|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </h1>
 
                     <div class="form">
-
-                        {% if request.user == user %}
-                            <div class="row">
-                                <div class="col-xs-12">
-                                    <div class="row">
-                                        <div class="col-xs-3">
-                                            <div class="avatar avatar-lg"
-                                                 style="background-image: url({{ user.profile.avatar }});">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <div class="margin-3 clearfix">
+                                            <div class="pull-left" style="font-size: 120%;">
+                                                <p>@{{ user.username }}</p>
+                                                {% if user.profile.email %}
+                                                    <p>Contact email: <a href="mailto:{{ user.profile.email }}">
+                                                        {{ user.profile.email }}
+                                                    </a></p>
+                                                {% endif %}
+                                                {% if user.profile.external_url %}
+                                                    <p>Website: <a href="{{ user.profile.external_url }}" target="_blank">
+                                                        {{ user.profile.external_url }}
+                                                    </a></p>
+                                                {% endif %}
                                             </div>
-                                        </div>
-                                        <div class="col-xs-9">
-                                            <div class="margin-3 clearfix">
-                                                <div class="pull-left" style="font-size: 120%;">
-                                                    <p>{{ user.username }}</p>
-                                                    {% if user.profile.email %}
-                                                        <p>Contact email: <a href="mailto:{{ user.profile.email }}">
-                                                            {{ user.profile.email }}
-                                                        </a></p>
-                                                    {% endif %}
-                                                    {% if user.profile.external_url %}
-                                                        <p>Website: <a href="{{ user.profile.external_url }}" target="_blank">
-                                                            {{ user.profile.external_url }}
-                                                        </a></p>
-                                                    {% endif %}
-                                                </div>
 
+                                            {% if request.user == user %}
                                                 <a href="/profile/edit/" class="btn btn-primary pull-right">
                                                     Edit profile
                                                 </a>
-                                            </div>
+                                            {% endif %}
+                                        </div>
 
-                                            <div class="row">
-                                                <div class="col-xs-12">
-                                                    <div class="form-group">
-                                                        <label class="section-label o-blue">First name</label>
-                                                        <div>{{ user.profile.first_name|default:"-" }}</div>
-                                                    </div>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="section-label o-blue">Organization</label>
+                                                    <div>{{ user.profile.organization|default:"-" }}</div>
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            <div class="row">
-                                                <div class="col-xs-12">
-                                                    <div class="form-group">
-                                                        <label class="section-label o-blue">Last name</label>
-                                                        <div>{{ user.profile.last_name|default:"-" }}</div>
-                                                    </div>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="section-label o-blue">User type</label>
+                                                    <div>{{ user.profile.get_user_type_display|default:"-" }}</div>
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            <div class="row">
-                                                <div class="col-xs-12">
-                                                    <div class="form-group">
-                                                        <label class="section-label o-blue">Organization</label>
-                                                        <div>{{ user.profile.organization|default:"-" }}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-xs-12">
-                                                    <div class="form-group">
-                                                        <label class="section-label o-blue">User type</label>
-                                                        <div>{{ user.profile.get_user_type_display|default:"-" }}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-xs-12">
-                                                    <div class="form-group">
-                                                        <label class="section-label o-blue">Expertise / Business role</label>
-                                                        <div>{{ user.profile.business_role|default:"-" }}</div>
-                                                    </div>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="section-label o-blue">Expertise / Business role</label>
+                                                    <div>{{ user.profile.business_role|default:"-" }}</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>

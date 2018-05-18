@@ -4,7 +4,8 @@
     <div class="on-demand--reply">
         <p class="o-gray">
             <i class="fa fa-user-circle"></i>
-            {{ reply.user.username }}, {{ reply.created|naturaltime }}
+            <a href="{{ reply.user.profile.get_absolute_url }}">{{ reply.user.profile.name }}</a>
+            , {{ reply.created|naturaltime }}
             {% if req.closed_by_id == reply.pk %}
                 <span class="o-green">/ <i class="fa fa-check"></i> Accepted</span>
             {% endif %}

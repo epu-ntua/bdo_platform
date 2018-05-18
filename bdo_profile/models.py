@@ -15,11 +15,12 @@ class UserProfile(Model):
     last_name = TextField(blank=True, default='')
     organization = TextField(blank=True, default='')
     user_type = CharField(max_length=32, choices=(
+        ('', ''),
         ('DATA_ANALYST', 'Data analyst'),
         ('BUSINESS_USER', 'Business user'),
         ('RESEARCHER', 'Researcher'),
         ('SERVICE_DEVELOPER', 'Service developer'),
-    ), default='DATA_ANALYST')
+    ), blank=True, default='')
     business_role = TextField(blank=True, default='')
     email = EmailField(blank=True, default='')
     external_url = URLField(blank=True, default='')
@@ -32,6 +33,13 @@ class UserProfile(Model):
         return self.avatar_raw or (
             'https://s3.%s.amazonaws.com/%s/avatars/default-avatar.png' % (S3DIRECT_REGION, AWS_STORAGE_BUCKET_NAME)
         )
+
+    @property
+    def name(self):
+        if self.first_name and self.last_name:
+            return '%s %s' % (self.first_name, self.last_name)
+
+        return self.user.username
 
 
 @property

@@ -32,7 +32,7 @@
             </div>
             <div class="margin-bottom-1">
                 Posted by
-                <a href="#">{{ req.user.username }}</a>
+                <a href="{{ req.user.profile.get_absolute_url }}">{{ req.user.profile.name }}</a>
                 / <i class="fa fa-gift o-blue"></i> {{ req.get_pricing_display }}
                 {% if req.price %}
                     / € {{ req.price|intcomma }}
@@ -50,7 +50,8 @@
             </div>
             {% if req.closed_by %}
                 <p class="o-green">
-                    <i class="fa fa-check-circle"></i> Solved by {{ req.closed_by.user.username }}
+                    <i class="fa fa-check-circle"></i> Solved by
+                    <a href="/profile/{{ req.closed_by.user.username }}/">{{ req.closed_by.user.profile.name }}</a>
                 </p>
             {% endif %}
             <p>

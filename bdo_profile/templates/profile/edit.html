@@ -80,6 +80,7 @@
                                     <label class="section-label o-blue">User type</label>
                                     <div class="form-group">
                                         <select name="user_type" class="form-control full-width">
+                                            <option value="" {% if not form.user_type.value %}selected{% endif %}>-</option>
                                             <option value="DATA_ANALYST" {% if form.user_type.value == 'DATA_ANALYST' %}selected{% endif %}>Data analyst</option>
                                             <option value="BUSINESS_USER" {% if form.user_type.value == 'BUSINESS_USER' %}selected{% endif %}>Business user</option>
                                             <option value="RESEARCHER" {% if form.user_type.value == 'RESEARCHER' %}selected{% endif %}>Researcher</option>
