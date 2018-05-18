@@ -39,7 +39,8 @@ function show_hide_results(){
     if ($("#showServiceOutputChkbox").is(':checked')) {
         $("#outputIframe").contents().find( "#service_result_container" ).show();
         $("#outputIframe").contents().find( "#service_result_container iframe" ).attr({
-            "src": 'http://localhost:8000/visualizations/get_line_chart_am/?y_var=i0_votemper&x_var=i0_time&query=1'});
+            // "src": 'http://localhost:8000/visualizations/get_line_chart_am/?y_var=i0_votemper&x_var=i0_time&query=1'
+        });
     }
     else{
         $("#outputIframe").contents().find( "#service_result_container" ).hide();
@@ -251,7 +252,8 @@ function show_hide_results(){
 
     var viz_request = "";
     function submit_conf(component_selector) {
-        viz_request = "http://localhost:8000/visualizations/";
+        // viz_request = "http://localhost:8000/visualizations/";
+        viz_request = "/visualizations/";
         viz_request += $('#addVizModal').find('.modal-body').find('#action').val();
         var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
 

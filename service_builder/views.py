@@ -44,6 +44,7 @@ def create_new_service(request):
         'available_viz': available_viz,
         'available_templates': available_templates,
         'notebook_id': service.notebook_id,
+        'zeppelin_url': settings.ZEPPELIN_URL,
         'service_id': service.id,})
 
 
