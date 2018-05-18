@@ -27,11 +27,15 @@ def create_new_service(request):
     available_viz = Visualization.objects.filter(hidden=False)
     available_templates = ServiceTemplate.objects.all()
     if settings.TEST_SERVICES:
-        service = Service.objects.get(pk=89)
-    else:
-        new_notebook_id = clone_zep_note("2DD9PT2CD", "BigDataOceanService")
+        #service = Service.objects.get(pk=89)
+        new_notebook_id = clone_zep_note("2DF6DH32T", "BigDataOceanService")
         # run_zep_paragraph(new_notebook_id, paragraph_id='20180514-011802_1275384604')
-        service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id='20180514-011802_1275384604')
+        service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id='20180518-114325_90076876')
+        service.save()
+    else:
+        new_notebook_id = clone_zep_note("2DF6DH32T", "BigDataOceanService")
+        # run_zep_paragraph(new_notebook_id, paragraph_id='20180514-011802_1275384604')
+        service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id='20180518-114325_90076876')
         service.save()
 
     # service = Service.objects.get(pk=3)
