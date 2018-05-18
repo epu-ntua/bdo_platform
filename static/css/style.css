@@ -12,8 +12,6 @@ body {
      margin-top: 0px !important;
 }
 
-
-
 /* Paddings */
 .padding-1 {
     padding: 5px;
@@ -544,3 +542,19 @@ text-align:right;
     margin-top:10px;
 }
 /* -----------------end of smouzakitis CSS---------------*/
+
+.avatar {
+    position: relative;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    display: inline-block;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+
+.avatar.avatar-lg {
+    width: 100px;
+    height: 100px;
+}

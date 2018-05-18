@@ -26,6 +26,9 @@ urlpatterns = [
     # main app
     url(r'^', include('bdo_main_app.urls')),
 
+    # profiles
+    url(r'^profile/', include('bdo_profile.urls')),
+
     # query designer
     url(r'^queries/', include('query_designer.urls')),
 
@@ -48,5 +51,8 @@ urlpatterns = [
     url(r'^upload/', include('uploader.urls')),
 
     # parser
-    url(r'^parse/', include('data_parser.urls'))
+    url(r'^parse/', include('data_parser.urls')),
+
+    # s3direct
+    url(r'^s3direct/', include('s3direct.urls')),
 ]

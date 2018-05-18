@@ -207,7 +207,8 @@
                                     </a>
                                     <ul class="dropdown-menu" style="text-align: right;">
                                         <li style="padding: 10px 20px;">Welcome <b>{{ request.user.username }}</b></li>
-                                        <li style="padding: 10px 20px;"><p><a href="/accounts/logout/">Logout</a></p></li>
+                                        <li style="padding: 5px 20px;"><p><a href="/profile/{{ request.user.username }}/">Profile</a></p></li>
+                                        <li style="padding: 5px 20px;"><p><a href="/accounts/logout/">Logout</a></p></li>
                                     </ul>
                                 {% else %}
                                     <a href="/accounts/login/">Login or Signup</a>
