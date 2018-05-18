@@ -19,7 +19,7 @@ class Service(Model):
     notebook_id = CharField(max_length=100)
     arguments_paragraph_id = CharField(max_length=100, null=True)
 
-    queries = JSONField(default={}, null=True)
+    queries = JSONField(default={}, null=True, blank=True)
     arguments = JSONField(default={}, null=True)
 
     output_html = TextField(null=True)
