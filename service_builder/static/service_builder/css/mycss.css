@@ -1,3 +1,9 @@
+#alg_select_options_tip{
+    opacity: .3;
+    position: relative;
+    top:4px;
+}
+
 #filter_arg_tip{
     opacity: .3;
     position: relative;
@@ -27,6 +33,13 @@
     position: relative;
     bottom:2px;
 }
+
+div.edit_hover_select_options:hover  #alg_select_options_tip{
+    opacity: inherit;
+    margin:auto;
+    cursor:help;
+}
+
 
 div.edit_hover_output:hover  #output_tip{
     opacity: inherit;

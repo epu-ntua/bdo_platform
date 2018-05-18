@@ -125,7 +125,23 @@
                         <select id="alg_vartype"></select>
                     </div>
                 </div>
-                <div class="form-group row">
+                <div class="form-group row" id ="hidden_select_options" style="display: none">
+                    <label for="alg_select_options_tip" class="col-sm-2 col-form-label"></label>
+                    <div class="col-sm-10 edit_hover_select_options" >
+                        <div>
+                            <label for="select_value_input">Value:</label>
+                            <input id="select_value_input" placeholder="Select Value">
+                            <label for="select_text_input">Text:</label>
+                            <input id="select_text_input" placeholder="Select Text">
+                            <i id="alg_select_options_tip" class="fa fa-info-circle " title="Fill the select element options by specifing a value and a text for each option." data-toggle="tooltip" data-placement="right" style="margin:auto; display: inline-block;" ></i>
+                            <button type="button" id="select_option_button" class="btn btn-xs btn-primary a-btn-slide-text" style="display: block"> + ADD OPTION </button>
+                        </div>
+                        <textarea class="form-control" rows="3"  id="alg_select_options" placeholder="Select Options" style="min-width: 100%; display:none" ></textarea>
+                        <select id="alg_select_options_sel" style=" display:inline-block ; margin-top: 5px" ></select>
+                        <button type="button" id="select_option_clear"  style=" display:inline-block" class="btn btn-xs btn-primary a-btn-slide-text" title="Clear all the options." data-toggle="tooltip" data-placement="right" ><span class="glyphicon glyphicon-trash"></span></button>
+                    </div>
+                </div>
+                <div class="form-group row" id="arg_def_val_div">
                     <label for="alg_vardefault" class="col-sm-2 col-form-label">Default Value</label>
                     <div class="col-sm-10">
                         <input class="form-control" id="alg_vardefault" placeholder="Default Value" >
