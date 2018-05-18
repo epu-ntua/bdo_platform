@@ -440,7 +440,7 @@ $(document).ready(function(){
     }
 
     function select_json_creator(val,text,selector){
-        string = '{"val":"'+val.toString()+'","text":"'+text.toString()+'"}'
+        string = '{"value":"'+val.toString()+'","text":"'+text.toString()+'"}'
         json_obj_list= JSON.parse(selector.val());
         json = JSON.parse(string);
         json_obj_list['options'].push(json);
