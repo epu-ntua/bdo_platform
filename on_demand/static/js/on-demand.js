@@ -11,7 +11,7 @@ $(function() {
         $this.text('Accepting...');
 
         var requestId = $this.data('requestid');
-        var replyId = $this.data('replayid');
+        var replyId = $this.data('replyid');
 
         $.ajax({
             url: '/on-demand/' + requestId + '/accept/' + replyId + '/',
