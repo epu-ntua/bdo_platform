@@ -60,5 +60,8 @@ class OnDemandUpvote(Model):
     user = ForeignKey('auth.User', related_name='on_demand_upvotes', on_delete=CASCADE)
     request = ForeignKey('OnDemandRequest', related_name='upvotes', on_delete=CASCADE)
 
+    class Meta:
+        unique_together = ('user', 'request', )
+
     def __unicode__(self):
         return '+1 on %s' % self.request

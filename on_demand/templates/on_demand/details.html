@@ -13,7 +13,7 @@
     <div class="col-md-6 col-xs-10">
         <div style="margin-bottom: 40px;">
             <a href="/on-demand/" class="btn btn-primary pull-right">
-                Back to requests
+                Show all requests
             </a>
         </div>
 
@@ -34,9 +34,7 @@
                 <div class="card-content">
                     <div class="row">
                         {% for reply in replies %}
-                            <div class="col-xs-12">
-                                {% include 'on_demand/response.html' %}
-                            </div>
+                            {% include 'on_demand/response.html' with req=object %}
                         {% empty %}
                             <p>No responses</p>
                         {% endfor %}
@@ -71,4 +69,8 @@
         </div>
     </div>
 
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'js/on-demand.js' %}"></script>
 {% endblock %}

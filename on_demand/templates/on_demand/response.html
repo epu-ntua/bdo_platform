@@ -1,8 +1,23 @@
 {% load humanize %}
 
-<div class="on-demand--reply">
-    <p class="o-gray">
-        <i class="fa fa-user-circle"></i>
-        {{ reply.user.username }}, {{ reply.created|naturaltime }}</p>
-    <p>{{ reply.text }}</p>
+<div class="col-xs-12 on-demand--reply-container{% if req.closed_by_id == reply.pk %} accepted{% endif %}">
+    <div class="on-demand--reply">
+        <p class="o-gray">
+            <i class="fa fa-user-circle"></i>
+            {{ reply.user.username }}, {{ reply.created|naturaltime }}
+            {% if req.closed_by_id == reply.pk %}
+                <span class="o-green">/ <i class="fa fa-check"></i> Accepted</span>
+            {% endif %}
+        </p>
+        <p>{{ reply.text }}</p>
+
+        {% if not req.closed_by_id and req.user == request.user %}
+            <div class="clearfix">
+                <button class="btn btn-sm btn-success pull-right btn-accept-response"
+                        data-requestid="{{ req.pk }}" data-replyid="{{ reply.pk }}">
+                    Accept
+                </button>
+            </div>
+        {% endif %}
+    </div>
 </div>

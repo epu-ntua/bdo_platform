@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views.generic import ListView, DetailView
 
@@ -24,7 +25,7 @@ class OnDemandRequestListView(ListView):
                 Q(title__icontains=q) | Q(description__icontains=q) | Q(keywords_raw__icontains=q)
             )
 
-        return queryset
+        return queryset.order_by('-updated')
 
     def get_context_data(self, **kwargs):
         context = super(OnDemandRequestListView, self).get_context_data(**kwargs)
@@ -57,6 +58,39 @@ def on_demand_create(request):
 
 
 @login_required
+def on_upvote(request, pk):
+    req = OnDemandRequest.objects.get(pk=pk)
+
+    # check if user has upvoted
+    try:
+        upvote = req.upvotes.get(user=request.user)
+    except:
+        upvote = None
+
+    if request.method == 'POST':
+        # create
+        if upvote is not None:
+            return JsonResponse({
+                'message': 'You have already upvoted this request'
+            }, status=400)
+
+        OnDemandUpvote.objects.create(user=request.user, request=req)
+        status = 201
+    elif request.method == 'DELETE':
+        if upvote is None:
+            return JsonResponse({
+                'message': 'You have not upvoted this request'
+            }, status=404)
+
+        upvote.delete()
+        status = 204
+    else:
+        return JsonResponse({'message': 'Invalid method: only POST and DELETE are allowed.'}, status=405)
+
+    return JsonResponse({}, status=status)
+
+
+@login_required
 def on_demand_update(request, pk):
     req = OnDemandRequest.objects.get(pk=pk, user=request.user)
 
@@ -75,6 +109,18 @@ def on_demand_update(request, pk):
         'form': form,
         'action': 'update',
     })
+
+
+@login_required
+def on_accept_reply(request, pk, reply_id):
+    req = OnDemandRequest.objects.get(pk=pk, user=request.user)
+    reply = OnDemandReply.objects.get(pk=reply_id, request=req)
+
+    if request.method == 'POST':
+        req.closed_by = reply
+        req.save()
+
+    return redirect(req.get_absolute_url())
 
 
 class OnDemandRequestDetailView(DetailView):

@@ -17,6 +17,29 @@
     border-bottom: 1px solid #eee;
 }
 
+.on-demand--reply-container.accepted {
+    border-radius: 4px;
+    background: rgba(6, 201, 27, 0.15);
+}
+
+.on-demand-request-list .on-demand-request-teaser {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.on-demand-request-list .on-demand-request-teaser:last-of-type {
+    border-bottom: none;
+}
+
+.on-demand--upvote {
+    color: #555;
+    cursor: pointer;
+}
+
+.on-demand--upvote.upvoted {
+    color: #32879c;
+}
+
 .paginator {
     text-align: center;
     border-top: 1px solid #eee;
