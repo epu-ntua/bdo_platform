@@ -43,13 +43,13 @@
                 });
             });
          $("#selected-arguments-table2 tbody tr").each(
-            function(index, elem){
+             function(index, elem){
                 if($(this).find($("td[data-columnname='type']")).children().eq(1).text() == 'SELECT') {
                     exposed_args['algorithm-arguments'].push({
                         name: $(this).find($("td[data-columnname='name']")).text(),
                         title: $(this).find($("td[data-columnname='title']")).text(),
                         type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
-                        options: $(this).find($("td[data-columnname='type']")).children().eq(2).text(),
+                        options: (JSON.parse($(this).find($("td[data-columnname='type']")).children().eq(2).text())['options']),
                         description: $(this).find($("td[data-columnname='description']")).text(),
                     });
                 }
