@@ -89,7 +89,7 @@ function updateVariables(element) {
 
 var viz_request = "";
 function submit_conf(component_selector) {
-    viz_request = "http://localhost:8000/visualizations/";
+    viz_request = "/visualizations/";
     var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
     viz_request += $('#action').val();
 

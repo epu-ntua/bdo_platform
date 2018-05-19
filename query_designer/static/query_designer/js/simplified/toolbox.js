@@ -975,7 +975,7 @@ $(function () {
                         var iframe = $('<iframe  onload="hide_gif();" />');
                         $("#viz_container iframe").remove();
                         $("#viz_container").append(iframe);
-                        $('#viz_container iframe').attr('src', 'http://localhost:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var[]=' + y_var + '&x_var=' + x_var);
+                        $('#viz_container iframe').attr('src', '/visualizations/get_line_chart_am/?query=' + id + '&y_var[]=' + y_var + '&x_var=' + x_var);
 
 
 
