@@ -9,6 +9,11 @@
             height: 350px !important;
         }
 
+        .modal-content{
+            height: 90vh;
+            overflow: auto;
+        }
+
         #myModal .nav-pills > li.active a{
             background-color: #30526a !important;
         }
@@ -64,9 +69,8 @@
         }
 
         .modal .modal-content .modal-body {
-            min-height: 500px;
-            height: 590px;
-            overflow-y: scroll;
+            height: 75vh;
+            overflow-y: auto;
             padding: 0 24px 0 24px;
         }
 
@@ -348,13 +352,7 @@
             <div class="modal-content">
                 <div class="modal-header text-center">
                     {#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
-                    <h4 class="modal-title">Add a new widget to the dashboard</h4>
-{#                    <div class="modal-tab" id="modal-tab-data">Data</div>#}
-{#                    <div class="modal-tab" id="modal-tab-notes">Notes</div>#}
-                    <ul class="nav nav-pills">
-                      <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
-                      <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
-                    </ul>
+
 {#                    <button type="button" id="select_note_popover" class="btn btn-lg btn-primary"#}
 {#                                data-toggle="popover" title="Write your note" data-placement="bottom"#}
 {#                        >Write Note#}
@@ -362,6 +360,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="tab-content">
+                        <div class="text-center">
+                            <h4 class="modal-title">Add a new widget to the dashboard</h4>
+    {#                    <div class="modal-tab" id="modal-tab-data">Data</div>#}
+    {#                    <div class="modal-tab" id="modal-tab-notes">Notes</div>#}
+                            <ul class="nav nav-pills">
+                              <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
+                              <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
+                            </ul>
+                        </div>
                         <div class="tab-pane fade in active" id="viz_widget">
                             <div class="row text-left" id="model-button-row">
                                 <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
@@ -818,6 +825,7 @@
             $("#myModal #select_data_popover").popover({
                 html: true,
                 animation: true,
+                title: 'Select query to use',
                 content: function () {
                     return $('#query-container').html();
                 }
