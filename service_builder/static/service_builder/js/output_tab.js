@@ -240,8 +240,16 @@ function show_hide_results(){
         $('.popover').popover('hide');
     });
 
-    $('#addVizModal select').on('change', function() {
-        $('#addVizModal #viz_config').show();
+    $('#addVizModal #query select').on('change', function() {
+        $('#addVizModal #query #viz_config').show();
+        var new_query_id = $(this).children(":selected").attr("data-query-id");
+        $('#addVizModal #query #selected_query').val(new_query_id);
+        $('.popover').popover('hide');
+          updateVariables(this);
+    });
+
+    $('#addVizModal #dataframe #selected_dataframe').on('change', function() {
+        $('#addVizModal #dataframe #viz_config').show();
         var new_query_id = $(this).children(":selected").attr("data-query-id");
         $('#addVizModal #selected_query').val(new_query_id);
         $('.popover').popover('hide');
@@ -250,7 +258,7 @@ function show_hide_results(){
 
 
 
-    $(".viz_item").click(function (element) {
+    $("#query .viz_item").click(function (element) {
       var component_id = $(this).attr('data-viz-id');
       var component_selector = 'li[data-viz-id="'+component_id+'"]';
       $.ajax({
@@ -276,7 +284,41 @@ function show_hide_results(){
                 $(component_selector).popover('toggle');
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id+' #select_conf_ok').click(function(e){
-                    submit_conf(component_selector);
+                    submit_conf(component_selector, 'query');
+                    $(component_selector).popover("hide");
+                });
+            }
+        });
+    });
+
+    $("#dataframe .viz_item").click(function (element) {
+      var component_id = $(this).attr('data-viz-id');
+      var component_selector = '#dataframe li[data-viz-id="'+component_id+'"]';
+      $.ajax({
+            url: '/dashboards/get_visualization_form_fields_df',
+            data: {
+                id: parseInt(component_id),
+                order: 1
+                },
+            type: 'GET',
+            success: function(form_fields){
+                $("#conf-container").html(form_fields);
+                $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
+
+                $(component_selector).popover({
+                    html: true,
+                    title: 'Configure visualisation',
+                    trigger: 'manual',
+                    content: function() {
+                        return $('#conf-container').html();
+                    }
+                });
+                $(component_selector).popover('toggle');
+                // alert("submit conf");
+                var popver_id = '#' + $(component_selector).attr('aria-describedby');
+                $(popver_id+' #select_conf_ok').click(function(e){
+                    // alert("submit conf");
+                    submit_conf(component_selector, 'df');
                     $(component_selector).popover("hide");
                 });
             }
@@ -285,12 +327,12 @@ function show_hide_results(){
 
 
     var viz_request = "";
-    function submit_conf(component_selector) {
+    function submit_conf(component_selector, from) {
         // viz_request = "http://localhost:8000/visualizations/";
         viz_request = "/visualizations/";
         viz_request += $('#addVizModal').find('.modal-body').find('#action').val();
         var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-
+        // alert(viz_request);
         var submitted_args = $('#addVizModal').find(conf_popover_id).find('.popover-content').clone();
         var selects = $('#addVizModal').find(conf_popover_id).find('.popover-content').find("select");
         $(selects).each(function(i) {
@@ -305,27 +347,54 @@ function show_hide_results(){
         viz_request += '?';
         viz_request += myData;
 
-        viz_request += '&query=' + $('#addVizModal #selected_query').val();
-
-        show_viz(viz_request);
+        if (from === 'query')
+            viz_request += '&query=' + $('#addVizModal #selected_query').val();
+        else
+            viz_request += '&df=' + $('#addVizModal #selected_dataframe').val();
+            viz_request += '&notebook_id=' + $('#notebook_id').val();
+        // alert(viz_request);
+        show_viz(viz_request, from);
     }
 
-    function show_viz(viz_request) {
-        $("#viz_container").html('<iframe id="viz-iframe" ' +
-            'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
-            '></iframe>');
+    function show_viz(viz_request, from) {
+        if (from === 'query')
+            $("#query #viz_container").html('<iframe id="viz-iframe" ' +
+                'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+                '></iframe>');
+        else
+            $("#dataframe #viz_container").html('<iframe id="viz-iframe" ' +
+                'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+                '></iframe>');
     }
 
 
-    $("#addVizModal #submit-modal-btn").click(function () {
-        $('#viz_container iframe').appendTo('#dynamic_dashboard');
+    $("#addVizModal #submit-query-btn").click(function () {
+        $('#query #viz_container iframe').appendTo('#dynamic_dashboard');
         html_editor.replaceRange('\n<iframe src="'+viz_request+'" frameborder="0" allowfullscreen=""/>\n', {line: Infinity});
         html_editor.refresh();
         viz_request = "";
-        $('#addVizModal #viz_container').empty();
+        $('#query #addVizModal #viz_container').empty();
     });
+
+    $("#addVizModal #submit-dataframe-btn").click(function () {
+        $('#dataframe #viz_container iframe').appendTo('#dynamic_dashboard');
+        html_editor.replaceRange('\n<iframe src="'+viz_request+'" frameborder="0" allowfullscreen=""/>\n', {line: Infinity});
+        html_editor.refresh();
+        viz_request = "";
+        $('#dataframe #addVizModal #viz_container').empty();
+    });
+
     $("#dismiss-modal-btn").click(function m (e) {
         viz_request = "";
         $('#addVizModal #viz_container').empty();
     });
 
+    $("#queryPill").click(function () {
+        $("#addVizModal #submit-dataframe-btn").hide();
+        $("#addVizModal #submit-query-btn").show();
+    });
+
+    $("#dataframePill").click(function () {
+        $("#addVizModal #submit-dataframe-btn").show();
+        $("#addVizModal #submit-query-btn").hide();
+    });

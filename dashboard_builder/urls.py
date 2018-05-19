@@ -9,4 +9,5 @@ urlpatterns = [
     url('save/(?P<pk>\d+)/$', views.save_dashboard, name='save_dashboard'),
 
     url('^get_visualization_form_fields$', views.get_visualization_form_fields, name='get_visualization_form_fields'),
+    url('^get_visualization_form_fields_df$', views.get_visualization_form_fields_df, name='get_visualization_form_fields_df'),
 ]

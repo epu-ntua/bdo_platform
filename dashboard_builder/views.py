@@ -45,6 +45,17 @@ def get_visualization_form_fields(request):
     return HttpResponse(html)
 
 
+def get_visualization_form_fields_df(request):
+    viz_id = request.GET.get('id')
+    order = request.GET.get('order')
+    visualization = Visualization.objects.get(pk=viz_id)
+    html = render_to_string('dashboard_builder/config-visualization-form-fields-df.html', {'order': order,
+                                                                                        'viz_id': viz_id,
+                                                                                        'info': visualization.info,
+                                                                                        'action': visualization.view_name})
+    return HttpResponse(html)
+
+
 def save_dashboard(request, pk=None):
     # create or update
     if not pk:
