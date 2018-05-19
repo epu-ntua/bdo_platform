@@ -113,7 +113,7 @@ $(document).ready(function(){
                             $(temp).find($("td[data-columnname='default']")).text(new_alg_arg_default);
                             $(temp).find($("td[data-columnname='description']")).text(new_alg_arg_desc);
                             // Update service arguments on backend
-                            update_service_arguments();
+                            update_service_arguments('alg');
                             $(edit_sel).popover("hide");
                         }else{
                             alert("Please fill the name and title of the new variable!")
@@ -127,10 +127,10 @@ $(document).ready(function(){
                     temp="#row_id_"+temp;
                     $(temp).remove();
                     // Update service arguments on backend
-                    update_service_arguments();
+                    update_service_arguments('alg');
                 });
                 // Update service arguments on backend
-                update_service_arguments();
+                update_service_arguments('alg');
                 //Update backend when the service is published.
                 $('#add_alg_arg_popbtn').popover("hide");
             }else{
@@ -230,7 +230,8 @@ $(document).ready(function(){
                 alert("Argument name or title already exists!")
             }
             else if((selected)&&(new_filter_arg_title!=null)&&(new_filter_arg_def!=null)&&(new_filter_arg_title.trim()!="")&&(new_filter_arg_def.trim()!="")) {
-                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='query_id'>" + new_arg_query_id + "</td> <td data-columnname='query_name'>" + new_arg_query_display_name + "</td> <td data-columnname='filter'> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td data-columnname='filter_type'> <span>"+ new_filter_arg_type+"</span><span style='display:none;'>"+new_filter_arg_typevalue+"</span>  </td><td data-columnname='def_val'> " +new_filter_arg_def + "</td> <td  data-columnname='name'>"+ new_filter_arg_name+"</td><td data-columnname='title'> " + new_filter_arg_title + "</td> <td data-columnname='description'><div  style='min-width: 100%'>" + new_filter_arg_desc + "</div></td><td>" + edit_row_btn +del_row_btn+"</td> </tr>";
+                // var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='query_id'>" + new_arg_query_id + "</td> <td data-columnname='query_name'>" + new_arg_query_display_name + "</td> <td data-columnname='filter'> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td data-columnname='filter_type'> <span>"+ new_filter_arg_type+"</span><span style='display:none;'>"+new_filter_arg_typevalue+"</span>  </td><td data-columnname='def_val'> " +new_filter_arg_def + "</td> <td  data-columnname='name'>"+ new_filter_arg_name+"</td><td data-columnname='title'> " + new_filter_arg_title + "</td> <td data-columnname='description'><div  style='min-width: 100%'>" + new_filter_arg_desc + "</div></td><td>" + edit_row_btn +del_row_btn+"</td> </tr>";
+                var new_arg_tr_string = "<tr id='row_id_"+countrow.toString()+"'> <td data-columnname='query_id' style='display: none;'>" + new_arg_query_id + "</td> <td data-columnname='query_name'>" + new_arg_query_display_name + "</td> <td data-columnname='filter'> <span>" + new_arg_a + " </span><span> " + new_arg_op + "</span></td> <td data-columnname='filter_type'> <span>"+ new_filter_arg_type+"</span><span style='display:none;'>"+new_filter_arg_typevalue+"</span>  </td><td data-columnname='def_val'> " +new_filter_arg_def + "</td> <td  data-columnname='name'>"+ new_filter_arg_name+"</td><td data-columnname='title'> " + new_filter_arg_title + "</td> <td data-columnname='description'><div  style='min-width: 100%'>" + new_filter_arg_desc + "</div></td><td>" + edit_row_btn +del_row_btn+"</td> </tr>";
                 $('#selected-arguments-table1 tbody').append(new_arg_tr_string);
 
                 $(edit_sel).popover({
@@ -294,7 +295,7 @@ $(document).ready(function(){
                             $(temp).find($("td[data-columnname='filter_type']")).children().eq(1).text(new_filter_typevalue);
 
                             // Update service arguments on backend
-                            update_service_arguments();
+                            update_service_arguments('filter');
                             $(edit_sel).popover("hide");
                          }else{
                             alert("Please fill the name and title of the new variable!")
@@ -308,10 +309,10 @@ $(document).ready(function(){
                     temp="#row_id_"+temp;
                     $(temp).remove();
                     // Update service arguments on backend
-                    update_service_arguments();
+                    update_service_arguments('filter');
                 });
                 // Update service arguments on backend
-                update_service_arguments();
+                update_service_arguments('filter');
                 //Chose to update arguments on backend (create JSON file) when publishing.
                 selected = false;
                 $('#add_filter_arg_popbtn').popover("hide");

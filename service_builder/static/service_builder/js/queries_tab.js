@@ -52,7 +52,8 @@ $(document).ready(function(){
         $('.popover-content #add_new_query_btn').click(function (e) {
             if(selected) {
                 number_of_queries++;
-                var new_query_tr_string = "<tr> <td data-columnname='query_id'>" + new_query_id + "</td> <td data-columnname='number'>Q" + number_of_queries + "</td> <td data-columnname='title'>" + new_query_title + "</td> <td data-columnname='doc'>" + new_query_document + "</td><td></td> </tr>";
+                // var new_query_tr_string = "<tr> <td data-columnname='query_id'>" + new_query_id + "</td> <td data-columnname='number'>Q" + number_of_queries + "</td> <td data-columnname='title'>" + new_query_title + "</td> <td data-columnname='doc'>" + new_query_document + "</td><td></td> </tr>";
+                var new_query_tr_string = "<tr> <td data-columnname='query_id'>" + new_query_id + "</td> <td data-columnname='number'>Q" + number_of_queries + "</td> <td data-columnname='title'>" + new_query_title + "</td> <td data-columnname='doc' style='display: none;'>" + new_query_document + "</td><td></td> </tr>";
                 $('#selected-queries-table tbody').append(new_query_tr_string);
 
                 // Add the query to the Object that stores all the selected queries

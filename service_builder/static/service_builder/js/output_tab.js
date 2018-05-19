@@ -12,7 +12,7 @@ var preview_service = function () {
         },
         "success": function(result) {
             console.log(result);
-            $('#outputIframe').attr("src", "/service_builder/service/"+service_id+"/");
+            $('#outputIframe').attr("src", "/service_builder/service/"+service_id+"/preview/");
         },
         error: function (jqXHR) {
             alert('error');
@@ -143,9 +143,43 @@ function show_hide_results(){
 	}
 
 	// SETTING CODE EDITORS INITIAL CONTENT
-	html_editor.setValue('<h1>Service 1</h1>');
-	css_editor.setValue("h1 { color: blue; }\n" +
+	html_editor.setValue('' +
+        '<p>Give your service HTML here!</p>\n' +
+        '<div id="service_args_container"></div>\n' +
+        '<button class="btn-sm" id="submitServiceConfig">Submit</button>\n' +
+        '<div id="service_result_container"></div>\n');
+	css_editor.setValue("p { color: #30526a; }\n" +
                         "iframe {width: 100%; height:300px;}");
+	js_editor.setValue("<script type='text/javascript'>" +
+        "// Get form fields of all the service arguments\n" +
+        "$(document).ready(function () {\n" +
+        "   $.ajax({\n" +
+        "       url: '/service_builder/load_service_args_form_fields/',\n" +
+        "           data: {\n" +
+        "           service_id: get_service_id()\n" +
+        "       },\n" +
+        "       type: 'GET',\n" +
+        "       success: function(form_fields){\n" +
+        "           $('#service_args_container').html(form_fields);\n" +
+        "       }\n" +
+        "   });\n" +
+        "});\n" +
+        " // Submit the service arguments \n" +
+        "$(\"#submitServiceConfig\").click(function (element) { \n" +
+        "   $.ajax({ \n" +
+        "       url: '/service_builder/service/'+get_service_id()+'/execute/', \n" +
+        "       data: $('#service_args_container').serialize(), \n" +
+        "       type: 'GET', \n" +
+        "       success: function(result){ \n" +
+        "           $(\"#service_result_container\").html( result );\n" +
+        "       },\n" +
+        "        error: function () {\n" +
+        "            alert('An error occured');\n" +
+        "       }\n" +
+        "   });\n" +
+        "});\n" +
+        "</script>\n" +
+        "\n");
 
 
 

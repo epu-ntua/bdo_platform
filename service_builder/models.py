@@ -27,7 +27,9 @@ class Service(Model):
     output_js = TextField(null=True)
 
     description = CharField(blank=True,max_length=512,null=True,default=None)
+    price = CharField(max_length=50,default='free')
     imageurl = URLField(blank=True,null=True, default=None)
+
 class ServiceTemplate(Model):
     html = TextField()
     css = TextField()

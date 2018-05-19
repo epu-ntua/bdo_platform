@@ -73,7 +73,7 @@
         });
     }
 
-    function update_service_arguments() {
+    function update_service_arguments(type) {
         var exposed_args = gather_arguments();
         // alert(JSON.stringify(exposed_args));
         $.ajax({
@@ -88,6 +88,13 @@
             },
             error: function (jqXHR) {
                 alert('error');
+                if (type === 'alg'){
+                    $("#selected-arguments-table2 tbody").children().last().remove();
+                }
+                else{
+                    $("#selected-arguments-table1 tbody").children().last().remove();
+                }
+
             }
         });
     }
@@ -101,12 +108,17 @@
             "type": "POST",
             "url": "/service_builder/publish/",
             "data": {
+                service_id: service_id,
                 notebook_id: notebook_id,
                 selected_queries: JSON.stringify(service_queries),
                 exposed_args: JSON.stringify(exposed_args),
                 output_html: html_editor.getValue(),
                 output_css: css_editor.getValue(),
-                output_js: js_editor.getValue()
+                output_js: js_editor.getValue(),
+                title: $("#publishForm #title").val(),
+                private: $("#publishForm #private").val(),
+                description: $("#publishForm #description").val(),
+                price: $("#publishForm #price").val()
             },
             "success": function(result) {
                 console.log(result);

@@ -161,4 +161,34 @@
             </div>
         </div>
     </div>
+
+
+
+    <div id="publishModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+{#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
+                    <h4 class="modal-title">Publish your service</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="publishForm" style="text-align: center; padding-top: 50px;">
+                        <label for="title">Title</label>
+                        <input type="text" name="title" class="form-control" id="title">
+                        <label for="private">Private</label>
+                        <input type="checkbox" class="form-control" name="private" id="private" value="True">
+                        <label for="price">Price</label>
+                        <input type="text" class="form-control" id="price" name="price" value="free">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="publish_service_btn">Publish</button>
+                    <button type="button" class="btn btn-default"  data-dismiss="modal" id="dismiss-service-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 
 from query_designer.models import Query, TempQuery
+from service_builder.forms import ServiceForm
 from visualizer.models import Visualization
 from service_builder.models import Service, ServiceTemplate
 from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph, run_zep_note, clone_zep_note, delete_zep_paragraph, \
@@ -27,17 +28,18 @@ def create_new_service(request):
     available_viz = Visualization.objects.filter(hidden=False)
     available_templates = ServiceTemplate.objects.all()
     if settings.TEST_SERVICES:
-        #service = Service.objects.get(pk=89)
-        new_notebook_id = clone_zep_note("2DF6DH32T", "BigDataOceanService")
+        service = Service.objects.get(pk=89)
+        # new_notebook_id = clone_zep_note("2DF6DH32T", "BigDataOceanService")
         # run_zep_paragraph(new_notebook_id, paragraph_id='20180514-011802_1275384604')
-        service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id='20180518-114325_90076876')
-        service.save()
+        # service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id='20180518-114325_90076876')
+        # service.save()
     else:
-        new_notebook_id = clone_zep_note("2DF6DH32T", "BigDataOceanService")
+        new_notebook_id = clone_zep_note(settings.SERVICE_BUILDER_BASE_NOTE, "BigDataOceanService")
         # run_zep_paragraph(new_notebook_id, paragraph_id='20180514-011802_1275384604')
-        service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id='20180518-114325_90076876')
+        service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH)
         service.save()
 
+    form = ServiceForm()
     # service = Service.objects.get(pk=3)
     return render(request, 'service_builder/create_new_service.html', {
         'saved_queries': saved_queries,
@@ -45,13 +47,14 @@ def create_new_service(request):
         'available_templates': available_templates,
         'notebook_id': service.notebook_id,
         'zeppelin_url': settings.ZEPPELIN_URL,
-        'service_id': service.id,})
+        'service_id': service.id,
+        'service_form': form})
 
 
 def run_initial_zep_paragraph(request):
     service_id = request.POST.get('service_id')
     service = Service.objects.get(pk=service_id)
-    run_zep_paragraph(service.notebook_id, paragraph_id='20180514-011802_1275384604')
+    run_zep_paragraph(service.notebook_id, paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH)
     return HttpResponse("OK")
 
 
@@ -130,12 +133,19 @@ def publish_new_service(request):
         # print output_css
         output_js = str(request.POST.get('output_js'))
         # print output_js
+        title = str(request.POST.get('title'))
+        description = str(request.POST.get('description'))
+        price = str(request.POST.get('price'))
+        private = str(request.POST.get('private'))
 
-        service = Service()
+        service_id = int(request.POST.get('service_id'))
+
+
+        service = Service.objects.get(pk=service_id)
         service.user = request.user
-        service.title = 'A Test Service'
 
-        service.notebook_id = ''
+        service.notebook_id = notebook_id
+
         service.queries = selected_queries
 
         for arg in arguments['filter-arguments']:
@@ -149,6 +159,14 @@ def publish_new_service(request):
         service.output_html = output_html
         service.output_css = output_css
         service.output_js = output_js
+
+        service.title = title
+        service.description = description
+        service.price = price
+        if private == "True":
+            service.private = True
+        else:
+            service.private = False
 
         service.save()
 
@@ -182,6 +200,29 @@ def load_service(request, pk):
     #         output_js = f.read()
 
     output_html = output_html.replace('src', 'src-a')
+
+    return render(request, 'service_builder/load_service.html', {
+        'service_title': service.title,
+        'output_html': output_html,
+        'output_css': output_css,
+        'output_js': output_js,
+        'arguments': json.dumps(arguments),
+        'service_id': pk,
+        'published': service.published})
+
+
+def load_service_preview(request, pk):
+    service = Service.objects.get(pk=pk)
+    title = service.title
+
+
+    notebook_id = service.notebook_id
+    queries = service.queries
+    arguments = service.arguments
+
+    output_html = service.output_html
+    output_css = service.output_css
+    output_js = service.output_js
 
     return render(request, 'service_builder/load_service.html', {
         'service_title': service.title,

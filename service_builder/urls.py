@@ -10,6 +10,7 @@ urlpatterns = [
     url('^publish/$', views.publish_new_service, name='publish_new_service'),
 
     url('service/(?P<pk>\d+)/$', views.load_service, name='load_service'),
+    url('service/(?P<pk>\d+)/preview/$', views.load_service_preview, name='load_service_preview'),
     url('service/(?P<service_id>\d+)/execute/$', views.submit_service_args, name='submit_service_args'),
 
     url('load_service_args_form_fields/$', views.load_service_args_form_fields, name='load_service_args_form_fields'),
