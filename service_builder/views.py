@@ -300,6 +300,7 @@ def update_service_arguments(request):
 
 def submit_service_args(request, service_id):
     service = Service.objects.get(pk=int(service_id))
+    livy = service.through_livy
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now())
     service_exec.save()
 
@@ -411,9 +412,12 @@ def submit_service_args(request, service_id):
 
     # 4.RUN THE SERVICE CODE (one by one paragraph, or all together. CHOOSE..)
     try:
-        livy_session = run_zep_note(notebook_id=new_notebook_id, exclude=excluded_paragraphs)
-        service_exec.livy_session = livy_session
-        service_exec.save()
+        if livy:
+            livy_session = run_zep_note(notebook_id=new_notebook_id, exclude=excluded_paragraphs, mode='livy')
+            service_exec.livy_session = livy_session
+            service_exec.save()
+        else:
+            run_zep_note(notebook_id=new_notebook_id, exclude=excluded_paragraphs, mode='zeppelin')
         # data = create_livy_toJSON_paragraph()
         # with open('df_json_{0}___{1}.json'.format(new_notebook_id, df_name), 'w') as outfile:
         #     json.dump(data, outfile)
@@ -424,11 +428,15 @@ def submit_service_args(request, service_id):
                 delete_zep_paragraph(notebook_id=str(new_notebook_id), paragraph_id=str(p))
 
         # 5. GET THE SERVICE RESULTS
-        # result_paragraph_id = create_zep_getDict_paragraph(notebook_id=new_notebook_id, title='', dict_name='result')
-        # run_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id, livy_session_id=livy_session)
-        # result = get_zep_getDict_paragraph_response(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
-        # delete_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
-        result = get_result_dict_from_livy(livy_session, 'result')
+        if livy:
+            result = get_result_dict_from_livy(livy_session, 'result')
+        else:
+            result_paragraph_id = create_zep_getDict_paragraph(notebook_id=new_notebook_id, title='', dict_name='result')
+            run_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id, livy_session_id=0, mode='zeppelin')
+            result = get_zep_getDict_paragraph_response(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
+            delete_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
+
+
         print 'result: ' + str(result)
         # result = json.loads(str(result))
 
@@ -490,7 +498,8 @@ def submit_service_args(request, service_id):
         return HttpResponse(template.render(context))
     except Exception as e:
         print '%s (%s)' % (e.message, type(e))
-        close_livy_session(service_exec.livy_session)
+        if livy:
+            close_livy_session(service_exec.livy_session)
 
         return HttpResponse(status=500)
 

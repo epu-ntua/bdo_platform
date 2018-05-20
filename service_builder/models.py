@@ -26,6 +26,8 @@ class Service(Model):
     output_css = TextField(null=True)
     output_js = TextField(null=True)
 
+    through_livy = BooleanField(default=False)
+
     description = CharField(blank=True,max_length=512,null=True,default=None)
     price = CharField(max_length=50,default='free')
     imageurl = URLField(blank=True,null=True, default=None)

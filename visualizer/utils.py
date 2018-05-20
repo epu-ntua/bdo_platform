@@ -183,8 +183,9 @@ def clone_zep_note(notebook_id, name):
     return notebook_id
 
 
-def run_zep_note(notebook_id, exclude=[]):
-    session_id = create_livy_session()
+def run_zep_note(notebook_id, exclude=[], mode='zeppelin'):
+    if mode == 'livy':
+        session_id = create_livy_session()
     response_status = 500
     # number of tries
     counter = 1
@@ -196,9 +197,14 @@ def run_zep_note(notebook_id, exclude=[]):
             paragraphs.append(p['id'])
         else:
             print 'excluded paragraph: {0}'.format(str(p['id']))
-    for p in paragraphs:
-        run_zep_paragraph(notebook_id, p, session_id)
-    return session_id
+    if mode == 'livy':
+        for p in paragraphs:
+            run_zep_paragraph(notebook_id, p, session_id, mode)
+        return session_id
+    else:
+        for p in paragraphs:
+            run_zep_paragraph(notebook_id, p, 0, mode)
+        return 0
 
 def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     data = dict()
@@ -312,33 +318,34 @@ def execute_code_on_livy(code, session_id, kind):
     return statement_id
 
 
-def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id):
-    data = dict()
-    str_data = json.dumps(data)
-    response = requests.get(settings.ZEPPELIN_URL + "/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id), data=str_data)
-    print response
-    response_json = convert_unicode_json(response.json())
-    code = str(response_json['body']['text']).strip().replace("u'{", "{")
-    kind = 'spark'
-    if 'pyspark' in code:
-        kind = 'pyspark'
-    code = code.replace('%spark.pyspark\n', '').replace('%spark.pyspark', '').replace('%pyspark\n', '').replace('%pyspark', '').replace('%spark\n', '').replace('%spark', '')
+def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
+    if mode == 'livy':
+        data = dict()
+        str_data = json.dumps(data)
+        response = requests.get(settings.ZEPPELIN_URL + "/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id), data=str_data)
+        print response
+        response_json = convert_unicode_json(response.json())
+        code = str(response_json['body']['text']).strip().replace("u'{", "{")
+        kind = 'spark'
+        if 'pyspark' in code:
+            kind = 'pyspark'
+        code = code.replace('%spark.pyspark\n', '').replace('%spark.pyspark', '').replace('%pyspark\n', '').replace('%pyspark', '').replace('%spark\n', '').replace('%spark', '')
 
-    if code is not None or code != '':
-        execute_code_on_livy(code=code, session_id=livy_session_id, kind=kind)
-
-    # response_status = 500
-    # counter = 3
-    # while response_status != 200:
-    #     data = dict()
-    #     str_data = json.dumps(data)
-    #     response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/run/" + str(notebook_id) + "/" + str(paragraph_id), data=str_data)
-    #     print response
-    #     counter -= 1
-    #     if counter < 0:
-    #         return HttpResponse(status=500)
-    #     response_status = response.status_code
-    #     # TODO: CHANGE THE ABOVE CODE BECAUSE EVERY TIME STATUS 500 IS RETURNED
+        if code is not None or code != '':
+            execute_code_on_livy(code=code, session_id=livy_session_id, kind=kind)
+    else:
+        response_status = 500
+        counter = 3
+        while response_status != 200:
+            data = dict()
+            str_data = json.dumps(data)
+            response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/run/" + str(notebook_id) + "/" + str(paragraph_id), data=str_data)
+            print response
+            counter -= 1
+            if counter < 0:
+                return HttpResponse(status=500)
+            response_status = response.status_code
+            # TODO: CHANGE THE ABOVE CODE BECAUSE EVERY TIME STATUS 500 IS RETURNED
 
 
 def create_zep_viz_paragraph(notebook_id, title):
@@ -835,7 +842,7 @@ def create_livy_session():
              'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
              'driverMemory': '7g',
              'driverCores': 2,
-             'numExecutors': 4,
+             'numExecutors': 1,
              'executorMemory': '5g',
              'executorCores': 2}
     headers = {'Content-Type': 'application/json'}
@@ -911,6 +918,30 @@ def create_livy_toJSON_paragraph(session_id, df_name, order_by='', order_type='A
     return convert_unicode_json(response['output']['data']['text/plain'].replace("u'{", "{").replace("}',", "},").replace("}']", "}]").replace("'", '"'))
 
 
+def create_livy_scala_toJSON_paragraph(session_id, df_name):
+    host = settings.LIVY_URL
+    headers = {'Content-Type': 'application/json'}
+
+    data = dict()
+    data['code'] = '{0}_scala.orderBy("startValues").toJSON.collect'.format(df_name)
+    data['kind'] = 'spark'
+    statements_url = host + '/sessions/{0}/statements'.format(session_id)
+    response = requests.post(statements_url, data=json.dumps(data), headers=headers).json()
+    print response
+    try:
+        statement_id = response['id']
+        state = ''
+        while state != 'available':
+            response = requests.get(host + '/sessions/' + str(session_id) + '/statements/' + str(statement_id), headers=headers).json()
+            state = response['state']
+            if state == 'error' or state == 'cancelling' or state == 'cancelled':
+                raise Exception('Failed')
+    except Exception:
+        raise Exception('Failed')
+    return_val = '[' + str(convert_unicode_json(response['output']['data']['text/plain'].replace("u'{", "{").replace("}',", "},").replace("}']", "}]").replace("'", '"').split('Array(')[1].replace('})', '}').replace('\n', ''))) + ']'
+    return json.loads(return_val)
+
+
 def get_result_dict_from_livy(session_id, dict_name):
     host = settings.LIVY_URL
     headers = {'Content-Type': 'application/json'}
@@ -939,6 +970,7 @@ def get_result_dict_from_livy(session_id, dict_name):
     return_val = json.loads(str(convert_unicode_json(response['output']['data']['text/plain'])).replace("'", '"'))
     print return_val
     return return_val
+
 
 def close_livy_session(session_id):
     requests.delete("{0}/sessions/{1}".format(settings.LIVY_URL, session_id))
