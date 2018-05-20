@@ -758,7 +758,7 @@ def create_zep_scala_histogram_paragraph(notebook_id, title, df_name, hist_col, 
                    '\nval {0}_scala = spark.table("{0}_scala")' \
                    '\nval (startValues,counts) = {0}_scala.select("{1}").map(value => value.getDouble(0)).rdd.histogram({2})' \
                    '\nval {0}_scala = sc.parallelize(startValues zip counts).toDF("startValues","counts").withColumn("startValues", round($"startValues", 3))' \
-                   '\nsqlc.dropTempTable("{0}_scala")'.format(df_name, hist_col, num_of_bins)
+                   '\nspark.sqlContext.dropTempTable("{0}_scala")'.format(df_name, hist_col, num_of_bins)
 
     str_data = json.dumps(data)
     response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
@@ -842,9 +842,10 @@ def create_livy_session():
              'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
              'driverMemory': '7g',
              'driverCores': 2,
-             'numExecutors': 1,
+             'numExecutors': 2,
              'executorMemory': '5g',
-             'executorCores': 2}
+             'executorCores': 2,
+             'heartbeatTimeoutInSecond': 60}
     headers = {'Content-Type': 'application/json'}
     response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
     print response

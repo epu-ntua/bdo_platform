@@ -13,6 +13,8 @@ from django.template import Context, Template
 from bs4 import BeautifulSoup
 from django.conf import settings
 
+from background_task import background
+
 from query_designer.models import Query, TempQuery
 from service_builder.forms import ServiceForm
 from visualizer.models import Visualization
@@ -70,6 +72,11 @@ def convert_unicode_json(data):
         return type(data)(map(convert_unicode_json, data))
     else:
         return data
+
+
+@background(schedule=120)
+def clean_up_new_note(notebook_id):
+    delete_zep_notebook(notebook_id)
 
 
 def update_filter(doc_filters, arg):
@@ -355,6 +362,7 @@ def submit_service_args(request, service_id):
     else:
         excluded_paragraphs = []
         new_notebook_id = clone_zep_note(original_notebook_id, "")
+        clean_up_new_note(new_notebook_id)
 
     service_exec.notebook_id = new_notebook_id
     service_exec.save()

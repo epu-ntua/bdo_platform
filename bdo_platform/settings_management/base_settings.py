@@ -55,6 +55,9 @@ INSTALLED_APPS = [
     'djangobower',
     'ckeditor',
 
+    #scheduled_tasks
+    'background_task',
+
     # apps
     'bdo_main_app',
     'aggregator',
