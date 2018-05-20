@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from datetime import date
 from django.contrib.auth.models import User
+from django.utils.timezone import now
 
 # Create your models here.
 
@@ -27,7 +28,7 @@ class UserRequests(models.Model):
     keywords = models.TextField(max_length=500)
     service_description = models.TextField(max_length=500)
     service_type = models.CharField(max_length=2, choices=SERVICE_TYPE, default='CD')
-    deadline = models.DateField(default=date.today())
+    deadline = models.DateField(default=now)
     budget = models.IntegerField()
     file = models.FileField(upload_to='images/')
     category_type = models.CharField(max_length=2, choices=CATEGORY_TYPE, default='C1')
