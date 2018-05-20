@@ -2,6 +2,8 @@ import ast
 import json
 
 import collections, re
+from datetime import datetime
+
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -14,9 +16,10 @@ from django.conf import settings
 from query_designer.models import Query, TempQuery
 from service_builder.forms import ServiceForm
 from visualizer.models import Visualization
-from service_builder.models import Service, ServiceTemplate
+from service_builder.models import Service, ServiceTemplate, ServiceInstance
 from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph, run_zep_note, clone_zep_note, delete_zep_paragraph, \
-    create_zep_getDict_paragraph, get_zep_getDict_paragraph_response, create_zep_arguments_paragraph
+    create_zep_getDict_paragraph, get_zep_getDict_paragraph_response, create_zep_arguments_paragraph, get_result_dict_from_livy, close_livy_session, \
+    delete_zep_notebook
 
 
 def create_new_service(request):
@@ -297,6 +300,8 @@ def update_service_arguments(request):
 
 def submit_service_args(request, service_id):
     service = Service.objects.get(pk=int(service_id))
+    service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now())
+    service_exec.save()
 
     # 1.GATHER THE SERVICE ARGUMENTS
     service_args = convert_unicode_json(service.arguments)
@@ -316,6 +321,9 @@ def submit_service_args(request, service_id):
         args_to_note[algorithm_arg['name']] = request.GET.get(algorithm_arg['name'], algorithm_arg['default'])
     print 'user algorithm args:'
     print args_to_note
+
+    service_exec.arguments = {'filter-arguments': service_filter_args, 'algorithm-arguments': service_algorithm_args}
+    service_exec.save()
 
     # 2.CUSTOMIZE THE QUERIES BASED ON THE GATHERED USER ARGUMENTS (AND CREATE TEMPQUERIES)
     # query_mapping is a dict that maps the original queries of the template service to the tempQueries created after the user customisation
@@ -347,6 +355,11 @@ def submit_service_args(request, service_id):
         excluded_paragraphs = []
         new_notebook_id = clone_zep_note(original_notebook_id, "")
 
+    service_exec.notebook_id = new_notebook_id
+    service_exec.save()
+
+    print 'Notebook ID: {0}'.format(new_notebook_id)
+
     # customise the respective queries in the code
     if queries is not None:
         for name, info in queries.iteritems():
@@ -370,76 +383,118 @@ def submit_service_args(request, service_id):
         service.arguments_paragraph_id = new_arguments_paragraph
         service.save()
 
+    output_html = service.output_html
+    soup = BeautifulSoup(output_html, 'html.parser')
+    visualizations = []
+    for f in soup.findAll('iframe'):
+        visualizations.append(f.get("src"))
+
+    import urlparse
+    dataframe_viz = []
+    for url in visualizations:
+        parsed = urlparse.urlparse(url)
+        if 'notebook_id' in urlparse.parse_qs(parsed.query).keys():
+            if 'df' in urlparse.parse_qs(parsed.query).keys():
+                df = urlparse.parse_qs(parsed.query)['df'][0]
+            elif 'df1' in urlparse.parse_qs(parsed.query).keys():
+                df = urlparse.parse_qs(parsed.query)['df1'][0]
+            elif 'df2' in urlparse.parse_qs(parsed.query).keys():
+                df = urlparse.parse_qs(parsed.query)['df2'][0]
+
+            dataframe_viz.append({'notebook_id': urlparse.parse_qs(parsed.query)['notebook_id'][0],
+                                  'df': df,
+                                  'url': url,
+                                  'done': False})
+
+    service_exec.dataframe_visualizations = dataframe_viz
+    service_exec.save()
 
     # 4.RUN THE SERVICE CODE (one by one paragraph, or all together. CHOOSE..)
-    run_zep_note(notebook_id=new_notebook_id, exclude=excluded_paragraphs)
-    if settings.TEST_SERVICES:
-        for p in new_created_paragraphs:
-            print 'deleting paragraph: {0}'.format(p)
-            delete_zep_paragraph(notebook_id=str(new_notebook_id), paragraph_id=str(p))
+    try:
+        livy_session = run_zep_note(notebook_id=new_notebook_id, exclude=excluded_paragraphs)
+        service_exec.livy_session = livy_session
+        service_exec.save()
+        # data = create_livy_toJSON_paragraph()
+        # with open('df_json_{0}___{1}.json'.format(new_notebook_id, df_name), 'w') as outfile:
+        #     json.dump(data, outfile)
 
-    # 5. GET THE SERVICE RESULTS
-    result_paragraph_id = create_zep_getDict_paragraph(notebook_id=new_notebook_id, title='', dict_name='result')
-    run_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
-    result = get_zep_getDict_paragraph_response(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
-    delete_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
+        if settings.TEST_SERVICES:
+            for p in new_created_paragraphs:
+                print 'deleting paragraph: {0}'.format(p)
+                delete_zep_paragraph(notebook_id=str(new_notebook_id), paragraph_id=str(p))
 
-    # 5. BRING THE CUSTOMISED QUERIES TO THE SERVICE OUTPUT
-    # print 'Change queries:'
-    # output_html = service.output_html
-    # for name, info in queries.iteritems():
-    #     print name, info
-    #     q = info['query_id']
-    #     temp_q = info['temp_q']
-    #     print output_html
-    #     output_html = output_html.replace('query='+str(q), 'query='+str(temp_q))
-    #     print output_html
-    # output_css = service.output_css
-    # output_js = service.output_js
-    # print output_html
-    # return render(request, 'service_builder/load_service.html', {
-    #     'output_html': output_html,
-    #     'output_css': output_css,
-    #     'output_js': output_js,
-    #     'arguments': json.dumps(service_args),
-    #     'service_id': service_id})
+        # 5. GET THE SERVICE RESULTS
+        # result_paragraph_id = create_zep_getDict_paragraph(notebook_id=new_notebook_id, title='', dict_name='result')
+        # run_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id, livy_session_id=livy_session)
+        # result = get_zep_getDict_paragraph_response(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
+        # delete_zep_paragraph(notebook_id=new_notebook_id, paragraph_id=result_paragraph_id)
+        result = get_result_dict_from_livy(livy_session, 'result')
+        print 'result: ' + str(result)
+        # result = json.loads(str(result))
 
-    # result = dict()
-    # result['query_mapping'] = query_mapping
-    # return HttpResponse(json.dumps(result), content_type="application/json")
+        # 5. BRING THE CUSTOMISED QUERIES TO THE SERVICE OUTPUT
+        # print 'Change queries:'
+        # output_html = service.output_html
+        # for name, info in queries.iteritems():
+        #     print name, info
+        #     q = info['query_id']
+        #     temp_q = info['temp_q']
+        #     print output_html
+        #     output_html = output_html.replace('query='+str(q), 'query='+str(temp_q))
+        #     print output_html
+        # output_css = service.output_css
+        # output_js = service.output_js
+        # print output_html
+        # return render(request, 'service_builder/load_service.html', {
+        #     'output_html': output_html,
+        #     'output_css': output_css,
+        #     'output_js': output_js,
+        #     'arguments': json.dumps(service_args),
+        #     'service_id': service_id})
 
-    # template = Template("Hello {{ name }}! ")
+        # result = dict()
+        # result['query_mapping'] = query_mapping
+        # return HttpResponse(json.dumps(result), content_type="application/json")
 
-    # result = dict()
-    # result['result1'] = "John"
+        # template = Template("Hello {{ name }}! ")
 
-    output_html = service.output_html
-    output_css = service.output_css
-    output_js = service.output_js
+        # result = dict()
+        # result['result1'] = "John"
 
-    # if settings.TEST_SERVICES:
-    #     import os
-    #     with open(os.path.join(settings.BASE_DIR, 'service_builder\\templates\\service_builder\\service_template_1.html')) as f:
-    #         output_html = f.read()
+        output_html = service.output_html
+        output_css = service.output_css
+        output_js = service.output_js
 
-    if queries is not None:
-        for name, info in queries.iteritems():
-            query = info['query_id']
-            new_query = info['temp_q']
-            # print output_html
-            output_html = re.sub(r"query="+str(query)+"&", "query="+str(new_query)+"&", output_html)
-            output_html = re.sub(r"query="+str(query)+"\"", "query="+str(new_query)+"\"", output_html)
+        # if settings.TEST_SERVICES:
+        #     import os
+        #     with open(os.path.join(settings.BASE_DIR, 'service_builder\\templates\\service_builder\\service_template_1.html')) as f:
+        #         output_html = f.read()
 
-    soup = BeautifulSoup(str(output_html), 'html.parser')
-    service_result_container = soup.find(id="service_result_container")
-    innerHTML = ''
-    for c in service_result_container.contents:
-        innerHTML += str(c)
+        if queries is not None:
+            for name, info in queries.iteritems():
+                query = info['query_id']
+                new_query = info['temp_q']
+                # print output_html
+                output_html = re.sub(r"query="+str(query)+"&", "query="+str(new_query)+"&", output_html)
+                output_html = re.sub(r"query="+str(query)+"\"", "query="+str(new_query)+"\"", output_html)
 
-    context = Context({"result": result})
-    template = Template(innerHTML)
+        soup = BeautifulSoup(str(output_html), 'html.parser')
+        service_result_container = soup.find(id="service_result_container")
+        innerHTML = ''
+        for c in service_result_container.contents:
+            innerHTML += str(c)
 
-    return HttpResponse(template.render(context))
+        context = Context({"result": result})
+
+        template = Template(innerHTML)
+        return HttpResponse(template.render(context))
+    except Exception as e:
+        print '%s (%s)' % (e.message, type(e))
+        close_livy_session(service_exec.livy_session)
+
+        return HttpResponse(status=500)
+
+
 
 
 def load_template(request):
@@ -453,6 +508,22 @@ def load_template(request):
     result['js'] = template.js
 
     return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+def updateServiceInstanceVisualizations(execution_id, url):
+    service_exec = ServiceInstance.objects.get(pk=execution_id)
+    for viz in service_exec.dataframe_visualizations:
+        if viz['url'] == url and not viz['done']:
+            viz['done'] = True
+            break
+    all_done = True
+    for viz in service_exec.dataframe_visualizations:
+        if not viz['done']:
+            all_done = False
+            break
+    if all_done:
+        close_livy_session(service_exec.livy_session)
+        delete_zep_notebook(service_exec.notebook_id)
 
 
 def load_results_to_template(request):

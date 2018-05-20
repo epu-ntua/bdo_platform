@@ -30,7 +30,21 @@ class Service(Model):
     price = CharField(max_length=50,default='free')
     imageurl = URLField(blank=True,null=True, default=None)
 
+
 class ServiceTemplate(Model):
     html = TextField()
     css = TextField()
     js = TextField()
+
+
+class ServiceInstance(Model):
+    service = ForeignKey(Service)
+    user = ForeignKey(User)
+    time = DateTimeField()
+    arguments = JSONField(null=True, blank=True, default=None)
+    notebook_id = CharField(null=True, max_length=100)
+    livy_session = IntegerField(null=True)
+    status = CharField(null=True, default='', max_length=100)
+    output_page = CharField(null=True, default='', max_length=100)
+    dataframe_visualizations = JSONField(null=True, blank=True, default=None)
+    result = JSONField(null=True, blank=True, default=None)

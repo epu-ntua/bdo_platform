@@ -15,6 +15,10 @@ from nvd3 import pieChart, lineChart
 import psycopg2
 
 from matplotlib import use
+
+from service_builder.models import ServiceInstance
+from service_builder.views import updateServiceInstanceVisualizations
+
 use('Agg')
 from matplotlib.figure import Figure
 from matplotlib.cm import get_cmap
@@ -219,13 +223,20 @@ def map_course(request):
                 color_index = idx
     else:
         print ("json-case")
+        service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
         if order_var != "":
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+            # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+
         else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var)
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var)
+        # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         # print json_data
 
         data = []
@@ -369,13 +380,25 @@ def map_course_mt(request):
 
 
     print ("json-case")
+    service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+    session_id = service_exec.livy_session
+    exec_id = service_exec.id
+    updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+    if order_var1 != "":
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df1)
+
+    else:
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var)
+        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df1, order_by=order_var1)
+
     if order_var1 != "":
         toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df1)
     else:
         toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df1, order_by=order_var1)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
     # print json_data
 
     data1 = []
@@ -491,13 +514,24 @@ def map_course_mt(request):
 
 
     print ("json-case")
+    service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+    session_id = service_exec.livy_session
+    exec_id = service_exec.id
+    updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
     if order_var2 != "":
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df2)
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df2)
+
     else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df2, order_by=order_var2)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var)
+        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df2, order_by=order_var2)
+    # if order_var2 != "":
+    #     toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df2)
+    # else:
+    #     toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df2, order_by=order_var2)
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
     # print json_data
 
     data2 = []
@@ -747,10 +781,16 @@ def map_plotline(request):
         print ("json-case")
 
         for df, color, lat_col, lon_col, order_var, marker_limit in zip(df_list, color_list, lat_col_list, lon_col_list, order_var_list, marker_limit_list):
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
+
+            # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+            # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
             # print json_data
 
             points = [[float(s[lat_col]), float(s[lon_col])] for s in json_data]
@@ -892,10 +932,15 @@ def map_markers_in_time(request):
         tdelta = data[1][order_index] - data[0][order_index]
         period = 'PT{0}S'.format(tdelta.seconds)
     else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+        # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
         features = [
             {
@@ -1736,16 +1781,23 @@ def get_line_chart_am(request):
         print json_data[:3]
 
     else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+        session_id = service_exec.livy_session
+        print 'session id: ' + str(session_id)
+        exec_id = service_exec.id
+        print 'exec id: ' + str(exec_id)
+        # updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
+        # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         print json_data[:3]
         y_m_unit = []
         y_title_list = []
         for x in y_var_list:
             # TODO: use proper names
-            y_title_list.insert(0, str('title'))
+            y_title_list.insert(0, str(x))
             y_m_unit.insert(0, str('unknown unit'))
 
     #notebook_id = create_zep_note(name='bdo_test')
@@ -1831,10 +1883,15 @@ def get_pie_chart_am(request):
             json_data.append({value_var: d[0], key_var: str(d[1])})
 
     else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=key_var, order_type='ASC')
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=key_var, order_type='ASC')
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=key_var, order_type='ASC')
+        # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         print json_data
 
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
@@ -1907,16 +1964,21 @@ def get_column_chart_am(request):
             json_data.append(dict)
         print (json_data)
     else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
+        # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         print json_data
         y_m_unit = []
         y_title_list = []
         for x in y_var_list:
             # TODO: use proper names
-            y_title_list.insert(0, str('title'))
+            y_title_list.insert(0, str(x))
             y_m_unit.insert(0, str('unknown unit'))
 
 
@@ -1955,10 +2017,15 @@ def get_data_table(request):
         isJSON = False
 
     else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         isJSON = True
         print 'table data:'
         print data[:3]
@@ -2300,11 +2367,17 @@ def get_aggregate_value(request):
         unit = result_headers['columns'][variable_index]['unit']
 
     else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print data
+        service_exec = ServiceInstance.objects.get(notebook_id=notebook_id)
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+
+        # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        print data[:3]
         value = data
         unit = '?'
 
