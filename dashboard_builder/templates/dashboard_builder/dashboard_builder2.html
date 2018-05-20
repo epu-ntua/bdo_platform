@@ -4,6 +4,23 @@
 
 {% block css %}
     <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>
+    {% for viz in available_viz %}
+        <style>
+            #{{ viz.view_name}}_tip{
+                opacity: .3;
+                position: relative;
+                bottom:1px;
+            }
+
+            li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
+                opacity: inherit;
+                margin:auto;
+                cursor:help;
+            }
+        </style>
+
+    {% endfor %}
+
     <style>
         #cke_editor1 .cke_contents{
             height: 350px !important;
@@ -394,7 +411,10 @@
                             <div class="row" id="viz_config" style="display: none">
                                 <ul class="list-group collapse in col-sm-2" style="width: 15%">
                                     {% for viz in available_viz %}
-                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}">
+                                            <i class="{{ viz.icon }}" style="margin-right:5px"></i>{{ viz.title }}
+                                            <i id="{{viz.view_name}}_tip" class="fa fa-info-circle fa-xs " title="{{ viz.description }}" data-toggle="tooltip" data-placement="right" style=" margin:auto" ></i>
+                                        </li>
                                     {% endfor %}
         {#                            <li class="list-group-item viz_item" id="line_chart_item" data-component-id="5"><i#}
         {#                                    class="fa fa-line-chart margin-right-1"></i>Line chart#}

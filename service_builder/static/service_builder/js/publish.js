@@ -43,15 +43,29 @@
                 });
             });
          $("#selected-arguments-table2 tbody tr").each(
-            function(index, elem){
-                exposed_args['algorithm-arguments'].push({
-                    name: $(this).find($("td[data-columnname='name']")).text(),
-                    title: $(this).find($("td[data-columnname='title']")).text(),
-                    type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
-                    default: $(this).find($("td[data-columnname='default']")).text(),
-                    description: $(this).find($("td[data-columnname='description']")).text(),
+             function(index, elem){
+                if($(this).find($("td[data-columnname='type']")).children().eq(1).text() == 'SELECT') {
+                    exposed_args['algorithm-arguments'].push({
+                        name: $(this).find($("td[data-columnname='name']")).text(),
+                        title: $(this).find($("td[data-columnname='title']")).text(),
+                        type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
+                        options: (JSON.parse($(this).find($("td[data-columnname='type']")).children().eq(2).text())['options']),
+                        description: $(this).find($("td[data-columnname='description']")).text(),
+                    });
+                }
+                else{
+                    exposed_args['algorithm-arguments'].push({
+                        name: $(this).find($("td[data-columnname='name']")).text(),
+                        title: $(this).find($("td[data-columnname='title']")).text(),
+                        type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
+                        default: $(this).find($("td[data-columnname='default']")).text(),
+                        description: $(this).find($("td[data-columnname='description']")).text(),
+                    });
+
+                }
+                // alert(JSON.stringify(exposed_args))
                 });
-            });
+
 
         return exposed_args;
     }
@@ -131,4 +145,8 @@
             }
         });
     });
+
+    // function parse_json_options(text){
+    //
+    // }
 

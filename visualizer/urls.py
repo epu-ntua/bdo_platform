@@ -5,7 +5,7 @@ urlpatterns = [
     url('^map/$', views.map_viz, name='map-viz'),
     url('^map_index/$', views.MapIndex.as_view(), name='map_index'),
     url('^map_folium/$', views.map_viz_folium, name='map-viz-folium'),
-    url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium'),
+
     url('^map_heat/$', views.map_heatmap, name='map_heatmap'),
     url('^map_course/$', views.map_course, name='map_course'),
 
@@ -19,7 +19,7 @@ urlpatterns = [
     url('^map_api/$', views.MapAPI.as_view(), name='map_api'),
 
     url('^map_folium_contour/$', views.map_viz_folium_contour, name='map-viz-folium-contour'),
-    url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium-heat'),
+    url('^map_folium_heat_time/$', views.map_viz_folium_heatmap_time, name='map-viz-folium-heat'),
 
     url('^test_request/$', views.test_request, name='test_request'),
     url('^test_request_zep/$', views.test_request_zep, name='test_request_zep'),
