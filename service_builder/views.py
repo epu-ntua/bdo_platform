@@ -74,7 +74,7 @@ def convert_unicode_json(data):
         return data
 
 
-@background(schedule=120)
+@background(schedule=600)
 def clean_up_new_note(notebook_id):
     delete_zep_notebook(notebook_id)
 
