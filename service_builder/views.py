@@ -393,6 +393,7 @@ def submit_service_args(request, service_id):
         service.save()
 
     output_html = service.output_html
+    output_html = output_html.replace(original_notebook_id, new_notebook_id)
     soup = BeautifulSoup(output_html, 'html.parser')
     visualizations = []
     for f in soup.findAll('iframe'):
@@ -494,6 +495,7 @@ def submit_service_args(request, service_id):
                 output_html = re.sub(r"query="+str(query)+"&", "query="+str(new_query)+"&", output_html)
                 output_html = re.sub(r"query="+str(query)+"\"", "query="+str(new_query)+"\"", output_html)
 
+        output_html = output_html.replace(original_notebook_id, new_notebook_id)
         soup = BeautifulSoup(str(output_html), 'html.parser')
         service_result_container = soup.find(id="service_result_container")
         innerHTML = ''
