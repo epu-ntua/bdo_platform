@@ -1,0 +1,75 @@
+{% load humanize %}
+{% load on_demand_filters %}
+
+<div class="on-demand-request-teaser margin-vertical-5 padding-right-5">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="clearfix">
+                <h4 class="pull-left" style="margin: 0 0 10px 0;">
+                    {% if not details %}
+                        <a href="{{ req.get_absolute_url }}">
+                    {% endif %}
+                    {{ req.title }}
+                    {% if not details %}
+                        </a>
+                    {% endif %}
+                </h4>
+                <div class="pull-right">
+                    {% if not req.closed_by %}
+                        <span class="label label-warning"><i class="fa fa-spinner"></i> OPEN</span>
+
+                        {% if request.user == req.user %}
+                            <span class="label label-info">
+                                <a href="/on-demand/{{ req.pk }}/edit/" style="margin-right: 5px;">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="label label-success"><i class="fa fa-check"></i> SOLVED</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="margin-bottom-1">
+                Posted by
+                <a href="{{ req.user.profile.get_absolute_url }}">{{ req.user.profile.name }}</a>
+                / <i class="fa fa-gift o-blue"></i> {{ req.get_pricing_display }}
+                {% if req.price %}
+                    / € {{ req.price|intcomma }}
+                {% endif %}
+                <div class="pull-right">
+                    <span class="margin-horizontal-2 o-darkgray"><i class="fa fa-clock-o"></i> {{ req.created|naturaltime }}</span>
+                    <span class="margin-horizontal-2 o-lighter-gray"><i class="fa fa-comment"></i> {{ req.replies.count }}</span>
+                    <div class="margin-horizontal-2 on-demand--upvote{% if req|has_upvoted:request.user %} upvoted{% endif %}"
+                         data-requestid="{{ req.pk }}" style="display: inline-block;"
+                         title="{% if req|has_upvoted:request.user %}Remove{% else %}Click to{% endif %} upvote">
+                        <i class="fa fa-thumbs-up"></i>
+                        <span class="count">{{ req.upvotes.count }}</span>
+                    </div>
+                </div>
+            </div>
+            {% if req.closed_by %}
+                <p class="o-green">
+                    <i class="fa fa-check-circle"></i> Solved by
+                    <a href="/profile/{{ req.closed_by.user.username }}/">{{ req.closed_by.user.profile.name }}</a>
+                </p>
+            {% endif %}
+            <p>
+                {% if not details %}
+                    <a href="{{ req.get_absolute_url }}" class="btn btn-sm btn-success">View request</a>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <p class="o-lightgray" style="margin-left: 0;"><i class="fa fa-comment margin-right-2"></i>
+                {% if details %}
+                    {{ req.description|linebreaksbr }}
+                {% else %}
+                    {{ req.description|slice:"100"|linebreaksbr }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>

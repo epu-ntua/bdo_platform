@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-push-3 col-md-6 col-sm-12">
+            <div class="card">
+                <div class="card-content">
+                    <h1 class="o-blue" style="font-size: 3em;">Edit profile</h1>
+
+                    <form class="form" method="POST" action=".">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">Username</label>
+                                    <div class="form-group">{{ user.username }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">First name</label>
+                                    <div class="form-group">
+                                        <input type="text" name="first_name" class="form-control full-width" value="{{ form.first_name.value|default:"" }}"/>
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">Last name</label>
+                                    <div class="form-group">
+                                        <input type="text" name="last_name" class="form-control full-width" value="{{ form.last_name.value|default:"" }}"/>
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">Avatar</label>
+                                    <div>
+                                        <label for="avatar_raw" class="btn btn-primary btn-sm">Upload avatar</label>
+                                    </div>
+                                    {{ form.avatar_raw }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">Organization</label>
+                                    <div class="form-group">
+                                        <input type="text" name="organization" class="form-control full-width" value="{{ form.organization.value|default:"" }}"/>
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">User type</label>
+                                    <div class="form-group">
+                                        <select name="user_type" class="form-control full-width">
+                                            <option value="" {% if not form.user_type.value %}selected{% endif %}>-</option>
+                                            <option value="DATA_ANALYST" {% if form.user_type.value == 'DATA_ANALYST' %}selected{% endif %}>Data analyst</option>
+                                            <option value="BUSINESS_USER" {% if form.user_type.value == 'BUSINESS_USER' %}selected{% endif %}>Business user</option>
+                                            <option value="RESEARCHER" {% if form.user_type.value == 'RESEARCHER' %}selected{% endif %}>Researcher</option>
+                                            <option value="SERVICE_DEVELOPER" {% if form.user_type.value == 'SERVICE_DEVELOPER' %}selected{% endif %}>Service developer</option>
+                                        </select>
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">Expertise / Business role</label>
+                                    <div class="form-group">
+                                        <input type="text" name="business_role" class="form-control full-width" value="{{ form.business_role.value|default:"" }}"/>
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">Email</label>
+                                    <div class="form-group">
+                                        <input type="email" name="email" class="form-control full-width" value="{{ form.email.value|default:"" }}"/>
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label class="section-label o-blue">Social Media Link / Website</label>
+                                    <div class="form-group">
+                                        <input type="url" name="external_url" class="form-control full-width" value="{{ form.external_url.value|default:"" }}"/>
+                                        <span class="material-input"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button type="submit" class="btn btn-success pull-right">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

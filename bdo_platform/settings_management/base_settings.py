@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import uuid
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -50,6 +52,9 @@ INSTALLED_APPS = [
     # maps
     'leaflet',
 
+    # s3
+    's3direct',
+
     # vizualisations
     'django_nvd3',
     'djangobower',
@@ -60,16 +65,17 @@ INSTALLED_APPS = [
 
     # apps
     'bdo_main_app',
+    'bdo_profile',
     'aggregator',
     'query_designer',
     'analytics',
     'visualizer',
     'dashboard_builder',
     'service_builder',
-    'requestservice',
     'note_builder',
     'uploader',
-    'data_parser'
+    'on_demand',
+    'data_parser',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -204,3 +210,25 @@ CKEDITOR_CONFIGS = {
 DATASET_DIR = os.path.join(os.path.join(BASE_DIR, 'aggregator'), 'datasets')
 if not os.path.isdir(DATASET_DIR):
     os.mkdir(DATASET_DIR)
+
+
+# s3
+AWS_STORAGE_BUCKET_NAME = 'bdo-platform'
+
+# The region of your bucket, more info:
+# http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+S3DIRECT_REGION = 'eu-central-1'
+
+S3DIRECT_DESTINATIONS = {
+    # Allow users to upload their own avatars
+    'avatars': {
+        'key': lambda filename: 'avatars/' + str(uuid.uuid4().hex) + '.' + filename.split('.')[-1],
+        'auth': lambda u: u.is_authenticated(),
+    },
+}
+
+# add keys
+try:
+    from .keys import *
+except:
+    from .keys_example import *

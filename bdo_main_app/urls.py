@@ -17,13 +17,11 @@ urlpatterns = [
     url('^datasets/(?P<dataset_id>[\w-]+)/$', views.dataset, name='dataset-details'),
 
     # on demand
-    url('^on-demand/$', views.on_demand_search, name='on-demand'),
-    url('^on-demand/create/$', views.on_demand_create, name='on-demand-create'),
+    # url('^on-demand/$', views.on_demand_search, name='on-demand'),
+    # url('^on-demand/create/$', views.on_demand_create, name='on-demand-create'),
 
     # service and dashboards
     url('^services/$', views.services, name='services'), #Service Marketplace
     url('^services/dashboard/(?P<pk>\d+)/$', views.view_dashboard, name='view_dashboard'),
     url('^services/service/(?P<pk>\d+)/$', sb_views.load_service, name='load_service'),
-
-
 ]
