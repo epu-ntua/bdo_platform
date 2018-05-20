@@ -19,7 +19,7 @@ from query_designer.models import Query
 def pick_base_analysis(request):
     return render(request, 'basic-analytics/pick-base-analysis.html', {
         'sidebar_active': 'products',
-        'base_analytics': Service.objects.filter(service_type='analysis').order_by('id'),
+        'base_analytics': Service.objects.filter(service_type='analysis', hidden=False).order_by('id'),
     })
 
 
@@ -53,8 +53,10 @@ def config_base_analysis(request, base_analysis_id):
 
         # create job
         # TODO: put the logged in user
-        user = User.objects.get(username='BigDataOcean')
-        job = JobInstance.objects.create(user=user, base_analysis=base_analysis, arguments=arguments)
+        user = request.user
+        query = arguments['query']
+        arguments.pop('query', None)
+        job = JobInstance.objects.create(user=user, analysis_flow={"1": str(base_analysis_id)}, arguments={"1": arguments, "query": query})
 
         # submit the job
         Thread(target=job.submit, args=[]).start()
@@ -81,7 +83,7 @@ def build_dynamic_service(request):
         return render(request, 'service_builder/service_builder.html', {
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
-            'components': Service.objects.filter(service_type='analysis').order_by('id'),
+            'components': Service.objects.filter(service_type='analysis', hidden=False).order_by('id'),
         })
     else:
         # print(request.POST)
@@ -140,11 +142,15 @@ def view_job_details(request, pk):
     if request.GET.get('partial', '').lower() == 'true':
         template = 'basic-analytics/job-details.html'
 
+    # analytics_list = dict()
+    for k in job.analysis_flow.keys():
+        job.analysis_flow[k] = Service.objects.get(pk=int(job.analysis_flow[k])).title
+
     # render
     return render(request, template, {
         'sidebar_active': 'products',
         'job': job,
-        'analysis_flow': sorted(job.analysis_flow.iteritems())
+        'analysis_flow': sorted(job.analysis_flow.iteritems()),
     })
 
 

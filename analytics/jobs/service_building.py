@@ -1,6 +1,9 @@
 import sys
 import requests
 import json
+from django.db import connections
+
+from bdo_platform import settings
 from service_building_conf import db, get_job_arguments_and_info, get_spark_query
 
 
@@ -29,11 +32,11 @@ try:
         .builder \
         .appName("Python Spark - Read from Postgres DB") \
         .getOrCreate()
-
+    conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
     # Get data and load them into a dataframe
     raw_df = spark.read.format('jdbc').options(
-        url=db['jdbc'],
-        database='bdo_platform',
+        url=str('jdbc:postgresql://'+conn_dict["HOST"]+':'+conn_dict["PORT"]+'/'+conn_dict["NAME"]+'?user='+conn_dict["USER"]+'&password='+conn_dict["PASSWORD"]),
+        database=conn_dict["NAME"],
         dbtable=spark_query,
         partitionColumn="spark_part_id",
         lowerBound="1",

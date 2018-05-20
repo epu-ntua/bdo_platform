@@ -14,8 +14,8 @@
 {% block content %}
     <div class="row">
         <div class="text-center">
-            <h1 class="o-blue">Analytics</h1>
-            <h5>Create simple analytics by using the provided analytical components.</h5>
+            <h1 class="o-blue">Combine Algorithms</h1>
+            <h5>Create combined analytics by using the provided analytical components.</h5>
         </div>
     </div>
 
@@ -52,7 +52,7 @@
         <btn class="btn btn-primary btn-sm" id="removeLastBtn">Remove Last</btn>
     </div>
 
-    <div class="col-sm-6"><h4>Created Service:</h4></div>
+    <div class="col-sm-6"><h4>Created Analysis:</h4></div>
     <div class="col-sm-6" id="dynamic_service"></div>
 
 
@@ -63,7 +63,7 @@
             <input id="analysis_flow" value="{}" name="analysis_flow" type="hidden"/>
             <input id="query" value="" name="query" type="hidden"/>
 
-            <input type="submit" class="btn btn-success" value="Run Service"/>
+            <input type="submit" class="btn btn-success" value="Run Analysis"/>
         </form>
     </div>
 
@@ -199,6 +199,7 @@
 {#          $('#config-service-form').append('<fieldset id="fieldset'+numOfNodes+' name=fieldset'+numOfNodes+'">' + '</fieldset>');#}
 {#          var newFieldset = '#fieldset'+numOfNodes;#}
           $('#config-service-form').append(submitted_args);
+          $('#config-service-form .modal-body').hide();
 
           var component_id = $('#myModal').find('input[name="anal_id"]').val();
           updateAnalysisFlow(component_id);

@@ -25,6 +25,9 @@
         </div>
     </div>
     <div class="row">
+        <a href="/analytics/combine/" class="btn btn-sm btn-success pull-right" style="margin-right: 15px !important;">Combine algorithms</a>
+    </div>
+    <div class="row">
         {% for analysis in base_analytics %}
             {% with service=analysis skip_icon=True show_price=True link_select=analysis.parametrize_url %}
                 {% include 'services/tile.html' %}

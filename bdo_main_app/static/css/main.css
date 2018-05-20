@@ -4,6 +4,19 @@
     overflow: hidden;
 }
 
+#config-service-form{
+    display: none;
+}
+
+.modal-dialog {
+    left: 0 !important;
+}
+
+#myModal {
+    width: 100% !important;
+    overflow: visible;
+}
+
 .card-deck{
     text-align: center;
 }
@@ -24,7 +37,8 @@
 
 .service-tile .card {
     height: 280px;
-    background-color: #e3e3e3;
+    background-color: #ffffff;
+    box-shadow: 0 0 1px black;
 }
 
 .card .card-footer .stats{

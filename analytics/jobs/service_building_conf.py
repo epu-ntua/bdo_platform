@@ -1,4 +1,5 @@
 import psycopg2
+from django.db import connections
 from sets import Set
 
 db = {
@@ -9,7 +10,7 @@ db = {
 
 def get_job_arguments_and_info(job_id):
     # connect to BDO platform db to get job details
-    conn = psycopg2.connect(db['psycopg'])
+    conn = connections['default']
     cur = conn.cursor()
     cur.execute("""SELECT analysis_flow, arguments FROM analytics_jobinstance WHERE id = %d""" % job_id)
     row = cur.fetchone()
@@ -44,7 +45,8 @@ def get_job_arguments_and_info(job_id):
 
 
 def get_spark_query(args, info, query):
-    conn = psycopg2.connect(db['psycopg'])
+    # conn = psycopg2.connect(db['psycopg'])
+    conn = connections['UBITECH_POSTGRES']
     cur = conn.cursor()
 
     col_args = Set()
