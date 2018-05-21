@@ -6,7 +6,7 @@ from service_builder.models import *
 
 
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = [field.name for field in Service._meta.get_fields()]
+    list_display = ['title','description','user','queries','arguments','created','updated']
 
 
 admin.site.register(Service, ServiceAdmin)
