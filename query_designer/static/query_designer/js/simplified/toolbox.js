@@ -1260,7 +1260,12 @@ $(function () {
                 $fieldset.next().next().remove();
                 $fieldset.next().remove();
             }
+            var variable_type = $fieldset.find('input[name="value_field"]').attr("data-type");
+            $('#selected_dimensions > option[data-forvariable^="' + variable_type + '_"]').remove();
+            // $('#id_category > option[data-forvariable^="' + variable_type + '_"]').remove();
+            // $('#id_orderby > option[data-forvariable^="' + variable_type + '_"]').remove();
 
+            id_category
             $fieldset.remove();
             if(cnt===0){
                 $('.after-data-selection').each(function () {
@@ -1552,7 +1557,8 @@ $(function () {
 
     /* Add a new query */
     $('#add-chart').on('click', function () {
-        QueryToolbox.addChart()
+        // QueryToolbox.addChart()
+        reset();
     });
 
     /* Reload chart data */
@@ -2005,6 +2011,19 @@ $(function () {
             e.stopPropagation();
         }
     }, false);
+
+
+    function reset(){
+        $('.value-remove-btn').click();
+        $('#selected_dimensions > option').remove();
+        $('#id_category > option').remove();
+        $('#id_orderby > option').remove();
+        $('#resetMapBounds').click();
+        $('#chart-filters > .filter').remove();
+
+        // $('#lat_min').val("").trigger('change');
+        // $('#lat_max').val("").trigger('change');
+    }
 
     // export
     window.QueryToolbox = QueryToolbox;
