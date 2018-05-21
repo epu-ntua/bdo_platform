@@ -18,8 +18,8 @@ def services(request):
     else:
         user_dashboards = []
         user_services = []
-    bdo_dashboards = Dashboard.objects.all()
-    bdo_services = Service.objects.filter(published=True)
+    bdo_dashboards = Dashboard.objects.filter(private=False)
+    bdo_services = Service.objects.filter(published=True, private=False)
 
     return render(request, 'services/services/services_index.html', {
         'my_dashboards': user_dashboards,

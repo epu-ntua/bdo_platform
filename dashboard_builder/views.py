@@ -85,12 +85,14 @@ def save_dashboard(request, pk=None):
     print dashboard_data
     print "end of data"
     title = dashboard_data.pop('title', None)
+    private = dashboard_data.pop('private', None)
 
     for order in dashboard_data.keys():
         print order
         print dashboard_data[order]
     dashboard.viz_components = dashboard_data
     dashboard.title = title
+    dashboard.private = private
     print dashboard.title
 
     dashboard.save()

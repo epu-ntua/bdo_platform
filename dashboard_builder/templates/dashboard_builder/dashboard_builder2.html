@@ -241,7 +241,7 @@
     <input type="hidden" value="" id="dashboard_pk">
     <div class="row">
         <div class="text-center">
-            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Builder</h1>
+{#            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Builder</h1>#}
             <h5 style="display: inline-block; margin: 0;">Create a new dashboard by selecting data and using the
                 provided visualizations.</h5>
         </div>
@@ -249,6 +249,7 @@
     <div class="row text-center">
         <input class="form-control text-center" type="text" id="dashboard_title"
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
+        <span class="pull-left"><input type="checkbox" name="private" value="False"/> Private<br></span>
     </div>
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
@@ -730,6 +731,7 @@
                     tempcounter++;
                 }
                 post_data_obj['title'] = $('#dashboard_title').val();
+                post_data_obj['private'] = $('input[name="private"]').is(':checked');
                 var post_data = encodeURIComponent(JSON.stringify(post_data_obj));
                 $.ajax({
                     "type": "POST",
