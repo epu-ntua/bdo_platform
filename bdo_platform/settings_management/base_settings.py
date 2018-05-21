@@ -107,6 +107,8 @@ LOGIN_EXEMPT_URLS = (
     r'^$',
     r'^about$',
     r'^register$',
+    r'/service_builder/api/createInputFileForHCMRSpillSimulator/',
+    r'/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/'
 )
 
 CACHES = {
