@@ -34,8 +34,10 @@
 }
 
 .dataset-name {
-    color: #2a6d6a;
+    color: #6f6f6f;
     box-shadow: 0 1px 0px #223b61;
+    font-weight: bold;
+    font-family: sans-serif;
 }
 
 .dataset-section {
