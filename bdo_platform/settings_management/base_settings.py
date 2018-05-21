@@ -94,12 +94,20 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.cache.UpdateCacheMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware'
+    'django.middleware.cache.FetchFromCacheMiddleware',
+
+    'bdo_main_app.middleware.LoginRequiredMiddleware',
 ]
 
+LOGIN_EXEMPT_URLS = (
+    r'^$',
+    r'^about$',
+    r'^register$',
+)
 
 CACHES = {
    'default': {

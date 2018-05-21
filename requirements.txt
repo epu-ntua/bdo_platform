@@ -40,6 +40,9 @@ newrelic
 whitenoise
 gunicorn
 
+#cache
+python-memcached
+
 # misc
 scipy
 unidecode
