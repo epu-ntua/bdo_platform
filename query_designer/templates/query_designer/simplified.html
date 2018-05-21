@@ -224,6 +224,18 @@
                 }
             }
 
+        );
+
+        $('#createPreBuildLinkExisting').click(function (e) {
+                if($('#viz_container > iframe').length) {
+                    var tempLink = $('#viz_container > iframe');
+                    var helperVar = (tempLink[0].contentDocument || tempLink[0].contentWindow);
+                    tempLink = helperVar.URL;
+                    var encodedUrl = encodeURIComponent(tempLink);
+                    window.location = "/dashboards/create?toCreate=" + encodedUrl;
+                }
+            }
+
         )
     </script>
 {% endblock %}

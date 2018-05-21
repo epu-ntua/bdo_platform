@@ -47,6 +47,7 @@ def view_dashboard(request, pk):
     print dashboard.viz_components
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
+        'pk': pk,
     })
 
 
