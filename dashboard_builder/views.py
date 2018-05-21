@@ -85,3 +85,27 @@ def save_dashboard(request, pk=None):
     return JsonResponse({
         'pk': dashboard.pk,
     })
+
+def edit_dashboard(request, pk= None):
+    if request.method == 'GET':
+        user = request.user
+        if request.user.is_authenticated():
+            saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
+        else:
+            saved_queries = []
+
+        toCreate = "None"
+        form_class = forms.CkEditorForm
+
+        dashboard = Dashboard.objects.get(pk=pk)
+        return render(request, 'dashboard_builder/dashboard_editor.html', {
+            'dashboard': dashboard,
+            'dashboard_pk': pk,
+            'dashboard_title': dashboard.title,
+            'sidebar_active': 'products',
+            'saved_queries': saved_queries,
+            'components': Visualization.objects.all().order_by('id'),
+            'form': form_class,
+            'toCreate': toCreate,
+        })
+    return None

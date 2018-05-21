@@ -147,12 +147,23 @@
         .titleNote{
             display: none;
         }
+
+        #edit_btn{
+            float: right;
+            position: relative;
+            right: 0px;
+            bottom: 23px ;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
 
-    <h1 class="text-center">{{ dashboard.title }}</h1>
+    <h1 class="text-center">{{ dashboard.title }}
+    <button type="button" id="edit_btn" class="btn btn-lg btn-primary" >
+            Edit
+        </button>
+    </h1>
      <div ng-app="myApp" ng-controller="MainCtrl">
         <div id="dynamic_dashboard" gridster="gridsterOpts">
             <ul id="widgetParent">
@@ -161,12 +172,12 @@
                     <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
                         <p class="widget-title" ng-class="{'titleNote': item.url == ''}" ng-bind="item.title"> </p>
                     </header>
-                    <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" style="displa: none">
+                    <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" >
                         <div class="ng-wrapper" ng-switch-when="false">
                              <iframe  class="iframe-class" src=[[item.url]] frameborder='0' ></iframe>
                         </div>
                     </div>
-                    <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" style="displa: none">
+                    <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" >
                         <div class="ng-wrapper" ng-switch-when="false" ng-bind-html="[[item.noteData]]">
                         </div>
                     </div>
@@ -256,31 +267,68 @@
             };
 
 
+            $('#edit_btn').click(function (e) {
+                var thisBoard = {{ pk }};
+                window.location = "/dashboards/edit/" + thisBoard;
+            }
+
+        )
+
             {#Initializing widgets from database and setting content#}
             var init = function (){
                  {% for order, url in dashboard.viz_components.items %}
                      var tempinfo= "{{ url }}";
-                     tempinfo=tempinfo.replace(/u&#39;/g,"");
-                     tempinfo=tempinfo.replace(/&#39;/g,"");
+                     tempinfo = tempinfo.replace(/u&#39;/g, '"');
+                     tempinfo = tempinfo.replace(/&#39;/g, '"');
+                     tempinfo=tempinfo.replace(/u&quot;/,'"');
+                     tempinfo=tempinfo.replace(/&quot;/,'"');
                      tempinfo=tempinfo.replace("[","");
                      tempinfo=tempinfo.replace("]","");
-                     var info = tempinfo.split(",");
 
-                    $scope.counter++;
-                    var tempid="widget" + $scope.counter;
-                    {#$scope.iframeSource = info[0];#}
-                     var noteDataEncoded = info[5];
-                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();
-                     noteDataDecoded= noteDataDecoded.substr(1);
-                     if(noteDataDecoded.charAt(0)=="u"){
-                         if(noteDataDecoded.charAt(1)=="\""){
-                             noteDataDecoded= noteDataDecoded.substr(2);
+                     var nth= 13;
+                     var toslice = 0;
+                     for(var i=0 ; i<tempinfo.length ;i++){
+                         if(tempinfo.charAt(i) == '"'){
+                             if(!--nth){
+                                 toslice = i;
+                             }
                          }
                      }
-                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);
-                     {#noteDataDecode=noteDataDecode.encode("utf-8");#}
-                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded ,title:info[6]});
 
+                     var info = tempinfo.split("," , 6);
+
+                     tempinfo= tempinfo.slice(toslice + 1);
+
+
+                    $scope.counter++;
+
+                    var tempid="widget" + $scope.counter;
+                    {#$scope.iframeSource = info[0];#}
+                     var noteDataEncoded = tempinfo;
+                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();
+                     {#noteDataDecoded= noteDataDecoded.substr(1);#}
+                     {#if(noteDataDecoded.charAt(0)=="u"){#}
+                     {#    if(noteDataDecoded.charAt(1)=="\""){#}
+                     {#        noteDataDecoded= noteDataDecoded.substr(2);#}
+                     {#    }#}
+                     {# }#}
+                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);
+
+                                          {#alert(noteDataDecoded);#}
+
+                     {#noteDataDecode=noteDataDecode.encode("utf-8");#}
+
+                     {#alert(info[0]);#}
+                     for(var i=0 ; i < 6; i++)
+                     {
+                         if(i!= 0)
+                            info[i] = info[i].slice(2,-1);
+                         else
+                             info[i] = info[i].slice(1,-1);
+                     }
+                     {#alert(info[0]);#}
+
+                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded ,title:info[5]});
                 {% endfor %}
             };
 

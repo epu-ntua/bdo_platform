@@ -127,6 +127,10 @@
                                     <i class="fa fa-plus-circle o-white"></i>
                                     <span>Add this chart to a new Dashboard </span>
                                 </div>
+                                <div id="createPreBuildLinkExisting"  style="font-size: 0.7em; display: none;">
+                                    <i class="fa fa-plus-circle o-white"></i>
+                                    <span>Add to this Dashboard </span>
+                                </div>
                             </ul>
 
                         </div>
@@ -211,6 +215,18 @@
 
     <script type="text/javascript">
         $('#createPreBuildLink').click(function (e) {
+                if($('#viz_container > iframe').length) {
+                    var tempLink = $('#viz_container > iframe');
+                    var helperVar = (tempLink[0].contentDocument || tempLink[0].contentWindow);
+                    tempLink = helperVar.URL;
+                    var encodedUrl = encodeURIComponent(tempLink);
+                    window.location = "/dashboards/create?toCreate=" + encodedUrl;
+                }
+            }
+
+        )
+
+        $('#createPreBuildLinkExisting').click(function (e) {
                 if($('#viz_container > iframe').length) {
                     var tempLink = $('#viz_container > iframe');
                     var helperVar = (tempLink[0].contentDocument || tempLink[0].contentWindow);

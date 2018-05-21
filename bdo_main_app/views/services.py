@@ -33,6 +33,7 @@ def view_dashboard(request, pk):
     dashboard = Dashboard.objects.get(pk=pk)
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
+        'pk': pk,
     })
 
 

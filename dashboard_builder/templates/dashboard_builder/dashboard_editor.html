@@ -176,6 +176,19 @@
             overflow: auto;
 
         }
+
+        .titleNote{
+            display: none;
+        }
+
+        .iframeHeaderNote{
+            background-color: #FFFFFF;
+        }
+
+        .iframeHeaderNoteDeleteBtn{
+            background-color: #FFFFFF;
+            color: black;
+        }
     </style>
 {% endblock %}
 
@@ -184,17 +197,16 @@
     <div class="row" style="display: none;">
         <form class="form" id="config-viz-form"></form>
     </div>
-    <input type="hidden" value="" id="dashboard_pk">
+    <input type="hidden" value="{{ dashboard_pk }}" id="dashboard_pk">
     <div class="row">
         <div class="text-center">
-            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Builder</h1>
-            <h5 style="display: inline-block; margin: 0;">Create a new dashboard by selecting data and using the
-                provided visualizations.</h5>
+            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Editor</h1>
+            <h5 style="display: inline-block; margin: 0;">Add or remove the title, visualizations and notes.</h5>
         </div>
     </div>
     <div class="row text-center">
         <input class="form-control text-center" type="text" id="dashboard_title"
-               value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
+               value="{{ dashboard_title }}" style="font-size: 20pt;"/>
     </div>
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-lg btn-primary" data-toggle="modal"
@@ -202,7 +214,7 @@
             <i class="fa fa-plus-circle o-white"></i> New visualisation
         </button>
 
-        <button type="button" id="save_dashboard_btn" class="btn btn-lg btn-primary" style="display: none">
+        <button type="button" id="save_dashboard_btn" class="btn btn-lg btn-primary">
             Save Dashboard
         </button>
 
@@ -213,21 +225,27 @@
     <div ng-app="myApp" ng-controller="MainCtrl">
         <div id="dynamic_dashboard" gridster="gridsterOpts">
             <ul id="widgetParent">
-                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
+                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">
                     <div class='wrap1'></div>
-                    <header class="iframeHeader">
-                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
-                        {% load  static %}
-                        <input type='button' value='X' class='deletebtn'
+                    <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
+
+{#                        <p class="widget-title"  ng-bind="item.title"> </p>#}
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title" ng-class="{'titleNote': item.url == ''}">
+
+
+                        <input type='button' value='X' class='deletebtn' ng-class="{'iframeHeaderNoteDeleteBtn': item.url == ''}"
                                style="background-image: url({% static "images/exitBtn.png" %})"
                                ng-click="removeWidget(item);">
                     </header>
-{#                    <input type="text" integer ng-model="item.row" size="1" class="widget-x-loc" hidden/>#}
-{#                    <input type="text" integer ng-model="item.col" size="1" class="widget-y-loc" hidden/>#}
-{##}
-{#                    <input type="text" integer ng-model="item.sizeX" size="1" class="widget-x-size" hidden/>#}
-{#                    <input type="text" integer ng-model="item.sizeY" size="1" class="widget-y-size" hidden/>#}
-                    {#ng-init="SetIframeHeight('iframe[[counter]]')" #}
+                    <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" style="displa: none">
+                        <div class="ng-wrapper" ng-switch-when="false">
+                             <iframe  class="iframe-class" src=[[item.url]] frameborder='0' ></iframe>
+                        </div>
+                    </div>
+                    <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" style="displa: none">
+                        <div class="ng-wrapper" ng-switch-when="false" ng-bind-html="[[item.noteData]]">
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>
@@ -401,6 +419,7 @@
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
     <script type="text/javascript" src={% static '/ckeditor/ckeditor/ckeditor.js' %}></script>
+    <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
 
 
     <script type="text/javascript">
@@ -411,7 +430,7 @@
                 $('#main-panel').scrollTop();
                 {#scrolldelay = setTimeout('pageScroll()',100); // scrolls every 100 milliseconds#}
             }
-        var app = angular.module('myApp', ['gridster']);
+        var app = angular.module('myApp', ['gridster', 'ngSanitize']);
 
         app.config(function ($interpolateProvider) {
             $interpolateProvider.startSymbol('[[');
@@ -427,7 +446,7 @@
                 swapping: true,
                 outerMargin: false,
                 pushing: true,
-                floating: true,
+                floating: false,    //Is false initially so the widgets area added correctly
                 columns: 4,
                 defaultSizeX: 4,
                 defaultSizeY: 1,
@@ -602,6 +621,68 @@
                     }
             });
 
+             var init = function (){
+                 {% for order, url in dashboard.viz_components.items %}
+                     var tempinfo= "{{ url }}";
+                     tempinfo=tempinfo.replace(/u&#39;/g,"");
+                     tempinfo=tempinfo.replace(/&#39;/g,"");
+                     tempinfo=tempinfo.replace("[","");
+                     tempinfo=tempinfo.replace("]","");
+
+                     var nth= 6;
+                     var toslice = 0;
+                     for(var i=0 ; i<tempinfo.length ;i++){
+                         if(tempinfo.charAt(i) == ','){
+                             if(!--nth){
+                                 toslice = i;
+                             }
+                         }
+                     }
+
+                     var info = tempinfo.split("," , 6);
+
+                     tempinfo= tempinfo.slice(toslice + 1);
+
+                    $scope.counter++;
+                    var tempid="widget" + $scope.counter;
+                    {#$scope.iframeSource = info[0];#}
+                     var noteDataEncoded = tempinfo;
+                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();
+                     {#noteDataDecoded= noteDataDecoded.substr(1);#}
+                     if(noteDataDecoded.charAt(0)=="u"){
+                         if(noteDataDecoded.charAt(1)=="\""){
+                             noteDataDecoded= noteDataDecoded.substr(2);
+                         }
+                      }
+                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);
+                     {#noteDataDecode=noteDataDecode.encode("utf-8");#}
+
+                     {#for(var i=0 ; i < 5; i++)#}
+                     {#{#}
+                     {#    if(i!= 0)#}
+                     {#       info[i] = info[i].slice(1,-1);#}
+                     {#    else#}
+                     {#        info[i] = info[i].slice(1,-1);#}
+                     {# }#}
+
+                    $scope.standardItems.push({
+                        sizeX: parseInt(info[1]),
+                        sizeY: parseInt(info[2]),
+                        row: parseInt(info[3]),
+                        col: parseInt(info[4]),
+                        url:info[0] ,
+                        noteData: noteDataDecoded ,
+                        title:info[5]
+                    });
+
+
+                {% endfor %}
+
+                $scope.gridsterOpts.floating = true;
+             };
+
+            init();
+
             $('#save_dashboard_btn').click(function () {
                 var postEndpoint = "/dashboards/save/";
                 var pk = $('#dashboard_pk').val();
@@ -615,7 +696,7 @@
                 var tempcounter= 0;
                 for(var myindex in $scope.standardItems){
                     var tempTitleId= "widgetTitleModel" + myindex.toString();
-                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() , $scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString()];
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() ,$scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString()];
                     post_data_obj[String(tempcounter)] = temparray;
                     tempcounter++;
                 }
