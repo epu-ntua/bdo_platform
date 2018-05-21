@@ -29,7 +29,7 @@
                     <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
                 {% endfor %}
             </select>
-            <div><a href="#" id="new_query_link"> + or create a new query </a></div>
+            <div><a href="/queries/simplified/" id="new_query_link"> + or create a new query </a></div>
             <input id="new_query_doc" type="hidden" value=""/>
         </div>
 
@@ -287,12 +287,12 @@
     </script>
 
     <script type="text/javascript">
-        $('a#new_query_link').click(function(){
-            var left  = ($(window).width()/2)-(900/2);
-            var top   = ($(window).height()/2)-(600/2);
-            window.open('/queries/', 'window name', 'width=900, height=600, top='+top+', left='+left);
-            return false;
-        });
+{#        $('a#new_query_link').click(function(){#}
+{#            var left  = ($(window).width()/2)-(900/2);#}
+{#            var top   = ($(window).height()/2)-(600/2);#}
+{#            window.open('/queries/', 'window name', 'width=900, height=600, top='+top+', left='+left);#}
+{#            return false;#}
+{#        });#}
     </script>
 
 {% endblock %}
