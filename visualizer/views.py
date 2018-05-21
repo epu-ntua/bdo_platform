@@ -329,11 +329,11 @@ def map_course(request):
             marker_color = color_dict[d[color_index]]
         else:
             marker_color = 'blue'
-        folium.CircleMarker(
+        folium.Marker(
             location=[d[lat_index],d[lon_index]],
-            # popup="Variable: "+str(d[var_index])+"<br>Order col: "+str(d[order_var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
-            # icon=folium.Icon(color=marker_color, icon='star'),
-            radius=2,
+            popup=str(variable)+": "+str(d[var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
+            icon=folium.Icon(color=marker_color),
+            # radius=2,
 
         ).add_to(m)
 
