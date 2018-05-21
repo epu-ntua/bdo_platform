@@ -75,7 +75,7 @@ function updateVariables(element) {
                 $(component_selector).popover('toggle');
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id+' #select_conf_ok').click(function(e){
-                    $(".outputLoadImg").show();
+                    $("#viz_container .outputLoadImg").show();
                     submit_conf(component_selector);
                     $(component_selector).popover("hide");
                 });

@@ -294,7 +294,7 @@
     </div>
 
     <div id="query-container" hidden>
-        <select id="query-select" class="form-control" name="query">
+        <select id="query-select" class="form-control" name="query" style="width: 300px !important;">
             <option disabled selected>-- select one of the saved queries --</option>
             {% for query in saved_queries %}
                 <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
@@ -415,7 +415,7 @@
                                     {% for viz in available_viz %}
                                         <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}">
                                             <i class="{{ viz.icon }}" style="margin-right:5px"></i>{{ viz.title }}
-                                            <i id="{{viz.view_name}}_tip" class="fa fa-info-circle fa-xs " title="{{ viz.description }}" data-toggle="tooltip" data-placement="right" style=" margin:auto" ></i>
+{#                                            <i id="{{viz.view_name}}_tip" class="fa fa-info-circle fa-xs " title="{{ viz.description }}" data-toggle="tooltip" data-placement="right" style=" margin:auto" ></i>#}
                                         </li>
                                     {% endfor %}
         {#                            <li class="list-group-item viz_item" id="line_chart_item" data-component-id="5"><i#}

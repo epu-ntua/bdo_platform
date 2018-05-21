@@ -163,9 +163,9 @@
 {% block content %}
 
     <h1 class="text-center">{{ dashboard.title }}
-    <button type="button" id="edit_btn" class="btn btn-lg btn-primary" >
-            Edit
-        </button>
+{#    <button type="button" id="edit_btn" class="btn btn-lg btn-primary" >#}
+{#            Edit#}
+{#        </button>#}
     </h1>
      <div ng-app="myApp" ng-controller="MainCtrl">
         <div id="dynamic_dashboard" gridster="gridsterOpts">
@@ -287,9 +287,9 @@
                      tempinfo = tempinfo.replace(/&#39;/g, '"');
                      tempinfo=tempinfo.replace(/u&quot;/,'"');
                      tempinfo=tempinfo.replace(/&quot;/,'"');
-                     tempinfo=tempinfo.replace("[","");
-                     tempinfo=tempinfo.replace("]","");
-
+{#                     tempinfo=tempinfo.replace("[","");#}
+{#                     tempinfo=tempinfo.replace("]","");#}
+                     tempinfo = tempinfo.slice(1,-1);
                      var nth= 13;
                      var toslice = 0;
                      for(var i=0 ; i<tempinfo.length ;i++){
