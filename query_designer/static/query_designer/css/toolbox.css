@@ -470,8 +470,9 @@ table .full-chart-row .delete-chart {
 
 #chartdiv iframe {
     width: 100%;
-    height: 80vh;
+    height: 70vh;
     border: none;
+    background-color: #ececec;
 }
 
 /* Data table overrides */
