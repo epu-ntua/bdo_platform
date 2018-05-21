@@ -17,6 +17,9 @@
             padding: 0;
         }
 
+        .loadingFrame{position:absolute;z-index:999;display:block;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
+
+
      {#Dashboard Additions#}
         .gridster .gridster-item {
             -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
@@ -136,7 +139,7 @@
 
         .ng-wrapper{
             width: 100%;
-            height: calc(100% - 37px);
+            height: calc(100%);
             display: block;
         }
 
@@ -163,7 +166,8 @@
                     </header>
                     <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" style="displa: none">
                         <div class="ng-wrapper" ng-switch-when="false">
-                             <iframe  class="iframe-class" src=[[item.url]] frameborder='0' ></iframe>
+                            <div class="loadingFrame"><img src="{% static 'img/loading_gif.gif' %}"/></div>
+                            <iframe  class="iframe-class" src=[[item.url]] frameborder='0' onLoad="hideGif( this, event )"></iframe>
                         </div>
                     </div>
                     <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" style="displa: none">
@@ -288,6 +292,14 @@
             init();
         });
 
+
+{#        $("iframe").on( "load", function(){#}
+{#            $(this).siblings(".loadingFrame").css( "display", "none" );#}
+{#        });#}
+
+        function hideGif( elem, event ){
+            $(elem).siblings(".loadingFrame").css( "display", "none" );
+        }
 </script>
 
 {% endblock %}
