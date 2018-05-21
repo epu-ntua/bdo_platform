@@ -34,7 +34,8 @@
 }
 
 .dataset-name {
-    color: #945e00;
+    color: #2a6d6a;
+    box-shadow: 0 1px 0px #223b61;
 }
 
 .dataset-section {
