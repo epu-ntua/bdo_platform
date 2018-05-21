@@ -164,7 +164,10 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     print subquery
     if len(re.findall(r'round\d', subquery)) > 0:
         print 'Trying to fix round'
-        round_num = str(subquery.split('round')[1][0])
+        # round_num = str(subquery.split('round')[1][0])
+        round_num = str(re.findall(r'round\d', subquery)[0])[-1]
+        print round_num
+        # names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
         # print
         names = re.findall(r"round"+round_num+"\((.*?)\)", subquery)
         for name in names:
