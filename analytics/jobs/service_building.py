@@ -32,7 +32,14 @@ try:
         .builder \
         .appName("Python Spark - Read from Postgres DB") \
         .getOrCreate()
-    conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
+    conn_dict = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'bigdataocean',
+        'USER': 'bdo',
+        'PASSWORD': 'df195715HBdhahfP',
+        'HOST': '212.101.173.21',
+        'PORT': '5432',
+    }
     # Get data and load them into a dataframe
     raw_df = spark.read.format('jdbc').options(
         url=str('jdbc:postgresql://'+conn_dict["HOST"]+':'+conn_dict["PORT"]+'/'+conn_dict["NAME"]+'?user='+conn_dict["USER"]+'&password='+conn_dict["PASSWORD"]),
