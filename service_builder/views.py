@@ -123,7 +123,7 @@ def load_query(request):
 
     raw_query = Query(document=doc).raw_query
     query_paragraph_id = create_zep__query_paragraph(notebook_id, 'query paragraph', raw_query, index=0, df_name="df_" + query_name)
-    run_zep_paragraph(notebook_id, query_paragraph_id)
+    run_zep_paragraph(notebook_id, query_paragraph_id, livy_session_id=0, mode='zeppelin')
 
     result = {query_name: {"dataframe": "df_" + query_name, "paragraph": query_paragraph_id}}
     return HttpResponse(json.dumps(result), content_type="application/json")
@@ -177,6 +177,7 @@ def publish_new_service(request):
             service.private = True
         else:
             service.private = False
+        service.published = True
 
         service.save()
 
@@ -295,7 +296,7 @@ def update_service_arguments(request):
     for arg in arguments['algorithm-arguments']:
         args_to_note[arg['name']] = arg['default']
     new_arguments_paragraph = create_zep_arguments_paragraph(notebook_id=service.notebook_id, title='', args_json_string=json.dumps(args_to_note))
-    run_zep_paragraph(notebook_id=service.notebook_id, paragraph_id=new_arguments_paragraph)
+    run_zep_paragraph(notebook_id=service.notebook_id, paragraph_id=new_arguments_paragraph, livy_session_id=0, mode='zeppelin')
     if service.arguments_paragraph_id is not None:
         delete_zep_paragraph(service.notebook_id, service.arguments_paragraph_id)
     service.arguments_paragraph_id = new_arguments_paragraph
