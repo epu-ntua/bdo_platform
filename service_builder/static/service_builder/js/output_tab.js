@@ -370,7 +370,7 @@ function show_hide_results(){
 
     $("#addVizModal #submit-query-btn").click(function () {
         $('#query #viz_container iframe').appendTo('#dynamic_dashboard');
-        html_editor.replaceRange('\n<iframe src="'+viz_request+'" frameborder="0" allowfullscreen=""/>\n', {line: Infinity});
+        html_editor.replaceRange('\n<div id="viz_container"><iframe src="'+viz_request+'" frameborder="0" allowfullscreen=""style="width: 100%;min-height: 500px;"/></div>\n', {line: Infinity});
         html_editor.refresh();
         viz_request = "";
         $('#query #addVizModal #viz_container').empty();
@@ -378,7 +378,7 @@ function show_hide_results(){
 
     $("#addVizModal #submit-dataframe-btn").click(function () {
         $('#dataframe #viz_container iframe').appendTo('#dynamic_dashboard');
-        html_editor.replaceRange('\n<iframe src="'+viz_request+'" frameborder="0" allowfullscreen=""/>\n', {line: Infinity});
+        html_editor.replaceRange('\n<div id="viz_container"><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"/></div>\n', {line: Infinity});
         html_editor.refresh();
         viz_request = "";
         $('#dataframe #addVizModal #viz_container').empty();
