@@ -96,11 +96,21 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                     js = [(s['name'], s['joined'])]
 
                 for j in js:
-                    joins.append('%s.%s=%s.%s' %
-                                 (_from['name'],
-                                  selects[j[0]]['column'],
-                                  self.document['from'][0]['name'],
-                                  selects[j[1]]['column']))
+                    if s.get('aggregate', '') != '':
+                        c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+                        joins.append('%s(%s.%s)=%s(%s.%s)' %
+                                     (s.get('aggregate'),
+                                      _from['name'],
+                                      selects[j[0]]['column'],
+                                      s.get('aggregate'),
+                                      self.document['from'][0]['name'],
+                                      selects[j[1]]['column']))
+                    else:
+                        joins.append('%s.%s=%s.%s' %
+                                     (_from['name'],
+                                      selects[j[0]]['column'],
+                                      self.document['from'][0]['name'],
+                                      selects[j[1]]['column']))
 
         print "LOOK FOR JOIN"
         print selects
