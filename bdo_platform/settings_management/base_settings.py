@@ -100,7 +100,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
 
-    'bdo_main_app.middleware.LoginRequiredMiddleware',
+    # 'bdo_main_app.middleware.LoginRequiredMiddleware',
 ]
 
 LOGIN_EXEMPT_URLS = (

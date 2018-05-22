@@ -209,7 +209,7 @@ def load_service(request, pk):
     #     with open(path, 'r') as f:
     #         output_js = f.read()
 
-    output_html = output_html.replace('src', 'src-a')
+    output_html = output_html.replace('iframe src', 'iframe src-a')
 
     return render(request, 'service_builder/load_service.html', {
         'service_title': service.title,
