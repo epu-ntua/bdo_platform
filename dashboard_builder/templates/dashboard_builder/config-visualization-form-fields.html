@@ -18,11 +18,11 @@
                     {% endif %}
                     {% if argument.type == 'QUERY' %}
                     {% elif argument.type == 'COLUMN' %}
-                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >
+                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" style="width: 250px" >
 {#
                         </select>
                     {% elif argument.type == 'COLUMNLIST' %}
-                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}[]" multiple="multiple" >
+                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
 {#
                         </select>
                     {% elif argument.type == 'AGG_FUNCTION' %}
