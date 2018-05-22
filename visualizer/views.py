@@ -800,11 +800,14 @@ def map_plotline(request):
         print ("json-case")
 
         for df, color, lat_col, lon_col, order_var, marker_limit in zip(df_list, color_list, lat_col_list, lon_col_list, order_var_list, marker_limit_list):
-            service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-            livy = service_exec.service.through_livy
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = False
+            service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+            if len(service_exec) > 0:
+                service_exec = service_exec[0]  # GET LAST
+                session_id = service_exec.livy_session
+                exec_id = service_exec.id
+                updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+                livy = service_exec.service.through_livy
             if livy:
                 json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
             else:
@@ -953,11 +956,14 @@ def map_markers_in_time(request):
         tdelta = data[1][order_index] - data[0][order_index]
         period = 'PT{0}S'.format(tdelta.seconds)
     else:
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-        livy = service_exec.service.through_livy
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
         if livy:
             data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
         else:
@@ -1730,11 +1736,14 @@ def get_histogram_chart_am(request):
     else:
         bins += 1
 
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0]  # GET LAST
-        livy = service_exec.service.through_livy
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
         if livy:
             tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
             run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=session_id, mode='livy')
@@ -2041,13 +2050,14 @@ def get_line_chart_am(request):
         print json_data[:3]
 
     else:
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-        session_id = service_exec.livy_session
-        print 'session id: ' + str(session_id)
-        exec_id = service_exec.id
-        print 'exec id: ' + str(exec_id)
-        # updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
         if livy:
             json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
         else:
@@ -2146,11 +2156,14 @@ def get_pie_chart_am(request):
             json_data.append({value_var: d[0], key_var: str(d[1])})
 
     else:
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
         if livy:
             json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=key_var, order_type='ASC')
         else:
@@ -2230,11 +2243,14 @@ def get_column_chart_am(request):
             json_data.append(dict)
         print (json_data)
     else:
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
         if livy:
             json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
         else:
@@ -2286,11 +2302,14 @@ def get_data_table(request):
         isJSON = False
 
     else:
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0] #GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
         if livy:
             data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
         else:
@@ -2639,11 +2658,14 @@ def get_aggregate_value(request):
         unit = result_headers['columns'][variable_index]['unit']
 
     else:
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
         if livy:
             data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
         else:
