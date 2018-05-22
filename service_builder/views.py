@@ -59,7 +59,7 @@ def create_new_service(request):
 def run_initial_zep_paragraph(request):
     service_id = request.POST.get('service_id')
     service = Service.objects.get(pk=service_id)
-    run_zep_paragraph(service.notebook_id, paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH)
+    run_zep_paragraph(service.notebook_id, paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH, livy_session_id=0, mode='zeppelin')
     return HttpResponse("OK")
 
 
