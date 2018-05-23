@@ -378,7 +378,7 @@ function show_hide_results(){
 
     $("#addVizModal #submit-dataframe-btn").click(function () {
         $('#dataframe #viz_container iframe').appendTo('#dynamic_dashboard');
-        html_editor.replaceRange('\n<div id="viz_container"><div class="loadingFrame"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
+        html_editor.replaceRange('\n<div class="viz_container row"><div class="loadingFrame"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
         html_editor.refresh();
         viz_request = "";
         $('#dataframe #addVizModal #viz_container').empty();
