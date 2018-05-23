@@ -706,11 +706,11 @@
                     {#$(tempid).on(function () {#}
                     {#    $(tempid).append(prebuildIFrameItem[0]);#}
 
-                    setTimeout(helperfunc ,500);
+                    setTimeout(helperfunc ,250);
 
                     $scope.standardItems[$scope.standardItems.length - 1].url = decodedViz;
                     $('#save_dashboard_btn').show();
-                    }
+                }
             });
 
             $('#save_dashboard_btn').click(function () {
