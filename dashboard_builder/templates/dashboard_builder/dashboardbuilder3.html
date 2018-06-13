@@ -1,0 +1,860 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>
+    <style>
+        #cke_editor1 .cke_contents{
+            height: 350px !important;
+        }
+
+        #myModal .nav-pills > li.active a{
+            background-color: #30526a !important;
+        }
+
+        #myModal .nav>li {
+            display: inline-block !important;
+            width: 40% !important;
+        }
+        #myModal .nav-pills>li {
+            float: none !important;
+        }
+        #myModal .nav-pills>li a{
+            background-color: rgba(219, 219, 219, 0.9);
+        }
+        #myModal .nav-pills>li a:hover {
+            float: none !important;
+            background-color: #b6b6b6;
+        }
+
+        .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
+        .viz_item{
+            cursor: pointer;
+            font-size: 10.5pt;
+        }
+        #loadImg {
+            position: absolute;
+            z-index: 999;
+        }
+
+        #loadImg {
+            display: table-cell;
+            width: 100%;
+            height: 300px;
+            background: #fff;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .popover {
+            width: 500px;
+            max-width: 600px;
+            min-height: 230px;
+        }
+
+        .popover-content {
+            width: 100%;
+        }
+
+        .modal-header {
+            padding-top: 16px !important;
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+        }
+
+        .modal .modal-content .modal-body {
+            min-height: 500px;
+            height: 590px;
+            overflow-y: scroll;
+            padding: 0 24px 0 24px;
+        }
+
+        .modal .modal-dialog {
+            margin-top: 5px;
+            padding-top: 0;
+            padding-bottom: 5px;
+            width: 90%;
+        }
+
+        #viz_container {
+            background-color: #d8d8d8;
+            height: 500px;
+            width: 80%;
+            padding: 0;
+            position: relative;
+        }
+
+        #viz_container iframe, #dynamic_dashboard iframe {
+            background-color: darkgray;
+{#            height: 100%;#}
+{#            min-height: 480px;#}
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        {#Dashboard Additions#}
+        .gridster .gridster-item {
+            -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            color: #004756;
+            background: white;
+            padding: 0px;
+        }
+        ul {
+            list-style: none;
+        }
+
+        .wrap1{
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100000;
+            opacity: 0;
+            display: none;
+        }
+
+        .deletebtn{
+            position: absolute;
+            right: 0;
+            top: 0;
+            background-color: transparent;
+            height: 37px;
+            border: none;
+            color: white;
+            width: 30px;
+        }
+
+        .deletebtn:hover{
+            background-color: #9e0000;
+            cursor: pointer;
+        }
+
+        .iframeHeader{
+            height: 37px;
+            width: 100%;
+            background-color: #2172ac;
+            text-align: center;
+        }
+
+        .iframeHeader .form-group.is-focused .form-control{
+            background-image: linear-gradient(#D2D2D2, #D2D2D2), linear-gradient(#D2D2D2, #D2D2D2);
+        }
+
+        .iframeHeader:hover{
+            cursor: pointer;
+        }
+
+        .iframe-class{
+            height: calc(100% - 37px);
+            padding: 0px;
+            margin: 0% 0% 0% 0% !important;
+        }
+        #myModal .iframe-class{
+            height: 100%;
+        }
+
+        .iframeHeader .form-group{
+            margin: 0px 0px 0px 0px !important;
+        }
+
+        .iframeHeader .form-group .form-control{
+            color: #FFFFFF;
+            min-width: 70%;
+        }
+
+        #scroll_down_area{
+            display: none;
+            width: 100%;
+            height: 30%;
+            position: absolute;
+            bottom: 0;
+            z-index: 100000;
+            opacity: 100;
+            {#background-color: #0b2e13;#}
+            display: none;
+
+        }
+
+        .modal-tab{
+            width:50%;
+            height: 30px;
+            background-color: #979a9a;
+            color: white;
+            float: left;
+            box-shadow: 0px -1px 5px grey;
+            border-bottom: 1px solid black;
+        }
+
+        .modal-tab:hover{
+            cursor: pointer;
+        }
+
+
+        #modal-tab-notes{
+{#            background-color: #617b8e;#}
+        }
+
+        .note_wrapper{
+            padding: 10px;
+            width: 100%;
+            height: calc(100% - 37px);
+            overflow: auto;
+
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form"></form>
+    </div>
+
+    <input type="hidden" value="" id="dashboard_pk">
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Builder</h1>
+            <h5 style="display: inline-block; margin: 0;">Create a new dashboard by selecting data and using the
+                provided visualizations.</h5>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <input class="form-control text-center" type="text" id="dashboard_title"
+               value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
+    </div>
+
+    <div class="row text-left">
+        <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
+                data-target="#myModal">
+            <i class="fa fa-plus-circle o-white"></i> New visualisation
+        </button>
+
+        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" style="display: none">
+            Save Dashboard
+        </button>
+    </div>
+
+
+
+    <div ng-app="myApp" ng-controller="MainCtrl">
+        <div id="dynamic_dashboard" gridster="gridsterOpts">
+            <ul id="widgetParent">
+                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
+                    <div class='wrap1'></div>
+                    <header class="iframeHeader">
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
+                        {% load  static %}
+                        <input type='button' value='X' class='deletebtn'
+                               style="background-image: url({% static "images/exitBtn.png" %})"
+                               ng-click="removeWidget(item);">
+                    </header>
+                    <input type="text" integer ng-model="item.row" size="1" class="widget-x-loc" hidden/>
+                    <input type="text" integer ng-model="item.col" size="1" class="widget-y-loc" hidden/>
+
+                    <input type="text" integer ng-model="item.sizeX" size="1" class="widget-x-size" hidden/>
+                    <input type="text" integer ng-model="item.sizeY" size="1" class="widget-y-size" hidden/>
+
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div id="scroll_down_area">
+
+    </div>
+
+    <div id="query-container" hidden>
+        <select id="query-select" class="form-control" name="query">
+            <option disabled selected>-- select one of the saved queries --</option>
+            {% for query in saved_queries %}
+                <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+
+            {% endfor %}
+        </select>
+        <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+        <input id="new_query_doc" type="hidden" value=""/>
+        <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+        <button type="button" id="select_data_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>
+    </div>
+
+
+    <div id="viz-container" hidden>
+        <button type="button" id="select_viz_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+    </div>
+
+
+    <div id="conf-container" hidden>
+
+    </div>
+
+
+{% endblock %}
+
+
+{% block modal %}
+
+
+    <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+
+                    <h4 class="modal-title">Add a new widget to the dashboard</h4>
+
+                    <ul class="nav nav-pills">
+                      <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
+                      <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
+                    </ul>
+
+                </div>
+                <div class="modal-body">
+                    <div class="tab-content">
+                        <div class="tab-pane fade in active" id="viz_widget">
+                            <div class="row text-left" id="model-button-row">
+
+                                <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select your data" data-placement="right"
+                                >Select data
+                                </button>
+
+
+                                <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select visualization type" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">2. Select visualisation
+                                </button>
+                                <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select your data" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">3. Configure
+                                </button>
+                            </div>
+
+
+                            <div class="row" id="viz_config" style="display: none">
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                                    {% for viz in available_viz %}
+                                        <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                                    {% endfor %}
+
+                                </ul>
+                                <div id="viz_container" class="col-sm-8" style="width: 85%">
+                                    <div>
+                                            <button type="button" id="add_layer_btn" class="btn btn-primary btn-sm" style=" display: none;position: absolute; right:20px;">ADD LAYER  <i class="glyphicon glyphicon-plus "></i></button>
+                                    </div>
+                                    <div class="loadingFrame">
+                                        <img src="{% static 'img/loading_gif.gif' %}"/>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row tab-pane fade" id="viz_note">
+
+                        </div>
+                        <input type="hidden" id="selected_query" value="">
+                    </div>
+
+
+                </div>
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
+                    </button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn" style="display: none">Add
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+
+
+    <script type="text/javascript" src={% static '/js/angular.js' %}></script>
+    <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
+    <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
+    <script type="text/javascript" src={% static '/ckeditor/ckeditor/ckeditor.js' %}></script>
+
+
+    <script type="text/javascript">
+
+     function pageScroll() {
+                $('#main-panel').scrollTop();
+
+            }
+        var app = angular.module('myApp', ['gridster']);
+
+        app.config(function ($interpolateProvider) {
+            $interpolateProvider.startSymbol('[[');
+            $interpolateProvider.endSymbol(']]');
+        });
+
+        app.controller('MainCtrl', function ($scope) {
+            $scope.counter = "0";
+            $scope.tempInnerHtml="";
+
+            $scope.gridsterOpts = {
+                margins: [20, 20],
+                swapping: true,
+                outerMargin: false,
+                pushing: true,
+                floating: true,
+                columns: 4,
+                defaultSizeX: 4,
+	            defaultSizeY: 1,
+                rowHeight: 300,
+                draggable: {
+                    enabled: true,
+                    handle: '.iframeHeader',
+                    start: function (e, ui, $widget) {
+                        $('#scroll_down_area').show();
+                        $('.wrap1').show();
+                    },
+                    stop: function (e, ui, $widget) {
+                        $('#scroll_down_area').hide();
+                        $('.wrap1').hide();
+                    }
+                },
+                resizable: {
+                    enabled: true,
+                    handles: ['se', 'sw'],
+                    start: function (e, ui, $widget) {
+                        $('.wrap1').show();
+                    }
+                    ,
+                    stop: function (e, ui, $widget) {
+                        $('.wrap1').hide();
+                    }
+                },
+            };
+
+            $scope.standardItems = [];
+
+
+            function toggleSaveBtn() {
+                if ($('#widgetParent li').length > 0 ){
+                    $('#save_dashboard_btn').show();
+                }
+                else{
+                    $('#save_dashboard_btn').hide();
+                }
+            }
+
+
+            $("#myModal #submit-modal-btn").click(function () {
+
+                var tempid="#widget" + $scope.counter;
+
+                $scope.standardItems[ $scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
+
+
+                $(tempid).append('<div class="loadingFrame">\n' +
+                    '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
+                    '                </div>');
+                $('#viz_container iframe').appendTo(tempid);
+                toggleSaveBtn();
+                $(tempid).find(".loadingFrame").css( "display", "block" );
+                $(tempid).find("iframe").on( "load", function(){
+                    $(this).siblings(".loadingFrame").css( "display", "none" );
+                });
+
+
+                $('.viz_item').popover('hide');
+                $('#myModal #viz_config').hide();
+                $('#myModal #submit-modal-btn').hide();
+            });
+
+             $("#myModal #submit-note-btn").click(function () {
+                var myData = textEditor.getData();
+                var tempid="#widget" + $scope.counter;
+                var tempidJs="widget" + $scope.counter;
+
+                var note_wrapper= "<div class='note_wrapper'>"+ myData +" </div>"
+                 $scope.standardItems[ $scope.standardItems.length - 1].noteData = note_wrapper;
+
+                $(tempid).append(note_wrapper);
+                $('#save_dashboard_btn').show();
+                textEditor.destroy();
+                textEditor=null;
+
+                $('#viz_config').show();
+                $('#viz_note').hide();
+                $('#model-button-row').show();
+{#
+                $('#submit-note-btn').hide();
+                $('#submit-modal-btn').show();
+
+
+                var newWidget = document.getElementById(tempidJs);
+                newWidget.classList.add("note_widget");
+                for(var i=0 ; i < newWidget.childNodes.length ;i++){
+                    if(newWidget.childNodes[i].className == "iframeHeader"){
+                        var tempHeader = newWidget.childNodes[i];
+                        tempHeader.style.backgroundColor = "white";
+                        $(tempHeader).mouseenter(function(){
+                            this.style.backgroundColor="lightgrey "
+                        });
+                        $(tempHeader).mouseleave(function(){
+                            this.style.backgroundColor="white "
+                        });
+                        for(var j =0 ; j < tempHeader.childNodes.length; j++){
+                            if(tempHeader.childNodes[j].className == "form-group"){
+                                tempHeader.childNodes[j].style.display = "none";
+                            }
+                            if(tempHeader.childNodes[j].className == "deletebtn"){
+                                tempHeader.childNodes[j].style.backgroundColor = "white";
+                                tempHeader.childNodes[j].style.color = "black";
+                            }
+                        }
+                    }
+
+                }
+
+            });
+
+            $("#dismiss-modal-btn").click (function () {
+                $scope.standardItems.pop();
+                $('#myModal #viz_container').html('<div class="loadingFrame">\n' +
+                    '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
+                    '                </div>');
+                $('.viz_item').popover('hide');
+                $('#myModal #viz_config').hide();
+                $('#myModal #submit-modal-btn').hide();
+            });
+
+            $('#new_widget_btn').click(function (){
+                $scope.counter++;
+                var tempTitle = "Widget" + $scope.counter;
+                $scope.standardItems.push({sizeX:4, sizeY:1, row: 0,col: 0 ,url: "" , noteData: "" , title: tempTitle});
+            });
+
+
+
+            $('#scroll_down_area').mouseenter(function () {
+                    window.scrollBy(0,40);
+                    scrolldelay = setTimeout('pageScroll()',200);
+            });
+
+
+
+            $('#scroll_down_area').mouseleave(function () {
+                    clearTimeout(scrolldelay);
+            });
+
+            $scope.finished = function () {
+                 var tempid="widget" + $scope.counter;
+
+                $('#viz_container iframe').appendTo(tempid);
+{#
+            };
+
+            $scope.clear = function () {
+                $scope.standardItems = [];
+            };
+
+            $scope.removeWidget = function (item) {
+                var index = $scope.standardItems.indexOf(item);
+                $scope.standardItems.splice(index, 1);
+                setTimeout(function() {
+                    toggleSaveBtn();
+                }, 500);
+
+            };
+
+            $('#save_dashboard_btn').click(function () {
+                var postEndpoint = "/dashboards/save/";
+                var pk = $('#dashboard_pk').val();
+                if (pk !== '') {
+                    postEndpoint += pk + '/'
+                }
+
+                var post_data_obj = new Object();
+                {#$('#widgetParent li ').each(function (index, element) {#}
+                {#    post_data_obj[String(index)] = $(this).children( ".iframe-class").attr("src");#}
+                var tempcounter= 0;
+                for(var myindex in $scope.standardItems){
+                    var tempTitleId= "widgetTitleModel" + myindex.toString();
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() ,$scope.standardItems[myindex].noteData.toString() ,$scope.standardItems[myindex].title.toString()];
+                    post_data_obj[String(tempcounter)] = temparray;
+                    tempcounter++;
+                }
+                post_data_obj['title'] = $('#dashboard_title').val();
+                var post_data = encodeURIComponent(JSON.stringify(post_data_obj));
+                $.ajax({
+                    "type": "POST",
+                    "dataType": "json",
+                    "url": postEndpoint,
+                    "data": post_data,
+                    "beforeSend": function (xhr, settings) {
+                        console.log("Before Send");
+                        console.log(post_data);
+                        $.ajaxSettings.beforeSend(xhr, settings);
+                    },
+                    "success": function (result) {
+                        console.log(result);
+                        $('#dashboard_pk').val(result.pk);
+                        window.history.replaceState({}, 'a_title', '/dashboards/create/' + result.pk + '/');
+                        alert('Dashboard saved successfully!');
+                    },
+                    error:function(x,e) {
+                        if (x.status==0) {
+                            alert('You are offline!!\n Please Check Your Network.');
+                        } else if(x.status==404) {
+                            alert('Requested URL not found.');
+                        } else if(x.status==500) {
+                            alert('Internel Server Error.');
+                        } else if(e=='parsererror') {
+                            alert('Error.\nParsing JSON Request failed.');
+                        } else if(e=='timeout'){
+                            alert('Request Time out.');
+                        } else {
+                            alert('Unknow Error.\n'+x.responseText);
+                        }
+                    }
+                });
+        });
+        });
+
+    </script>
+    <script type="text/javascript">
+        $("#select_data_popover").click(function () {
+            $('.viz_item').popover('hide');
+        });
+
+
+        function updateVariables(element) {
+            $('#myModal .variable-select').find('option').remove().end();
+            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+            var new_query_id = $('#myModal #selected_query').val();
+
+            var new_query_doc = {};
+            $.ajax({
+                url: '/queries/get_query_variables/',
+                data: {
+                    id: new_query_id,
+                    document: new_query_doc
+                },
+                type: 'GET',
+                success: function (result) {
+                    var variables = result['variables'];
+                    var dimensions = result['dimensions'];
+                    $('.variable-select').append($("<option></option>")
+                    .attr("", v)
+                    .text('-- column select --'));
+                    $.each(variables, function (k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", v)
+                            .text(k));
+                    });
+
+                    $.each(dimensions, function (k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", v)
+                            .text(k));
+                    });
+                }
+            });
+        }
+
+
+    </script>
+
+
+    <script>
+
+        var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
+
+        $(document).ready(function () {
+
+            $("#myModal #modal-tab-notes").click(function (e) {
+
+                    $('#submit-note-btn').show();
+                    $('#submit-modal-btn').hide();
+
+                    if(textEditor == null) {
+                        textEditor = CKEDITOR.appendTo('viz_note');
+                    }
+                });
+
+
+            $("#myModal #modal-tab-data").click(function (e) {
+
+                    $('#submit-note-btn').hide();
+                    $('#submit-modal-btn').show();
+                });
+
+
+            $("#myModal #select_data_popover").popover({
+                html: true,
+                animation: true,
+                content: function () {
+                    return $('#query-container').html();
+                }
+            }).click(function (e) {
+                $(this).popover('toggle');
+                $('.popover-content #query-select').on('change', function () {
+                    var new_query_id = $(this).children(":selected").attr("id");
+
+                    var new_query_doc = $('#new_query_doc').val();
+                    $('#myModal #selected_query').val(new_query_id);
+                    updateVariables(this);
+                });
+                $('.popover-content #select_data_ok').click(function (e) {
+
+                    $('#myModal #select_data_popover').popover("hide");
+                    $('#viz_config').show();
+                })
+                $('.popover-content #select_data_cancel').click(function (e) {
+                    $('#myModal #select_data_popover').popover("hide");
+                })
+            });
+
+
+            $(".viz_item").click(function (element) {
+                var component_id = $(this).attr('data-viz-id');
+                var component_type = $(this).attr('data-viz-type');
+                var component_selector = 'li[data-viz-id="'+component_id+'"]';
+
+                $.ajax({
+                    url: '/dashboards/get_visualization_form_fields',
+                    data: {
+                        id: parseInt(component_id),
+                        order: 1
+                    },
+                    type: 'GET',
+                    beforeSend: function () {
+                        $('.popover').popover('hide');
+                    },
+                    success: function (form_fields) {
+                        $("#conf-container").html(form_fields);
+                        $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
+                        $("#conf-container").append('<button type="button" id="select_conf_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>');
+                        $(component_selector).popover({
+                            html: true,
+                            title: 'Configure visualisation',
+                            content: function () {
+                                return $('#conf-container').html();
+                            }
+                        });
+                        updateVariables($('#query-select'));
+
+                        $(component_selector).popover('toggle');
+                        $('#myModal .popover-content .variable-select').select2();
+                        var popver_id = '#' + $(component_selector).attr('aria-describedby');
+                        $(popver_id + ' #select_conf_ok').click(function (e) {
+                            if(component_type=='map'){
+                                $('#add_layer_btn').show();
+                            }
+                            else{
+                                $('#add_layer_btn').hide();
+
+                            }
+                            submit_conf(component_selector);
+                            $(component_selector).popover("hide");
+                        });
+                        $(popver_id + ' #select_conf_cancel').click(function (e) {
+                            $(component_selector).popover("hide");
+                        });
+
+                    }
+                });
+            });
+
+
+            function submit_conf(component_selector) {
+                var viz_request = "http://localhost:8000/visualizations/";
+                viz_request += $('#myModal').find('.modal-body').find('#action').val();
+
+                var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+
+                var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
+                {#                alert(submitted_args);#}
+                var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
+                $(selects).each(function (i) {
+                    var select = this;
+                    $(submitted_args).find("select").eq(i).val($(select).val());
+
+                });
+                $('#config-viz-form').empty();
+                $('#config-viz-form').append(submitted_args);
+
+
+                var myData = $("#config-viz-form").serialize();
+
+                viz_request += '?';
+                viz_request += myData;
+
+                viz_request += '&query=' + $('#myModal #selected_query').val();
+
+                show_viz(viz_request);
+
+            };
+
+            function show_viz(viz_request) {
+
+                $("#viz_container").html('<div class="loadingFrame"><img src="{% static 'img/loading_gif.gif' %}"/></div><iframe class="iframe-class" id="viz-iframe" ' +
+                    'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
+                    '></iframe>');
+                $('#myModal #submit-modal-btn').show();
+                $("#myModal #viz_container .loadingFrame").css( "display", "block" );
+                $("#myModal #viz_container iframe").on( "load", function(){
+                    $(this).siblings(".loadingFrame").css( "display", "none" );
+                });
+            }
+
+
+            $("#dismiss-modal-btn").click(function m(e) {
+                $('#select_viz_popover').prop('disabled', true);
+                $('#select_conf_popover').prop('disabled', true);
+                $('#myModal #viz_container').html('<div class="loadingFrame">\n' +
+                    '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
+                    '                </div>');
+            });
+
+        });
+
+
+
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    // Only send the token to relative URLs i.e. locally.
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            }
+        });
+
+
+
+
+    </script>
+
+{% endblock %}
