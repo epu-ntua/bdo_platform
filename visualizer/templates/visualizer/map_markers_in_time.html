@@ -1,0 +1,104 @@
+{% extends 'visualizer/viz_base.html' %}
+
+{% load static %}
+{% load leaflet_tags %}
+
+
+{% block css %}
+    {% leaflet_css %}
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" rel="stylesheet"/>
+    <link href="https://rawgit.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css" rel="stylesheet"/>
+    <link href="http://apps.socib.es/Leaflet.TimeDimension/dist/leaflet.timedimension.control.min.css" rel="stylesheet"/>
+
+
+    {% for css in css_all %}
+        {% autoescape off %}
+            {{ css }}
+        {% endautoescape %}
+    {% endfor %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}"/>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/control.css' %}"/>
+
+
+{% endblock %}
+
+{% block viz_content %}
+
+    <div id="info">
+        <ul id="displayed-list"></ul>
+    </div>
+    {% leaflet_map map_id %}
+
+{% endblock %}
+
+
+
+{% block js %}
+
+    {% leaflet_js %}
+{#    <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>#}
+{#    <script src="{% static 'js/leaflet.markercluster.js'%}"></script>#}
+
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+    <script src="https://rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
+    <script src="https://rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.min.js"></script>
+
+
+
+
+
+    {% for js in js_all %}
+        {% autoescape off %}
+            {{ js }}
+        {% endautoescape %}
+    {% endfor %}
+
+    <script>
+         var map = {{ map_id|safe }};
+          map.timeDimension = L.timeDimension({period:'{{time_interval}}'});
+            map.timeDimensionControl = L.control.timeDimension({
+                position: 'bottomleft',
+                autoPlay: true,
+                playerOptions: {
+                    transitionTime: 200,
+                    loop: true}
+                    });
+           map.addControl(map.timeDimensionControl);
+
+            var timestamped_geo_json = L.timeDimension.layer.geoJson(
+                L.geoJson({'type':'FeatureCollection','features':{{ data|safe }}}, {'pointToLayer': function (feature,latlng) {
+                    var geojsonMarkerOptions = {
+                    radius: 4,
+{#                    fillColor: feature.properties.style.iconstyle.fillColor,#}
+{#                    color: feature.properties.style.iconstyle.fillColor,#}
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                    };
+{#                    feature.properties.style#}
+                    {% if markerType == 'circle' %}
+                        return L.circleMarker(latlng,geojsonMarkerOptions);
+                    {% else %}
+                        return L.marker(latlng,geojsonMarkerOptions);
+                    {% endif %}
+                }}),
+                {updateTimeDimension: true,
+                    addlastPoint: true,
+                    {% if duration != '' %}
+                        duration:'{{ duration }}'
+                    {% endif %}
+                }
+                ).addTo(map);
+    </script>
+
+
+
+{% endblock %}

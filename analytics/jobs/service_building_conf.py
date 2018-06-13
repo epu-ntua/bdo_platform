@@ -1,15 +1,25 @@
 import psycopg2
+from django.db import connections
 from sets import Set
 
-db = {
+db_local = {
     'psycopg': "dbname='bdo_platform' user='postgres' host='localhost' password='bdo!'",
-    'jdbc': "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234",
+    'jdbc': "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=bdo!",
+}
+
+db_zep = {
+    'psycopg': "dbname='bigdataocean' user='bdo' host='212.101.173.21' password='df195715HBdhahfP'",
+    'jdbc': "jdbc:postgresql://212.101.173.21:5432/bigdataocean?user=bdo&password=df195715HBdhahfP",
 }
 
 
 def get_job_arguments_and_info(job_id):
     # connect to BDO platform db to get job details
-    conn = psycopg2.connect(db['psycopg'])
+    try:
+        conn = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='bdo!'")
+    except:
+        print "I am unable to connect to the database"
+    # conn = connections['default']
     cur = conn.cursor()
     cur.execute("""SELECT analysis_flow, arguments FROM analytics_jobinstance WHERE id = %d""" % job_id)
     row = cur.fetchone()
@@ -44,7 +54,12 @@ def get_job_arguments_and_info(job_id):
 
 
 def get_spark_query(args, info, query):
-    conn = psycopg2.connect(db['psycopg'])
+    # conn = psycopg2.connect(db['psycopg'])
+    try:
+        conn = psycopg2.connect("dbname='bigdataocean' user='bdo' host='212.101.173.21' password='df195715HBdhahfP'")
+    except:
+        print "I am unable to connect to the database"
+    # conn = connections['default']
     cur = conn.cursor()
 
     col_args = Set()

@@ -1,5 +1,4 @@
 import json
-
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from PIL import Image, ImageChops
@@ -11,6 +10,8 @@ import folium
 import numpy as np
 import requests
 import collections
+from django.db import connections
+from django.conf import settings
 
 
 def convert_unicode_json(data):
@@ -161,7 +162,7 @@ def create_zep_note(name):
     data['name'] = name
     str_data = json.dumps(data)
     # Make a post request
-    response = requests.post("http://localhost:8080/api/notebook", data=str_data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook", data=str_data)
     print response
     response_json = response.json()
     notebook_id = response_json['body']
@@ -174,7 +175,7 @@ def clone_zep_note(notebook_id, name):
     data['name'] = name
     str_data = json.dumps(data)
     # Make a post request
-    response = requests.post("http://localhost:8080/api/notebook/"+notebook_id, data=str_data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/"+notebook_id, data=str_data)
     print response
     response_json = response.json()
     notebook_id = response_json['body']
@@ -182,18 +183,28 @@ def clone_zep_note(notebook_id, name):
     return notebook_id
 
 
-def run_zep_note(notebook_id):
+def run_zep_note(notebook_id, exclude=[], mode='zeppelin'):
+    if mode == 'livy':
+        session_id = create_livy_session()
     response_status = 500
     # number of tries
     counter = 1
     paragraphs = []
-    response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id))
+    response = requests.get(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id))
     response_json = response.json()
     for p in response_json['body']['paragraphs']:
-        paragraphs.append(p['id'])
-    for p in paragraphs:
-        run_zep_paragraph(notebook_id, p)
-
+        if str(p['id']) not in exclude:
+            paragraphs.append(p['id'])
+        else:
+            print 'excluded paragraph: {0}'.format(str(p['id']))
+    if mode == 'livy':
+        for p in paragraphs:
+            run_zep_paragraph(notebook_id, p, session_id, mode)
+        return session_id
+    else:
+        for p in paragraphs:
+            run_zep_paragraph(notebook_id, p, 0, mode)
+        return 0
 
 def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     data = dict()
@@ -216,22 +227,52 @@ def create_zep_test_query_paragraph(notebook_id, title, raw_query):
     return paragraph_id
 
 
+def create_zep_arguments_paragraph(notebook_id, title, args_json_string):
+    data = dict()
+    data['title'] = title
+    data['index'] = 1
+    data['text'] = '%spark.pyspark' \
+                   '\nimport json' \
+                   '\narguments = dict()' \
+                   '\nresult = dict()' \
+                   '\narguments = json.loads(\'{0}\')' \
+                   '\nprint arguments'.format(args_json_string)
+    print args_json_string
+    str_data = json.dumps(data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = response.json()
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
 def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name="df"):
     data = dict()
     if index >= 0:
         data['index'] = index
     data['title'] = title
+    conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
     data['text'] = '%spark.pyspark' \
                    '\n'+df_name+'= spark.read.format("jdbc")' \
-                   '.option("url", "jdbc:postgresql://212.101.173.21:5432/bigdataocean?user=bdo&password=df195715HBdhahfP")' \
+                   '.option("url", "jdbc:postgresql://'+conn_dict["HOST"]+':'+conn_dict["PORT"]+'/'+conn_dict["NAME"]+'?user='+conn_dict["USER"]+'&password='+conn_dict["PASSWORD"]+'")' \
                    '.option("driver", "org.postgresql.Driver")' \
-                   '.option("database", "bdo_platform")' \
+                   '.option("database", "'+conn_dict["NAME"]+'")' \
                    '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
                    '.load()' \
                    '\n'+df_name+'.printSchema()'
 
+    # data['text'] =  '%spark.pyspark' \
+    #                 '\n' + df_name + '= spark.read.format("jdbc")' \
+    #                 '.option("url", "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234")' \
+    #                 '.option("driver", "org.postgresql.Driver")' \
+    #                 '.option("database", "bdo_platform")' \
+    #                 '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
+    #                 '.load()' \
+    #                 '\n' + df_name + '.printSchema()'
+
     str_data = json.dumps(data)
-    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
     response_json = response.json()
     paragraph_id = response_json['body']
@@ -242,23 +283,69 @@ def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name
 def delete_zep_paragraph(notebook_id, paragraph_id):
     data = dict()
     str_data = json.dumps(data)
-    response = requests.delete("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id), data=str_data)
+    response = requests.delete(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id), data=str_data)
     print response
 
 
-def run_zep_paragraph(notebook_id, paragraph_id):
-    response_status = 500
-    counter = 3
-    while response_status != 200:
+def delete_zep_notebook(notebook_id):
+    data = dict()
+    str_data = json.dumps(data)
+    response = requests.delete(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id), data=str_data)
+    print response
+
+
+def execute_code_on_livy(code, session_id, kind):
+    host = settings.LIVY_URL
+    headers = {'Content-Type': 'application/json'}
+
+    data = dict()
+    data['code'] = code
+    data['kind'] = kind
+    statements_url = host + '/sessions/{0}/statements'.format(session_id)
+    response = requests.post(statements_url, data=json.dumps(data), headers=headers).json()
+    print response
+    try:
+        statement_id = response['id']
+        state = ''
+        from time import sleep
+        sleep(3)  # Time in seconds.
+        while state != 'available':
+            state = requests.get(host + '/sessions/' + str(session_id) + '/statements/' + str(statement_id), headers=headers).json()['state']
+            if state == 'error' or state == 'cancelling' or state == 'cancelled':
+                raise Exception('Failed')
+    except Exception:
+        raise Exception('Failed')
+    return statement_id
+
+
+def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
+    if mode == 'livy':
         data = dict()
         str_data = json.dumps(data)
-        response = requests.post("http://localhost:8080/api/notebook/run/" + str(notebook_id) + "/" + str(paragraph_id), data=str_data)
+        response = requests.get(settings.ZEPPELIN_URL + "/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id), data=str_data)
         print response
-        counter -= 1
-        if counter < 0:
-            return HttpResponse(status=500)
-        response_status = response.status_code
-        # TODO: CHANGE THE ABOVE CODE BECAUSE EVERY TIME STATUS 500 IS RETURNED
+        response_json = convert_unicode_json(response.json())
+        code = str(response_json['body']['text']).strip().replace("u'{", "{")
+        kind = 'spark'
+        if 'pyspark' in code:
+            kind = 'pyspark'
+        code = code.replace('%spark.pyspark\n', '').replace('%spark.pyspark', '').replace('%pyspark\n', '').replace('%pyspark', '').replace('%spark\n', '').replace('%spark', '')
+
+        if code is not None or code != '':
+            execute_code_on_livy(code=code, session_id=livy_session_id, kind=kind)
+    else:
+        response_status = 500
+        counter = 3
+        while response_status != 200:
+            data = dict()
+            str_data = json.dumps(data)
+            response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/run/" + str(notebook_id) + "/" + str(paragraph_id), data=str_data)
+            print response
+            counter -= 1
+            if counter < 0:
+                return HttpResponse(status=500)
+            response_status = response.status_code
+            # TODO: CHANGE THE ABOVE CODE BECAUSE EVERY TIME STATUS 500 IS RETURNED
 
 
 def create_zep_viz_paragraph(notebook_id, title):
@@ -267,7 +354,7 @@ def create_zep_viz_paragraph(notebook_id, title):
     data['text'] = '%sql' \
                    '\nselect * from tempTablePostgres'
     str_data = json.dumps(data)
-    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
     response_json = response.json()
     paragraph_id = response_json['body']
@@ -281,7 +368,7 @@ def create_zep_sort_paragraph(notebook_id, title, sort_col):
     data['text'] = '%spark.pyspark' \
                    '\ndf = df.sort("' + sort_col + '")'
     str_data = json.dumps(data)
-    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
     response_json = response.json()
     paragraph_id = response_json['body']
@@ -296,7 +383,7 @@ def create_zep_reg_table_paragraph(notebook_id, title):
                    '\ndf.registerTempTable("tempTablePostgres")'
 
     str_data = json.dumps(data)
-    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
     response_json = response.json()
     paragraph_id = response_json['body']
@@ -356,7 +443,7 @@ def set_zep_paragraph_line_chart(notebook_id, paragraph_id, query_doc, y_vars, x
     config["results"]["0"]["graph"]["values"] = y_config_list
 
     str_config = json.dumps(config)
-    response = requests.put("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
+    response = requests.put(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
     print response.json()
 
 
@@ -412,7 +499,7 @@ def set_zep_paragraph_bar_chart(notebook_id, paragraph_id, query_doc, y_vars, x_
     config["results"]["0"]["graph"]["values"] = y_config_list
 
     str_config = json.dumps(config)
-    response = requests.put("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
+    response = requests.put(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
     print response.json()
 
 
@@ -468,7 +555,7 @@ def set_zep_paragraph_area_chart(notebook_id, paragraph_id, query_doc, y_vars, x
     config["results"]["0"]["graph"]["values"] = y_config_list
 
     str_config = json.dumps(config)
-    response = requests.put("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
+    response = requests.put(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
     print response.json()
 
 
@@ -544,7 +631,7 @@ def set_zep_paragraph_scatter_chart(notebook_id, paragraph_id, query_doc, y_vars
     config["results"]["0"]["graph"]["setting"]["scatterChart"]["yAxis"] = y_config_list[0]
 
     str_config = json.dumps(config)
-    response = requests.put("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
+    response = requests.put(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
     print response.json()
 
 
@@ -600,13 +687,13 @@ def set_zep_paragraph_pie_chart(notebook_id, paragraph_id, query_doc, value_vars
     config["results"]["0"]["graph"]["values"] = y_config_list
 
     str_config = json.dumps(config)
-    response = requests.put("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
+    response = requests.put(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/" + str(paragraph_id) + "/config", data=str_config)
     print response.json()
 
 
 def restart_zep_interpreter(interpreter_id):
     interpreter_id = '2D6CA11G8'
-    response = requests.put("http://localhost:8080/api/interpreter/setting/restart/"+interpreter_id)
+    response = requests.put(settings.ZEPPELIN_URL+"/api/interpreter/setting/restart/"+interpreter_id)
     print response
 
 
@@ -618,7 +705,7 @@ def create_zep_drop_all_paragraph(notebook_id, title):
                    '\ndf=None'
 
     str_data = json.dumps(data)
-    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
     response_json = response.json()
     paragraph_id = response_json['body']
@@ -641,7 +728,7 @@ def create_zep_toJSON_paragraph(notebook_id, title, df_name, order_by='', order_
                        '\n{0}.toJSON().collect()'.format(df_name)
 
     str_data = json.dumps(data)
-    response = requests.post("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
     response_json = convert_unicode_json(response.json())
     paragraph_id = response_json['body']
@@ -649,26 +736,118 @@ def create_zep_toJSON_paragraph(notebook_id, title, df_name, order_by='', order_
     return paragraph_id
 
 
-def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
-    print "request: "+"http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id)
-    response = requests.get("http://localhost:8080/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
+def create_zep_tempView_paragraph(notebook_id, title, df_name):
+    data = dict()
+    data['title'] = 'bdo_test_paragraph'
+    data['text'] = '%spark.pyspark' \
+                   '\n{0}.createTempView("{0}_scala")'.format(df_name)
+
+    str_data = json.dumps(data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
     response_json = convert_unicode_json(response.json())
-    json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}"))
-    # print json_data
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def create_zep_scala_histogram_paragraph(notebook_id, title, df_name, hist_col, num_of_bins):
+    data = dict()
+    data['title'] = 'bdo_test_paragraph'
+    data['text'] = '%spark' \
+                   '\nval {0}_scala = spark.table("{0}_scala")' \
+                   '\nval (startValues,counts) = {0}_scala.select("{1}").map(value => value.getDouble(0)).rdd.histogram({2})' \
+                   '\nval {0}_scala = sc.parallelize(startValues zip counts).toDF("startValues","counts").withColumn("startValues", round($"startValues", 3))' \
+                   '\nspark.sqlContext.dropTempTable("{0}_scala")'.format(df_name, hist_col, num_of_bins)
+
+    str_data = json.dumps(data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = convert_unicode_json(response.json())
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def create_zep_scala_toJSON_paragraph(notebook_id, title, df_name):
+    data = dict()
+    data['title'] = 'bdo_test_paragraph'
+
+    data['text'] = '%spark' \
+                   '\n{0}_scala.orderBy("startValues").toJSON.collect'.format(df_name)
+
+
+    str_data = json.dumps(data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = convert_unicode_json(response.json())
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def get_zep_scala_toJSON_paragraph_response(notebook_id, paragraph_id):
+    print "request: "+settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id)
+    response = requests.get(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
+    print response
+    response_json = convert_unicode_json(response.json())
+    re = '[' + str(response_json['body']['results']['msg'][0]['data'].split('Array(')[1].split(')\n')[0]) + ']'
+    json_data = json.loads(re)
+    json_data = convert_unicode_json(json_data)
+    return json_data
+
+
+def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
+    print "request: "+settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id)
+    response = requests.get(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
+    print response
+    response_json = convert_unicode_json(response.json())
+    json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}").replace("'", '"'))
+    print json_data[:3]
     # print type(json_data)
     json_data = convert_unicode_json(json_data)
-    # print json_data
+    print json_data[:3]
     # print type(json_data)
 
     return json_data
 
 
-def create_livy_session(kind):
-    host = 'http://bdo-dev.epu.ntua.gr:8998'
-    headers = {'Content-Type': 'application/json'}
+def create_zep_getDict_paragraph(notebook_id, title, dict_name):
+    data = dict()
+    data['title'] = 'bdo_test_paragraph'
+    data['text'] = '%spark.pyspark' \
+                   '\nprint {0}'.format(dict_name)
 
-    data = {'kind': kind}
+    str_data = json.dumps(data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = convert_unicode_json(response.json())
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def get_zep_getDict_paragraph_response(notebook_id, paragraph_id):
+    response = requests.get(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
+    print response
+    response_json = convert_unicode_json(response.json())
+    json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}").replace("'", '"'))
+    json_data = convert_unicode_json(json_data)
+    return json_data
+
+
+def create_livy_session():
+    host = settings.LIVY_URL
+    data = { 'kind': 'pyspark',
+             'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
+             'driverMemory': '7g',
+             'driverCores': 2,
+             'numExecutors': 2,
+             'executorMemory': '5g',
+             'executorCores': 2,
+             'heartbeatTimeoutInSecond': 60,
+             'conf': {'spark.driver.maxResultSize': '2g'}}
+    headers = {'Content-Type': 'application/json'}
     response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
     print response
     try:
@@ -696,7 +875,7 @@ def create_livy_query_statement(session_id, raw_query):
                    '.load()' \
                    '\n#df.show()'
 
-    statements_url = host + '/sessions/%d/statements' % session_id
+    statements_url = host + '/sessions/{0}/statements'.format(session_id)
     response = requests.post(statements_url, data=json.dumps(data), headers=headers).json()
     print response
     try:
@@ -711,14 +890,20 @@ def create_livy_query_statement(session_id, raw_query):
     return statement_id
 
 
-def create_livy_toJSON_paragraph(session_id):
-    host = 'http://bdo-dev.epu.ntua.gr:8998'
+def create_livy_toJSON_paragraph(session_id, df_name, order_by='', order_type='ASC'):
+    host = settings.LIVY_URL
     headers = {'Content-Type': 'application/json'}
 
     data = dict()
-    data['code'] = 'df.toJSON().collect()'
+    if order_by != '':
+        if order_type == 'ASC':
+            data['code'] = '{0}.orderBy("{1}", ascending=True).toJSON().collect()'.format(df_name, order_by)
+        else:
+            data['code'] = '{0}.orderBy("{1}", ascending=False).toJSON().collect()'.format(df_name, order_by)
+    else:
+        data['code'] = '{0}.toJSON().collect()'.format(df_name)
 
-    statements_url = host + '/sessions/%d/statements' % session_id
+    statements_url = host + '/sessions/{0}/statements'.format(session_id)
     response = requests.post(statements_url, data=json.dumps(data), headers=headers).json()
     print response
     try:
@@ -731,4 +916,63 @@ def create_livy_toJSON_paragraph(session_id):
                 raise Exception('Failed')
     except Exception:
         raise Exception('Failed')
-    return response['output']['data']
+
+    return convert_unicode_json(response['output']['data']['text/plain'].replace("u'{", "{").replace("}',", "},").replace("}']", "}]").replace("'", '"'))
+
+
+def create_livy_scala_toJSON_paragraph(session_id, df_name):
+    host = settings.LIVY_URL
+    headers = {'Content-Type': 'application/json'}
+
+    data = dict()
+    data['code'] = '{0}_scala.orderBy("startValues").toJSON.collect'.format(df_name)
+    data['kind'] = 'spark'
+    statements_url = host + '/sessions/{0}/statements'.format(session_id)
+    response = requests.post(statements_url, data=json.dumps(data), headers=headers).json()
+    print response
+    try:
+        statement_id = response['id']
+        state = ''
+        while state != 'available':
+            response = requests.get(host + '/sessions/' + str(session_id) + '/statements/' + str(statement_id), headers=headers).json()
+            state = response['state']
+            if state == 'error' or state == 'cancelling' or state == 'cancelled':
+                raise Exception('Failed')
+    except Exception:
+        raise Exception('Failed')
+    return_val = '[' + str(convert_unicode_json(response['output']['data']['text/plain'].replace("u'{", "{").replace("}',", "},").replace("}']", "}]").replace("'", '"').split('Array(')[1].replace('})', '}').replace('\n', ''))) + ']'
+    return json.loads(return_val)
+
+
+def get_result_dict_from_livy(session_id, dict_name):
+    host = settings.LIVY_URL
+    headers = {'Content-Type': 'application/json'}
+
+    data = dict()
+    data['code'] = '\nprint {0}'.format(dict_name)
+    data['kind'] = 'pyspark'
+
+    statements_url = host + '/sessions/{0}/statements'.format(session_id)
+    response = requests.post(statements_url, data=json.dumps(data), headers=headers).json()
+    print response
+    try:
+        statement_id = response['id']
+        state = ''
+        from time import sleep
+        sleep(3)  # Time in seconds.
+        while state != 'available':
+            response = requests.get(host + '/sessions/' + str(session_id) + '/statements/' + str(statement_id), headers=headers).json()
+            state = response['state']
+            if state == 'error' or state == 'cancelling' or state == 'cancelled':
+                raise Exception('Failed')
+    except Exception:
+        raise Exception('Failed')
+    print 'result'
+    print str(response['output']['data'])
+    return_val = json.loads(str(convert_unicode_json(response['output']['data']['text/plain'])).replace("'", '"'))
+    print return_val
+    return return_val
+
+
+def close_livy_session(session_id):
+    requests.delete("{0}/sessions/{1}".format(settings.LIVY_URL, session_id))

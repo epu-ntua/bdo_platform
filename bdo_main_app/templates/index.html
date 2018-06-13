@@ -3,10 +3,11 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
-    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/home.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet"/>
     <style>
-        .landing-page-tile > .card{
+        .landing-page-tile > .card {
             background-size: cover;
         }
 
@@ -27,39 +28,59 @@
 {% block content %}
 
     <div class="row">
-        <div class="text-center">
-            <h1 class="o-blue">BIG DATA OCEAN</h1>
-            <h5>Welcome to the greatest marketplace for maritime data and insights</h5>
-            <form class="home-search-form" method="GET" action="{% url 'search' %}">
-                <div class="form-group  is-empty">
-                    <input type="text" class="form-control" placeholder="Search datasets, analytics, reports..." name="q" autocomplete="off">
-                    <span class="material-input"></span>
-                    <button type="submit" class="btn btn-white btn-round btn-just-icon">
-                        <i class="material-icons">search</i><div class="ripple-container"></div>
-                    </button>
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-12">
+                    <h1 class="o-blue mysmallcaps">Big Data Ocean</h1>
+                    <h5 class="subheader-frontpage">Exploiting Oceans of Data for Maritime Services</h5>
+                    <hr width="50%" class="hr-frontpage"/>
                 </div>
-            </form>
+            </div>
+            <div class="container front-page-fixed-width">
+                <div class="row text-center">
+                    <div class="col-md-6">
+                        <a class="frontpage-item-marketplace" href="/services/"><img class="animation"
+                                                                                     src="{% static "img/item_marketplace.png" %}"></a>
+
+                        <a href="/services/">
+                            <div class="frontpage-item-subtitle">Services Marketplace</div>
+                        </a>
+                        <div class="frontpage-item-description">Empower your business through the use of an
+                            extensive list
+                            of maritime, cross-domain big data services (all users)
+                        </div>
+
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/exploretools/"><img class="animation" src="{% static "img/item_explore.png" %}"></a>
+
+                        <a href="/exploretools/">
+                            <div class="frontpage-item-subtitle">Explore Data and Create Services</div>
+                        </a>
+                        <div class="frontpage-item-description">Harness the power of maritimecross-domain data and tools
+                            to create powerful queries, visualisations, reports and services (advanced users)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-    <div class="row">
-        <h4 class="text-center o-blue" style="margin: 5px 0 20px 0; font-size: 1.65em;">Find out how we can help stakeholders in the maritime domain</h4>
-        {% for item in items %}
-            {% include 'landing_page_items/tile.html' %}
-        {% endfor %}
-    </div>
+
+
 
 {% endblock %}
 
 {% block js %}
     <!-- Material Dashboard DEMO methods, don't include it in your project! -->
-	<script src="{% static 'js/demo.js' %}"></script>
+    <script src="{% static 'js/demo.js' %}"></script>
 
     <script type="text/javascript">
-    	$(document).ready(function(){
+        $(document).ready(function () {
 
-			// Javascript method's body can be found in js/demos.js
-        	demo.initDashboardPageCharts();
+            // Javascript method's body can be found in js/demos.js
+            demo.initDashboardPageCharts();
 
-    	});
-	</script>
+        });
+    </script>
 {% endblock %}

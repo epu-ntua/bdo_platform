@@ -15,6 +15,9 @@ function updateVariables(element) {
         success: function(result){
             var variables = result['variables'];
             var dimensions = result['dimensions'];
+            $('.variable-select').append($("<option></option>")
+                .attr("value", '')
+                .text('-- column select --'));
             $.each(variables, function(k, v) {
                 $('.variable-select').append($("<option></option>")
                     .attr("value", v)
@@ -58,7 +61,7 @@ function updateVariables(element) {
             success: function(form_fields){
                 $("#conf-container").html(form_fields);
                 $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
-
+                $("#conf-container").append('<button type="button" id="select_conf_cancel" class="btn btn-sm " data-toggle="popover">Cancel</button>');
                 $(component_selector).popover({
                     html: true,
                     title: 'Configure visualisation',
@@ -72,8 +75,11 @@ function updateVariables(element) {
                 $(component_selector).popover('toggle');
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id+' #select_conf_ok').click(function(e){
-                    $(".outputLoadImg").show();
+                    $("#viz_container .outputLoadImg").show();
                     submit_conf(component_selector);
+                    $(component_selector).popover("hide");
+                });
+                $(popver_id+' #select_conf_cancel').click(function(e){
                     $(component_selector).popover("hide");
                 });
             }
@@ -83,7 +89,7 @@ function updateVariables(element) {
 
 var viz_request = "";
 function submit_conf(component_selector) {
-    viz_request = "http://localhost:8000/visualizations/";
+    viz_request = "/visualizations/";
     var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
     viz_request += $('#action').val();
 

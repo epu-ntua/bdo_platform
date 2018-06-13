@@ -2,6 +2,16 @@ from bdo_platform.settings_management.development import *
 
 SPARK_SUBMIT_PATH = 'C:\\spark\\bin\\spark-submit'
 
+TEST_SERVICES = False
+
+ZEPPELIN_URL = 'http://localhost:8080'
+ZEPPELIN_DB = 'UBITECH_POSTGRES'
+
+LIVY_URL = 'http://212.101.173.18:8998'
+
+SERVICE_BUILDER_BASE_NOTE = '2DD9PT2CD'
+BASE_NOTE_ARG_PARAGRAPH = '20180519-224947_1029185073'
+
 
 DATABASES = {
     'default': {

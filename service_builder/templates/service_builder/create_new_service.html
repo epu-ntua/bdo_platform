@@ -56,6 +56,7 @@
     {% csrf_token %}
     <div class="container" id ='service_container'>
         <input type="text" id="service_id" value="{{ service_id }}" style="display: none;">
+        <input type="text" id="notebook_id" value="{{ notebook_id }}" style="display: none;">
         <ul class="nav nav-pills nav-justified">
             <li class="active"><a data-toggle="pill" href="#queries_container">Queries</a></li>
             <li><a data-toggle="pill" href="#arguments_container">Arguments</a></li>
@@ -117,46 +118,95 @@
                     <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
                 </div>
                 <div class="modal-body">
-                        <div class="row text-left">
-                            <div id="load-viz-query-select-container">
-                                <select id="load-viz-query-select" class="form-control" name="load-viz-query">
-                                    <option disabled selected>-- select one of the saved queries --</option>
-                                    {% for query in saved_queries %}
-                                        <option value="{{ query.id }}"
-                                                data-query-id="{{ query.id }}">
-                                            {{ query.title }}
-                                        </option>
+                    <ul class="nav nav-pills">
+                        <li class="active"><a data-toggle="pill" id="queryPill" href="#query">From Query</a></li>
+                        <li><a data-toggle="pill" id="dataframePill" href="#dataframe">From Dataframe</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div id="query" class="tab-pane fade in active">
+                            <div class="row text-left">
+                                <div id="load-viz-query-select-container">
+                                    <select id="load-viz-query-select" class="form-control" name="load-viz-query">
+                                        <option disabled selected>-- select one of the saved queries --</option>
+                                        {% for query in saved_queries %}
+                                            <option value="{{ query.id }}"
+                                                    data-query-id="{{ query.id }}">
+                                                {{ query.title }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <div><a href="/queries/simplified/" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+                                </div>
+                                <input type="hidden" id="selected_query" value="">
+                            </div>
+
+                            <div class="row" id="viz_config" style="display: none;">
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                                    {% for viz in available_viz %}
+                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
                                     {% endfor %}
-                                </select>
-                                <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
-                            </div>
-                            <input type="hidden" id="selected_query" value="">
+                                </ul>
+                                <div id="viz_container" class="col-sm-8" style="width: 85%">
 
-
-                            <div id="load-viz-df-select-container">
-                                <select id="load-viz-df-select" class="form-control" name="load-viz-df">
-                                    <option disabled selected>-- select one of the created dataframes --</option>
-                                    <option value="df">df</option>
-                                </select>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row" id="viz_config" style="display: none;">
-                            <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                                {% for viz in available_viz %}
-                                    <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
-                                {% endfor %}
-                            </ul>
-                            <div id="viz_container" class="col-sm-8" style="width: 85%">
+                        <div id="dataframe" class="tab-pane fade">
+                            <div class="row text-left">
+                                <label for="selected_dataframe">Dataframe name:</label>
+                                <input id="selected_dataframe" class="form-control" name="selected_dataframe">
+                                </input>
+                            </div>
 
+                            <div class="row" id="viz_config" style="display: none;">
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                                    {% for viz in available_viz %}
+                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                                    {% endfor %}
+                                </ul>
+                                <div id="viz_container" class="col-sm-8" style="width: 85%">
+
+                                </div>
                             </div>
                         </div>
-
+                    </div>
 
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="submit-modal-btn">Add</button>
+                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="submit-query-btn">Add</button>
+                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="submit-dataframe-btn" style="display: none;">Add</button>
                     <button type="button" class="btn btn-default"  data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="publishModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+{#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
+                    <h4 class="modal-title">Publish your service</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="publishForm" style="text-align: center; padding-top: 50px;">
+                        <label for="title">Title</label>
+                        <input type="text" name="title" class="form-control" id="title">
+                        <label for="private">Private</label>
+                        <input type="checkbox" class="form-control" name="private" id="private" value="True">
+                        <label for="price">Price</label>
+                        <input type="text" class="form-control" id="price" name="price" value="free">
+                        <label for="description">Description</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="publish_service_btn">Publish</button>
+                    <button type="button" class="btn btn-default"  data-dismiss="modal" id="dismiss-service-btn">Cancel</button>
                 </div>
             </div>
         </div>

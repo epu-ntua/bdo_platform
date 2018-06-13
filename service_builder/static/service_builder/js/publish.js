@@ -43,14 +43,29 @@
                 });
             });
          $("#selected-arguments-table2 tbody tr").each(
-            function(index, elem){
-                exposed_args['algorithm-arguments'].push({
-                    name: $(this).find($("td[data-columnname='name']")).text(),
-                    title: $(this).find($("td[data-columnname='title']")).text(),
-                    type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
-                    description: $(this).find($("td[data-columnname='description']")).text(),
+             function(index, elem){
+                if($(this).find($("td[data-columnname='type']")).children().eq(1).text() == 'SELECT') {
+                    exposed_args['algorithm-arguments'].push({
+                        name: $(this).find($("td[data-columnname='name']")).text(),
+                        title: $(this).find($("td[data-columnname='title']")).text(),
+                        type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
+                        options: (JSON.parse($(this).find($("td[data-columnname='type']")).children().eq(2).text())['options']),
+                        description: $(this).find($("td[data-columnname='description']")).text(),
+                    });
+                }
+                else{
+                    exposed_args['algorithm-arguments'].push({
+                        name: $(this).find($("td[data-columnname='name']")).text(),
+                        title: $(this).find($("td[data-columnname='title']")).text(),
+                        type: $(this).find($("td[data-columnname='type']")).children().eq(1).text(),
+                        default: $(this).find($("td[data-columnname='default']")).text(),
+                        description: $(this).find($("td[data-columnname='description']")).text(),
+                    });
+
+                }
+                // alert(JSON.stringify(exposed_args))
                 });
-            });
+
 
         return exposed_args;
     }
@@ -72,7 +87,7 @@
         });
     }
 
-    function update_service_arguments() {
+    function update_service_arguments(type) {
         var exposed_args = gather_arguments();
         // alert(JSON.stringify(exposed_args));
         $.ajax({
@@ -82,11 +97,18 @@
                 service_id: service_id,
                 exposed_args: JSON.stringify(exposed_args),
             },
-            "success": function(result) {
+            success: function(result) {
                 console.log(result);
             },
             error: function (jqXHR) {
                 alert('error');
+                if (type === 'alg'){
+                    $("#selected-arguments-table2 tbody").children().last().remove();
+                }
+                else{
+                    $("#selected-arguments-table1 tbody").children().last().remove();
+                }
+
             }
         });
     }
@@ -100,12 +122,17 @@
             "type": "POST",
             "url": "/service_builder/publish/",
             "data": {
+                service_id: service_id,
                 notebook_id: notebook_id,
                 selected_queries: JSON.stringify(service_queries),
                 exposed_args: JSON.stringify(exposed_args),
                 output_html: html_editor.getValue(),
                 output_css: css_editor.getValue(),
-                output_js: js_editor.getValue()
+                output_js: js_editor.getValue(),
+                title: $("#publishForm #title").val(),
+                private: $("#publishForm #private").val(),
+                description: $("#publishForm #description").val(),
+                price: $("#publishForm #price").val()
             },
             "success": function(result) {
                 console.log(result);
@@ -118,4 +145,8 @@
             }
         });
     });
+
+    // function parse_json_options(text){
+    //
+    // }
 

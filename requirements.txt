@@ -12,6 +12,9 @@ django-allauth
 psycopg2==2.7.1
 pymongo
 
+# s3
+django-s3direct==1.0.4
+
 # data aggregation
 netCDF4==1.2.7
 numpy==1.12.1
@@ -23,18 +26,24 @@ sympy
 #data visualization
 Pillow==4.2.1
 matplotlib
-django-leaflet
-folium
+django-leaflet==0.22.0
+folium==0.5.0
 django-nvd3
 python-nvd3
 django-bower
+django-ckeditor
 
-#data visualization
-django-leaflet
-folium
 
 # deployment
 dj-config-url==0.1.1
 newrelic
 whitenoise
 gunicorn
+
+#cache
+python-memcached
+
+# misc
+scipy
+unidecode
+django-background-tasks

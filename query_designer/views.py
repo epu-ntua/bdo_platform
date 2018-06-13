@@ -45,7 +45,7 @@ def load_query(request, pk):
 
 def simplified(request, pk=None):
     return render(request, 'query_designer/simplified.html', {
-        'datasets': Dataset.objects.filter(stored_at='LOCAL_POSTGRES').exclude(variables=None),
+        'datasets': Dataset.objects.filter(stored_at='UBITECH_POSTGRES').exclude(variables=None),
         'dimensions': Dimension.objects.all(),
         'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
         'AGGREGATES': AGGREGATES,
@@ -172,7 +172,8 @@ class DefaultEncoder(json.JSONEncoder):
 
 def filter_info(request, filter_type, pk):
     if filter_type == 'variable':
-        return JsonResponse({'type': 'number', 'orderable': True})
+        return JsonResponse({'type': 'text'})
+        # return JsonResponse({'type': 'number', 'orderable': True})
 
     dimension = Dimension.objects.get(pk=pk)
 
@@ -257,7 +258,7 @@ def get_field_policy(user):
 
     for variable in Variable.objects.all():
         field_policy['valueFields'].append({
-            'value': variable.safe_name,
+            'value': str(variable.pk)+"_pk_"+variable.safe_name,
             'title': variable.title,
             'type': variable.pk,
         })

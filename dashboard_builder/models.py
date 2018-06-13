@@ -7,6 +7,9 @@ from django.db.models import *
 
 from bdo_main_app.lists import *
 
+from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField
+
 
 class Dashboard(Model):
     created = DateTimeField(auto_now_add=True)
@@ -18,3 +21,12 @@ class Dashboard(Model):
 
     viz_components = JSONField(default=dict())
     private = BooleanField(default=True)
+
+    description = CharField(blank=True, max_length=512, null=True, default=None)
+    imageurl = URLField(blank=True, null=True, default=None)
+class ExampleModel(Model):
+    content = RichTextUploadingField()
+
+
+class ExampleNonUploadModel(Model):
+    content = RichTextField()

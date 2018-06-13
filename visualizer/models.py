@@ -19,7 +19,7 @@ class Visualization(Model):
             
         }
     """
-    info = JSONField(default=dict())
+    info = JSONField(default=None, null=True, blank=True)
     view_name = CharField(max_length=100)
 
     @property

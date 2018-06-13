@@ -124,10 +124,10 @@
 
 
   $('a#new_query_link').click(function(){
-      var left  = ($(window).width()/2)-(900/2);
-      var top   = ($(window).height()/2)-(600/2);
-      window.open('/queries/', 'window name', 'width=900, height=600, top='+top+', left='+left);
-      return false;
+      // var left  = ($(window).width()/2)-(900/2);
+      // var top   = ($(window).height()/2)-(600/2);
+      // window.open('/queries/', 'window name', 'width=900, height=600, top='+top+', left='+left);
+      // return false;
   });
 
 

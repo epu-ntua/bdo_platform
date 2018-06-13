@@ -1,9 +1,9 @@
 .o-blue {
-    color: #125688 !important;
+    color: #32879c !important;
 }
 
 .o-darkblue {
-    color: #125688 !important;
+    color: #30526a !important;
 }
 
 .o-green {
@@ -19,7 +19,7 @@
 }
 
 .o-purple {
-    color: #2172ac !important;
+    color: #30526a !important;
 }
 
 .o-lightgray {
@@ -34,6 +34,8 @@
     color: #555 !important;
 }
 
+
+
 .bg-color--midnight-blue {
     background: #2c3e50 !important;
     color: #fff !important;
@@ -45,7 +47,7 @@
 }
 
 .bg-color--blue {
-    background: #2172ac !important;
+    background: #30526a !important;
 }
 
 .bg-color--gray {

@@ -42,7 +42,7 @@ $(function() {
 
         var $selectionCol = $modal.find('.selection-confirm > div');
         $selectionCol.removeClass('hidden');
-        // $selectionCol.find('#selection-aggregate').val('AVG');
+        // $selectionCol.find('#selection-aggregate').val('AVG').trigger('change');
         $selectionCol.find('#selection-aggregate').val(null).trigger('change');
 
 
@@ -95,5 +95,8 @@ $(function() {
     
     $(".dataset-metadata-btn").click(function () {
         $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
-    })
+    });
+     $(".dataset-title").click(function () {
+        $(this).closest(".dataset-section").find('.dataset_collapse_div').collapse("toggle");
+    });
 });

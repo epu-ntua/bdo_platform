@@ -1,4 +1,14 @@
 {% load static %}
+
+{% block css %}
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+    <style>
+        .datetimepicker {
+            width: 300px;
+        }
+    </style>
+{% endblock %}
+
 {% for argument in arguments %}
     <div class="row">
         <div class="col-xs-12">
@@ -50,11 +60,34 @@
                         <input type="hidden" id="spatialCovInput" name="{{ argument.name }}" value="{{ argument.default }}">
                         <input hidden type="number" id="areaSelectWidth" value="{{ argument.areaSelectWidth }}" data-default="{{ argument.areaSelectWidth }}" style="width:100%">
                         <input hidden type="number" id="areaSelectHeight" value="{{ argument.areaSelectHeight }}" data-default="{{ argument.areaSelectHeight }}" style="width:100%">
-
+                {% elif argument.type == 'DATETIME' %}
+                    <div class="coverage-date-filters">
+                        <div class="row">
+                            <div>
+                                <div class="form-group">
+                                    <div class='input-group date'>
+                                        <input type='text' class="form-control" name="{{ argument.name }}" id="{{ argument.name }}"/>
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 {% elif argument.type == 'INT' %}
-                    <input id="{{ argument.name }}" type="number" step="0.00001" class="form-control full-width" name="{{ argument.name }}" autocomplete="off" value="{{ argument.default }}">
+                    <input id="{{ argument.name }}" type="number" step="1" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}">
                 {% elif argument.type == 'FLOAT' %}
-                    <input id="{{ argument.name }}" type="number" step="0.00001" class="form-control full-width" name="{{ argument.name }}" autocomplete="off" value="{{ argument.default }}">
+                    <input id="{{ argument.name }}" type="number" step="0.001" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}">
+                {% elif argument.type == 'BOOLEAN' %}
+                    <input id="{{ argument.name }}" type="checkbox" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}"
+                            {% if argument.default ==  "TRUE" %}checked {% endif %}><br>
+                {% elif argument.type == 'SELECT' %}
+                    <select id="{{ argument.name }}" class="form-control full-width select-select" name="{{ argument.name }}" >
+                        {% for option in argument.options %}
+                             <option value="{{ option.value }}">{{ option.text }}</option>
+                        {% endfor %}
+                    </select>
                 {% else %}
                     <input id="{{ argument.name }}" type="text" class="form-control full-width" name="{{ argument.name }}"  value="{{ argument.default }}">
                 {% endif %}
@@ -69,3 +102,5 @@
 
 <script src="{% static "js/leaflet-areaselect.js" %}"></script>
 <script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}"></script>
+<script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+<script type="text/javascript" src="{% static 'js/datepicker.js' %}"></script>

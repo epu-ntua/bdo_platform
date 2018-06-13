@@ -9,22 +9,21 @@ from mongo_client import get_mongo_db
 
 class Command(BaseCommand):
     help = 'Import dataset from nc file to postgres'
-    option_list = BaseCommand.option_list + (
-        make_option(
-            "-f",
+
+    def add_arguments(self, parser):
+        # Named (optional) arguments
+        parser.add_argument("-f",
             "--file",
             dest="file",
             help="NC file",
-            metavar="FILE"
-        ),
-        make_option(
-            "-t",
+            metavar="FILE")
+        parser.add_argument("-t",
             "--target",
             dest="target",
             help="Where data should be stored (either `postgres` or `mongo`)",
-            metavar="TARGET"
-        ),
-    )
+            metavar="TARGET")
+
+
 
     def handle(self, *args, **options):
         target = options['target']

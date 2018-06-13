@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/on-demand.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <div class="col-md-3 col-xs-1"></div>
+
+    <div class="col-md-6 col-xs-10">
+        <div style="margin-bottom: 40px;">
+            <a href="/on-demand/" class="btn btn-primary pull-right">
+                Show all requests
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header" data-background-color="blue" style="font-size: 1.4em;">
+                Request
+            </div>
+            <div class="card-content">
+                {% include 'on_demand/teaser.html' with req=object details=True %}
+            </div>
+        </div>
+
+        <div class="card">
+            {% with replies=object.replies.all %}
+                <div class="card-header" data-background-color="blue" style="font-size: 1.4em;">
+                    Responses ({{ replies|length }})
+                </div>
+                <div class="card-content">
+                    <div class="row">
+                        {% for reply in replies %}
+                            {% include 'on_demand/response.html' with req=object %}
+                        {% empty %}
+                            <p>No responses</p>
+                        {% endfor %}
+                    </div>
+
+                    {% if request.user.is_authenticated %}
+                        <form method="POST" action="/on-demand/{{ object.pk }}/reply/" class="form">
+                            {% csrf_token %}
+
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <div class="form-group">
+                                        <div class="form-group label-floating is-empty">
+                                            <label>Post your solution, ideas or questions below</label>
+                                            <textarea name="text" class="form-control full-width" rows="4"></textarea>
+                                            <span class="material-input"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-12">
+                                    <button type="submit" class="btn btn-default btn-dark pull-right">
+                                        Post
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    {% else %}
+                        <p class="o-gray"><a href="/accounts/login/">Sign in</a> to send a response.</p>
+                    {% endif %}
+                </div>
+            {% endwith %}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'js/on-demand.js' %}"></script>
+{% endblock %}

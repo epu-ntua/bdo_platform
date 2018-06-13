@@ -7,6 +7,14 @@
     word-wrap:break-word;
 }
 
+.dataset-title{
+    cursor: pointer;
+}
+
+.modal-content {
+    max-height: 75vh;
+    overflow: auto;
+}
 
 #data-filter-search {
     width: 100%;
@@ -26,7 +34,11 @@
 }
 
 .dataset-name {
-    color: #ff9800;
+    color: #6f6f6f;
+    box-shadow: 0 1px 0px #223b61;
+    font-weight: bold;
+    font-family: sans-serif;
+    padding: 10px 10px;
 }
 
 .dataset-section {

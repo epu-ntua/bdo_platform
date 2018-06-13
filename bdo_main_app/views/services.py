@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import collections
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.utils.timezone import now
@@ -17,8 +18,8 @@ def services(request):
     else:
         user_dashboards = []
         user_services = []
-    bdo_dashboards = Dashboard.objects.filter(user=User.objects.get(username='BigDataOcean'))
-    bdo_services = Service.objects.filter(user=User.objects.get(username='BigDataOcean'), published=True)
+    bdo_dashboards = Dashboard.objects.filter(private=False)
+    bdo_services = Service.objects.filter(published=True, private=False)
 
     return render(request, 'services/services/services_index.html', {
         'my_dashboards': user_dashboards,
@@ -28,11 +29,25 @@ def services(request):
     })
 
 
+def convert_unicode_json(data):
+    if isinstance(data, basestring):
+        return str(data)
+    elif isinstance(data, collections.Mapping):
+        return dict(map(convert_unicode_json, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(convert_unicode_json, data))
+    else:
+        return data
+
+
 def view_dashboard(request, pk):
     user = request.user
     dashboard = Dashboard.objects.get(pk=pk)
+    dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
+    print dashboard.viz_components
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
+        'pk': pk,
     })
 
 

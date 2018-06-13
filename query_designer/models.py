@@ -128,9 +128,9 @@ class AbstractQuery(Model):
             for x in _from['select']:
                 if x['name'] == filters['a']:
                     if x['type'] != 'VALUE':
+                        print 'type' + x['type']
                         filters['a'] = '%s.%s' % \
-                                       (_from['name'], Dimension.objects.get(pk=x['type'],
-                                                                             variable_id=v).data_column_name)
+                                       (_from['name'], Dimension.objects.get(pk=int(x['type'])).data_column_name)
                     else:
                         v_obj = Variable.objects.get(pk=int(_from['type']))
                         if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':

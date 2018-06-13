@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/home.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/animate.css' %}" rel="stylesheet"/>
+    <style>
+        .landing-page-tile > .card {
+            background-size: cover;
+        }
+
+        .landing-page-tile .card-content {
+            min-height: 180px;
+        }
+
+        .landing-page-tile h4 {
+            margin-bottom: 20px;
+        }
+
+        .landing-page-tile h4 > a {
+            font-size: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-12">
+                    <h1 class="o-blue mysmallcaps">Big Data Ocean</h1>
+                    <h5 class="subheader-frontpage">Exploiting Oceans of Data for Maritime Services</h5>
+                    <hr width="50%" class="hr-frontpage"/>
+                </div>
+            </div>
+            <div class="row text-center">
+                <div class="animation col-md-4 col-md-offset-4">
+                    <a href="/queries/simplified/">
+                        <div class="frontpage-item-subtitle">Create a query</div>
+
+                        <div class="frontpage-item-description">Perform powerful queries against blue big data from
+                            different providers
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="row text-center">
+                <div class="animation col-md-4">
+                    <a href="/dashboards/create/">
+                        <div class="frontpage-item-subtitle-right">Create dashboards and visualisations</div>
+
+                        <div class=" text-right">Create dashboard / reports
+                            and visualisations from queries
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-4 explore-middle-img">
+                <img class="" src="{% static "img/item_explore.png" %}">
+            </div>
+            <div class="animation col-md-4">
+                <a href="/analytics/service-builder/">
+                    <div class="frontpage-item-subtitle-left">Create an analysis</div>
+
+                    <div class="text-left">
+                        Perform simple analytics in an easy manner using a set of available analytical
+                        components/algorithms
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="row text-center">
+            <div class="animation col-md-4 col-md-offset-4">
+                <a href="/service_builder/create/">
+                    <div class="frontpage-item-subtitle">Create a Service</div>
+
+                    <div class="frontpage-item-description">Harness the power of cross-domain data and big data tools in
+                        a single highly-customizable
+                        service
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+
+{% endblock %}
+
+{% block js %}
+    <!-- Material Dashboard DEMO methods, don't include it in your project! -->
+    <script src="{% static 'js/demo.js' %}"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            // Javascript method's body can be found in js/demos.js
+            demo.initDashboardPageCharts();
+
+        });
+    </script>
+{% endblock %}

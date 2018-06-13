@@ -96,11 +96,21 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                     js = [(s['name'], s['joined'])]
 
                 for j in js:
-                    joins.append('%s.%s=%s.%s' %
-                                 (_from['name'],
-                                  selects[j[0]]['column'],
-                                  self.document['from'][0]['name'],
-                                  selects[j[1]]['column']))
+                    if s.get('aggregate', '') != '':
+                        c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+                        joins.append('%s(%s.%s)=%s(%s.%s)' %
+                                     (s.get('aggregate'),
+                                      _from['name'],
+                                      selects[j[0]]['column'],
+                                      s.get('aggregate'),
+                                      self.document['from'][0]['name'],
+                                      selects[j[1]]['column']))
+                    else:
+                        joins.append('%s.%s=%s.%s' %
+                                     (_from['name'],
+                                      selects[j[0]]['column'],
+                                      self.document['from'][0]['name'],
+                                      selects[j[1]]['column']))
 
         print "LOOK FOR JOIN"
         print selects
@@ -159,7 +169,53 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         limit_clause
     subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
 
-    print q
+    import re
+    print 'Initial Query:'
+    print subquery
+    if len(re.findall(r'round\d', subquery)) > 0:
+        print 'Trying to fix round'
+        # round_num = str(subquery.split('round')[1][0])
+        round_num = str(re.findall(r'round\d', subquery)[0])[-1]
+        print round_num
+        # names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
+        # print
+        names = re.findall(r"round"+round_num+"\((.*?)\)", subquery)
+        for name in names:
+            subquery = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", subquery)
+        # print subquery
+
+        names = re.findall(r"round" + round_num +"\((.*?)\)", subquery_cnt)
+        for name in names:
+            subquery_cnt = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", subquery_cnt)
+        # print subquery_cnt
+
+        names = re.findall(r"round" + round_num +"\((.*?)\)", q)
+        for name in names:
+            q = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", q)
+        # print q
+
+
+    if len(re.findall(r'date_trunc_(.*?)', subquery)) > 0:
+        print 'Trying to fix date_trunc'
+        time_trunc = str(subquery.split('date_trunc_')[1].split('(')[0])
+        # print
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", subquery)
+        for name in names:
+            subquery = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", subquery)
+        # print subquery
+
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", subquery_cnt)
+        for name in names:
+            subquery_cnt = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", subquery_cnt)
+        # print subquery_cnt
+
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", q)
+        for name in names:
+            q = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", q)
+        # print q
+
+
+
     # cursor = connection.cursor()
     if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
         cursor = connections['UBITECH_POSTGRES'].cursor()
@@ -221,20 +277,22 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             all_rows = cursor.fetchall()
             print "First rows"
             print all_rows[:3]
+            print header_sql_types
             # all_rows = Query.threaded_fetchall(connection, q, self.count)
 
             # we have to convert numeric results to float
             # by default they're returned as strings to prevent loss of precision
-            for row in all_rows:
-                res_row = []
-                for idx, h_type in enumerate(header_sql_types):
-                    if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:
-                        res_row.append(float(row[idx]))
-                    else:
-                        res_row.append(row[idx])
-
-                results.append(res_row)
-
+            # for row in all_rows:
+            #     res_row = []
+            #     for idx, h_type in enumerate(header_sql_types):
+            #         if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:
+            #         # if h_type == 'numeric' or h_type == 'double precision':
+            #             res_row.append(float(row[idx]))
+            #         else:
+            #             res_row.append(row[idx])
+            #
+            #     results.append(res_row)
+            results = all_rows
     # include dimension values if requested
     for d_name in dimension_values:
         hdx, header = [hi for hi in enumerate(headers) if hi[1]['name'] == d_name][0]

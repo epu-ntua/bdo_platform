@@ -811,24 +811,61 @@ $(function () {
             $.each(info.values, function(idx, value) {
                 var _from = {
                     type: value.type,
-                    name: value.name + '_' + String(idx),
+                    name: String(value.name).split("_pk_")[1] + '_' + String(idx),
                     select: []
                 };
 
                 // push main value
                 _from.select.push({
                    type: 'VALUE',
-                   name: 'i' + String(idx) + '_' + value.name,
-                   title: value.name,
+                   name: 'i' + String(idx) + '_' + String(value.name).split("_pk_")[1],
+                   title: String(value.name).split("_pk_")[1],
                    aggregate: value.aggregate,
                    groupBy: false,
                    exclude: false
                 });
-
+                // alert(value.name);
                 // push dimensions
                 $.each($('#selected_dimensions > option[data-forvariable="' + value.name + '"]'), function(jdx, opt) {
+                    // alert("Dimension" + $(opt).data('type'));
                     var name = $(opt).data('type');
                     var groupBy = $('select[name="category"]').val().indexOf(String($(opt).attr('value'))) >= 0;
+                    var dimAggregate = '';
+                    // var dimName = String($(opt).attr('value'));
+                    if ((name.indexOf('latitude') >= 0) || (name.indexOf('longitude') >= 0)) {
+                        // alert("Lat on Lon");
+                        if ($("#spatial_resolution").val() !== "none"){
+                            // alert("spatial_resolution is not None");
+                            groupBy = true;
+                            if ($("#spatial_resolution").val() === "1")
+                                dimAggregate = 'round0';
+                            else if($("#spatial_resolution").val() === "0.1")
+                                dimAggregate = 'round1';
+                            else if($("#spatial_resolution").val() === "0.01")
+                                dimAggregate = 'round2';
+                        }
+                    }
+                    if (name.indexOf('time') >= 0) {
+                        // alert("Lat on Lon");
+                        if ($("#temporal_resolution").val() !== "none"){
+                            // alert("temporal_resolution is not None");
+                            groupBy = true;
+                            if ($("#temporal_resolution").val() === "minute")
+                                dimAggregate = 'date_trunc_minute';
+                            else if($("#temporal_resolution").val() === "hour")
+                                dimAggregate = 'date_trunc_hour';
+                            else if($("#temporal_resolution").val() === "day")
+                                dimAggregate = 'date_trunc_day';
+                            else if($("#temporal_resolution").val() === "month")
+                                dimAggregate = 'date_trunc_month';
+                            else if($("#temporal_resolution").val() === "year")
+                                dimAggregate = 'date_trunc_year';
+
+                            // alert(dimAggregate);
+
+                        }
+                    }
+
                     var orderBy = $('select[name="orderby"]').val().indexOf(String($(opt).attr('value'))) >= 0;
 
                     var dimension = {
@@ -836,6 +873,7 @@ $(function () {
                         name: 'i' + String(idx) + '_' + name,
                         title: $(opt).text(),
                         groupBy: groupBy,
+                        aggregate: dimAggregate,
                         exclude: !groupBy && value.aggregate
                     };
 
@@ -937,7 +975,7 @@ $(function () {
                         var iframe = $('<iframe  onload="hide_gif();" />');
                         $("#viz_container iframe").remove();
                         $("#viz_container").append(iframe);
-                        $('#viz_container iframe').attr('src', 'http://localhost:8000/visualizations/get_line_chart_am/?query=' + id + '&y_var=' + y_var + '&x_var=' + x_var);
+                        // $('#viz_container iframe').attr('src', '/visualizations/get_line_chart_am/?query=' + id + '&y_var[]=' + y_var + '&x_var=' + x_var);
 
 
 
@@ -1222,7 +1260,12 @@ $(function () {
                 $fieldset.next().next().remove();
                 $fieldset.next().remove();
             }
+            var variable_type = $fieldset.find('input[name="value_field"]').attr("data-type");
+            $('#selected_dimensions > option[data-forvariable^="' + variable_type + '_"]').remove();
+            // $('#id_category > option[data-forvariable^="' + variable_type + '_"]').remove();
+            // $('#id_orderby > option[data-forvariable^="' + variable_type + '_"]').remove();
 
+            id_category
             $fieldset.remove();
             if(cnt===0){
                 $('.after-data-selection').each(function () {
@@ -1514,7 +1557,8 @@ $(function () {
 
     /* Add a new query */
     $('#add-chart').on('click', function () {
-        QueryToolbox.addChart()
+        // QueryToolbox.addChart()
+        reset();
     });
 
     /* Reload chart data */
@@ -1710,6 +1754,42 @@ $(function () {
         QueryToolbox.fetchChartData();
     });
 
+    /* On spatial resolution field change */
+    $('body').on('change', '#spatial_resolution', function (e) {
+
+        if($("#spatial_resolution").val() != "none"){
+            $("select[name='field_aggregate']").each(function () {
+                $(this).val("AVG");
+                $(this).trigger("change");
+            });
+
+        }
+
+        // mark as unsaved
+        QueryToolbox.tabMarker.currentUnsaved();
+
+        // redraw
+        QueryToolbox.fetchChartData();
+    });
+
+    /* On temporal resolution field change */
+    $('body').on('change', '#temporal_resolution', function (e) {
+
+        if($("#temporal_resolution").val() != "none"){
+            $("select[name='field_aggregate']").each(function () {
+                $(this).val("AVG");
+                $(this).trigger("change");
+            });
+
+        }
+
+        // mark as unsaved
+        QueryToolbox.tabMarker.currentUnsaved();
+
+        // redraw
+        QueryToolbox.fetchChartData();
+    });
+
     /* On category field change */
     $('body').on('change', 'select[name="category"]', function (e) {
 
@@ -1720,12 +1800,12 @@ $(function () {
             });
 
         }
-        else{
-            $("select[name='field_aggregate']").each(function () {
-                $(this).val("");
-                $(this).trigger("change");
-            });
-        }
+        // else{
+        //     $("select[name='field_aggregate']").each(function () {
+        //         $(this).val("");
+        //         $(this).trigger("change");
+        //     });
+        // }
 
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
@@ -1862,7 +1942,8 @@ $(function () {
 
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
-        $(".outputLoadImg").show();
+        $(".outputLoadImg").hide();
+        $(".outputLoadImg").delay(100).show();
     // $("#run-query-btn").click(function () {
         $('#offset_input').val(0);
         QueryToolbox.fetchQueryData();
@@ -1930,6 +2011,19 @@ $(function () {
             e.stopPropagation();
         }
     }, false);
+
+
+    function reset(){
+        $('.value-remove-btn').click();
+        $('#selected_dimensions > option').remove();
+        $('#id_category > option').remove();
+        $('#id_orderby > option').remove();
+        $('#resetMapBounds').click();
+        $('#chart-filters > .filter').remove();
+
+        // $('#lat_min').val("").trigger('change');
+        // $('#lat_max').val("").trigger('change');
+    }
 
     // export
     window.QueryToolbox = QueryToolbox;

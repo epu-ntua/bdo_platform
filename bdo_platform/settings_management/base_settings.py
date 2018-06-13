@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import uuid
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -32,6 +34,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     # django
+    'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,19 +52,30 @@ INSTALLED_APPS = [
     # maps
     'leaflet',
 
+    # s3
+    's3direct',
+
     # vizualisations
     'django_nvd3',
     'djangobower',
+    'ckeditor',
+
+    #scheduled_tasks
+    'background_task',
 
     # apps
     'bdo_main_app',
+    'bdo_profile',
     'aggregator',
     'query_designer',
     'analytics',
     'visualizer',
     'dashboard_builder',
     'service_builder',
-    'requestservice',
+    'note_builder',
+    'uploader',
+    'on_demand',
+    'data_parser',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -80,9 +94,34 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
+
+    # 'bdo_main_app.middleware.LoginRequiredMiddleware',
 ]
+
+LOGIN_EXEMPT_URLS = (
+    r'^$',
+    r'^about$',
+    r'^register$',
+    r'/service_builder/api/createInputFileForHCMRSpillSimulator/',
+    r'/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/'
+)
+
+CACHES = {
+   'default': {
+      'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+      'LOCATION': '127.0.0.1:11211',
+   }
+}
+
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 604800
+CACHE_MIDDLEWARE_KEY_PREFIX = ''
+
 
 ROOT_URLCONF = 'bdo_platform.urls'
 
@@ -167,7 +206,39 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 DATE_FORMAT = 'Y-m%d'
 USE_L10N = False
 
+#ck editor settings
+# CKEDITOR_BASEPATH = "/staticfiles/ckeditor/ckeditor"
+CKEDITOR_UPLOAD_PATH ='uploads/'
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        # 'skin': 'moono',
+    },
+}
+
 # bdo main app settings
 DATASET_DIR = os.path.join(os.path.join(BASE_DIR, 'aggregator'), 'datasets')
 if not os.path.isdir(DATASET_DIR):
     os.mkdir(DATASET_DIR)
+
+
+# s3
+AWS_STORAGE_BUCKET_NAME = 'bdo-platform'
+
+# The region of your bucket, more info:
+# http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+S3DIRECT_REGION = 'eu-central-1'
+
+S3DIRECT_DESTINATIONS = {
+    # Allow users to upload their own avatars
+    'avatars': {
+        'key': lambda filename: 'avatars/' + str(uuid.uuid4().hex) + '.' + filename.split('.')[-1],
+        'auth': lambda u: u.is_authenticated(),
+    },
+}
+
+# add keys
+try:
+    from .keys import *
+except:
+    from .keys_example import *

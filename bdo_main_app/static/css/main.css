@@ -4,6 +4,23 @@
     overflow: hidden;
 }
 
+#config-service-form{
+    display: none;
+}
+
+.modal-dialog {
+    left: 0 !important;
+}
+
+#myModal {
+    width: 100% !important;
+    overflow: visible;
+}
+
+.card-deck{
+    text-align: center;
+}
+
 .service-tile label {
     min-width: 80px;
 }
@@ -20,9 +37,24 @@
 
 .service-tile .card {
     height: 280px;
-    background-color: #e3e3e3;
+    background-color: #ffffff;
+    box-shadow: 0 0 1px black;
 }
 
 .card .card-footer .stats{
     display: block;
+}
+
+.profile-page-title {
+    font-size: 3em;
+    font-weight: 300;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e7e7e7;
+}
+
+.profile-page-title .name {
+    display: inline-block;
+    vertical-align: top;
+    margin: 20px 30px;
 }

@@ -1,0 +1,1000 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>
+    <style>
+        #loadImg {
+            position: absolute;
+            z-index: 999;
+        }
+
+        #loadImg {
+            display: table-cell;
+            width: 100%;
+            height: 300px;
+            background: #fff;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .popover {
+            width: 500px;
+            max-width: 600px;
+            min-height: 230px;
+        }
+
+        .popover-content {
+            width: 100%;
+        }
+
+        .modal-header {
+            padding-top: 16px !important;
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+        }
+
+        .modal .modal-content .modal-body {
+            min-height: 500px;
+            height: 590px;
+            overflow-y: scroll;
+            padding: 0 24px 0 24px;
+        }
+
+        .modal .modal-dialog {
+            margin-top: 5px;
+            padding-top: 0;
+            padding-bottom: 5px;
+            width: 90%;
+        }
+
+        #viz_container {
+            background-color: #d8d8d8;
+            height: 500px;
+            width: 80%;
+            padding: 0;
+        }
+
+        #viz_container iframe, #dynamic_dashboard iframe {
+            background-color: white;
+            height: 96%;
+            min-height: 480px;
+            width: 98%;
+            margin: 1% 1% 1% 1%;
+            padding: 0;
+        }
+
+        {#Dashboard Additions#}
+        .gridster .gridster-item {
+            -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            color: #004756;
+            background: white;
+            padding: 0px;
+        }
+        ul {
+            list-style: none;
+        }
+
+        .wrap1{
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100000;
+            opacity: 0;
+            display: none;
+        }
+
+        .deletebtn{
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: #2172ac url('/static/img/exitBtn.png') center ;
+            height: 37px;
+            border: none;
+            color: white;
+            width: 30px;
+        }
+
+        .deletebtn:hover{
+            background-color: red;
+            cursor: pointer;
+        }
+
+        .iframe1{
+            height: 90%;
+            width: 100%;
+        }
+
+        .iframeHeader{
+            height: 37px;
+            width: 100%;
+            background-color: #2172ac;
+        }
+
+        .iframeHeader:hover{
+            cursor: pointer;
+        }
+
+        .iframe-class{
+            height: calc(100% - 37px);
+            padding: 0px;
+            margin: 0% 0% 0% 0% !important;
+        }
+
+        .iframeHeader .form-group{
+            margin: 0px 0px 0px 0px !important;
+        }
+
+        .iframeHeader .form-group .form-control{
+            color: #FFFFFF;
+        }
+
+        #scroll_down_area{
+            display: none;
+            width: 100%;
+            height: 30%;
+            position: absolute;
+            bottom: 0;
+            z-index: 100000;
+            opacity: 100;
+            {#background-color: #0b2e13;#}
+            display: none;
+
+        }
+
+        .modal-tab{
+            width:50%;
+            height: 30px;
+            background-color: #2172ac;
+            color: white;
+            float: left;
+            box-shadow: 0px -1px 5px grey;
+            border-bottom: 1px solid black;
+        }
+
+        .modal-tab:hover{
+            cursor: pointer;
+        }
+
+        #modal-tab-data{
+            border-right: 1px solid black;
+        }
+
+        #modal-tab-notes{
+            background-color: #617b8e;
+        }
+
+        .note_wrapper{
+            padding: 10px;
+            width: 100%;
+            height: calc(100% - 37px);
+            overflow: auto;
+
+        }
+
+        .titleNote{
+            display: none;
+        }
+
+        .iframeHeaderNote{
+            background-color: #FFFFFF;
+        }
+
+        .iframeHeaderNoteDeleteBtn{
+            background-color: #FFFFFF;
+            color: black;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form"></form>
+    </div>
+    <input type="hidden" value="{{ dashboard_pk }}" id="dashboard_pk">
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Editor</h1>
+            <h5 style="display: inline-block; margin: 0;">Add or remove the title, visualizations and notes.</h5>
+        </div>
+    </div>
+    <div class="row text-center">
+        <input class="form-control text-center" type="text" id="dashboard_title"
+               value="{{ dashboard_title }}" style="font-size: 20pt;"/>
+    </div>
+    <div class="row text-left">
+        <button type="button" id="new_widget_btn" class="btn btn-lg btn-primary" data-toggle="modal"
+                data-target="#myModal">
+            <i class="fa fa-plus-circle o-white"></i> New visualisation
+        </button>
+
+        <button type="button" id="save_dashboard_btn" class="btn btn-lg btn-primary">
+            Save Dashboard
+        </button>
+
+    </div>
+
+
+
+    <div ng-app="myApp" ng-controller="MainCtrl">
+        <div id="dynamic_dashboard" gridster="gridsterOpts">
+            <ul id="widgetParent">
+                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">
+                    <div class='wrap1'></div>
+                    <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
+
+{#                        <p class="widget-title"  ng-bind="item.title"> </p>#}
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title" ng-class="{'titleNote': item.url == ''}">
+
+
+                        <input type='button' value='X' class='deletebtn' ng-class="{'iframeHeaderNoteDeleteBtn': item.url == ''}"
+                               style="background-image: url({% static "images/exitBtn.png" %})"
+                               ng-click="removeWidget(item);">
+                    </header>
+                    <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" style="displa: none">
+                        <div class="ng-wrapper" ng-switch-when="false">
+                             <iframe  class="iframe-class" src=[[item.url]] frameborder='0' ></iframe>
+                        </div>
+                    </div>
+                    <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" style="displa: none">
+                        <div class="ng-wrapper" ng-switch-when="false" ng-bind-html="[[item.noteData]]">
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div id="scroll_down_area">
+
+    </div>
+
+    <div id="query-container" hidden>
+        <select id="query-select" class="form-control" name="query">
+            <option disabled selected>-- select one of the saved queries --</option>
+            {% for query in saved_queries %}
+                <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+                {#                <option id="{{ query.id }}" value="{{ query.id }}">{{ query.title }}</option>#}
+            {% endfor %}
+        </select>
+        <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+        <input id="new_query_doc" type="hidden" value=""/>
+        <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+    </div>
+
+    <div id="viz-container" hidden>
+
+
+        <button type="button" id="select_viz_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+    </div>
+
+    <div id="conf-container" hidden>
+
+    </div>
+
+
+{% endblock %}
+
+
+{% block modal %}
+    {#    <div id="myModal2" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">#}
+    {#        <div class="modal-dialog">#}
+    {#            <!-- Modal content-->#}
+    {#            <div class="modal-content">#}
+    {#                <div class="modal-header text-center">#}
+    {#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
+    {#                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>#}
+    {#                </div>#}
+    {#                <div class="modal-body">#}
+    {#                        <div class="row text-center">#}
+    {#                            <button type="button" id="select_data_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"#}
+    {#                                    data-container="body">1. Select data#}
+    {#                            </button>#}
+    {#                            <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select visualization type" data-placement="bottom"#}
+    {#                                    data-container="body" disabled>2. Select visualisation#}
+    {#                            </button>#}
+    {#                            <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary" data-toggle="popover" title="Select your data" data-placement="bottom"#}
+    {#                                    data-container="body" disabled>3. Configure#}
+    {#                            </button>#}
+    {#                        </div>#}
+    {##}
+    {#                        <div class="row col-sm-12 text-center">#}
+    {#                            <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?query=17&y_var=i0_sea_floor_potential_temperature&x_var=i0_time"#}
+    {#                                    class="resizable"frameborder="0" allowfullscreen="">#}
+    {#                            </iframe>#}
+    {#                        </div>#}
+    {#                        <div class="row col-sm-2 text-left">#}
+    {#                            <ul class="list-group collapse in">#}
+    {#                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Line chart</li>#}
+    {#                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Column chart</li>#}
+    {#                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Pie chart</li>#}
+    {#                                <li class="list-group-item"><i class="fa fa-bar-chart margin-right-5"></i>Contours on map</li>#}
+    {#                            </ul>#}
+    {#                        </div>#}
+    {#                </div>#}
+    {#                <div class="modal-footer">#}
+    {#                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" disabled>Add</button>#}
+    {#                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </div>#}
+
+    <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    {#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
+                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
+                    <div class="modal-tab" id="modal-tab-data">Data</div>
+                    <div class="modal-tab" id="modal-tab-notes">Notes</div>
+{#                    <button type="button" id="select_note_popover" class="btn btn-lg btn-primary"#}
+{#                                data-toggle="popover" title="Write your note" data-placement="bottom"#}
+{#                        >Write Note#}
+{#                        </button>#}
+                </div>
+                <div class="modal-body">
+                    <div class="row text-left" id="model-button-row">
+                        <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
+                                data-toggle="popover" title="Select your data" data-placement="right"
+                        >Select data
+                        </button>
+
+                        <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
+                                data-toggle="popover" title="Select visualization type" data-placement="bottom"
+                                data-container="body" disabled style="display: none">2. Select visualisation
+                        </button>
+                        <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary"
+                                data-toggle="popover" title="Select your data" data-placement="bottom"
+                                data-container="body" disabled style="display: none">3. Configure
+                        </button>
+                    </div>
+
+                    {#                        <div class="row col-sm-12 text-center">#}
+                    {#                            <iframe src="http://localhost:8000/visualizations/get_line_chart_am/?query=17&y_var=i0_sea_floor_potential_temperature&x_var=i0_time"#}
+                    {#                                    class="resizable"frameborder="0" allowfullscreen="">#}
+                    {#                            </iframe>#}
+                    {#                        </div>#}
+                    <div class="row" id="viz_config" style="display: none">
+                        <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                            <li class="list-group-item viz_item" id="line_chart_item" data-component-id="5"><i
+                                    class="fa fa-line-chart margin-right-1"></i>Line chart
+                            </li>
+                            <li class="list-group-item viz_item" id="column_chart_item" data-component-id="13"><i
+                                    class="fa fa-bar-chart margin-right-1"></i>Column chart
+                            </li>
+                            <li class="list-group-item viz_item" id="pie_chart_item" data-component-id="12"><i
+                                    class="fa fa-pie-chart margin-right-1"></i>Pie chart
+                            </li>
+                            <li class="list-group-item viz_item" id="contours_on_map_item" data-component-id="4"><i
+                                    class="fa fa-map margin-right-1"></i>Contours on map
+                            </li>
+                            <li class="list-group-item viz_item" id="ship_course_on_map_item" data-component-id="15"><i
+                                    class="fa fa-map-marker margin-right-1"></i>Ship's course on map
+                            </li>
+                        </ul>
+                        <div id="viz_container" class="col-sm-8" style="width: 85%">
+
+                        </div>
+                    </div>
+                    <div class="row" id="viz_note" style="display: none">
+{#                        <form method="post" action="./">#}
+{#                            {% csrf_token %}#}
+{#                            {{ form.media }}#}
+{#                            {{ form.as_p }}#}
+{#                            <p><input type="submit" value="post"></p>#}
+{#                        </form>#}
+                    </div>
+                    <input type="hidden" id="selected_query" value="">
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn">Add
+                    </button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn" style="display: none">Add
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+
+{% comment %}
+    <script type="text/javascript" src={% static '/js/jquery_dashboard.js' %}></script>
+{% endcomment %}
+    <script type="text/javascript" src={% static '/js/angular.js' %}></script>
+    <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
+    <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
+    <script type="text/javascript" src={% static '/ckeditor/ckeditor/ckeditor.js' %}></script>
+    <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
+
+
+    <script type="text/javascript">
+
+        {#var textEditor = null;#}
+
+     function pageScroll() {
+                $('#main-panel').scrollTop();
+                {#scrolldelay = setTimeout('pageScroll()',100); // scrolls every 100 milliseconds#}
+            }
+        var app = angular.module('myApp', ['gridster', 'ngSanitize']);
+
+        app.config(function ($interpolateProvider) {
+            $interpolateProvider.startSymbol('[[');
+            $interpolateProvider.endSymbol(']]');
+        });
+
+        app.controller('MainCtrl', function ($scope) {
+            $scope.counter = "0";
+            $scope.tempInnerHtml = "";
+
+            $scope.gridsterOpts = {
+                margins: [20, 20],
+                swapping: true,
+                outerMargin: false,
+                pushing: true,
+                floating: false,    //Is false initially so the widgets area added correctly
+                columns: 4,
+                defaultSizeX: 4,
+                defaultSizeY: 1,
+                draggable: {
+                    enabled: true,
+                    handle: '.iframeHeader',
+                    start: function (e, ui, $widget) {
+                        $('#scroll_down_area').show();
+                        $('.wrap1').show();
+                    },
+                    stop: function (e, ui, $widget) {
+                        $('#scroll_down_area').hide();
+                        $('.wrap1').hide();
+                    }
+                },
+                resizable: {
+                    enabled: true,
+                    handles: ['se', 'sw'],
+                    start: function (e, ui, $widget) {
+                        $('.wrap1').show();
+                    }
+                    ,
+                    stop: function (e, ui, $widget) {
+                        $('.wrap1').hide();
+                    }
+                },
+            };
+
+            $scope.standardItems = [];
+
+            {% comment %} $scope.addWidget = function () {
+                $scope.counter++;
+                $scope.standardItems.push({size: {x: 1, y: 1}, position: [0, 0]});
+            };{% endcomment %}
+
+            $("#myModal #submit-modal-btn").click(function () {
+                {#                alert('clicked');#}
+                {#                $('#select_viz_popover').prop('disabled', true);#}
+                {#                $('#select_conf_popover').prop('disabled', true);#}
+                {#                $('#viz-container').appendTo($('#dynamic_dashboard'));#}
+                var tempid = "#widget" + $scope.counter;
+
+                $scope.standardItems[$scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
+                $('#viz_container iframe').appendTo(tempid);
+                $('#myModal #viz_container').empty();
+                $('#save_dashboard_btn').show();
+            });
+
+            $("#myModal #submit-note-btn").click(function () {
+                var myData = textEditor.getData();
+                var tempid = "#widget" + $scope.counter;
+                var tempidJs = "widget" + $scope.counter;
+
+                var note_wrapper = "<div class='note_wrapper'>" + myData + " </div>"
+                $scope.standardItems[$scope.standardItems.length - 1].noteData = note_wrapper;
+
+                $(tempid).append(note_wrapper);
+                $('#save_dashboard_btn').show();
+                textEditor.destroy();
+                textEditor = null;
+
+                $('#viz_config').show();
+                $('#viz_note').hide();
+                $('#model-button-row').show();
+                $('#modal-tab-notes').css('background-color', '#617b8e');
+                $('#modal-tab-data').css('background-color', '#2172ac');
+                $('#submit-note-btn').hide();
+                $('#submit-modal-btn').show();
+
+
+                var newWidget = document.getElementById(tempidJs);
+                for (var i = 0; i < newWidget.childNodes.length; i++) {
+                    if (newWidget.childNodes[i].className == "iframeHeader") {
+                        var tempHeader = newWidget.childNodes[i];
+                        tempHeader.style.backgroundColor = "white";
+                        $(tempHeader).mouseenter(function () {
+                            this.style.backgroundColor = "lightgrey "
+                        });
+                        $(tempHeader).mouseleave(function () {
+                            this.style.backgroundColor = "white "
+                        });
+                        for (var j = 0; j < tempHeader.childNodes.length; j++) {
+                            if (tempHeader.childNodes[j].className == "form-group") {
+                                tempHeader.childNodes[j].style.display = "none";
+                            }
+                            if (tempHeader.childNodes[j].className == "deletebtn") {
+                                tempHeader.childNodes[j].style.backgroundColor = "white";
+                                tempHeader.childNodes[j].style.color = "black";
+                            }
+                        }
+                    }
+
+                }
+                {#$(tempid > ".iframeHeader" > ".form-group").hide();#}
+                {#$(tempid > ".iframeHeader" ).css("background" , "white");#}
+                {#$(tempid > ".iframeHeader" > ".deletebtn").css("background" , "white");#}
+            });
+
+            $("#dismiss-modal-btn").click(function () {
+                $scope.standardItems.pop();
+            });
+
+            var makeWidget =function (){
+                $scope.counter++;
+                var tempTitle = "Widget" + $scope.counter;
+                $scope.standardItems.push({
+                    sizeX: 4,
+                    sizeY: 1,
+                    row: 0,
+                    col: 0,
+                    url: "",
+                    noteData: "",
+                    title: tempTitle
+                });
+            };
+
+            $('#new_widget_btn').click(makeWidget);
+
+
+            $('#scroll_down_area').mouseenter(function () {
+                window.scrollBy(0, 40);
+                scrolldelay = setTimeout('pageScroll()', 200);
+            });
+
+
+            $('#scroll_down_area').mouseleave(function () {
+                clearTimeout(scrolldelay);
+            });
+
+            $scope.finished = function () {
+                var tempid = "widget" + $scope.counter;
+
+                $('#viz_container iframe').appendTo(tempid);
+                $('#myModal #viz_container').empty();
+                $('#save_dashboard_btn').show();
+            };
+
+            $scope.clear = function () {
+                $scope.standardItems = [];
+            };
+
+            $scope.removeWidget = function (item) {
+                var index = $scope.standardItems.indexOf(item);
+                $scope.standardItems.splice(index, 1);
+                if ($scope.standardItems.length == 0) {
+                    $('#save_dashboard_btn').hide();
+                }
+            };
+
+            angular.element(document).ready(function (e) {
+                var prebuiltViz = "{{ toCreate }}";
+                if (prebuiltViz != 'None') {
+                    makeWidget();
+                    var tempid = "#widget" + $scope.counter;
+                    var decodedViz = decodeURIComponent(prebuiltViz);
+                    var prebuildIFrameString = "<iframe class='iframe-class' id='viz-iframe' " +
+                    "src='" + decodedViz + "' frameborder='0' allowfullscreen='' " +
+                    "></iframe>";
+                    var prebuildIFrameItem= $.parseHTML(prebuildIFrameString);
+                    {#$(prebuildIFrameItem[0]).appendTo(tempid);#}
+
+                    var helperfunc = function(){
+                        $(tempid).append(prebuildIFrameItem[0]);
+                    };
+                    {#$(tempid).on(function () {#}
+                    {#    $(tempid).append(prebuildIFrameItem[0]);#}
+
+                    setTimeout(helperfunc ,500);
+
+                    $scope.standardItems[$scope.standardItems.length - 1].url = decodedViz;
+                    $('#save_dashboard_btn').show();
+                    }
+            });
+
+             var init = function (){
+                 {% for order, url in dashboard.viz_components.items %}
+                     var tempinfo= "{{ url }}";
+                     tempinfo=tempinfo.replace(/u&#39;/g,"");
+                     tempinfo=tempinfo.replace(/&#39;/g,"");
+                     tempinfo=tempinfo.replace("[","");
+                     tempinfo=tempinfo.replace("]","");
+
+                     var nth= 6;
+                     var toslice = 0;
+                     for(var i=0 ; i<tempinfo.length ;i++){
+                         if(tempinfo.charAt(i) == ','){
+                             if(!--nth){
+                                 toslice = i;
+                             }
+                         }
+                     }
+
+                     var info = tempinfo.split("," , 6);
+
+                     tempinfo= tempinfo.slice(toslice + 1);
+
+                    $scope.counter++;
+                    var tempid="widget" + $scope.counter;
+                    {#$scope.iframeSource = info[0];#}
+                     var noteDataEncoded = tempinfo;
+                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();
+                     {#noteDataDecoded= noteDataDecoded.substr(1);#}
+                     if(noteDataDecoded.charAt(0)=="u"){
+                         if(noteDataDecoded.charAt(1)=="\""){
+                             noteDataDecoded= noteDataDecoded.substr(2);
+                         }
+                      }
+                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);
+                     {#noteDataDecode=noteDataDecode.encode("utf-8");#}
+
+                     {#for(var i=0 ; i < 5; i++)#}
+                     {#{#}
+                     {#    if(i!= 0)#}
+                     {#       info[i] = info[i].slice(1,-1);#}
+                     {#    else#}
+                     {#        info[i] = info[i].slice(1,-1);#}
+                     {# }#}
+
+                    $scope.standardItems.push({
+                        sizeX: parseInt(info[1]),
+                        sizeY: parseInt(info[2]),
+                        row: parseInt(info[3]),
+                        col: parseInt(info[4]),
+                        url:info[0] ,
+                        noteData: noteDataDecoded ,
+                        title:info[5]
+                    });
+
+
+                {% endfor %}
+
+                $scope.gridsterOpts.floating = true;
+             };
+
+            init();
+
+            $('#save_dashboard_btn').click(function () {
+                var postEndpoint = "/dashboards/save/";
+                var pk = $('#dashboard_pk').val();
+                if (pk !== '') {
+                    postEndpoint += pk + '/'
+                }
+
+                var post_data_obj = new Object();
+                {#$('#widgetParent li ').each(function (index, element) {#}
+                {#    post_data_obj[String(index)] = $(this).children( ".iframe-class").attr("src");#}
+                var tempcounter= 0;
+                for(var myindex in $scope.standardItems){
+                    var tempTitleId= "widgetTitleModel" + myindex.toString();
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() ,$scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString()];
+                    post_data_obj[String(tempcounter)] = temparray;
+                    tempcounter++;
+                }
+                post_data_obj['title'] = $('#dashboard_title').val();
+                var post_data = encodeURIComponent(JSON.stringify(post_data_obj));
+                $.ajax({
+                    "type": "POST",
+                    "dataType": "json",
+                    "url": postEndpoint,
+                    "data": post_data,
+                    "beforeSend": function (xhr, settings) {
+                        console.log("Before Send");
+                        console.log(post_data);
+                        $.ajaxSettings.beforeSend(xhr, settings);
+                    },
+                    "success": function (result) {
+                        console.log(result);
+                        $('#dashboard_pk').val(result.pk);
+                        window.history.replaceState({}, 'a_title', '/dashboards/create/' + result.pk + '/');
+                        alert('Dashboard saved successfully!');
+                    },
+                    error:function(x,e) {
+                        if (x.status==0) {
+                            alert('You are offline!!\n Please Check Your Network.');
+                        } else if(x.status==404) {
+                            alert('Requested URL not found.');
+                        } else if(x.status==500) {
+                            alert('Internel Server Error.');
+                        } else if(e=='parsererror') {
+                            alert('Error.\nParsing JSON Request failed.');
+                        } else if(e=='timeout'){
+                            alert('Request Time out.');
+                        } else {
+                            alert('Unknow Error.\n'+x.responseText);
+                        }
+                    }
+                });
+        });
+        });
+
+    </script>
+    <script type="text/javascript">
+        function updateVariables(element) {
+            $('#myModal .variable-select').find('option').remove().end();
+            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+            var new_query_id = $('#myModal #selected_query').val();
+            {#            var new_query_doc = $('#new_query_doc').val();#}
+            var new_query_doc = {};
+            $.ajax({
+                url: '/queries/get_query_variables/',
+                data: {
+                    id: new_query_id,
+                    document: new_query_doc
+                },
+                type: 'GET',
+                success: function (result) {
+                    var variables = result['variables'];
+                    var dimensions = result['dimensions'];
+                    $.each(variables, function (k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", v)
+                            .text(k));
+                    });
+
+                    $.each(dimensions, function (k, v) {
+                        $('#myModal .variable-select').append($("<option></option>")
+                            .attr("value", v)
+                            .text(k));
+                    });
+                }
+            });
+        }
+
+
+    </script>
+    <script>
+        {#Variable to store active ckeditor version #}
+        var textEditor = null;
+        {#Fnction to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
+        $(document).ready(function () {
+            $("#myModal #modal-tab-notes").popover({
+                html: true,
+                animation: true,
+            }).click(function (e) {
+                    $('#viz_config').hide();
+                    $('#viz_note').show();
+                    $('#model-button-row').hide();
+                    $('#submit-note-btn').show();
+                    $('#submit-modal-btn').hide();
+                    $('#modal-tab-notes').css('background-color' , '#2172ac');
+                    $('#modal-tab-data').css('background-color' , '#617b8e');
+                    if(textEditor == null) {
+                        textEditor = CKEDITOR.appendTo('viz_note');
+                    }
+                }
+
+            )
+
+            {#Function to change tabs in modal from notes to data#}
+            $("#myModal #modal-tab-data").popover({
+                html: true,
+                animation: true,
+            }).click(function (e) {
+                    $('#viz_config').show();
+                    $('#viz_note').hide();
+                    $('#model-button-row').show();
+                    $('#modal-tab-notes').css('background-color' , '#617b8e');
+                    $('#modal-tab-data').css('background-color' , '#2172ac');
+                    $('#submit-note-btn').hide();
+                    $('#submit-modal-btn').show();
+                }
+
+            )
+
+            $("#myModal #select_data_popover").popover({
+                html: true,
+                animation: true,
+                content: function () {
+                    return $('#query-container').html();
+                }
+            }).click(function (e) {
+                $(this).popover('toggle');
+                $('.popover-content #query-select').on('change', function () {
+                    var new_query_id = $(this).children(":selected").attr("id");
+                    {#                    alert(new_query_id);#}
+                    var new_query_doc = $('#new_query_doc').val();
+                    $('#myModal #selected_query').val(new_query_id);
+                    updateVariables(this);
+
+                    {#            addQueryToForm(this.options[this.selectedIndex].value.replace(/\n/g, " "));#}
+                });
+                $('.popover-content #select_data_ok').click(function (e) {
+                    {#                    var query_popover_id = '#' + $("#select_data_popover").attr('aria-describedby');#}
+                    {#                    var selected_query = $(query_popover_id+' select').children(":selected").attr("id");#}
+                    {#                    alert(selected_query);#}
+                    {#                    $('#myModal #selected_query').val(selected_query);#}
+                    $('#myModal #select_data_popover').popover("hide");
+                    $('#viz_config').show();
+                })
+            });
+
+
+            $(".viz_item").click(function (element) {
+                var component_id = $(this).attr('data-component-id');
+                var component_selector = '#' + $(this).attr('id')
+                {#              alert(component_id);#}
+                {#              var component_id = 5;#}
+                $.ajax({
+                    url: '/dashboards/get_visualization_form_fields',
+                    data: {
+                        id: parseInt(component_id),
+                        order: 1
+                    },
+                    type: 'GET',
+                    success: function (form_fields) {
+                        $("#conf-container").html(form_fields);
+                        $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
+
+                        $(component_selector).popover({
+                            html: true,
+                            title: 'Configure visualisation',
+                            content: function () {
+                                return $('#conf-container').html();
+                            }
+                        });
+                        updateVariables($('#query-select'));
+                        $(component_selector).popover('toggle');
+                        var popver_id = '#' + $(component_selector).attr('aria-describedby');
+                        $(popver_id + ' #select_conf_ok').click(function (e) {
+                            submit_conf(component_selector);
+                            $(component_selector).popover("hide");
+                        });
+                    }
+                });
+            });
+
+
+            function submit_conf(component_selector) {
+                var viz_request = "http://localhost:8000/visualizations/";
+                viz_request += $('#myModal').find('.modal-body').find('#action').val();
+                {#                alert(viz_request);#}
+                var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+
+                var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
+                {#                alert(submitted_args);#}
+                var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
+                $(selects).each(function (i) {
+                    var select = this;
+                    $(submitted_args).find("select").eq(i).val($(select).val());
+                    {#            $('#config-viz-form').append(select);#}
+                });
+                $('#config-viz-form').empty();
+                $('#config-viz-form').append(submitted_args);
+
+
+                var myData = $("#config-viz-form").serialize();
+                {#                alert(myData);#}
+                viz_request += '?';
+                viz_request += myData;
+                {#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}
+
+                viz_request += '&query=' + $('#myModal #selected_query').val();
+
+                show_viz(viz_request);
+                {#                alert(viz_request);#}
+                {#          var component_id = $('#myModal').find('input[name="viz_id"]').val();#}
+            };
+
+            function show_viz(viz_request) {
+                {#                $("#dynamic_dashboard").append('<div id="viz_container">\n' +#}
+                {#                                  '                <div id="loadImg" style="display: none"><img src="{% static 'img/loading.gif' %}" width="70" height="70" /></div>\n' +#}
+                {#                                  '            </div>');#}
+                {#                $('#loadImg').show();#}
+                $("#viz_container").html('<iframe class="iframe-class" id="viz-iframe" ' +
+                    'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
+                    '></iframe>');
+
+            }
+
+
+           {% comment %} $("#myModal #submit-modal-btn").click(function () {
+                {#                alert('clicked');#}
+                {#                $('#select_viz_popover').prop('disabled', true);#}
+                {#                $('#select_conf_popover').prop('disabled', true);#}
+                {#                $('#viz-container').appendTo($('#dynamic_dashboard'));#}
+                $('#viz_container iframe').appendTo('#dynamic_dashboard');
+                $('#myModal #viz_container').empty();
+                $('#save_dashboard_btn').show();
+
+            });{% endcomment %}
+            $("#dismiss-modal-btn").click(function m(e) {
+                $('#select_viz_popover').prop('disabled', true);
+                $('#select_conf_popover').prop('disabled', true);
+                $('#myModal #viz_container').empty();
+            });
+
+        });
+
+
+        {#$('#save_dashboard_btn').click(function () {#}
+        {#    var postEndpoint = "/dashboards/save/";#}
+        {#    var pk = $('#dashboard_pk').val();#}
+        {#    if (pk !== '') {#}
+        {#        postEndpoint += pk + '/'#}
+        {#    }#}
+        {##}
+        {#    var post_data_obj = new Object();#}
+        {#    $('#widgetParent li ').each(function (index, element) {#}
+        {#        post_data_obj[String(index)] = $(this).children( ".iframe-class").attr("src");#}
+        {#    });#}
+        {#    post_data_obj['title'] = $('#dashboard_title').val();#}
+        {#    var post_data = JSON.stringify(post_data_obj);#}
+        {#    $.ajax({#}
+        {#        "type": "POST",#}
+        {#        "dataType": "json",#}
+        {#        "url": postEndpoint,#}
+        {#        "data": post_data_obj,#}
+        {#        "beforeSend": function (xhr, settings) {#}
+        {#            console.log("Before Send");#}
+        {#            $.ajaxSettings.beforeSend(xhr, settings);#}
+        {#        },#}
+        {#        "success": function (result) {#}
+        {#            console.log(result);#}
+        {#            $('#dashboard_pk').val(result.pk);#}
+        {#            window.history.replaceState({}, 'a_title', '/dashboards/create/' + result.pk + '/');#}
+        {#            alert('Dashboard saved successfully!');#}
+        {#        },#}
+        {#        error: function (jqXHR) {#}
+        {#            alert('error');#}
+        {#        }#}
+        {#    });#}
+
+
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                    // Only send the token to relative URLs i.e. locally.
+                    xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+                }
+            }
+        });
+    </script>
+
+{% endblock %}

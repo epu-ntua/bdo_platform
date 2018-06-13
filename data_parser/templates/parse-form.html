@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
+    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/parser.css' %}" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="text-center">
+            <h1 class="o-blue">Parse a stored dataset</h1>
+        </div>
+
+        <hr>
+
+        {% if submitted_alert %}
+            {% if success_alert %}
+                <div class="alert alert-success" role="alert">
+                    <a class="close" data-dismiss="alert" aria-label="Close">x</a>
+                    File successfully submitted for parsing.
+                </div>
+            {% else %}
+                <div class="alert alert-danger" role="alert">
+                    <a class="close" data-dismiss="alert" aria-label="Close">x</a>
+                    There was an error while submitting the file for parsing.
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="jumbotron">
+            <div class="container text-center">
+                <form id="parse-form" action="{% url 'parse-form'%}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <h3>Choose Provider</h3>
+                        {{ provider_form }}
+                    </div>
+
+                    <br><br><br>
+
+                    <div class="form-group">
+                        <h3>Choose a stored file</h3>
+                        {{ file_form }}
+                    </div>
+
+                    <br><br><br>
+
+                    <button type="submit" class="btn row" style="background:#00bcd4; margin-top: 50px;">Parse</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    <script src="{% static 'js/parser.js' %}"></script>
+{% endblock %}

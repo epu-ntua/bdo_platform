@@ -1,0 +1,53 @@
+.on-demand--step > .card > .card-avatar {
+    max-width: 80px;
+    max-height: 80px;
+}
+
+.on-demand--step > .card > .card-avatar > a > span {
+    width: 100%;
+    padding: 30px;
+    font-size: 2.5em;
+    display: block;
+    color: white;
+}
+
+.on-demand--reply {
+    margin: 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.on-demand--reply-container.accepted {
+    border-radius: 4px;
+    background: rgba(6, 201, 27, 0.15);
+}
+
+.on-demand-request-list .on-demand-request-teaser {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.on-demand-request-list .on-demand-request-teaser:last-of-type {
+    border-bottom: none;
+}
+
+.on-demand--upvote {
+    color: #555;
+    cursor: pointer;
+}
+
+.on-demand--upvote.upvoted {
+    color: #32879c;
+}
+
+.paginator {
+    text-align: center;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+    padding-top: 10px;
+    color: #aaa;
+}
+
+.page-link {
+    font-size: 1.8em;
+}

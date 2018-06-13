@@ -22,7 +22,7 @@
 
 {% block viz_content %}
 
-    <div id="chartdiv" style="overflow: visible; text-align: left; margin-top: 0px"></div>
+    <div id="chartdiv" style="overflow: visible; text-align: left; margin-top: 10px"></div>
 
 {% endblock %}
 
@@ -49,15 +49,26 @@ var chart = AmCharts.makeChart("chartdiv", {
         "markerSize": 15,
         "marginTop": 20,
         "switchable": true,
-        "fontSize": 14,
+        "fontSize": 15,
         "equalWidths": false,
         "pulled":true,
         "valueWidth":130,
+        "valueFunction": function(graphDataItem, valueText) {
+                             if (valueText !== " ") {
+                                 var value = graphDataItem.dataContext[graphDataItem.graph.valueField];
+                                 var list = {{ m_units|safe }};
+                                 var count=(graphDataItem.graph.id).replace("g","");
+                                 var un = list[count];
+                                 return String(Math.round(value*1000)/1000) +" "+ String(un);
+                             }
+                             else return valueText;
+                }
     },
     "marginRight": 20,
     "marginLeft": 20,
     "autoMarginOffset": 10,
     "mouseWheelZoomEnabled": true,
+    "dataDateFormat": "YYYY-MM-DD HH:NN",
     "valueAxes": [
         {% for item in value_col %}
             {
@@ -75,7 +86,8 @@ var chart = AmCharts.makeChart("chartdiv", {
 
     "balloon": {
         "borderThickness": 1,
-        "shadowAlpha": 0
+        "shadowAlpha": 0,
+        "fontSize": 15,
     },
     "startDuration": 1,
 
@@ -96,11 +108,22 @@ var chart = AmCharts.makeChart("chartdiv", {
                 "bulletSize": 2,
                 "hideBulletsCount": 50,
                 "lineThickness": 2,
-                "title": "{{ item }}",
+                {% if forloop.counter0 == 0 %} "title": "{{ title_col.0 }}",
+                    {% elif forloop.counter0 == 1 %} "title": "{{ title_col.1 }}",
+                    {% elif forloop.counter0 == 2 %} "title": "{{ title_col.2 }}",
+                    {% elif forloop.counter0 == 3 %} "title": "{{ title_col.3 }}",
+                {% endif %}
                 "type":"column",
                 "useLineColorForBulletBorder": true,
                 "valueField": "{{ item }}",
                 "balloonText": "<span style='font-size:15px;'>[[value]]</span>",
+                "balloonFunction": function(graphDataItem, graph) {
+                    var value = graphDataItem.values.value;
+                    var count = {{ forloop.counter0 }};
+                    var list = {{ m_units|safe }};
+                    var un = list[count];
+                    return String(Math.round(value*1000)/1000) +" "+ String(un);
+                }
             },
         {% endfor %}
     ],
@@ -128,7 +151,8 @@ var chart = AmCharts.makeChart("chartdiv", {
         "cursorColor": "#258cbb",
         "limitToGraph": "g0",
         "valueLineAlpha": 0.2,
-        "valueZoomable": true
+        "valueZoomable": true,
+        "categoryBalloonDateFormat": "DD MMM YYYY, JJ:NN",
     },
     "valueScrollbar": {
         "oppositeAxis": false,
