@@ -3,10 +3,34 @@
 {% load static %}
 
 {% block css %}
-    <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>
+    <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
+
+
+    {% for viz in available_viz %}
+        <style>
+            #{{ viz.view_name}}_tip{
+                opacity: .3;
+                position: relative;
+                bottom:1px;
+            }
+
+            li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
+                opacity: inherit;
+                margin:auto;
+                cursor:help;
+            }
+        </style>
+
+    {% endfor %}
+
     <style>
         #cke_editor1 .cke_contents{
             height: 350px !important;
+        }
+
+        .modal-content{
+            height: 90vh;
+            overflow: auto;
         }
 
         #myModal .nav-pills > li.active a{
@@ -64,9 +88,8 @@
         }
 
         .modal .modal-content .modal-body {
-            min-height: 500px;
-            height: 590px;
-            overflow-y: scroll;
+            height: 75vh;
+            overflow-y: auto;
             padding: 0 24px 0 24px;
         }
 
@@ -137,7 +160,7 @@
         .iframeHeader{
             height: 37px;
             width: 100%;
-            background-color: #2172ac;
+            background-color: #30526a;
             text-align: center;
         }
 
@@ -207,38 +230,39 @@
 
         }
     </style>
+
 {% endblock %}
 
 {% block content %}
     {% csrf_token %}
 
+
     <div class="row" style="display: none;">
         <form class="form" id="config-viz-form"></form>
     </div>
-
     <input type="hidden" value="" id="dashboard_pk">
     <div class="row">
         <div class="text-center">
-            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Builder</h1>
+{#            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Builder</h1>#}
             <h5 style="display: inline-block; margin: 0;">Create a new dashboard by selecting data and using the
                 provided visualizations.</h5>
         </div>
     </div>
-
     <div class="row text-center">
         <input class="form-control text-center" type="text" id="dashboard_title"
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
+        <span class="pull-left"><input type="checkbox" name="private" value="False"/> Private<br></span>
     </div>
-
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
                 data-target="#myModal">
-            <i class="fa fa-plus-circle o-white"></i> New visualisation
+            <i class="fa fa-plus-circle o-white"></i> New widget
         </button>
 
         <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" style="display: none">
             Save Dashboard
         </button>
+
     </div>
 
 
@@ -252,14 +276,9 @@
                         <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
                         {% load  static %}
                         <input type='button' value='X' class='deletebtn'
-                               style="background-image: url({% static "images/exitBtn.png" %})"
+{#                               style="background-image: url({% static "images/exitBtn.png" %})"#}
                                ng-click="removeWidget(item);">
                     </header>
-                    <input type="text" integer ng-model="item.row" size="1" class="widget-x-loc" hidden/>
-                    <input type="text" integer ng-model="item.col" size="1" class="widget-y-loc" hidden/>
-
-                    <input type="text" integer ng-model="item.sizeX" size="1" class="widget-x-size" hidden/>
-                    <input type="text" integer ng-model="item.sizeY" size="1" class="widget-y-size" hidden/>
 
                 </li>
             </ul>
@@ -272,24 +291,22 @@
     </div>
 
     <div id="query-container" hidden>
-        <select id="query-select" class="form-control" name="query">
+        <select id="query-select" class="form-control" name="query" style="width: 300px !important;">
             <option disabled selected>-- select one of the saved queries --</option>
             {% for query in saved_queries %}
                 <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
-
             {% endfor %}
         </select>
-        <div><a href="#" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+        <div><a href="/queries/simplified/" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
         <input id="new_query_doc" type="hidden" value=""/>
         <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
         <button type="button" id="select_data_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>
     </div>
 
-
     <div id="viz-container" hidden>
+
         <button type="button" id="select_viz_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
     </div>
-
 
     <div id="conf-container" hidden>
 
@@ -308,23 +325,29 @@
             <div class="modal-content">
                 <div class="modal-header text-center">
 
-                    <h4 class="modal-title">Add a new widget to the dashboard</h4>
-
-                    <ul class="nav nav-pills">
-                      <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
-                      <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
-                    </ul>
-
                 </div>
                 <div class="modal-body">
                     <div class="tab-content">
+                        <div class="text-center">
+                            <h4 class="modal-title">Add a new widget to the dashboard</h4>
+
+                            <ul class="nav nav-pills">
+                              <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
+                              <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
+                            </ul>
+                        </div>
                         <div class="tab-pane fade in active" id="viz_widget">
                             <div class="row text-left" id="model-button-row">
-
                                 <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
                                         data-toggle="popover" title="Select your data" data-placement="right"
                                 >Select data
                                 </button>
+
+
+                                <div style="margin-bottom: 8px;">
+                                    <span><strong>Selected Query ID: </strong></span><span id="query_name_span" style="display: none;"></span>
+                                </div>
+
 
 
                                 <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
@@ -338,17 +361,25 @@
                             </div>
 
 
+                            <div class="dropdown row" id="layers-list" style="position: absolute; right:200px; display: none;z-index:2;">
+                                <button class="btn btn-primary dropdown-toggle" id="menu1" type="button" data-toggle="dropdown">Layers
+                                <span class="caret"></span></button>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+{#                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">HTML</a></li>#}
+                                </ul>
+                            </div>
+
                             <div class="row" id="viz_config" style="display: none">
                                 <ul class="list-group collapse in col-sm-2" style="width: 15%">
                                     {% for viz in available_viz %}
-                                        <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                                        <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}">
+                                            <i class="{{ viz.icon }}"  style="margin-right:5px"></i>{{ viz.title }}
+                                            <span id="selected_viz_span" class="glyphicon glyphicon-pushpin" style="position: absolute;right: 10px;top:13px; display: none;"></span>
+                                        </li>
                                     {% endfor %}
 
                                 </ul>
                                 <div id="viz_container" class="col-sm-8" style="width: 85%">
-                                    <div>
-                                            <button type="button" id="add_layer_btn" class="btn btn-primary btn-sm" style=" display: none;position: absolute; right:20px;">ADD LAYER  <i class="glyphicon glyphicon-plus "></i></button>
-                                    </div>
                                     <div class="loadingFrame">
                                         <img src="{% static 'img/loading_gif.gif' %}"/>
                                     </div>
@@ -366,6 +397,9 @@
 
                 </div>
                 <div class="modal-footer" >
+                     <div>
+                         <button type="button" id="add_layer_btn" class="btn btn-primary btn-sm" style=" position: absolute; display: none;left:250px;">SAVE LAYER  <i class="glyphicon glyphicon-plus "></i></button>
+                     </div>
                     <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
                     </button>
                     <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn" style="display: none">Add
@@ -380,18 +414,25 @@
 
 {% block js %}
 
-
     <script type="text/javascript" src={% static '/js/angular.js' %}></script>
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
-    <script type="text/javascript" src={% static '/ckeditor/ckeditor/ckeditor.js' %}></script>
+    <script src="https://cdn.ckeditor.com/4.9.2/standard/ckeditor.js"></script>
 
+    <script>
+        $(document).ready(function(){
+            $(".dropdown-toggle").dropdown();
+        });
+    </script>
 
     <script type="text/javascript">
 
+
+        {#var textEditor = null;#}
+
      function pageScroll() {
                 $('#main-panel').scrollTop();
-
+                {#scrolldelay = setTimeout('pageScroll()',100); // scrolls every 100 milliseconds#}
             }
         var app = angular.module('myApp', ['gridster']);
 
@@ -402,7 +443,7 @@
 
         app.controller('MainCtrl', function ($scope) {
             $scope.counter = "0";
-            $scope.tempInnerHtml="";
+            $scope.tempInnerHtml = "";
 
             $scope.gridsterOpts = {
                 margins: [20, 20],
@@ -410,10 +451,10 @@
                 outerMargin: false,
                 pushing: true,
                 floating: true,
-                columns: 4,
-                defaultSizeX: 4,
-	            defaultSizeY: 1,
-                rowHeight: 300,
+                columns: 6,
+                defaultSizeX: 6,
+	            defaultSizeY: 2,
+                rowHeight: 200,
                 draggable: {
                     enabled: true,
                     handle: '.iframeHeader',
@@ -441,7 +482,6 @@
 
             $scope.standardItems = [];
 
-
             function toggleSaveBtn() {
                 if ($('#widgetParent li').length > 0 ){
                     $('#save_dashboard_btn').show();
@@ -454,9 +494,9 @@
 
             $("#myModal #submit-modal-btn").click(function () {
 
-                var tempid="#widget" + $scope.counter;
+                var tempid = "#widget" + $scope.counter;
 
-                $scope.standardItems[ $scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
+                $scope.standardItems[$scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
 
 
                 $(tempid).append('<div class="loadingFrame">\n' +
@@ -475,44 +515,43 @@
                 $('#myModal #submit-modal-btn').hide();
             });
 
-             $("#myModal #submit-note-btn").click(function () {
+            $("#myModal #submit-note-btn").click(function () {
                 var myData = textEditor.getData();
-                var tempid="#widget" + $scope.counter;
-                var tempidJs="widget" + $scope.counter;
+                var tempid = "#widget" + $scope.counter;
+                var tempidJs = "widget" + $scope.counter;
 
-                var note_wrapper= "<div class='note_wrapper'>"+ myData +" </div>"
-                 $scope.standardItems[ $scope.standardItems.length - 1].noteData = note_wrapper;
+                var note_wrapper = "<div class='note_wrapper'>" + myData + " </div>"
+                $scope.standardItems[$scope.standardItems.length - 1].noteData = note_wrapper;
 
                 $(tempid).append(note_wrapper);
                 $('#save_dashboard_btn').show();
                 textEditor.destroy();
-                textEditor=null;
+                textEditor = null;
 
                 $('#viz_config').show();
-                $('#viz_note').hide();
+
                 $('#model-button-row').show();
-{#
+
                 $('#submit-note-btn').hide();
                 $('#submit-modal-btn').show();
 
 
                 var newWidget = document.getElementById(tempidJs);
-                newWidget.classList.add("note_widget");
                 for(var i=0 ; i < newWidget.childNodes.length ;i++){
                     if(newWidget.childNodes[i].className == "iframeHeader"){
                         var tempHeader = newWidget.childNodes[i];
                         tempHeader.style.backgroundColor = "white";
                         $(tempHeader).mouseenter(function(){
-                            this.style.backgroundColor="lightgrey "
+{#                            this.style.backgroundColor="lightgrey "#}
                         });
-                        $(tempHeader).mouseleave(function(){
-                            this.style.backgroundColor="white "
+                        $(tempHeader).mouseleave(function () {
+                            this.style.backgroundColor = "white "
                         });
-                        for(var j =0 ; j < tempHeader.childNodes.length; j++){
-                            if(tempHeader.childNodes[j].className == "form-group"){
+                        for (var j = 0; j < tempHeader.childNodes.length; j++) {
+                            if (tempHeader.childNodes[j].className == "form-group") {
                                 tempHeader.childNodes[j].style.display = "none";
                             }
-                            if(tempHeader.childNodes[j].className == "deletebtn"){
+                            if (tempHeader.childNodes[j].className == "deletebtn") {
                                 tempHeader.childNodes[j].style.backgroundColor = "white";
                                 tempHeader.childNodes[j].style.color = "black";
                             }
@@ -523,7 +562,7 @@
 
             });
 
-            $("#dismiss-modal-btn").click (function () {
+            $("#dismiss-modal-btn").click(function () {
                 $scope.standardItems.pop();
                 $('#myModal #viz_container').html('<div class="loadingFrame">\n' +
                     '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
@@ -533,30 +572,38 @@
                 $('#myModal #submit-modal-btn').hide();
             });
 
-            $('#new_widget_btn').click(function (){
+            var makeWidget =function (){
                 $scope.counter++;
                 var tempTitle = "Widget" + $scope.counter;
-                $scope.standardItems.push({sizeX:4, sizeY:1, row: 0,col: 0 ,url: "" , noteData: "" , title: tempTitle});
-            });
+                $scope.standardItems.push({
+                    sizeX: 6,
+                    sizeY: 2,
+                    row: 0,
+                    col: 0,
+                    url: "",
+                    noteData: "",
+                    title: tempTitle
+                });
+            };
 
+            $('#new_widget_btn').click(makeWidget);
 
 
             $('#scroll_down_area').mouseenter(function () {
-                    window.scrollBy(0,40);
-                    scrolldelay = setTimeout('pageScroll()',200);
+                window.scrollBy(0, 40);
+                scrolldelay = setTimeout('pageScroll()', 200);
             });
-
 
 
             $('#scroll_down_area').mouseleave(function () {
-                    clearTimeout(scrolldelay);
+                clearTimeout(scrolldelay);
             });
 
             $scope.finished = function () {
-                 var tempid="widget" + $scope.counter;
+                var tempid = "widget" + $scope.counter;
 
                 $('#viz_container iframe').appendTo(tempid);
-{#
+
             };
 
             $scope.clear = function () {
@@ -570,7 +617,32 @@
                     toggleSaveBtn();
                 }, 500);
 
+
             };
+
+            angular.element(document).ready(function (e) {
+                var prebuiltViz = "{{ toCreate }}";
+                if (prebuiltViz != 'None') {
+                    makeWidget();
+                    var tempid = "#widget" + $scope.counter;
+                    var decodedViz = decodeURIComponent(prebuiltViz);
+                    var prebuildIFrameString = "<iframe class='iframe-class' id='viz-iframe' " +
+                    "src='" + decodedViz + "' frameborder='0' allowfullscreen='' " +
+                    "></iframe>";
+                    var prebuildIFrameItem= $.parseHTML(prebuildIFrameString);
+
+
+                    var helperfunc = function(){
+                        $(tempid).append(prebuildIFrameItem[0]);
+                    };
+
+
+                    setTimeout(helperfunc ,250);
+
+                    $scope.standardItems[$scope.standardItems.length - 1].url = decodedViz;
+                    $('#save_dashboard_btn').show();
+                }
+            });
 
             $('#save_dashboard_btn').click(function () {
                 var postEndpoint = "/dashboards/save/";
@@ -580,16 +652,16 @@
                 }
 
                 var post_data_obj = new Object();
-                {#$('#widgetParent li ').each(function (index, element) {#}
-                {#    post_data_obj[String(index)] = $(this).children( ".iframe-class").attr("src");#}
+
                 var tempcounter= 0;
                 for(var myindex in $scope.standardItems){
                     var tempTitleId= "widgetTitleModel" + myindex.toString();
-                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() ,$scope.standardItems[myindex].noteData.toString() ,$scope.standardItems[myindex].title.toString()];
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() , $scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString()];
                     post_data_obj[String(tempcounter)] = temparray;
                     tempcounter++;
                 }
                 post_data_obj['title'] = $('#dashboard_title').val();
+                post_data_obj['private'] = $('input[name="private"]').is(':checked');
                 var post_data = encodeURIComponent(JSON.stringify(post_data_obj));
                 $.ajax({
                     "type": "POST",
@@ -632,12 +704,11 @@
             $('.viz_item').popover('hide');
         });
 
-
+        var new_query_id;
         function updateVariables(element) {
             $('#myModal .variable-select').find('option').remove().end();
             $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
-            var new_query_id = $('#myModal #selected_query').val();
-
+            new_query_id = $('#myModal #selected_query').val();
             var new_query_doc = {};
             $.ajax({
                 url: '/queries/get_query_variables/',
@@ -650,7 +721,7 @@
                     var variables = result['variables'];
                     var dimensions = result['dimensions'];
                     $('.variable-select').append($("<option></option>")
-                    .attr("", v)
+                    .attr("value", '')
                     .text('-- column select --'));
                     $.each(variables, function (k, v) {
                         $('#myModal .variable-select').append($("<option></option>")
@@ -673,9 +744,57 @@
 
     <script>
 
+        {#Variable to store active ckeditor version #}
         var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
-
+        {#Fnction to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
+            var layer_count = 1;
+            var layer_json = [];
+            var json;
+            var selected_visualization = null;
+
+
+            $("#add_layer_btn").click(function () {
+
+                if((new_query_id!=null)&&(selected_visualization!=null)) {
+                    alert("Layer is now saved. Please add a new layer!");
+                    $("#viz_config").find("ul").children().each(function (index) {
+                    if ($(this).attr("data-viz-type") != "map") {
+                        $(this).remove();
+                    }
+                    });
+                    $(".list-group").css('visibility','hidden');
+
+                    layer_count = layer_count+1;
+                    $("#viz_config .list-group").children().each(function () {
+                        $(this).find("#selected_viz_span").hide();
+                    })
+
+
+                    layer_json = [];
+                    for (var i = 0; i < json.length; i++) {
+                        var obj = json[i];
+                        layer_json.push({});
+                        for (var key in obj) {
+                            layer_json[i][key] = obj[key];
+                        }
+                    }
+{#                    alert(JSON.stringify(layer_json));#}
+
+                    $("#layers-list ul").append('<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"#\">'+String(layer_count-1) + ') QueryID: ' + $("#query_name_span").text() + ' Visualization: ' + String(selected_visualization) + '</a></li>');
+                }
+                else{
+                    alert("Please select data and add visualization!")
+                }
+                selected_visualization = null;
+                new_query_id = null;
+                $("#query_name_span").text(null);
+
+
+
+
+
+            })
 
             $("#myModal #modal-tab-notes").click(function (e) {
 
@@ -687,6 +806,7 @@
                     }
                 });
 
+            {#Function to change tabs in modal from notes to data#}
 
             $("#myModal #modal-tab-data").click(function (e) {
 
@@ -698,22 +818,30 @@
             $("#myModal #select_data_popover").popover({
                 html: true,
                 animation: true,
+                title: 'Select query to use',
                 content: function () {
                     return $('#query-container').html();
                 }
             }).click(function (e) {
+
                 $(this).popover('toggle');
                 $('.popover-content #query-select').on('change', function () {
-                    var new_query_id = $(this).children(":selected").attr("id");
-
+                    new_query_id = $(this).children(":selected").attr("id");
+                    {#                    alert(new_query_id);#}
                     var new_query_doc = $('#new_query_doc').val();
                     $('#myModal #selected_query').val(new_query_id);
                     updateVariables(this);
+
+                    {#            addQueryToForm(this.options[this.selectedIndex].value.replace(/\n/g, " "));#}
                 });
                 $('.popover-content #select_data_ok').click(function (e) {
+                    $('#query_name_span').show();
+                    $('#query_name_span').text(new_query_id);
+
 
                     $('#myModal #select_data_popover').popover("hide");
                     $('#viz_config').show();
+                    $(".list-group").css('visibility','visible');
                 })
                 $('.popover-content #select_data_cancel').click(function (e) {
                     $('#myModal #select_data_popover').popover("hide");
@@ -722,6 +850,7 @@
 
 
             $(".viz_item").click(function (element) {
+
                 var component_id = $(this).attr('data-viz-id');
                 var component_type = $(this).attr('data-viz-type');
                 var component_selector = 'li[data-viz-id="'+component_id+'"]';
@@ -753,14 +882,24 @@
                         $('#myModal .popover-content .variable-select').select2();
                         var popver_id = '#' + $(component_selector).attr('aria-describedby');
                         $(popver_id + ' #select_conf_ok').click(function (e) {
+                            selected_visualization = $(component_selector).text();
+                             $("#viz_config .list-group").children().each(function () {
+                                $(this).find("#selected_viz_span").hide();
+                            })
+                            $(component_selector).find("#selected_viz_span").show();
                             if(component_type=='map'){
                                 $('#add_layer_btn').show();
+                                $('#layers-list').show();
+
+{#                                layer_count = 0;#}
+{#                                layer_json=JSON.parse('[]');#}
                             }
                             else{
                                 $('#add_layer_btn').hide();
+                                $('#layers-list').hide();
 
                             }
-                            submit_conf(component_selector);
+                            submit_conf(component_selector,component_type);
                             $(component_selector).popover("hide");
                         });
                         $(popver_id + ' #select_conf_cancel').click(function (e) {
@@ -772,34 +911,101 @@
             });
 
 
-            function submit_conf(component_selector) {
-                var viz_request = "http://localhost:8000/visualizations/";
-                viz_request += $('#myModal').find('.modal-body').find('#action').val();
+            function submit_conf(component_selector,component_type) {
+                if(component_type!='map') {
+                    var viz_request = "/visualizations/";
+                    viz_request += $('#myModal').find('.modal-body').find('#action').val();
 
-                var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+                    var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+                    {#                                alert(conf_popover_id);#}
+                    var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
 
-                var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
-                {#                alert(submitted_args);#}
-                var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
-                $(selects).each(function (i) {
-                    var select = this;
-                    $(submitted_args).find("select").eq(i).val($(select).val());
+                    var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
 
-                });
-                $('#config-viz-form').empty();
-                $('#config-viz-form').append(submitted_args);
+                    $(selects).each(function (i) {
+                        var select = this;
+                        $(submitted_args).find("select").eq(i).val($(select).val());
+                        $('#config-viz-form').append(select);
+                    });
+                    $('#config-viz-form').empty();
+                    $('#config-viz-form').append(submitted_args);
 
 
-                var myData = $("#config-viz-form").serialize();
+                    var myData = $("#config-viz-form").serialize();
+                    alert(myData);
+                    viz_request += '?';
+                    viz_request += myData;
+                    {#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}
 
-                viz_request += '?';
-                viz_request += myData;
+                    viz_request += '&query=' + $('#myModal #selected_query').val();
+                    alert(viz_request);
+                    show_viz(viz_request);
+                }
+                else{
+{#                    layer_count = layer_count +1 ;#}
+{#                    alert("map-type");#}
+                    var viz_request = "/visualizations/get_map_visualization/?";
+                    viz_request += "layer_count="+String(layer_count)+"&";
+{#                    viz_request += $('#myModal').find('.modal-body').find('#action').val();#}
+{#                    alert(viz_request);#}
+                    var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
 
-                viz_request += '&query=' + $('#myModal #selected_query').val();
+                    var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
 
-                show_viz(viz_request);
+                    var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
+
+                    $(selects).each(function (i) {
+                        var select = this;
+                        $(submitted_args).find("select").eq(i).val($(select).val());
+                        $('#config-viz-form').append(select);
+                    });
+                    $('#config-viz-form').empty();
+                    $('#config-viz-form').append(submitted_args);
+
+                    var myData = getFormData($("#config-viz-form"),layer_count);
+                    json=[];
+                    for (var i = 0; i < layer_json.length; i++) {
+                        var obj = layer_json[i];
+                        json.push({});
+                        for (var key in obj) {
+                            json[i][key] = obj[key];
+                        }
+                    }
+
+                    json.push(myData);
+{#                    alert(JSON.stringify(json));#}
+{#                    alert(JSON.stringify(layer_json));#}
+
+{#                    viz_request += '?';#}
+                    var url="";
+                    for (var i = 0; i < json.length; i++) {
+                        var obj =json[i];
+                        for (var key in obj) {
+                            url = url + "&" + (key) + "=" + (obj[key]);
+                        }
+                    }
+                    url = url.replace("&","");
+
+                    viz_request += url;
+                    {#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}
+
+                    viz_request += '&query'+String(layer_count-1)+'=' + $('#myModal #selected_query').val();
+                    alert(viz_request);
+                    show_viz(viz_request);
+                }
 
             };
+
+            function getFormData(form,count){
+                var unindexed_array = form.serializeArray();
+                var indexed_array = {};
+                $.map(unindexed_array, function(n, i){
+                    indexed_array[n['name']+String(count-1)] = n['value'];
+                });
+{#                indexed_array['layer'] = String(count-1);#}
+                return indexed_array;
+            }
+
 
             function show_viz(viz_request) {
 
@@ -814,6 +1020,7 @@
             }
 
 
+
             $("#dismiss-modal-btn").click(function m(e) {
                 $('#select_viz_popover').prop('disabled', true);
                 $('#select_conf_popover').prop('disabled', true);
@@ -823,6 +1030,7 @@
             });
 
         });
+
 
 
 
