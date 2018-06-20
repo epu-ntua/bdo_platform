@@ -70,7 +70,6 @@ def map_visualizer(request):
         title_cancel='Exit me',
         force_separate_button=True).add_to(m)
 
-
     js_list = []
     old_map_id_list = []
     extra_js = ""
@@ -149,7 +148,7 @@ def map_visualizer(request):
     # changes the wrong map_id's for all the extra scripts used
     for mid in old_map_id_list:
         for js in js_list:
-            js.replace(mid,map_id)
+            js.replace(mid, map_id)
 
     # print(js_all)
     if len(js_all) > 5:
@@ -1295,16 +1294,8 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
                     s['exclude'] = True
                     s['groupBy'] = False
 
-        # import pdb
-        # pdb.set_trace()
-        # print doc
-        q.document = doc
-        raw_query = q.raw_query
 
-        # Create a leaflet map using folium
-        # m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
-
-        var_index = lat_index = lon_index = 0
+        var_index = lat_index = lon_index = -1
         result = q.execute()[0]
         result_data = result['results']
         result_headers = result['headers']
@@ -1341,7 +1332,13 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
             if row[var_index] < min_val:
                 min_val = row[var_index]
 
+        max_lat = float(max_lat)
+        min_lat = float(min_lat)
+        max_lon = float(max_lon)
+        min_lon = float(min_lon)
 
+
+        m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
         # print min_lat, max_lat, min_lon, max_lon, min_val, max_val
 
         lats_bins = np.arange(min_lat, max_lat + 0.00001, step)
@@ -1376,7 +1373,6 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
 
         levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
         print 'level ok'
-
         # Create contour image to lay over the map
         fig = Figure()
         ax = fig.add_subplot(111)
@@ -1429,8 +1425,6 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
             .add_to(m) \
             .layer_name = 'Coastline'
 
-        # Add layer contorl
-        folium.LayerControl().add_to(m)
 
         # Parse the HTML to pass to template through the render
         m.save('templates/map.html')
@@ -1454,22 +1448,19 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
             nlist = map(str, nlist)
             data_grid.append(nlist)
 
-            temp_html = render_to_string('visualizer/map_viz_folium.html',
-                                         {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step,
-                                          'data_grid': data_grid, 'min_lat': min_lat,
-                                          'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon,
-                                          'agg_function': agg_function, 'legend_id': legpath})
-            if "var startsplitter = 42;" in temp_html:
-                ret_html = "<script> " + temp_html.split("var startsplitter = 42;")[1].split("var endsplitter = 42;")[
-                    0] + " </script>"
-            else:
-                ret_html = ""
+        temp_html = render_to_string('visualizer/map_viz_folium.html',
+                                     {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step,
+                                      'data_grid': data_grid, 'min_lat': min_lat,
+                                      'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon,
+                                      'agg_function': agg_function, 'legend_id': legpath})
+        if "var startsplitter = 42;" in temp_html:
+            ret_html = "<script> " + temp_html.split("var startsplitter = 42;")[1].split("var endsplitter = 42;")[
+                0] + " </script>"
+        else:
+            ret_html = ""
 
-            return m, ret_html, map_id
-        #
-        # return render(request, 'visualizer/map_viz_folium.html',
-        #               {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step, 'data_grid': data_grid, 'min_lat': min_lat,
-        #                'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon, 'agg_function': agg_function, 'legend_id': legpath})
+        return m, ret_html, map_id
+
     except HttpResponseNotFound:
         return HttpResponseNotFound
     except Exception:
@@ -1572,7 +1563,7 @@ def map_viz_folium_heatmap_time(request):
     data_list = []
     time_list = []
     data_moment_list=[]
-    # pdb.set_trace()
+
     for d in data:
         if (d[order_index] == curr_time):
             data_moment_list.append([float(d[lat_index]),float(d[lon_index]),float(d[var_index])])
