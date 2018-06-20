@@ -422,6 +422,7 @@
     <script>
         $(document).ready(function(){
             $(".dropdown-toggle").dropdown();
+
         });
     </script>
 
@@ -823,8 +824,8 @@
                     return $('#query-container').html();
                 }
             }).click(function (e) {
-
                 $(this).popover('toggle');
+                $('.popover-content .form-group #query-select').select2();
                 $('.popover-content #query-select').on('change', function () {
                     new_query_id = $(this).children(":selected").attr("id");
                     {#                    alert(new_query_id);#}
@@ -962,7 +963,7 @@
                     $('#config-viz-form').empty();
                     $('#config-viz-form').append(submitted_args);
 
-                    var myData = getFormData($("#config-viz-form"),layer_count);
+                    var myData = getFormData($("#config-viz-form"),layer_count,$('#myModal #selected_query').val());
                     json=[];
                     for (var i = 0; i < layer_json.length; i++) {
                         var obj = layer_json[i];
@@ -989,20 +990,19 @@
                     viz_request += url;
                     {#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}
 
-                    viz_request += '&query'+String(layer_count-1)+'=' + $('#myModal #selected_query').val();
                     alert(viz_request);
                     show_viz(viz_request);
                 }
 
             };
 
-            function getFormData(form,count){
+            function getFormData(form,count,query){
                 var unindexed_array = form.serializeArray();
                 var indexed_array = {};
                 $.map(unindexed_array, function(n, i){
                     indexed_array[n['name']+String(count-1)] = n['value'];
                 });
-{#                indexed_array['layer'] = String(count-1);#}
+                indexed_array['query'+String(count-1)] = query;
                 return indexed_array;
             }
 

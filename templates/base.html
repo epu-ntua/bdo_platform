@@ -281,14 +281,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 
 
-    <script>
-        window.setInterval(function(){
-            $('.form-group input').each(function(){ if($(this).val() != ''){ $(this).closest('.form-group').removeClass('is-empty'); }  });
-            $('.form-group select').each(function(){ $(this).closest('.form-group').removeClass('is-empty'); }  );
-            $('.form-group .select2-selection--multiple').closest('.form-group').removeClass('is-empty');
-
-            $('.popover-content select').not('.select2-hidden-accessible').select2({width: 'style'});
-
+{#    <script>#}
+{#        window.setInterval(function(){#}
+{#            $('.form-group input').each(function(){ if($(this).val() != ''){ $(this).closest('.form-group').removeClass('is-empty'); }  });#}
+{#            $('.form-group select').each(function(){ $(this).closest('.form-group').removeClass('is-empty'); }  );#}
+{#            $('.form-group .select2-selection--multiple').closest('.form-group').removeClass('is-empty');#}
+{##}
+{#            $('.popover-content select').not('.select2-hidden-accessible').select2({width: 'style'});#}
+{##}
 {#            $('.popover-content select:not([class^="select2"])').select2();#}
 {#            .each(function (i, obj) {#}
 {#                if (!$(obj).class('select2-hidden-accessible'))#}
@@ -296,7 +296,7 @@
 {#                    $(obj).select2();#}
 {#                }#}
 {#            });#}
-        }, 500);
+{#        }, 500);#}
 
 
     </script>
