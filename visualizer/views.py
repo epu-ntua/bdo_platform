@@ -75,10 +75,11 @@ def map_visualizer(request):
     extra_js = ""
     layer_count = int(request.GET.get("layer_count", 0))
 
-    for count in range(0,layer_count):
+    for count in range(0, layer_count):
         layer_id = request.GET.get("viz_id"+str(count))
         # Plotline
         if (layer_id == str(18)):
+            print ('Plotline')
             marker_limit = request.GET.get("m_limit"+str(count),200)
             print marker_limit
             query = int(str(request.GET.get('query'+str(count), '0')))
@@ -90,14 +91,15 @@ def map_visualizer(request):
             order_var = str(request.GET.get('order_var'+str(count), ''))
             print order_var
             ship_id = str(request.GET.get('ship_id'+str(count), ''))
-            lat_col = str(request.GET.get('lat_col'+str(count), ''))
+            lat_col = str(request.GET.get('lat_col'+str(count), 'latitude'))
             print lat_col
-            lon_col = str(request.GET.get('lon_col'+str(count), ''))
+            lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
             print lon_col
             # map_id = str(request.GET.get('map_id'+str(count), ''))
             m, extra_js = map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id, lat_col, lon_col, m, request)
         # Contours
         elif (layer_id == str(4)):
+            print ('Contours')
             # Gather the arguments
             n_contours = int(request.GET.get('n_contours'+str(count), 20))
             step = float(request.GET.get('step'+str(count), 0.1))
@@ -108,30 +110,42 @@ def map_visualizer(request):
             old_map_id_list.append(old_map_id)
         # Map Course
         elif (layer_id == str(15)):
+            print ('Markers')
             marker_limit = int(request.GET.get('m_limit'+str(count), '100'))
+            print marker_limit
             query = int(str(request.GET.get('query'+str(count), '0')))
 
             df = str(request.GET.get('df'+str(count), ''))
+            print df
             notebook_id = str(request.GET.get('notebook_id'+str(count), ''))
 
             order_var = str(request.GET.get('order_var'+str(count), ''))
+            print order_var
             variable = str(request.GET.get('col_var'+str(count), ''))
+            print variable
             agg_function = str(request.GET.get('agg_func'+str(count), 'avg'))
 
             lat_col = str(request.GET.get('lat_col'+str(count), 'latitude'))
+            print lat_col
             lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
+            print lon_col
 
             color_col = str(request.GET.get('color_col'+str(count), ''))
             m, extra_js = map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function, lat_col, lon_col,color_col, m, request)
         # Heatmap
         elif (layer_id == str(19)):
+            print ('Heatmap')
             query = int(str(request.GET.get('query'+str(count), '0')))
             df = str(request.GET.get('df'+str(count), ''))
+            print df
             notebook_id = str(request.GET.get('notebook_id'+str(count), ''))
 
             heat_col = str(request.GET.get('heat_col'+str(count), 'frequency'))
+            print heat_col
             lat_col = str(request.GET.get('lat_col'+str(count), 'latitude'))
+            print lat_col
             lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
+            print lon_col
             m, extra_js = map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m)
 
         if (extra_js!=""):
@@ -429,8 +443,7 @@ def map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_fu
 
         print data[:4]
 
-
-    pol_group_layer = folium.map.FeatureGroup(name='Markers: ' + str(variable), overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Markers - Layer: ' + str(variable)+' / Query ID: ' + str(query), overlay=True,
                                               control=True).add_to(m)
 
     color_dict = dict()
@@ -884,7 +897,7 @@ def map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer / Ship ID: ' + str(ship_id)+' / Query ID: '+str(query), overlay=True,
                                               control=True).add_to(m)
     folium.PolyLine(points,
                     color=color,
@@ -893,7 +906,7 @@ def map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id
                     ).add_to(pol_group_layer)
 
     # Arrows are created
-    for i in range (1,len(points)-1):
+    for i in range (1,len(points)):
         arrows = get_arrows(m, 1, locations=[points[i-1], points[i]])
         for arrow in arrows:
             arrow.add_to(pol_group_layer)
@@ -1236,7 +1249,7 @@ def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m):
             if d[lon_index] < min_lon:
                 min_lon = d[lon_index]
     # check out
-    HeatMap(heat, name="Heat Map").add_to(m)
+    HeatMap(heat, name="Heat Map - Layer / Query ID: "+str(query)).add_to(m)
 
     max_lat = float(max_lat)
     min_lat = float(min_lat)
@@ -1265,6 +1278,7 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
             round_num = 2
         elif step == 0.001:
             round_num = 3
+
 
         q = AbstractQuery.objects.get(pk=int(query))
         q = TempQuery(document=q.document)
@@ -1300,7 +1314,7 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
         result_data = result['results']
         result_headers = result['headers']
 
-        print result_headers
+        # print result_headers
         for idx, c in enumerate(result_headers['columns']):
             if c['name'] == variable:
                 var_index = idx
@@ -1317,7 +1331,7 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
         max_lon = -180
         min_val = 9999999999
         max_val = -9999999999
-        print data[:3]
+        # print data[:3]
         for row in data:
             if row[lat_index] > max_lat:
                 max_lat = row[lat_index]
@@ -1342,13 +1356,13 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
         # print min_lat, max_lat, min_lon, max_lon, min_val, max_val
 
         lats_bins = np.arange(min_lat, max_lat + 0.00001, step)
-        print lats_bins[:3]
+        # print lats_bins[:3]
         lons_bins = np.arange(min_lon, max_lon + 0.00001, step)
-        print lons_bins[:3]
+        # print lons_bins[:3]
         Lats, Lons = np.meshgrid(lats_bins, lons_bins)
 
-        print Lats[:3]
-        print Lons[:3]
+        # print Lats[:3]
+        # print Lons[:3]
 
         # Create grid data needed for the contour plot
         # final_data = create_grid_data(lats_bins, lons_bins, data)
@@ -1374,20 +1388,21 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
         levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
         print 'level ok'
         # Create contour image to lay over the map
+
         fig = Figure()
         ax = fig.add_subplot(111)
         plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
-        print 'contour made'
+        # print 'contour made'
         # plt.axis('off')
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         plt.draw()
-        print 'contour draw'
+        # print 'contour draw'
         # plt.show()
         ts = str(time.time()).replace(".", "")
         mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
-        print 'mappath'
+        # print 'mappath'
         plt.savefig(mappath, bbox_inches=extent, transparent=True, pad_inches=0)
-        print 'saved'
+        # print 'saved'
         plt.clf()
         plt.close()
         fig = None
@@ -1416,14 +1431,14 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
         # Overlay the image
         contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
                                                           bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
-        contour_layer.layer_name = 'Contour'
+        contour_layer.layer_name = 'Contours On Map - Layer / Query Name: '+str(query)
         m.add_child(contour_layer)
 
         # Overlay an extra coastline field (to be removed
         folium.GeoJson(open('ne_50m_land.geojson').read(),
                        style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
             .add_to(m) \
-            .layer_name = 'Coastline'
+            .layer_name = 'Coastline - Layer'
 
 
         # Parse the HTML to pass to template through the render

@@ -337,17 +337,25 @@
                             </ul>
                         </div>
                         <div class="tab-pane fade in active" id="viz_widget">
-                            <div class="row text-left" id="model-button-row">
-                                <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
-                                        data-toggle="popover" title="Select your data" data-placement="right"
-                                >Select data
-                                </button>
+                            <div class="row">
+                                <div class="text-left" id="model-button-row" style="display: inline">
+                                    <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
+                                            data-toggle="popover" title="Select your data" data-placement="right"
+                                    >Select data
+                                    </button>
+                                </div>
+                                <div  class="dropdown row" id="layers-list" style="display: none;position: absolute;right:250px;">
+                                    <button class="btn btn-primary dropdown-toggle btn-lg" id="menu1" type="button" data-toggle="dropdown" style="display: inline;">Layers
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
 
-
-                                <div style="margin-bottom: 8px;">
-                                    <span><strong>Selected Query ID: </strong></span><span id="query_name_span" style="display: none;"></span>
+                                    </ul>
                                 </div>
 
+                                <div style="display: inline; margin-left: 20px;">
+                                    <span><strong>Selected Query ID: </strong></span><span id="query_name_span" style="display: none;"></span>
+                                </div>
 
 
                                 <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
@@ -361,13 +369,15 @@
                             </div>
 
 
-                            <div class="dropdown row" id="layers-list" style="position: absolute; right:200px; display: none;z-index:2;">
-                                <button class="btn btn-primary dropdown-toggle" id="menu1" type="button" data-toggle="dropdown">Layers
-                                <span class="caret"></span></button>
-                                <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+{#                            <div class="dropdown row" id="layers-list" style="position: absolute; right:200px; display: none;z-index:2;">#}
+{#                                <button class="btn btn-primary dropdown-toggle" id="menu1" type="button" data-toggle="dropdown">Layers#}
+{#                                <span class="caret"></span></button>#}
+{#                                <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">#}
 {#                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">HTML</a></li>#}
-                                </ul>
-                            </div>
+{#                                </ul>#}
+{#                            </div>#}
+
+
 
                             <div class="row" id="viz_config" style="display: none">
                                 <ul class="list-group collapse in col-sm-2" style="width: 15%">
@@ -749,10 +759,12 @@
         var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
         {#Fnction to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
-            var layer_count = 1;
+            var layer_count = 0;
             var layer_json = [];
             var json;
             var selected_visualization = null;
+            var first_time = true ;
+
 
 
             $("#add_layer_btn").click(function () {
@@ -766,7 +778,6 @@
                     });
                     $(".list-group").css('visibility','hidden');
 
-                    layer_count = layer_count+1;
                     $("#viz_config .list-group").children().each(function () {
                         $(this).find("#selected_viz_span").hide();
                     })
@@ -782,7 +793,39 @@
                     }
 {#                    alert(JSON.stringify(layer_json));#}
 
-                    $("#layers-list ul").append('<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"#\">'+String(layer_count-1) + ') QueryID: ' + $("#query_name_span").text() + ' Visualization: ' + String(selected_visualization) + '</a></li>');
+                    $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;" role=\"menuitem\" tabindex=\"-1\" href=\"#\">'+String(layer_count) + ') Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
+                    $(".layer_list_element #btn"+String(layer_count)).click(function () {
+                        var del_id = String(parseInt($(this).closest('li').attr('id')));
+                        alert("Del button "+del_id);
+                        for (var i = 0; i < layer_json.length; i++) {
+                            alert("Loop " +i)
+                            var obj = layer_json[i];
+                            alert("Searching "+obj['layer_id']);
+                            if (obj['layer_id']==del_id){
+                                alert("Deleting "+obj['layer_id']);
+                                layer_count = layer_count-1;
+                                layer_json.splice(i,1);
+                                $(this).closest('li').remove();
+                                for(var j = i ; j < layer_json.length; j++){
+                                    $(".layer_list_element #btn"+String(j+1)).closest('li').attr('id',String(j));
+                                    $(".layer_list_element #btn"+String(j+1)).attr('id','btn'+String(j));
+                                    obj = layer_json[j];
+                                    alert("Fixing "+obj['layer_id']);
+                                    layer_json[j]['layer_id'] = layer_json[j]['layer_id']-1;
+                                    alert("Converting to "+layer_json[j]['layer_id']);
+                                }
+                                i=j;
+                            }
+
+                            alert(JSON.stringify(layer_json));
+                        }
+
+                        alert(JSON.stringify(layer_json));
+                        mapVizUrlCreator(layer_json,layer_count);
+
+                    })
+
+                    layer_count = layer_count+1;
                 }
                 else{
                     alert("Please select data and add visualization!")
@@ -790,9 +833,6 @@
                 selected_visualization = null;
                 new_query_id = null;
                 $("#query_name_span").text(null);
-
-
-
 
 
             })
@@ -884,16 +924,16 @@
                         var popver_id = '#' + $(component_selector).attr('aria-describedby');
                         $(popver_id + ' #select_conf_ok').click(function (e) {
                             selected_visualization = $(component_selector).text();
-                             $("#viz_config .list-group").children().each(function () {
+                            $("#viz_config .list-group").children().each(function () {
                                 $(this).find("#selected_viz_span").hide();
                             })
                             $(component_selector).find("#selected_viz_span").show();
                             if(component_type=='map'){
                                 $('#add_layer_btn').show();
                                 $('#layers-list').show();
+                                $('#layers-list').css("display","inline");
 
-{#                                layer_count = 0;#}
-{#                                layer_json=JSON.parse('[]');#}
+
                             }
                             else{
                                 $('#add_layer_btn').hide();
@@ -933,26 +973,18 @@
 
 
                     var myData = $("#config-viz-form").serialize();
-                    alert(myData);
+{#                    alert(myData);#}
                     viz_request += '?';
                     viz_request += myData;
                     {#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}
 
                     viz_request += '&query=' + $('#myModal #selected_query').val();
-                    alert(viz_request);
+{#                    alert(viz_request);#}
                     show_viz(viz_request);
                 }
                 else{
-{#                    layer_count = layer_count +1 ;#}
-{#                    alert("map-type");#}
-                    var viz_request = "/visualizations/get_map_visualization/?";
-                    viz_request += "layer_count="+String(layer_count)+"&";
-{#                    viz_request += $('#myModal').find('.modal-body').find('#action').val();#}
-{#                    alert(viz_request);#}
                     var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-
                     var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
-
                     var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
 
                     $(selects).each(function (i) {
@@ -974,35 +1006,49 @@
                     }
 
                     json.push(myData);
-{#                    alert(JSON.stringify(json));#}
-{#                    alert(JSON.stringify(layer_json));#}
-
-{#                    viz_request += '?';#}
-                    var url="";
-                    for (var i = 0; i < json.length; i++) {
-                        var obj =json[i];
-                        for (var key in obj) {
-                            url = url + "&" + (key) + "=" + (obj[key]);
-                        }
+                    if (first_time){
+                        mapVizUrlCreator(json, layer_count + 1);
+{#                        first_time = false;#}
                     }
-                    url = url.replace("&","");
+                    else{
+                        first_time = false;
+                        mapVizUrlCreator(json, layer_count);
+                    }
 
-                    viz_request += url;
-                    {#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}
+                };
 
-                    alert(viz_request);
-                    show_viz(viz_request);
+            }
+
+
+            function mapVizUrlCreator(json,my_layer_count){
+{#                alert(JSON.stringify(json));#}
+                alert(JSON.stringify(layer_json));
+
+                var viz_request = "/visualizations/get_map_visualization/?";
+                viz_request += "layer_count="+String(my_layer_count)+"&";
+                var url="";
+                for (var i = 0; i < json.length; i++) {
+                    var obj =json[i];
+                    for (var key in obj) {
+                        url = url + "&" + (key)+obj['layer_id'] + "=" + (obj[key]);
+                    }
                 }
+                url = url.replace("&","");
+                viz_request += url;
 
-            };
+                alert(viz_request);
+                show_viz(viz_request);
+            }
+
 
             function getFormData(form,count,query){
                 var unindexed_array = form.serializeArray();
                 var indexed_array = {};
                 $.map(unindexed_array, function(n, i){
-                    indexed_array[n['name']+String(count-1)] = n['value'];
+                    indexed_array[n['name']] = n['value'];
                 });
-                indexed_array['query'+String(count-1)] = query;
+                indexed_array['query'] = query;
+                indexed_array['layer_id'] = String(layer_count);
                 return indexed_array;
             }
 
