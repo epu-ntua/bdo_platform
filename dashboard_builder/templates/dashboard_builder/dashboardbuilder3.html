@@ -794,6 +794,8 @@
                             layer_json[i][key] = obj[key];
                         }
                     }
+
+
 {#                    alert(JSON.stringify(layer_json));#}
 
                     $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
@@ -1051,7 +1053,9 @@
                     indexed_array[n['name']] = n['value'];
                 });
                 indexed_array['query'] = query;
-                indexed_array['layer_id'] = String(layer_count);
+                indexed_array['layer_id'] = String(count);
+{#                indexed_array['cached'] = false;#}
+                indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000))+'layer'+String(count) ;
                 return indexed_array;
             }
 

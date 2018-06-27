@@ -80,6 +80,7 @@ def map_visualizer(request):
         # Plotline
         if (layer_id == str(18)):
             print ('Plotline')
+            cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
             marker_limit = request.GET.get("m_limit"+str(count),200)
             print marker_limit
             query = int(str(request.GET.get('query'+str(count), '0')))
@@ -96,21 +97,23 @@ def map_visualizer(request):
             lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
             print lon_col
             # map_id = str(request.GET.get('map_id'+str(count), ''))
-            m, extra_js = map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id, lat_col, lon_col, m, request)
+            m, extra_js = map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id, lat_col, lon_col, m, request, cached_file)
         # Contours
         elif (layer_id == str(4)):
             print ('Contours')
             # Gather the arguments
+            cached_file = str(request.GET.get('cached_file_id'+str(count), ''))
             n_contours = int(request.GET.get('n_contours'+str(count), 20))
             step = float(request.GET.get('step'+str(count), 0.1))
             variable = str(request.GET.get('feat_1'+str(count), ''))
             query = str(request.GET.get('query'+str(count), ''))
             agg_function = str(request.GET.get('agg_func'+str(count), 'avg'))
-            m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m)
+            m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file)
             old_map_id_list.append(old_map_id)
         # Map Course
         elif (layer_id == str(15)):
             print ('Markers')
+            cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
             marker_limit = int(request.GET.get('m_limit'+str(count), '100'))
             print marker_limit
             query = int(str(request.GET.get('query'+str(count), '0')))
@@ -131,10 +134,11 @@ def map_visualizer(request):
             print lon_col
 
             color_col = str(request.GET.get('color_col'+str(count), ''))
-            m, extra_js = map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function, lat_col, lon_col,color_col, m, request)
+            m, extra_js = map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function, lat_col, lon_col,color_col, m, request, cached_file)
         # Heatmap
         elif (layer_id == str(19)):
             print ('Heatmap')
+            cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
             query = int(str(request.GET.get('query'+str(count), '0')))
             df = str(request.GET.get('df'+str(count), ''))
             print df
@@ -146,7 +150,7 @@ def map_visualizer(request):
             print lat_col
             lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
             print lon_col
-            m, extra_js = map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m)
+            m, extra_js = map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_file)
 
         if (extra_js!=""):
             js_list.append(extra_js)
@@ -349,99 +353,131 @@ def map_course_time(request):
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': datas})
 
 
-def map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function, lat_col, lon_col, color_col, m, request):
+def map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function, lat_col, lon_col, color_col, m, request,cached_file):
+    dic = {}
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query != 0:
+            q = AbstractQuery.objects.get(pk=int(query))
+            q = TempQuery(document=q.document)
+            doc = q.document
 
-    if query != 0:
-        q = AbstractQuery.objects.get(pk=int(query))
-        q = TempQuery(document=q.document)
-        doc = q.document
+            doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+            if marker_limit > 0:
+                doc['limit'] = marker_limit
 
-        doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
-        if marker_limit > 0:
-            doc['limit'] = marker_limit
+            for f in doc['from']:
+                for s in f['select']:
+                    if s['name'] == variable:
+                        s['exclude'] = False
+                    elif str(s['name']) == order_var:
+                        s['exclude'] = False
+                    elif str(s['name']) == color_col:
+                        s['exclude'] = False
+                    elif str(s['name']).find(lat_col) >= 0:
+                        s['exclude'] = False
+                    elif str(s['name']).find(lon_col) >= 0:
+                        s['exclude'] = False
+                    else:
+                        s['exclude'] = True
 
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == variable:
-                    s['exclude'] = False
-                elif str(s['name']) == order_var:
-                    s['exclude'] = False
-                elif str(s['name']) == color_col:
-                    s['exclude'] = False
-                elif str(s['name']).find(lat_col) >= 0:
-                    s['exclude'] = False
-                elif str(s['name']).find(lon_col) >= 0:
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-
-        q.document = doc
-        query_data = q.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
+            q.document = doc
+            query_data = q.execute()
+            data = query_data[0]['results']
+            result_headers = query_data[0]['headers']
 
 
-        print result_headers
-        lat_index = lon_index = order_var_index = var_index = color_index = -1
-        for idx, caa in enumerate(result_headers['columns']):
-            if caa['name'] == variable:
-                var_index = idx
-            elif str(caa['name']) == order_var:
-                order_var_index = idx
-            elif str(caa['name']).find(lat_col) >= 0:
-                lat_index = idx
-            elif str(caa['name']).find(lon_col) >= 0:
-                lon_index = idx
-            elif str(caa['name']) == color_col:
-                color_index = idx
-    else:
-        print ("json-case")
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-        livy = service_exec.service.through_livy
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        if order_var != "":
-            if not livy:
-                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            else:
-                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+            print result_headers
+            lat_index = lon_index = order_var_index = var_index = color_index = -1
+            for idx, caa in enumerate(result_headers['columns']):
+                if caa['name'] == variable:
+                    var_index = idx
+                elif str(caa['name']) == order_var:
+                    order_var_index = idx
+                elif str(caa['name']).find(lat_col) >= 0:
+                    lat_index = idx
+                elif str(caa['name']).find(lon_col) >= 0:
+                    lon_index = idx
+                elif str(caa['name']) == color_col:
+                    color_index = idx
 
+            list_data = []
+            for d in data:
+                item = [float(d[lat_index]), float(d[lon_index]), d[var_index]]
+                list_data.append(item)
+            print list_data
+            data = list_data
+            lat_index = 0
+            lon_index = 1
+            var_index = 2
         else:
+            print ("json-case")
+            service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
+            livy = service_exec.service.through_livy
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            if order_var != "":
+                if not livy:
+                    toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+                else:
+                    json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+
+            else:
+                if not livy:
+                    toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var)
+                else:
+                    json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var)
+
             if not livy:
-                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var)
-            else:
-                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var)
+                run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+                json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+                delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+                # print json_data
 
-        if not livy:
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            # print json_data
+            data = []
+            lat_index = 0
+            lon_index = 1
+            order_var_index = 2
+            var_index = 3
+            color_index = 4
+            for s in json_data:
+                row = [float(s[lat_col]), float(s[lon_col])]
+                if order_var != '':
+                    row.append(str(s[order_var]))
+                else:
+                    row.append('')
+                if variable != '':
+                    row.append(str(s[variable]))
+                else:
+                    row.append('')
+                if color_col != '':
+                    row.append(s[color_col])
+                else:
+                    row.append('')
+                data.append(row)
 
-        data = []
-        lat_index = 0
-        lon_index = 1
-        order_var_index = 2
-        var_index = 3
-        color_index = 4
-        for s in json_data:
-            row = [float(s[lat_col]), float(s[lon_col])]
-            if order_var != '':
-                row.append(str(s[order_var]))
-            else:
-                row.append('')
-            if variable != '':
-                row.append(str(s[variable]))
-            else:
-                row.append('')
-            if color_col != '':
-                row.append(s[color_col])
-            else:
-                row.append('')
-            data.append(row)
+            print data[:4]
 
-        print data[:4]
+        dic['data'] = data
+        dic['color_index'] = color_index
+        dic['lat_index'] = lat_index
+        dic['lon_index'] = lon_index
+        dic['var_index'] = var_index
+
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dic, f)
+
+    else:
+
+        print "MARKERS DATA IS CACHED"
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        data = cached_data['data']
+        color_index = cached_data['color_index']
+        lat_index = cached_data['lat_index']
+        lon_index = cached_data['lon_index']
+        var_index = cached_data['var_index']
+        # data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
 
     pol_group_layer = folium.map.FeatureGroup(name='Markers - Layer: ' + str(variable)+' / Query ID: ' + str(query), overlay=True,
                                               control=True).add_to(m)
@@ -781,118 +817,144 @@ def map_course_mt(request):
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'markerType':'circle', 'centroids': convert_unicode_json(featureCollection1), 'data_points': convert_unicode_json(featureCollection2)})
 
 
-def map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id, lat_col, lon_col, m, request):
+def map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id, lat_col, lon_col, m, request, cached_file):
 
     # import pdb
     # pdb.set_trace()
+    dict = {}
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
 
-    if query != 0:
-        q = AbstractQuery.objects.get(pk=int(query))
-        q = TempQuery(document=q.document)
-        doc = q.document
+        if query != 0:
+            q = AbstractQuery.objects.get(pk=int(query))
+            q = TempQuery(document=q.document)
+            doc = q.document
 
-        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+            doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
 
-        # if doc['limit'] > marker_limit:
-        doc['limit'] = marker_limit
-        # print(doc)
+            # if doc['limit'] > marker_limit:
+            doc['limit'] = marker_limit
+            # print(doc)
 
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == order_var:
-                    s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0:
-                    s['exclude'] = False
-                elif str(s['name']).find('longitude') >= 0:
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
+            for f in doc['from']:
+                for s in f['select']:
+                    if s['name'] == order_var:
+                        s['exclude'] = False
+                    elif str(s['name']).find('latitude') >= 0:
+                        s['exclude'] = False
+                    elif str(s['name']).find('longitude') >= 0:
+                        s['exclude'] = False
+                    else:
+                        s['exclude'] = True
 
-        q.document = doc
+            q.document = doc
 
-        query_data = q.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
+            query_data = q.execute()
+            data = query_data[0]['results']
+            result_headers = query_data[0]['headers']
 
-        lat_index = lon_index = -1
-        order_var_index = -1
-        var_index = -1
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == order_var:
-                order_var_index = idx
-            elif str(c['name']).find('latitude') >= 0:
-                lat_index = idx
-            elif str(c['name']).find('longitude') >= 0:
-                lon_index = idx
+            lat_index = lon_index = -1
+            order_var_index = -1
+            var_index = -1
+            for idx, c in enumerate(result_headers['columns']):
+                if c['name'] == order_var:
+                    order_var_index = idx
+                elif str(c['name']).find('latitude') >= 0:
+                    lat_index = idx
+                elif str(c['name']).find('longitude') >= 0:
+                    lon_index = idx
 
-        # points = [[float(s[lat_index]), float(s[lon_index])] for s in data]
-        points=[]
-        min_lat = 90
-        max_lat = -90
-        min_lon = 180
-        max_lon = -180
+            # points = [[float(s[lat_index]), float(s[lon_index])] for s in data]
+            points=[]
+            min_lat = 90
+            max_lat = -90
+            min_lon = 180
+            max_lon = -180
 
-        for s in data:
-            points.append([float(s[lat_index]), float(s[lon_index])])
-            if s[lat_index] > max_lat:
-                max_lat = s[lat_index]
-            if s[lat_index] < min_lat:
-                min_lat = s[lat_index]
-            if s[lon_index] > max_lon:
-                max_lon = s[lon_index]
-            if s[lon_index] < min_lon:
-                min_lon = s[lon_index]
+            for s in data:
+                points.append([float(s[lat_index]), float(s[lon_index])])
+                if s[lat_index] > max_lat:
+                    max_lat = s[lat_index]
+                if s[lat_index] < min_lat:
+                    min_lat = s[lat_index]
+                if s[lon_index] > max_lon:
+                    max_lon = s[lon_index]
+                if s[lon_index] < min_lon:
+                    min_lon = s[lon_index]
 
-        max_lat = float(max_lat)
-        min_lat = float(min_lat)
-        max_lon = float(max_lon)
-        min_lon = float(min_lon)
-        print(points[:5])
+            max_lat = float(max_lat)
+            min_lat = float(min_lat)
+            max_lon = float(max_lon)
+            min_lon = float(min_lon)
+            print(points[:5])
+
+        else:
+            print ("json-case")
+
+            livy = False
+            service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+            if len(service_exec) > 0:
+                service_exec = service_exec[0]  # GET LAST
+                session_id = service_exec.livy_session
+                exec_id = service_exec.id
+                updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+                livy = service_exec.service.through_livy
+            if livy:
+                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
+            else:
+                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+                run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+                json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+                delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            # print json_data
+
+            # points = [[float(s[lat_col]), float(s[lon_col])] for s in json_data]
+
+            points = []
+            min_lat = 90
+            max_lat = -90
+            min_lon = 180
+            max_lon = -180
+
+            for s in json_data:
+                points.append([float(s[lat_col]), float(s[lon_col])])
+                if s[lat_col] > max_lat:
+                    max_lat = s[lat_col]
+                if s[lat_col] < min_lat:
+                    min_lat = s[lat_col]
+                if s[lon_col] > max_lon:
+                    max_lon = s[lon_col]
+                if s[lon_col] < min_lon:
+                    min_lon = s[lon_col]
+
+            max_lat = float(max_lat)
+            min_lat = float(min_lat)
+            max_lon = float(max_lon)
+            min_lon = float(min_lon)
+            print(points[:5])
+
+        dict['min_lat'] = min_lat
+        dict['max_lat'] = max_lat
+        dict['min_lon'] = min_lon
+        dict['max_lon'] = max_lon
+
+        dict['points'] = points
+        # print dict
+
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dict, f)
+
 
     else:
-        print ("json-case")
+        print('PLOTLINE DATA IS CACHED!!!')
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        min_lat = cached_data['min_lat']
+        max_lat = cached_data['max_lat']
+        min_lon = cached_data['min_lon']
+        max_lon = cached_data['max_lon']
 
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        # print json_data
-
-        # points = [[float(s[lat_col]), float(s[lon_col])] for s in json_data]
-
-        points = []
-        min_lat = 90
-        max_lat = -90
-        min_lon = 180
-        max_lon = -180
-
-        for s in json_data:
-            points.append([float(s[lat_col]), float(s[lon_col])])
-            if s[lat_col] > max_lat:
-                max_lat = s[lat_col]
-            if s[lat_col] < min_lat:
-                min_lat = s[lat_col]
-            if s[lon_col] > max_lon:
-                max_lon = s[lon_col]
-            if s[lon_col] < min_lon:
-                min_lon = s[lon_col]
-
-        max_lat = float(max_lat)
-        min_lat = float(min_lat)
-        max_lon = float(max_lon)
-        min_lon = float(min_lon)
-        print(points[:5])
+        points = cached_data['points']
+        # data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
 
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
@@ -1160,101 +1222,127 @@ def map_markers_in_time(request):
 
 
 
-def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m):
+def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_file):
+    dict = {}
 
-    if query != 0:
-        q = AbstractQuery.objects.get(pk=int(query))
-        q = TempQuery(document=q.document)
-        doc = q.document
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query != 0:
+            q = AbstractQuery.objects.get(pk=int(query))
+            q = TempQuery(document=q.document)
+            doc = q.document
 
-        doc['orderings'] = []
-        doc['limit'] = []
+            doc['orderings'] = []
+            doc['limit'] = []
 
 
-        for f in doc['from']:
-            for s in f['select']:
-                if str(s['name']).find('latitude') >= 0:
-                    s['exclude'] = False
-                elif str(s['name']).find('longitude') >= 0:
-                    s['exclude'] = False
-                elif s['name'] == heat_col:
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
+            for f in doc['from']:
+                for s in f['select']:
+                    if str(s['name']).find('latitude') >= 0:
+                        s['exclude'] = False
+                    elif str(s['name']).find('longitude') >= 0:
+                        s['exclude'] = False
+                    elif s['name'] == heat_col:
+                        s['exclude'] = False
+                    else:
+                        s['exclude'] = True
 
-        q.document = doc
+            q.document = doc
 
-        lat_index = lon_index = var_index = -1
-        result = q.execute()[0]
-        result_data = result['results']
-        result_headers = result['headers']
+            lat_index = lon_index = var_index = -1
+            result = q.execute()[0]
+            result_data = result['results']
+            result_headers = result['headers']
 
-        print result_headers
-        for idx, c in enumerate(result_headers['columns']):
-            if str(c['name']).find('lat') >= 0:
-                lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
-                lon_index = idx
-            elif c['name'] == heat_col:
-                var_index = idx
+            print result_headers
+            for idx, c in enumerate(result_headers['columns']):
+                if str(c['name']).find('lat') >= 0:
+                    lat_index = idx
+                elif str(c['name']).find('lon') >= 0:
+                    lon_index = idx
+                elif c['name'] == heat_col:
+                    var_index = idx
 
-        data = result_data
+            data = result_data
+        else:
+            print ("json-case")
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            # print json_data
+
+            data = []
+            lat_index = 0
+            lon_index = 1
+            var_index = 2
+
+            for s in json_data:
+                row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
+                data.append(row)
+
+        min_lat = 90
+        max_lat = -90
+        min_lon = 180
+        max_lon = -180
+        heat = []
+
+        if (heat_col == 'frequency'):
+            for d in data:
+                heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
+                if d[lat_index] > max_lat:
+                    max_lat = d[lat_index]
+                if d[lat_index] < min_lat:
+                    min_lat = d[lat_index]
+                if d[lon_index] > max_lon:
+                    max_lon = d[lon_index]
+                if d[lon_index] < min_lon:
+                    min_lon = d[lon_index]
+        else:
+            maximum = -1000000
+            for d in data:
+                if d[var_index] > maximum:
+                    maximum = d[var_index]
+            for d in data:
+                heat.append((np.array([float(d[lat_index]), float(d[lon_index]),float(d[var_index])/maximum])).tolist())
+                if d[lat_index] > max_lat:
+                    max_lat = d[lat_index]
+                if d[lat_index] < min_lat:
+                    min_lat = d[lat_index]
+                if d[lon_index] > max_lon:
+                    max_lon = d[lon_index]
+                if d[lon_index] < min_lon:
+                    min_lon = d[lon_index]
+        max_lat = float(max_lat)
+        min_lat = float(min_lat)
+        max_lon = float(max_lon)
+        min_lon = float(min_lon)
+
+        dict['min_lat'] = min_lat
+        dict['max_lat'] = max_lat
+        dict['min_lon'] = min_lon
+        dict['max_lon'] = max_lon
+        dict['heat'] = heat
+
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dict, f)
+
+
     else:
-        print ("json-case")
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        # print json_data
+        print ('HEATMAP DATA IS CACHED')
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        min_lat = cached_data['min_lat']
+        max_lat = cached_data['max_lat']
+        min_lon = cached_data['min_lon']
+        max_lon = cached_data['max_lon']
 
-        data = []
-        lat_index = 0
-        lon_index = 1
-        var_index = 2
+        heat = cached_data['heat']
+        # heat = [[j.encode('ascii') for j in i] for i in heat]
 
-        for s in json_data:
-            row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
-            data.append(row)
-
-    min_lat = 90
-    max_lat = -90
-    min_lon = 180
-    max_lon = -180
-    heat = []
-
-    if (heat_col == 'frequency'):
-        for d in data:
-            heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
-            if d[lat_index] > max_lat:
-                max_lat = d[lat_index]
-            if d[lat_index] < min_lat:
-                min_lat = d[lat_index]
-            if d[lon_index] > max_lon:
-                max_lon = d[lon_index]
-            if d[lon_index] < min_lon:
-                min_lon = d[lon_index]
-    else:
-        maximum = -1000000
-        for d in data:
-            if d[var_index] > maximum:
-                maximum = d[var_index]
-        for d in data:
-            heat.append((np.array([float(d[lat_index]), float(d[lon_index]),float(d[var_index])/maximum])).tolist())
-            if d[lat_index] > max_lat:
-                max_lat = d[lat_index]
-            if d[lat_index] < min_lat:
-                min_lat = d[lat_index]
-            if d[lon_index] > max_lon:
-                max_lon = d[lon_index]
-            if d[lon_index] < min_lon:
-                min_lon = d[lon_index]
     # check out
     HeatMap(heat, name="Heat Map - Layer / Query ID: "+str(query)).add_to(m)
 
-    max_lat = float(max_lat)
-    min_lat = float(min_lat)
-    max_lon = float(max_lon)
-    min_lon = float(min_lon)
+
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
     ret_html = ""
@@ -1265,8 +1353,10 @@ def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m):
 
 
 
-def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
+def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file):
     try:
+        print('ENTERING CONTOURS')
+
         # Gather the arguments
         round_num = 0
 
@@ -1279,150 +1369,204 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
         elif step == 0.001:
             round_num = 3
 
-
-        q = AbstractQuery.objects.get(pk=int(query))
-        q = TempQuery(document=q.document)
-        doc = q.document
-
-        doc['orderings'] = []
-        doc['limit'] = []
-        var_query_id = variable[:variable.find('_')]
-
-        # print doc
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == variable:
-                    s['aggregate'] = agg_function
-                    s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                    s['groupBy'] = True
-                    s['aggregate'] = 'round' + str(round_num)
-                    s['exclude'] = False
-                    doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                    s['groupBy'] = True
-                    s['aggregate'] = 'round' + str(round_num)
-                    s['exclude'] = False
-                    doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-                else:
-                    s['exclude'] = True
-                    s['groupBy'] = False
+        dict = {}
 
 
-        var_index = lat_index = lon_index = -1
-        result = q.execute()[0]
-        result_data = result['results']
-        result_headers = result['headers']
 
-        # print result_headers
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == variable:
-                var_index = idx
-            elif str(c['name']).find('lat') >= 0:
-                lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
-                lon_index = idx
+        if not os.path.isfile('visualizer/static/visualizer/temp/'+cached_file):
+            q = AbstractQuery.objects.get(pk=int(query))
+            q = TempQuery(document=q.document)
+            doc = q.document
 
-        data = result_data
+            doc['orderings'] = []
+            doc['limit'] = []
+            var_query_id = variable[:variable.find('_')]
 
-        min_lat = 90
-        max_lat = -90
-        min_lon = 180
-        max_lon = -180
-        min_val = 9999999999
-        max_val = -9999999999
-        # print data[:3]
-        for row in data:
-            if row[lat_index] > max_lat:
-                max_lat = row[lat_index]
-            if row[lat_index] < min_lat:
-                min_lat = row[lat_index]
-            if row[lon_index] > max_lon:
-                max_lon = row[lon_index]
-            if row[lon_index] < min_lon:
-                min_lon = row[lon_index]
-            if row[var_index] > max_val:
-                max_val = row[var_index]
-            if row[var_index] < min_val:
-                min_val = row[var_index]
-
-        max_lat = float(max_lat)
-        min_lat = float(min_lat)
-        max_lon = float(max_lon)
-        min_lon = float(min_lon)
+            # print doc
+            for f in doc['from']:
+                for s in f['select']:
+                    if s['name'] == variable:
+                        s['aggregate'] = agg_function
+                        s['exclude'] = False
+                    elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                        s['groupBy'] = True
+                        s['aggregate'] = 'round' + str(round_num)
+                        s['exclude'] = False
+                        doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
+                    elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                        s['groupBy'] = True
+                        s['aggregate'] = 'round' + str(round_num)
+                        s['exclude'] = False
+                        doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
+                    else:
+                        s['exclude'] = True
+                        s['groupBy'] = False
 
 
+            var_index = lat_index = lon_index = -1
+            result = q.execute()[0]
+            result_data = result['results']
+            result_headers = result['headers']
+
+            # print result_headers
+            for idx, c in enumerate(result_headers['columns']):
+                if c['name'] == variable:
+                    var_index = idx
+                elif str(c['name']).find('lat') >= 0:
+                    lat_index = idx
+                elif str(c['name']).find('lon') >= 0:
+                    lon_index = idx
+
+            data = result_data
+
+            min_lat = 90
+            max_lat = -90
+            min_lon = 180
+            max_lon = -180
+            min_val = 9999999999
+            max_val = -9999999999
+            # print data[:3]
+            for row in data:
+                if row[lat_index] > max_lat:
+                    max_lat = row[lat_index]
+                if row[lat_index] < min_lat:
+                    min_lat = row[lat_index]
+                if row[lon_index] > max_lon:
+                    max_lon = row[lon_index]
+                if row[lon_index] < min_lon:
+                    min_lon = row[lon_index]
+                if row[var_index] > max_val:
+                    max_val = row[var_index]
+                if row[var_index] < min_val:
+                    min_val = row[var_index]
+
+            max_lat = float(max_lat)
+            min_lat = float(min_lat)
+            max_lon = float(max_lon)
+            min_lon = float(min_lon)
+
+
+
+            # print min_lat, max_lat, min_lon, max_lon, min_val, max_val
+
+            lats_bins = np.arange(min_lat, max_lat + 0.00001, step)
+            # print lats_bins[:3]
+            lons_bins = np.arange(min_lon, max_lon + 0.00001, step)
+            # print lons_bins[:3]
+            Lats, Lons = np.meshgrid(lats_bins, lons_bins)
+
+            # print Lats[:3]
+            # print Lons[:3]
+
+            # Create grid data needed for the contour plot
+            # final_data = create_grid_data(lats_bins, lons_bins, data)
+
+            final_data = []
+            it = iter(data)
+            try:
+                val = map(float, next(it))
+            except:
+                val = [-300, -300, -300]
+
+            for lon in lons_bins:
+                row = list()
+                for lat in lats_bins:
+                    row.append(None)
+                final_data.append(row)
+            for d in data:
+                lon_pos = int((d[lon_index] - min_lon)/step)
+                lat_pos = int((d[lat_index] - min_lat) / step)
+                final_data[lon_pos][lat_pos] = d[var_index]
+
+
+            levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+            print 'level ok'
+            # Create contour image to lay over the map
+
+            fig = Figure()
+            ax = fig.add_subplot(111)
+            plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
+            # print 'contour made'
+            # plt.axis('off')
+            extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+            plt.draw()
+            # print 'contour draw'
+            # plt.show()
+            ts = str(time.time()).replace(".", "")
+            mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
+            # print 'mappath'
+            plt.savefig(mappath, bbox_inches=extent, transparent=True, pad_inches=0)
+            # print 'saved'
+            plt.clf()
+            plt.close()
+            fig = None
+            ax = None
+
+            # Create legend for the contour map
+            a = np.array([[min_val, max_val]])
+            pl.figure(figsize=(2.8, 0.4))
+            img = pl.imshow(a, cmap=plt.cm.coolwarm)
+            pl.gca().set_visible(False)
+            cax = pl.axes([0.1, 0.2, 0.8, 0.6])
+            cbar = pl.colorbar(orientation="horizontal", cax=cax)
+            cbar.ax.tick_params(labelsize=11, colors="#ffffff")
+            ts = str(time.time()).replace(".", "")
+            legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
+            pl.savefig(legpath, transparent=True, bbox_inches='tight')
+            legpath = legpath.split("static/", 1)[1]
+            pl.clf()
+            pl.close()
+
+            # Create data grid for javascript pop-up
+            data_grid = []
+            for nlist in final_data:
+                nlist = map(str, nlist)
+                data_grid.append(nlist)
+
+            lats_bins_min = lats_bins.min()
+            lons_bins_min = lons_bins.min()
+            lats_bins_max = lats_bins.max()
+            lons_bins_max = lons_bins.max()
+
+            # pdb.set_trace()
+
+            dict['min_lat'] = min_lat
+            dict['max_lat'] = max_lat
+            dict['min_lon'] = min_lon
+            dict['max_lon'] = max_lon
+            dict['lats_bins_min'] = lats_bins_min
+            dict['lons_bins_min'] = lons_bins_min
+            dict['lats_bins_max'] = lats_bins_max
+            dict['lons_bins_max'] = lons_bins_max
+
+            dict['image_path'] = mappath
+            dict['leg_path'] = legpath
+            dict['data_grid'] = data_grid
+            # print dict
+
+            with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+                json.dump(dict, f)
+
+        else:
+            # pdb.set_trace()
+            print ('CONTOURS DATA IS CACHED!!!')
+            with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+                cached_data = json.load(f)
+            min_lat = cached_data['min_lat']
+            max_lat = cached_data['max_lat']
+            min_lon = cached_data['min_lon']
+            max_lon = cached_data['max_lon']
+            lats_bins_min = cached_data['lats_bins_min']
+            lons_bins_min = cached_data['lons_bins_min']
+            lats_bins_max = cached_data['lats_bins_max']
+            lons_bins_max = cached_data['lons_bins_max']
+            mappath = cached_data['image_path'].encode('ascii')
+            legpath = cached_data['leg_path'].encode('ascii')
+            data_grid = cached_data['data_grid']
+            data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
+
+        # pdb.set_trace()
         m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
-        # print min_lat, max_lat, min_lon, max_lon, min_val, max_val
-
-        lats_bins = np.arange(min_lat, max_lat + 0.00001, step)
-        # print lats_bins[:3]
-        lons_bins = np.arange(min_lon, max_lon + 0.00001, step)
-        # print lons_bins[:3]
-        Lats, Lons = np.meshgrid(lats_bins, lons_bins)
-
-        # print Lats[:3]
-        # print Lons[:3]
-
-        # Create grid data needed for the contour plot
-        # final_data = create_grid_data(lats_bins, lons_bins, data)
-
-        final_data = []
-        it = iter(data)
-        try:
-            val = map(float, next(it))
-        except:
-            val = [-300, -300, -300]
-
-        for lon in lons_bins:
-            row = list()
-            for lat in lats_bins:
-                row.append(None)
-            final_data.append(row)
-        for d in data:
-            lon_pos = int((d[lon_index] - min_lon)/step)
-            lat_pos = int((d[lat_index] - min_lat) / step)
-            final_data[lon_pos][lat_pos] = d[var_index]
-
-
-        levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
-        print 'level ok'
-        # Create contour image to lay over the map
-
-        fig = Figure()
-        ax = fig.add_subplot(111)
-        plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
-        # print 'contour made'
-        # plt.axis('off')
-        extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-        plt.draw()
-        # print 'contour draw'
-        # plt.show()
-        ts = str(time.time()).replace(".", "")
-        mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
-        # print 'mappath'
-        plt.savefig(mappath, bbox_inches=extent, transparent=True, pad_inches=0)
-        # print 'saved'
-        plt.clf()
-        plt.close()
-        fig = None
-        ax = None
-
-        # Create legend for the contour map
-        a = np.array([[min_val, max_val]])
-        pl.figure(figsize=(2.8, 0.4))
-        img = pl.imshow(a, cmap=plt.cm.coolwarm)
-        pl.gca().set_visible(False)
-        cax = pl.axes([0.1, 0.2, 0.8, 0.6])
-        cbar = pl.colorbar(orientation="horizontal", cax=cax)
-        cbar.ax.tick_params(labelsize=11, colors="#ffffff")
-        ts = str(time.time()).replace(".", "")
-        legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
-        pl.savefig(legpath, transparent=True, bbox_inches='tight')
-        legpath = legpath.split("static/", 1)[1]
-        pl.clf()
-        pl.close()
-
         # read in png file to numpy array
         data_img = Image.open(mappath)
         data = trim(data_img)
@@ -1430,7 +1574,7 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
 
         # Overlay the image
         contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
-                                                          bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
+                                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
         contour_layer.layer_name = 'Contours On Map - Layer / Query Name: '+str(query)
         m.add_child(contour_layer)
 
@@ -1454,14 +1598,9 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m):
         if len(css_all) > 3:
             css_all = [css.prettify() for css in css_all[3:]]
         f.close()
-        os.remove(mappath)
+        # os.remove(mappath)
         # os.remove('templates/map.html')
 
-        # Create data grid for javascript pop-up
-        data_grid = []
-        for nlist in final_data:
-            nlist = map(str, nlist)
-            data_grid.append(nlist)
 
         temp_html = render_to_string('visualizer/map_viz_folium.html',
                                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step,
