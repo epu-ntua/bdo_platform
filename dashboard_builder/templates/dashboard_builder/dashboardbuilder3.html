@@ -384,7 +384,7 @@
                                     {% for viz in available_viz %}
                                         <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}">
                                             <i class="{{ viz.icon }}"  style="margin-right:5px"></i>{{ viz.title }}
-                                            <span id="selected_viz_span" class="glyphicon glyphicon-pushpin" style="position: absolute;right: 10px;top:13px; display: none;"></span>
+                                            <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
                                         </li>
                                     {% endfor %}
 
@@ -800,6 +800,9 @@
 
                     $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
                     $(".layer_list_element #btn"+String(layer_count)).click(function () {
+                         $("#viz_config .list-group").children().each(function () {
+                                $(this).find("#selected_viz_span").hide();
+                            })
                         var del_id = String(parseInt($(this).closest('li').attr('id')));
 {#                        alert("Del button "+del_id);#}
                         for (var i = 0; i < layer_json.length; i++) {
@@ -1001,6 +1004,7 @@
                     $('#config-viz-form').append(submitted_args);
 
                     var myData = getFormData($("#config-viz-form"),layer_count,$('#myModal #selected_query').val());
+                    alert('Form Data in JSON'+ JSON.stringify(myData));
                     json=[];
                     for (var i = 0; i < layer_json.length; i++) {
                         var obj = layer_json[i];
@@ -1041,7 +1045,7 @@
                 url = url.replace("&","");
                 viz_request += url;
 
-{#                alert(viz_request);#}
+                alert(viz_request);
                 show_viz(viz_request);
             }
 
