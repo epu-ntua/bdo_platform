@@ -1486,8 +1486,8 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, c
             fig = Figure()
             ax = fig.add_subplot(111)
             plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
+            plt.axis('off')
             # print 'contour made'
-            # plt.axis('off')
             extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
             plt.draw()
             # print 'contour draw'
@@ -1495,7 +1495,7 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, c
             ts = str(time.time()).replace(".", "")
             mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
             # print 'mappath'
-            plt.savefig(mappath, bbox_inches=extent, transparent=True, pad_inches=0)
+            plt.savefig(mappath, bbox_inches=extent, transparent=True, frameon=False, pad_inches=0)
             # print 'saved'
             plt.clf()
             plt.close()

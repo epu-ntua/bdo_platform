@@ -396,7 +396,12 @@
 
                                 </div>
                             </div>
+{#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
+                        {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
+
                         </div>
+
+
 
                         <div class="row tab-pane fade" id="viz_note">
 
@@ -731,9 +736,9 @@
                 success: function (result) {
                     var variables = result['variables'];
                     var dimensions = result['dimensions'];
-                    $('.variable-select').append($("<option></option>")
-                    .attr("value", '')
-                    .text('-- column select --'));
+{#                    $('.variable-select').append($("<option></option>")#}
+{#                    .attr("value", '')#}
+{#                    .text('-- column select --'));#}
                     $.each(variables, function (k, v) {
                         $('#myModal .variable-select').append($("<option></option>")
                             .attr("value", v)
@@ -757,7 +762,7 @@
 
         {#Variable to store active ckeditor version #}
         var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
-        {#Fnction to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
+        {#Function to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
             $('#layers-list ul').empty();
             $("#query_name_span").text(null);
@@ -796,21 +801,15 @@
                     }
 
 
-{#                    alert(JSON.stringify(layer_json));#}
-
                     $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
                     $(".layer_list_element #btn"+String(layer_count)).click(function () {
                          $("#viz_config .list-group").children().each(function () {
                                 $(this).find("#selected_viz_span").hide();
                             })
                         var del_id = String(parseInt($(this).closest('li').attr('id')));
-{#                        alert("Del button "+del_id);#}
                         for (var i = 0; i < layer_json.length; i++) {
-{#                            alert("Loop " +i)#}
                             var obj = layer_json[i];
-{#                            alert("Searching "+obj['layer_id']);#}
                             if (obj['layer_id']==del_id){
-{#                                alert("Deleting "+obj['layer_id']);#}
                                 layer_count = layer_count-1;
                                 layer_json.splice(i,1);
                                 $(this).closest('li').remove();
@@ -818,17 +817,12 @@
                                     $(".layer_list_element #btn"+String(j+1)).closest('li').attr('id',String(j));
                                     $(".layer_list_element #btn"+String(j+1)).attr('id','btn'+String(j));
                                     obj = layer_json[j];
-{#                                    alert("Fixing "+obj['layer_id']);#}
                                     layer_json[j]['layer_id'] = layer_json[j]['layer_id']-1;
-{#                                    alert("Converting to "+layer_json[j]['layer_id']);#}
                                 }
                                 i=j;
                             }
-
 {#                            alert(JSON.stringify(layer_json));#}
                         }
-
-{#                        alert(JSON.stringify(layer_json));#}
                         mapVizUrlCreator(layer_json,layer_count);
 
                     })
@@ -843,25 +837,25 @@
                 $("#query_name_span").text(null);
 
 
-            })
+            });
+
 
             $("#myModal #modal-tab-notes").click(function (e) {
 
-                    $('#submit-note-btn').show();
-                    $('#submit-modal-btn').hide();
+                $('#submit-note-btn').show();
+                $('#submit-modal-btn').hide();
 
-                    if(textEditor == null) {
-                        textEditor = CKEDITOR.appendTo('viz_note');
+                if(textEditor == null) {
+                    textEditor = CKEDITOR.appendTo('viz_note');
                     }
-                });
+            });
 
             {#Function to change tabs in modal from notes to data#}
 
             $("#myModal #modal-tab-data").click(function (e) {
-
-                    $('#submit-note-btn').hide();
-                    $('#submit-modal-btn').show();
-                });
+                $('#submit-note-btn').hide();
+                $('#submit-modal-btn').show();
+            });
 
 
             $("#myModal #select_data_popover").popover({
@@ -899,77 +893,62 @@
 
 
             $(".viz_item").click(function (element) {
+                $('.popover').hide();
 
                 var component_id = $(this).attr('data-viz-id');
                 var component_type = $(this).attr('data-viz-type');
-                var component_selector = 'li[data-viz-id="'+component_id+'"]';
+                var component_selector = 'li[data-viz-id="' + component_id + '"]';
 
-                $.ajax({
-                    url: '/dashboards/get_visualization_form_fields',
-                    data: {
-                        id: parseInt(component_id),
-                        order: 1
-                    },
-                    type: 'GET',
-                    beforeSend: function () {
-                        $('.popover').popover('hide');
-                    },
-                    success: function (form_fields) {
-                        $("#conf-container").html(form_fields);
-                        $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
-                        $("#conf-container").append('<button type="button" id="select_conf_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>');
-                        $(component_selector).popover({
-                            html: true,
-                            title: 'Configure visualisation',
-                            content: function () {
-                                return $('#conf-container').html();
-                            }
-                        });
-                        updateVariables($('#query-select'));
-
-                        $(component_selector).popover('toggle');
-                        $('#myModal .popover-content .variable-select').select2();
-                        var popver_id = '#' + $(component_selector).attr('aria-describedby');
-                        $(popver_id + ' #select_conf_ok').click(function (e) {
-                            selected_visualization = $(component_selector).text();
-                            $("#viz_config .list-group").children().each(function () {
-                                $(this).find("#selected_viz_span").hide();
-                            })
-                            $(component_selector).find("#selected_viz_span").show();
-                            if(component_type=='map'){
-                                $('#add_layer_btn').show();
-                                $('#layers-list').show();
-                                $('#layers-list').css("display","inline");
-
-
-                            }
-                            else{
-                                $('#add_layer_btn').hide();
-                                $('#layers-list').hide();
-
-                            }
-                            submit_conf(component_selector,component_type);
-                            $(component_selector).popover("hide");
-                        });
-                        $(popver_id + ' #select_conf_cancel').click(function (e) {
-                            $(component_selector).popover("hide");
-                        });
-
+                $(component_selector).popover({
+                    html: true,
+                    title: 'Configure visualisation',
+                    trigger:'manual',
+                    content: function () {
+                        return $('.all_viz_forms  #viz_' + String(component_id)).clone();
                     }
+                });
+                updateVariables($('#query-select'));
+
+                $(component_selector).popover('show');
+                $('#myModal .popover-content .variable-select').select2();
+                var popver_id = '#' + $(component_selector).attr('aria-describedby');
+                $(popver_id + ' #select_conf_ok').click(function (e) {
+                    selected_visualization = $(component_selector).text();
+                    $("#viz_config .list-group").children().each(function () {
+                        $(this).find("#selected_viz_span").hide();
+                    })
+                    $(component_selector).find("#selected_viz_span").show();
+                    if (component_type == 'map') {
+                        $('#add_layer_btn').show();
+                        $('#layers-list').show();
+                        $('#layers-list').css("display", "inline");
+                    }
+                    else {
+                        $('#add_layer_btn').hide();
+                        $('#layers-list').hide();
+                    }
+                    submit_conf(component_selector, component_type);
+                    $(component_selector).popover("hide");
+                });
+                $(popver_id + ' #select_conf_cancel').click(function (e) {
+                    $(component_selector).popover("hide");
                 });
             });
 
 
             function submit_conf(component_selector,component_type) {
+                var conf_popover_id;
+                var submitted_args;
+                var selects;
+                var myData;
                 if(component_type!='map') {
                     var viz_request = "/visualizations/";
                     viz_request += $('#myModal').find('.modal-body').find('#action').val();
 
-                    var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-                    {#                                alert(conf_popover_id);#}
-                    var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
+                    conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+                    submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
 
-                    var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
+                    selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
 
                     $(selects).each(function (i) {
                         var select = this;
@@ -980,7 +959,7 @@
                     $('#config-viz-form').append(submitted_args);
 
 
-                    var myData = $("#config-viz-form").serialize();
+                    myData = $("#config-viz-form").serialize();
 {#                    alert(myData);#}
                     viz_request += '?';
                     viz_request += myData;
@@ -991,9 +970,9 @@
                     show_viz(viz_request);
                 }
                 else{
-                    var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-                    var submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
-                    var selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
+                    conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+                    submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
+                    selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
 
                     $(selects).each(function (i) {
                         var select = this;
@@ -1003,7 +982,7 @@
                     $('#config-viz-form').empty();
                     $('#config-viz-form').append(submitted_args);
 
-                    var myData = getFormData($("#config-viz-form"),layer_count,$('#myModal #selected_query').val());
+                    myData = getFormData($("#config-viz-form"),layer_count,$('#myModal #selected_query').val());
                     alert('Form Data in JSON'+ JSON.stringify(myData));
                     json=[];
                     for (var i = 0; i < layer_json.length; i++) {
@@ -1026,7 +1005,7 @@
 
                 };
 
-            }
+            };
 
 
             function mapVizUrlCreator(json,my_layer_count){
@@ -1096,6 +1075,7 @@
                     '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
                     '                </div>');
             });
+
 
         });
 
