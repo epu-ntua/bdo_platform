@@ -399,6 +399,19 @@
 {#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
                         {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
 
+                        <div id="query-variables-select-container" style="display: none;">
+                             {% for query in saved_queries %}
+                                <div id={{ query.id }}>
+                                    <option></option>
+                                    {% for el in query.document.from %}
+                                        {% for var in el.select %}
+                                            <option value="{{ var.name }}">{{ var.title }}</option>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                             {% endfor %}
+                        </div>
+
                         </div>
 
 
@@ -727,37 +740,43 @@
         });
 
         var new_query_id;
-        function updateVariables(element) {
-            $('#myModal .variable-select').find('option').remove().end();
+{#        function updateVariables(element) {#}
+{#            $('#myModal .variable-select').find('option').remove().end();#}
 {#            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));#}
-            new_query_id = $('#myModal #selected_query').val();
-            var new_query_doc = {};
-            $.ajax({
-                url: '/queries/get_query_variables/',
-                data: {
-                    id: new_query_id,
-                    document: new_query_doc
-                },
-                type: 'GET',
-                success: function (result) {
-                    var variables = result['variables'];
-                    var dimensions = result['dimensions'];
-                    $('.variable-select').append($("<option></option>")
-                    .attr("value", '')
-                    .text(''));
-                    $.each(variables, function (k, v) {
-                        $('#myModal .variable-select').append($("<option></option>")
-                            .attr("value", v)
-                            .text(k));
-                    });
+{#            new_query_id = $('#myModal #selected_query').val();#}
+{#            var new_query_doc = {};#}
+{#            $.ajax({#}
+{#                url: '/queries/get_query_variables/',#}
+{#                data: {#}
+{#                    id: new_query_id,#}
+{#                    document: new_query_doc#}
+{#                },#}
+{#                type: 'GET',#}
+{#                success: function (result) {#}
+{#                    var variables = result['variables'];#}
+{#                    var dimensions = result['dimensions'];#}
+{#                    $('.variable-select').append($("<option></option>")#}
+{#                    .attr("value", '')#}
+{#                    .text(''));#}
+{#                    $.each(variables, function (k, v) {#}
+{#                        $('#myModal .variable-select').append($("<option></option>")#}
+{#                            .attr("value", v)#}
+{#                            .text(k));#}
+{#                    });#}
+{##}
+{#                    $.each(dimensions, function (k, v) {#}
+{#                        $('#myModal .variable-select').append($("<option></option>")#}
+{#                            .attr("value", v)#}
+{#                            .text(k));#}
+{#                    });#}
+{#                }#}
+{#            });#}
+{#        }#}
 
-                    $.each(dimensions, function (k, v) {
-                        $('#myModal .variable-select').append($("<option></option>")
-                            .attr("value", v)
-                            .text(k));
-                    });
-                }
-            });
+        function updateVariables(element){
+            $('#query-variables-select-container #'+String(new_query_id)).children().each(function(){
+                $('#myModal .variable-select').append(this);
+            })
         }
 
 
