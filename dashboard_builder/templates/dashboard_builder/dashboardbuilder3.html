@@ -3,8 +3,8 @@
 {% load static %}
 
 {% block css %}
-    <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
 
+    <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
 
     {% for viz in available_viz %}
         <style>
@@ -235,19 +235,19 @@
 
 {% block content %}
     {% csrf_token %}
-
-
     <div class="row" style="display: none;">
         <form class="form" id="config-viz-form"></form>
     </div>
+
     <input type="hidden" value="" id="dashboard_pk">
+
     <div class="row">
         <div class="text-center">
-{#            <h1 class="o-blue" style="margin: 0; font-size: 30pt">Dashboard Builder</h1>#}
             <h5 style="display: inline-block; margin: 0;">Create a new dashboard by selecting data and using the
                 provided visualizations.</h5>
         </div>
     </div>
+
     <div class="row text-center">
         <input class="form-control text-center" type="text" id="dashboard_title"
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
@@ -290,9 +290,9 @@
 
     </div>
 
-    <div id="query-container" hidden>
-        <select id="query-select" class="form-control" name="query" style="width: 300px !important;">
-            <option disabled selected>-- select one of the saved queries --</option>
+    <div id="query-container" style="display: none;">
+        <select id="query-select" class="form-control " name="query" style="width: 300px !important;">
+            <option></option>
             {% for query in saved_queries %}
                 <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
             {% endfor %}
@@ -345,7 +345,7 @@
                                     </button>
                                 </div>
                                 <div  class="dropdown row" id="layers-list" style="display: none;position: absolute;right:250px;">
-                                    <button class="btn btn-primary dropdown-toggle btn-lg" id="menu1" type="button" data-toggle="dropdown" style="display: inline;">Layers
+                                    <button class="btn btn-primary dropdown-toggle btn-md" id="menu1" type="button" data-toggle="dropdown" style="display: inline;">Layers
                                         <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
@@ -433,6 +433,12 @@
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
     <script src="https://cdn.ckeditor.com/4.9.2/standard/ckeditor.js"></script>
+
+
+
+    <script>
+	  $('.ui.dropdown').dropdown();
+    </script>
 
     <script>
         $(document).ready(function(){
@@ -723,7 +729,7 @@
         var new_query_id;
         function updateVariables(element) {
             $('#myModal .variable-select').find('option').remove().end();
-            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+{#            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));#}
             new_query_id = $('#myModal #selected_query').val();
             var new_query_doc = {};
             $.ajax({
@@ -736,9 +742,9 @@
                 success: function (result) {
                     var variables = result['variables'];
                     var dimensions = result['dimensions'];
-{#                    $('.variable-select').append($("<option></option>")#}
-{#                    .attr("value", '')#}
-{#                    .text('-- column select --'));#}
+                    $('.variable-select').append($("<option></option>")
+                    .attr("value", '')
+                    .text(''));
                     $.each(variables, function (k, v) {
                         $('#myModal .variable-select').append($("<option></option>")
                             .attr("value", v)
@@ -764,6 +770,7 @@
         var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
         {#Function to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
+
             $('#layers-list ul').empty();
             $("#query_name_span").text(null);
 
@@ -801,7 +808,7 @@
                     }
 
 
-                    $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
+                    $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
                     $(".layer_list_element #btn"+String(layer_count)).click(function () {
                          $("#viz_config .list-group").children().each(function () {
                                 $(this).find("#selected_viz_span").hide();
@@ -867,7 +874,11 @@
                 }
             }).click(function (e) {
                 $(this).popover('toggle');
-                $('.popover-content .form-group #query-select').select2();
+                $('.popover-content .form-group #query-select').select2(
+                    {
+                        placeholder:"Select Query",
+                     }
+                );
                 $('.popover-content #query-select').on('change', function () {
                     new_query_id = $(this).children(":selected").attr("id");
                     {#                    alert(new_query_id);#}
@@ -910,8 +921,13 @@
                 updateVariables($('#query-select'));
 
                 $(component_selector).popover('show');
-                $('#myModal .popover-content .variable-select').select2();
+                $('#myModal .popover-content .variable-select').select2(
+                      {
+                        placeholder:"Select Variable",
+                     }
+                );
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
+
                 $(popver_id + ' #select_conf_ok').click(function (e) {
                     selected_visualization = $(component_selector).text();
                     $("#viz_config .list-group").children().each(function () {
@@ -966,7 +982,6 @@
                     {#                viz_request += '&query=' + $('#query-select').children(":selected").attr("id");#}
 
                     viz_request += '&query=' + $('#myModal #selected_query').val();
-{#                    alert(viz_request);#}
                     show_viz(viz_request);
                 }
                 else{
@@ -983,7 +998,7 @@
                     $('#config-viz-form').append(submitted_args);
 
                     myData = getFormData($("#config-viz-form"),layer_count,$('#myModal #selected_query').val());
-                    alert('Form Data in JSON'+ JSON.stringify(myData));
+{#                    alert('Form Data in JSON'+ JSON.stringify(myData));#}
                     json=[];
                     for (var i = 0; i < layer_json.length; i++) {
                         var obj = layer_json[i];
@@ -1009,8 +1024,6 @@
 
 
             function mapVizUrlCreator(json,my_layer_count){
-{#                alert(JSON.stringify(json));#}
-{#                alert(JSON.stringify(layer_json));#}
 
                 var viz_request = "/visualizations/get_map_visualization/?";
                 viz_request += "layer_count="+String(my_layer_count)+"&";
@@ -1024,7 +1037,7 @@
                 url = url.replace("&","");
                 viz_request += url;
 
-                alert(viz_request);
+{#                alert(viz_request);#}
                 show_viz(viz_request);
             }
 
@@ -1037,7 +1050,6 @@
                 });
                 indexed_array['query'] = query;
                 indexed_array['layer_id'] = String(count);
-{#                indexed_array['cached'] = false;#}
                 indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000))+'layer'+String(count) ;
                 return indexed_array;
             }
