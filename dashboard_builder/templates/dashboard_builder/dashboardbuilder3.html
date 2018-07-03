@@ -774,9 +774,9 @@
 {#        }#}
 
         function updateVariables(element){
-            $('#query-variables-select-container #'+String(new_query_id)).children().each(function(){
-                $('#myModal .variable-select').append(this);
-            })
+            $('#myModal .variable-select').find('option').remove();
+            var content = $('#query-variables-select-container #'+String(new_query_id)).html();
+            $('#myModal .variable-select ').html(content);
         }
 
 
