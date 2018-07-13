@@ -32,8 +32,12 @@ def execute_query(request, pk=None):
     only_headers = request.POST.get('only_headers', '').lower() == 'true'
 
     # execute
-    response, encoder = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers,
+    result = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers,
                                   with_encoder=True)
+    if result == None :
+        return JsonResponse({})
+
+    response, encoder = result
 
     # send results
     return JsonResponse(response, encoder=encoder)
