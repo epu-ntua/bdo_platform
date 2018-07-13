@@ -27,6 +27,8 @@ else:
                 from bdo_platform.settings_management.development_mkontoulis import *
             elif settings_file == 'development_spitsios':
                 from bdo_platform.settings_management.development_spitsios import *
+            elif settings_file == 'development_vkarakolis':
+                from bdo_platform.settings_management.development_vkarakolis import *
             elif settings_file == 'development':
                 from bdo_platform.settings_management.development import *
     except IOError:
