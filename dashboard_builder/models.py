@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db.models import *
 
 from bdo_main_app.lists import *
+from django.db import models
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
@@ -16,7 +17,7 @@ class Dashboard(Model):
     updated = DateTimeField(auto_now=True)
 
     # dashboard creator
-    user = ForeignKey(User)
+    user = CharField(max_length=512)
     title = CharField(max_length=512)
 
     viz_components = JSONField(default=dict())
@@ -24,6 +25,9 @@ class Dashboard(Model):
 
     description = CharField(blank=True, max_length=512, null=True, default=None)
     imageurl = URLField(blank=True, null=True, default=None)
+
+    dashboard_user = models.ManyToManyField(User)
+
 class ExampleModel(Model):
     content = RichTextUploadingField()
 

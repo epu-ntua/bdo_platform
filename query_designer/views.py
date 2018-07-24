@@ -44,8 +44,18 @@ def load_query(request, pk):
 
 
 def simplified(request, pk=None):
+    public_datasets = Dataset.objects.filter(stored_at='UBITECH_POSTGRES',state='public').exclude(variables=None)
+    user_datasets = Dataset.objects.none()
+    if request.user.is_authenticated():
+        username = request.user.username
+        user = User.objects.get(username=username)
+        user_datasets = user.dataset_set.all().exclude(variables=None)
+    # combine user and public datasets to show to the user
+    user_datasets = user_datasets | public_datasets
+
+    print('previous:'+str(Dataset.objects.filter(stored_at='UBITECH_POSTGRES').exclude(variables=None)))
     return render(request, 'query_designer/simplified.html', {
-        'datasets': Dataset.objects.filter(stored_at='UBITECH_POSTGRES').exclude(variables=None),
+        'datasets': user_datasets,
         'dimensions': Dimension.objects.all(),
         'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
         'AGGREGATES': AGGREGATES,
@@ -112,7 +122,24 @@ def save_query(request, pk=None, temp=1):
         q.title = request.POST.get('title', 'Untitled query')
 
     # save
+    # import pdb
+    # pdb.set_trace()
+
     q.save()
+
+    # dataset_list = []
+    # if 'document' in request.POST and int(temp) == 0:
+    #     try:
+    #         doc = json.loads(request.POST.get('document', ''))
+    #     except ValueError:
+    #         return JsonResponse({'error': 'Invalid query document'}, status=400)
+    #     for el in doc['from']:
+    #         k = Variable.objects.get(id=int(el['type'])).dataset
+    #         if k.id not in dataset_list:
+    #             if k.state =='private':
+    #                 dataset_list.append(k)
+    #                 d = Dataset.objects.get(id=Variable.objects.get(id=int(el['type'])).dataset.id)
+    #                 q.dataset_query.add(d)
 
     # return OK response
     return JsonResponse({
