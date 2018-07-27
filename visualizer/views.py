@@ -2138,6 +2138,9 @@ def get_line_chart_am(request):
 
 
         query_data = query.execute()
+        if query_data == {} :
+            return HttpResponse('Could not create chart due to unfilled fields of the form')
+
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
 

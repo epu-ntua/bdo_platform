@@ -140,6 +140,9 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     order_by_clause = ''
     orderings = self.document.get('orderings', [])
     if orderings:
+        for o in orderings:
+            if o['name'] == '' :
+                raise ValueError("Empty order by field! Please fill the fields of the form")
         order_by_clause = 'ORDER BY %s\n' % ','.join([(o['name'] + ' ' + o['type']) for o in orderings])
 
     # offset & limit
