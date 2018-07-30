@@ -177,143 +177,43 @@
 {% endblock %}
 
 {% block modal %}
-    <div id="query-container" style="display: none;">
-        <select id="query-select" class="form-control " name="query" style="width: 300px !important;">
-            <option></option>
-
-            <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
-
-        </select>
-        <div><a href="/queries/simplified/" id="new_query_link" style="color: #3b5998"> + or create a new query </a>
-        </div>
-        <input id="new_query_doc" type="hidden" value=""/>
-        <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
-        <button type="button" id="select_data_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel
-        </button>
-    </div>
-
     <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
-                <div class="modal-header text-center">
-
-                </div>
                 <div class="modal-body">
-                    <div class="tab-content">
-                        <div class="text-center">
-                            <h4 class="modal-title">Add a new widget to the dashboard</h4>
-
-                            <ul class="nav nav-pills">
-                                <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a>
+                    <div class="row" id="viz_config" style="display: none">
+                        <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                            {% for viz in available_viz %}
+                                <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}"
+                                    data-viz-id="{{ viz.id }}">
+                                    <i class="{{ viz.icon }}" style="margin-right:5px"></i>{{ viz.title }}
+                                    <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left"
+                                          style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
                                 </li>
-                                <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
-                            </ul>
-                        </div>
-                        <div class="tab-pane fade in active" id="viz_widget">
-                            <div class="row">
-                                <div class="text-left" id="model-button-row" style="display: inline">
-                                    <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
-                                            data-toggle="popover" title="Select your data" data-placement="right"
-                                    >Select data
-                                    </button>
-                                </div>
-                                <div class="dropdown row" id="layers-list"
-                                     style="display: none;position: absolute;right:250px;">
-                                    <button class="btn btn-primary dropdown-toggle btn-md" id="menu1" type="button"
-                                            data-toggle="dropdown" style="display: inline;">Layers
-                                        <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+                            {% endfor %}
 
-                                    </ul>
-                                </div>
-
-                                <div style="display: inline; margin-left: 20px;">
-                                    <span><strong>Selected Query ID: </strong></span><span id="query_name_span"
-                                                                                           style="display: none;"></span>
-                                </div>
-
-
-                                <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
-                                        data-toggle="popover" title="Select visualization type" data-placement="bottom"
-                                        data-container="body" disabled style="display: none">2. Select visualisation
-                                </button>
-                                <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary"
-                                        data-toggle="popover" title="Select your data" data-placement="bottom"
-                                        data-container="body" disabled style="display: none">3. Configure
-                                </button>
-                            </div>
-
-
-                            {#                            <div class="dropdown row" id="layers-list" style="position: absolute; right:200px; display: none;z-index:2;">#}
-                            {#                                <button class="btn btn-primary dropdown-toggle" id="menu1" type="button" data-toggle="dropdown">Layers#}
-                            {#                                <span class="caret"></span></button>#}
-                            {#                                <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">#}
-                            {#                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">HTML</a></li>#}
-                            {#                                </ul>#}
-                            {#                            </div>#}
-
-
-                            <div class="row" id="viz_config" style="display: none">
-                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                                    {% for viz in available_viz %}
-                                        <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}"
-                                            data-viz-id="{{ viz.id }}">
-                                            <i class="{{ viz.icon }}" style="margin-right:5px"></i>{{ viz.title }}
-                                            <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left"
-                                                  style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
-                                        </li>
-                                    {% endfor %}
-
-                                </ul>
-                                <div id="viz_container" class="col-sm-8" style="width: 85%">
-                                    <div class="loadingFrame">
-                                        <img src="{% static 'img/loading_gif.gif' %}"/>
-                                    </div>
-
-                                </div>
-                            </div>
-                            {#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
-                            {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
-
-                            <div id="query-variables-select-container" style="display: none;">
-
-                                <div id={{ query.id }}>
-                                    <option></option>
-                                    {% for el in query.document.from %}
-                                        {% for var in el.select %}
-                                            <option value="{{ var.name }}">{{ var.title }}</option>
-                                        {% endfor %}
-                                    {% endfor %}
-                                </div>
-
+                        </ul>
+                        <div id="viz_container" class="col-sm-8" style="width: 85%">
+                            <div class="loadingFrame">
                             </div>
                         </div>
-
-
-                        <div class="row tab-pane fade" id="viz_note">
-
-                        </div>
-                        <input type="hidden" id="selected_query" value="">
                     </div>
+                    {#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
+                    {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
 
+                    <div id="query-variables-select-container" style="display: none;">
 
-                </div>
-                <div class="modal-footer">
-                    <div>
-                        <button type="button" id="add_layer_btn" class="btn btn-primary btn-sm"
-                                style=" position: absolute; display: none;left:250px;">SAVE LAYER <i
-                                class="glyphicon glyphicon-plus "></i></button>
+                        <div id={{ query.id }}>
+                            <option></option>
+                            {% for el in query.document.from %}
+                                {% for var in el.select %}
+                                    <option value="{{ var.name }}">{{ var.title }}</option>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+
                     </div>
-                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn"
-                            style="display: none;">Add
-                    </button>
-                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn"
-                            style="display: none">Add
-                    </button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
-                    </button>
                 </div>
             </div>
         </div>

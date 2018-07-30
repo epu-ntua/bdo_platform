@@ -1,5 +1,3 @@
-$('#viz_config select').select();
-
 var query_id = $('#query-variables-select-container div').attr("id");
 
 function updateVariables() {
@@ -7,35 +5,6 @@ function updateVariables() {
     var content = $('#query-variables-select-container #' + String(query_id)).html();
     $('#myModal .variable-select ').html(content);
 }
-
-$("#myModal #select_data_popover").popover({
-    html: true,
-    animation: true,
-    title: 'Select query to use',
-    content: () => $('#query-container').html()
-}).click(function () {
-    $(this).popover('toggle');
-    $('.popover-content .form-group #query-select').select(
-        {
-            placeholder: "Select Query",
-        }
-    );
-    $('.popover-content #query-select').on('change', function () {
-        $('#myModal #selected_query').val(query_id);
-        updateVariables();
-    });
-    $('.popover-content #select_data_ok').click(function () {
-        $('#query_name_span').show();
-        $('#query_name_span').text(query_id);
-
-        $('#myModal #select_data_popover').popover("hide");
-        $('#viz_config').show();
-        $(".list-group").css('visibility', 'visible');
-    });
-    $('.popover-content #select_data_cancel').click(function () {
-        $('#myModal #select_data_popover').popover("hide");
-    })
-});
 
 $(".viz_item").click(function () {
     var component_id = $(this).attr('data-viz-id');
@@ -118,11 +87,11 @@ function getMapVisualizationRequest(json) {
 
 function show_viz(viz_request) {
     // language=HTML
-    var htmlString = '<div class="loadingFrame"><img src="{% static \'img/loading_gif.gif\' %}"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
+    var htmlString = '<div class="loadingFrame"><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
     $("#viz_container").html(htmlString);
     $('#myModal #submit-modal-btn').show();
-    $("#myModal #viz_container .loadingFrame").css("display", "block");
-    $("#myModal #viz_container iframe").on("load", function () {
+    $("#viz_container .loadingFrame").css("display", "block");
+    $("#viz_container iframe").on("load", function () {
         $(this).siblings(".loadingFrame").css("display", "none");
     });
 }

@@ -10,7 +10,10 @@
 
         <ul class="list-group">
             {% for viz in available_viz %}
-                <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}" data-viz-id="{{ viz.id }}">
+                    <i class="{{ viz.icon }}" style="margin-right:5px"></i>{{ viz.title }}
+                </li>
+
             {% endfor %}
         </ul>
 
