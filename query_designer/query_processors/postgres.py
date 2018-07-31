@@ -217,10 +217,11 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
 
 
     # cursor = connection.cursor()
-    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-        cursor = connections['UBITECH_POSTGRES'].cursor()
-    else:
-        cursor = connections['default'].cursor()
+    if execute:
+        if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+            cursor = connections['UBITECH_POSTGRES'].cursor()
+        else:
+            cursor = connections['default'].cursor()
 
     if not only_headers:
         # execute query & return results

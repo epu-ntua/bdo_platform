@@ -316,8 +316,10 @@ class AbstractQuery(Model):
         else:
             raise PermissionDenied
 
+
     @property
     def raw_query(self):
+
         # remove several keys from query
         doc = copy.deepcopy(self.document)
         # for key in ['limit', 'offset', 'granularity']:

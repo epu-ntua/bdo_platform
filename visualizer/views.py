@@ -1842,6 +1842,9 @@ def get_histogram_chart_am(request):
                     "select range, freq " \
                     "from histogram; ".format(table_col, from_table, bins, where_clause)
         # print raw_query
+        # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
+        result = execute_query_method(request, query)[0]
+
         cursor.execute(raw_query)
         data = cursor.fetchall()
         json_data = []
@@ -2078,7 +2081,7 @@ def get_histogram_2d_am(request):
     cbar.ax.tick_params(labelsize=10, colors="#000000")
     pl.xlabel("'Percentage %'", labelpad=10)
     ts = str(time.time()).replace(".", "")
-    legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png'
+    legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
     pl.savefig(legpath, transparent=True, bbox_inches='tight')
     legpath = legpath.split("static/", 1)[1]
     pl.clf()
