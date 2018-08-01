@@ -434,12 +434,6 @@ $(function () {
             var exprType = $('#chart-filters > .filter-expr').attr('data-expr_type');
             var customExpressionMap = {};
 
-            // if (filters.length === 0) {
-            //     return filterTree;
-            // }
-
-            // find pattern
-            // assume ALL_AND
             $.each(filters, function (idx, filter) {
                 var aName;
                 $.each(queryDocument.from, function (idx, _from) {
