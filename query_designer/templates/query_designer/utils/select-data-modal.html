@@ -13,7 +13,7 @@
                 {% for dataset in datasets %}
                     <div class="dataset-section">
                         <div class="dataset-info">
-                            <div class="dataset-name">
+                            <div class="dataset-name" id={{ dataset.id }}>
                                 <i class="fa fa-database"></i>
                                 <span class="dataset-title" title="show/hide variables">{{ dataset.title }}</span>
                                 <i class="fa fa-info-circle dataset-metadata-btn"></i>
@@ -28,11 +28,11 @@
                                 {% for variable in dataset.variables.all %}
                                     <tr class="variable-section  ">
                                         <td class="variable-name hidden">{{ variable.id}}_pk_{{variable.safe_name }}</td>
-                                        <td> <span class="variable-id hidden">{{ variable.id }}</span><span class="variable-title">{{ variable.title }}</span> (<span class="variable-unit">{{ variable.unit }}</span>)</td>
+                                        <td> <span class="variable-id hidden">{{ variable.id }}</span><span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}</span> (<span class="variable-unit">{{ variable.unit }}</span>)</td>
                                         <td>
                                         <div class="dimensions">
                                             {% for dimension in variable.dimensions.all %}
-                                                <span data-type="{{ dimension.pk }}">{{ dimension.name }}, </span>
+                                                <span  data-type="{{ dimension.pk }}">{{ dimension.name }}, </span>
                                             {% endfor %}
                                         </div>
                                         </td>

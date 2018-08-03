@@ -20,6 +20,10 @@ from aggregator.models import *
 from query_designer.formula_functions import *
 from query_designer.query_processors.utils import SolrResultEncoder, PostgresResultEncoder
 
+from django.http import HttpResponseForbidden
+from django.http import JsonResponse
+from django.core.exceptions import PermissionDenied
+
 
 class AbstractQuery(Model):
     user = ForeignKey(User, related_name='queries')
@@ -43,8 +47,10 @@ class AbstractQuery(Model):
     count = IntegerField(blank=True, null=True, default=None)
     headers = JSONField(blank=True, null=True, default=None)
 
-    def __unicode__(self):
-        return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
+
+    #
+    # def __unicode__(self):
+    #     return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
 
     @staticmethod
     def operator_to_str(op, mode='postgres'):
@@ -281,17 +287,39 @@ class AbstractQuery(Model):
 
         return data, encoder
 
-    def execute(self, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=True):
-        result = self.process(dimension_values, variable, only_headers, commit, execute=True)
+    def execute(self, request, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=True):
 
-        if with_encoder:
-            return result
+        user = request.user
+        dataset_list = []
+        if user.is_authenticated():
 
-        encoder = result[1]
-        return json.loads(encoder().encode(result[0]))
+            try:
+                doc = self.document
+            except ValueError:
+                return JsonResponse({'error': 'Invalid query document'}, status=400)
+            for el in doc['from']:
+                k = Variable.objects.get(id=int(el['type'])).dataset
+                if k.id not in dataset_list:
+                    if k.state == 'private':
+                        dataset_list.append(k)
+
+            for el in dataset_list:
+                if el not in user.dataset_set.all():
+                    raise PermissionDenied
+            result = self.process(dimension_values, variable, only_headers, commit, execute=True)
+
+            if with_encoder:
+                return result
+
+            encoder = result[1]
+            return json.loads(encoder().encode(result[0]))
+        else:
+            raise PermissionDenied
+
 
     @property
     def raw_query(self):
+
         # remove several keys from query
         doc = copy.deepcopy(self.document)
         # for key in ['limit', 'offset', 'granularity']:
@@ -307,6 +335,8 @@ class AbstractQuery(Model):
         self.document = doc
 
         return res[0]['raw_query']
+
+
 
 
 class InvalidUnitError(ValueError):

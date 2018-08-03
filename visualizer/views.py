@@ -108,7 +108,7 @@ def map_visualizer(request):
             variable = str(request.GET.get('feat_1'+str(count), ''))
             query = str(request.GET.get('query'+str(count), ''))
             agg_function = str(request.GET.get('agg_func'+str(count), 'avg'))
-            m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file)
+            m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file, request)
             old_map_id_list.append(old_map_id)
         # Map Course
         elif (layer_id == str(15)):
@@ -150,7 +150,7 @@ def map_visualizer(request):
             print lat_col
             lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
             print lon_col
-            m, extra_js = map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_file)
+            m, extra_js = map_heatmap(query, df, notebook_id, lat_col, lon_col, heat_col, m, cached_file, request)
 
         if (extra_js!=""):
             js_list.append(extra_js)
@@ -381,7 +381,7 @@ def map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_fu
                         s['exclude'] = True
 
             q.document = doc
-            query_data = q.execute()
+            query_data = execute_query_method(request, q)
             data = query_data[0]['results']
             result_headers = query_data[0]['headers']
 
@@ -848,7 +848,7 @@ def map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id
 
             q.document = doc
 
-            query_data = q.execute()
+            query_data = execute_query_method(request,q)
             data = query_data[0]['results']
             result_headers = query_data[0]['headers']
 
@@ -1043,7 +1043,7 @@ def map_markers_in_time(request):
         # print doc
         q.document = doc
 
-        query_data = q.execute()
+        query_data = execute_query_method(request,q)
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
         print(result_headers)
@@ -1222,7 +1222,7 @@ def map_markers_in_time(request):
 
 
 
-def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_file):
+def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_file,request):
     dict = {}
 
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
@@ -1249,7 +1249,7 @@ def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_fil
             q.document = doc
 
             lat_index = lon_index = var_index = -1
-            result = q.execute()[0]
+            result = execute_query_method(request,q)[0]
             result_data = result['results']
             result_headers = result['headers']
 
@@ -1353,7 +1353,7 @@ def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_fil
 
 
 
-def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file):
+def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file, request):
     try:
         print('ENTERING CONTOURS')
 
@@ -1404,7 +1404,7 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, c
 
 
             var_index = lat_index = lon_index = -1
-            result = q.execute()[0]
+            result = execute_query_method(request,q)[0]
             result_data = result['results']
             result_headers = result['headers']
 
@@ -1657,7 +1657,7 @@ def map_viz_folium_heatmap_time(request):
         q.document = doc
 
         lat_index = lon_index = var_index = 0
-        result = q.execute()[0]
+        result = execute_query_method(request,q)[0]
         result_data = result['results']
         result_headers = result['headers']
 
@@ -1842,6 +1842,9 @@ def get_histogram_chart_am(request):
                     "select range, freq " \
                     "from histogram; ".format(table_col, from_table, bins, where_clause)
         # print raw_query
+        # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
+        result = execute_query_method(request, query)[0]
+
         cursor.execute(raw_query)
         data = cursor.fetchall()
         json_data = []
@@ -1928,7 +1931,7 @@ def get_histogram_2d_am(request):
         # print raw_query
 
 
-        query_data = query.execute()
+        query_data = execute_query_method(request, query)
 
         result_data = query_data[0]['results']
         result_headers = query_data[0]['headers']
@@ -2078,7 +2081,7 @@ def get_histogram_2d_am(request):
     cbar.ax.tick_params(labelsize=10, colors="#000000")
     pl.xlabel("'Percentage %'", labelpad=10)
     ts = str(time.time()).replace(".", "")
-    legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png'
+    legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
     pl.savefig(legpath, transparent=True, bbox_inches='tight')
     legpath = legpath.split("static/", 1)[1]
     pl.clf()
@@ -2137,7 +2140,7 @@ def get_line_chart_am(request):
         # print doc
 
 
-        query_data = query.execute()
+        query_data = execute_query_method(request,query)
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
 
@@ -2259,7 +2262,7 @@ def get_pie_chart_am(request):
         # print doc
 
 
-        query_data = query.execute()
+        query_data = execute_query_method(request,query)
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
 
@@ -2331,7 +2334,7 @@ def get_column_chart_am(request):
         # print doc
 
 
-        query_data = query.execute()
+        query_data = execute_query_method(request, query)
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
 
@@ -2415,7 +2418,7 @@ def get_data_table(request):
         # if query.document['limit'] > limit:
         #     query.document['limit'] = limit
 
-        result = q.execute()[0]
+        result = execute_query_method(request,q)[0]
         data = result['results']
         headers = result['headers']['columns']
         isJSON = False
@@ -2764,7 +2767,7 @@ def get_aggregate_value(request):
                     s['exclude'] = True
         query.document = doc
 
-        query_data = query.execute()
+        query_data = execute_query_method(request,query)
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
 
@@ -3125,3 +3128,8 @@ def make_map(bbox):
     # ax.set_extent(bbox)
     ax.coastlines(resolution='50m')
     return fig, ax
+
+def execute_query_method(request, q):
+    result = q.execute(request)
+    return result
+

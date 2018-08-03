@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.db.models import *
+from django.db import models
 
 
 class Service(Model):
@@ -11,7 +12,7 @@ class Service(Model):
     updated = DateTimeField(auto_now=True)
 
     # service creator
-    user = ForeignKey(User)
+    user = CharField(max_length=512)
     title = CharField(max_length=512)
     private = BooleanField(default=False)
     published = BooleanField(default=False)
@@ -31,6 +32,8 @@ class Service(Model):
     description = CharField(blank=True,max_length=512,null=True,default=None)
     price = CharField(max_length=50,default='free')
     imageurl = URLField(blank=True,null=True, default=None)
+
+    service_user = models.ManyToManyField(User)
 
 
 class ServiceTemplate(Model):

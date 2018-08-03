@@ -12,10 +12,12 @@ from . import forms
 import json
 
 def build_dynamic_dashboard(request):
+
     if request.method == 'GET':
         user = request.user
         if request.user.is_authenticated():
             saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
+            # saved_queries = []
         else:
             saved_queries = []
         num_of_dashboards = Dashboard.objects.count()
