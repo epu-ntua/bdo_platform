@@ -1585,6 +1585,49 @@ $(function () {
     /* Add a value field */
     $('#selection-confirm-btn').on('click', function() {
         var newField = window.getDataSelection();
+
+        /**
+         * creates a hashmap with the dimension name as key and its frequency as value
+         */
+        function getDimensionFrequencyMap() {
+            var dimensionMap = {};
+            var $dimensions = $('#selected_dimensions option');
+            $.each($dimensions, function () {
+               var dimension = $(this).text();
+               if (!(dimension in dimensionMap)){
+                   dimensionMap[dimension] = 1;
+               }
+               else {
+                   dimensionMap[dimension]++;
+               }
+            });
+            return dimensionMap;
+        }
+
+        function getMaxFrequencyFromMap(frequencyMap) {
+            var maxFreq = 0;
+            for (var key in frequencyMap) {
+                var currentValue = frequencyMap[key];
+                if (currentValue > maxFreq)
+                    maxFreq = currentValue;
+            }
+            return maxFreq;
+        }
+
+        /**
+         * if a dimension is not included in all datasets then it is removed from the order by options
+         */
+        function removeUndesiredOrderByOptions() {
+           var frequencyMap = getDimensionFrequencyMap();
+           var maxFrequency = getMaxFrequencyFromMap(frequencyMap);
+           var orderByOptions = $('[name="orderby"] option');
+           $.each(orderByOptions, function () {
+               var orderByOption = $(this).attr("data-type");
+               if (frequencyMap[orderByOption] < maxFrequency)
+                   $(this).remove();
+           });
+        }
+
         if (newField.value != ""){
 
 
@@ -1613,6 +1656,8 @@ $(function () {
             var $dimensions = $('#selected_dimensions');
             var $filter_variables = $('#new-filter-variable');
 
+            //TODO Refactoring is needed inside each
+            //TODO Specifically the newOption command is duplicated too many times (method can be extracted and used)
             $.each(newField.dimensions, function (id, data) {
                 if ($category.find("option[name='" + data.title + "']").length) {
                     // Create a DOM Option and pre-select by default
@@ -1661,6 +1706,8 @@ $(function () {
                     $filter_variables.append(newOption);
                 }
             });
+            //if dimension is not included in all datasets then it is not desired
+            removeUndesiredOrderByOptions();
 
             // add variables to filters too
             var newOption = new Option(newField.title, newField.id, false, false);
