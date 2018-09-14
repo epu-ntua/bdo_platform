@@ -16,7 +16,7 @@ class Dashboard(Model):
     updated = DateTimeField(auto_now=True)
 
     # dashboard creator
-    user = ForeignKey(User)
+    user = ForeignKey(User, related_name='dashboard_owner')
     title = CharField(max_length=512)
 
     viz_components = JSONField(default=dict())
@@ -24,6 +24,18 @@ class Dashboard(Model):
 
     description = CharField(blank=True, max_length=512, null=True, default=None)
     imageurl = URLField(blank=True, null=True, default=None)
+
+    access_list = ManyToManyField(User, through='DashboardAccess')
+
+
+class DashboardAccess(Model):
+    user = ForeignKey(User, on_delete=CASCADE)
+    dashboard = ForeignKey(Dashboard, on_delete=CASCADE)
+    start = DateField()
+    end = DateField()
+    valid = BooleanField()
+
+
 class ExampleModel(Model):
     content = RichTextUploadingField()
 

@@ -1,5 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import *
+from django.contrib.auth.models import User
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
@@ -24,6 +25,9 @@ class Dataset(Model):
     references = ArrayField(TextField(), null=True)
     stored_at = CharField(max_length=32, choices=DATASET_STORAGES, default='LOCAL_POSTGRES')
     table_name = CharField(max_length=200)
+    private = BooleanField(default=False)
+    owner = ForeignKey(User, related_name='dataset_owner', null=True)
+    dataset_user = ManyToManyField(User)
 
     class Meta:
         ordering = ['-id']
