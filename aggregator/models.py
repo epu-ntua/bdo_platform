@@ -27,7 +27,6 @@ class Dataset(Model):
     table_name = CharField(max_length=200)
     private = BooleanField(default=False)
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
-    dataset_user = ManyToManyField(User)
 
     class Meta:
         ordering = ['-id']
@@ -43,6 +42,16 @@ class Dataset(Model):
 
     def __unicode__(self):
         return self.title
+
+    access_list = ManyToManyField(User, through='DatasetAccess')
+
+
+class DatasetAccess(Model):
+    user = ForeignKey(User, on_delete=CASCADE)
+    dataset = ForeignKey(Dataset, on_delete=CASCADE)
+    start = DateField()
+    end = DateField()
+    valid = BooleanField()
 
 
 class BaseVariable(Model):

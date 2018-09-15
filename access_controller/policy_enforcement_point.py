@@ -8,8 +8,11 @@ class PEP:
         pass
 
     @staticmethod
-    def access_to_dataset_for_query(self):
-        pass
+    def access_to_dataset_for_query(request, dataset_id):
+        request_user = request.user
+        request_time = datetime.now()
+        decision = PDP.resolve_access_to_dataset(request_user, request_time, dataset_id)
+        return decision
 
     @staticmethod
     def access_to_dataset_for_preview(self):
