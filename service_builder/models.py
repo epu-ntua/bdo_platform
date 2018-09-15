@@ -11,7 +11,7 @@ class Service(Model):
     updated = DateTimeField(auto_now=True)
 
     # service creator
-    user = ForeignKey(User)
+    user = ForeignKey(User, related_name="service_owner")
     title = CharField(max_length=512)
     private = BooleanField(default=False)
     published = BooleanField(default=False)
@@ -31,6 +31,16 @@ class Service(Model):
     description = CharField(blank=True,max_length=512,null=True,default=None)
     price = CharField(max_length=50,default='free')
     imageurl = URLField(blank=True,null=True, default=None)
+
+    access_list = ManyToManyField(User, through='ServiceAccess')
+
+
+class ServiceAccess(Model):
+    user = ForeignKey(User, on_delete=CASCADE)
+    service = ForeignKey(Service, on_delete=CASCADE)
+    start = DateField()
+    end = DateField()
+    valid = BooleanField()
 
 
 class ServiceTemplate(Model):

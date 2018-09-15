@@ -33,3 +33,32 @@ class PDP:
                 return True
 
         return False
+
+    @staticmethod
+    def resolve_access_to_service(user, time, service_id):
+        print(
+            """   Resolving access for: 
+            Service: {0}
+            User: {1}
+            Time: {2}
+            """.format(service_id, user, time))
+        request_time = time
+        request_user = user
+
+        policies = PIP.getServicePolicies()
+        service_info = PIP.getServiceInfo(service_id)
+        print ("""Service Info: """)
+        print service_info
+        input = {
+            "request_user": request_user,
+            "request_time": request_time,
+            "resource_owner": service_info["service_owner"],
+            "resource_private": service_info["service_private"],
+            "access_list": service_info["access_list"],
+        }
+
+        for pol in policies:
+            if pol.evaluate(input) is True:
+                return True
+
+        return False
