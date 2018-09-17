@@ -365,7 +365,7 @@ def calculate_range_for_every_join_chain(join_chain_list):
 
         for dim in join_chain:
             min_dim, max_dim = get_min_max_dimension(dim)
-            min_max_dim_list.append((min_dim,max_dim))
+            min_max_dim_list.append((min_dim, max_dim))
 
         min_max_dim_chain_list.append(min_max_dim_list)
     # print(min_max_dim_chain_list)
@@ -388,9 +388,7 @@ def init_variables(join_list):
 
 
 def update_chain_join_list(join):
-    chain_list = []
-    chain_list.append(join[0])
-    chain_list.append(join[1])
+    chain_list = [join[0], join[1]]
     return chain_list
 
 
@@ -414,7 +412,7 @@ def get_min_max_dimension(dim):
         print "query execution failed due to: ", e
         return None
     res = cursor.fetchone()
-    return res[0],res[1]
+    return res[0], res[1]
 
 
 def build_min_max_dimension_query(dim):
