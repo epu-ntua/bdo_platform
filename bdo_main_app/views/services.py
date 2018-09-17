@@ -8,6 +8,9 @@ from django.utils.timezone import now
 # from bdo_main_app.models import Service
 from dashboard_builder.models import Dashboard
 from service_builder.models import Service
+from django.http import HttpResponseForbidden
+from django.core.exceptions import PermissionDenied
+from access_controller.policy_enforcement_point import PEP
 
 
 def services(request):
@@ -43,6 +46,15 @@ def convert_unicode_json(data):
 def view_dashboard(request, pk):
     user = request.user
     dashboard = Dashboard.objects.get(pk=pk)
+
+    # check for the access
+    try:
+        access_decision = PEP.access_to_dashboard(request, dashboard.id)
+        if access_decision is False:
+            raise PermissionDenied
+    except:
+        return HttpResponseForbidden()
+
     dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
     print dashboard.viz_components
     return render(request, 'services/services/view_dashboard.html', {
@@ -54,6 +66,15 @@ def view_dashboard(request, pk):
 def view_service(request, pk):
     user = request.user
     service = Service.objects.get(pk=pk)
+
+    # check for the access
+    try:
+        access_decision = PEP.access_to_service(request, service.id)
+        if access_decision is False:
+            raise PermissionDenied
+    except:
+        return HttpResponseForbidden()
+
     return render(request, 'service_builder/load_service.html', {
         'service_id': service.id,
         'output_html': service.output_html,
