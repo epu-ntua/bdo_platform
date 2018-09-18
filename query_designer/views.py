@@ -22,6 +22,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from visualizer.models import Visualization
+from datetime import datetime
 
 # from query_designer.mongo_api import *
 # from query_designer.mongo_query import *
@@ -44,8 +45,26 @@ def load_query(request, pk):
 
 
 def simplified(request, pk=None):
+    storage_target = 'UBITECH_POSTGRES'
+    public_datasets = Dataset.objects.filter(stored_at=storage_target, private=False).exclude(variables=None)
+    user_datasets = Dataset.objects.filter(stored_at=storage_target, owner=request.user, private=True).exclude(variables=None)
+
+    user_with_access_datasets_list = []
+    if request.user.is_authenticated():
+        for access in DatasetAccess.objects.filter(user=request.user, valid=True):
+            s = access.start
+            e = access.end
+            if datetime(s.year, s.month, s.day) < datetime.now() < datetime(e.year, e.month, e.day):
+                user_with_access_datasets_list.append(access.dataset.id)
+
+    user_with_access_datasets = Dataset.objects.filter(id__in=user_with_access_datasets_list)
+
+    # combine user and public datasets to show to the user
+    user_datasets = user_datasets | public_datasets
+    dataset_list = public_datasets | user_datasets | user_with_access_datasets
+
     return render(request, 'query_designer/simplified.html', {
-        'datasets': Dataset.objects.filter(stored_at='UBITECH_POSTGRES').exclude(variables=None),
+        'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
         'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
         'AGGREGATES': AGGREGATES,
