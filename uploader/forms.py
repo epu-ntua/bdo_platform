@@ -62,7 +62,7 @@ class FileDownloadForm(forms.Form):
                                                           "disabled": True}),
                                choices=method_choices, label="Method")
 
-    download = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-url", "name": "file-download-url",
+    url = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-url", "name": "file-download-url",
                                                              "disabled": True}), label="URL")
 
     directory = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-directory", "name": "file-download-directory",

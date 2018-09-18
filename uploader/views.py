@@ -43,6 +43,7 @@ def upload_form(request):
                 pass
         else:
             try:
+                print request.POST
                 method = str(request.POST["method"])
                 url = str(request.POST["url"])
                 directory = str(request.POST["directory"])
@@ -50,6 +51,7 @@ def upload_form(request):
                 username = str(request.POST["username"])
                 password = str(request.POST["password"])
                 profile = str(request.POST["profile"])
+                print 'info'
                 print method, url, directory, filename, username, password, profile
 
                 if profile == '-1':
