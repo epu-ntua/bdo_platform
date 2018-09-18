@@ -1,4 +1,6 @@
 from django import forms
+import requests, json
+from bdo_platform.settings import PARSER_JWT, PROFILES_URL
 
 
 class DatasetsForm(forms.Form):
@@ -28,13 +30,49 @@ class DatasetsForm(forms.Form):
                                 choices=choices, label="")
 
 
+class ProfilesForm(forms.Form):
+    choices = [
+        (-1, "None"),
+    ]
+
+    s = requests.Session()
+    req = requests.Request("GET", PROFILES_URL, headers={'Authorization': PARSER_JWT})
+    prep = req.prepare()
+    resp = s.send(prep, timeout=None)
+    if resp.status_code == 200:
+        for profile in json.loads(resp.content):
+            choices.append((profile["id"], profile["profileName"]))
+
+    profile = forms.ChoiceField(widget=forms.Select(attrs={"id": "profile-dropdown", "name": "profile-dropdown"}),
+                                choices=choices, label="")
+
+
 class FileUploadForm(forms.Form):
     upload = forms.FileField(widget=forms.FileInput(attrs={"id": "file-upload-picker",
-                                                           "disabled": True}), label="")
+                                                           "disabled": False}), label="")
 
 
 class FileDownloadForm(forms.Form):
-    download = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-url",
+
+    method_choices = [
+        ("HTTP", "HTTP"),
+        ("FTP", "FTP"),
+    ]
+    method = forms.ChoiceField(widget=forms.Select(attrs={"id": "file-download-method", "name": "file-download-method",
+                                                          "disabled": True}),
+                               choices=method_choices, label="Method")
+
+    download = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-url", "name": "file-download-url",
                                                              "disabled": True}), label="URL")
-    name = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-name",
+
+    directory = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-directory", "name": "file-download-directory",
+                                                             "disabled": True}), label="Directory")
+
+    name = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-name", "name": "file-download-name",
                                                          "disabled": True}), label="File Name")
+
+    username = forms.CharField(widget=forms.TextInput(attrs={"id": "file-download-username", "name": "file-download-username",
+                                                         "disabled": True}), label="Username (optional)", required=False)
+
+    password = forms.CharField(widget=forms.PasswordInput(attrs={"id": "file-download-password", "name": "file-download-password",
+                                                         "disabled": True}), label="Password (optional)", required=False)

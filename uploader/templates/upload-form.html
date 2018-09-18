@@ -6,6 +6,7 @@
     <link href="{% static 'css/main.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
     <link href="{% static 'css/home.css' %}" rel="stylesheet" />
     <link href="{% static 'css/uploader.css' %}" rel="stylesheet" />
+{#    <link rel="stylesheet" href="{% static 'css/jquery-steps.css' %}">#}
 {% endblock %}
 
 {% block content %}
@@ -33,45 +34,108 @@
         <div class="jumbotron">
             <div class="container text-center">
                 <form id="upload-form" action="{% url 'upload-form'%}" method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <h3>Choose Dataset Type</h3>
-                        {{ dataset_form }}
-                    </div>
+{#                    <div id="demo">#}
+{#                        <div class="step-app">#}
+{#                            <ul class="step-steps">#}
+{#                                <li><a href="#step1">File</a></li>#}
+{#                                <li><a href="#step2"> Metadata Profile</a></li>#}
+{#                            </ul>#}
+{#                            <div class="step-content">#}
+{#                                <div class="step-tab-panel" id="step1">#}
+{#                                    ...#}
+{#                                </div>#}
+{#                                <div class="step-tab-panel" id="step2">#}
+{#                                    ...#}
+{#                                </div>#}
+{##}
+{#                            </div>#}
+{#                            <div class="step-footer">#}
+{#                                <button data-direction="prev">Previous</button>#}
+{#                                <button data-direction="next">Next</button>#}
+{#                                <button data-direction="finish" class="step-btn">Finish</button>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
 
-                    <br><br><br>
-                    <div class="row">
-                        <div class="col col-md-6">
-                            <input type="radio" id="file-upload-radio">
-                            <label for="file-upload-radio" class="label-radio">Upload File</label>
-                            <br><br>
-                            <div class="row">
-                                <div class="col col-md-9">
-                                    {{ upload_form }}
+                    {% csrf_token %}
+
+                    <ul class="nav nav-pills">
+                        <li class="active"><a data-toggle="pill" href="#upload" id="upload_pill">Upload a file</a></li>
+                        <li><a data-toggle="pill" href="#download"  id="download_pill">Provide a URL</a></li>
+                    </ul>
+                    <div class="tab-content col-sm-12">
+                        <div id="upload" class="tab-pane fade in active">
+                            <div class="col col-sm-12 ">
+                                <input type="radio" id="file-upload-radio" hidden>
+{#                                <label for="file-upload-radio" class="label-radio">Upload File</label>#}
+                                <br>
+                                <h3>Select a file to upload</h3>
+                                <div class="row">
+                                    <div class="col col-sm-12">
+                                        {{ upload_form }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col col-md-6">
-                            <input type="radio" id="file-download-radio">
-                            <label for="file-download-radio" class="label-radio">Download File</label>
-                            <br><br>
-                            {% for field in download_form %}
-                                <div class="row">
-                                    <div class="col col-md-8">
-                                        {{field.label}}:
-                                        <br><br>
+                        <div id="download" class="tab-pane fade">
+                            <div class="col col-md-12">
+                                <input type="radio" id="file-download-radio" hidden>
+{#                                <label for="file-download-radio" class="label-radio">Download File</label>#}
+                                <br>
+                                <h3>Provide a link to a file</h3>
+                                {% for field in download_form %}
+                                    <div class="row">
+                                        <div class="col col-sm-offset-2 col-sm-4">
+                                            {{field.label}}:
+                                            <br><br>
+                                        </div>
+                                        <div class="col col-sm-4">
+                                            {{field}}
+                                        </div>
                                     </div>
-                                    <div class="col col-md-4">
-                                        {{field}}
-                                    </div>
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
 
+                    <div class="form-group col-sm-12 t">
+                        <h3>Choose a stored metadata profile (optional)</h3>
+                        {{ profile_form }}
+                    </div>
+
+{#                    <br><br><br>#}
+{#                    <div class="row">#}
+{#                        <div class="col col-md-6">#}
+{#                            <input type="radio" id="file-upload-radio">#}
+{#                            <label for="file-upload-radio" class="label-radio">Upload File</label>#}
+{#                            <br><br>#}
+{#                            <div class="row">#}
+{#                                <div class="col col-md-9">#}
+{#                                    {{ upload_form }}#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="col col-md-6">#}
+{#                            <input type="radio" id="file-download-radio">#}
+{#                            <label for="file-download-radio" class="label-radio">Download File</label>#}
+{#                            <br><br>#}
+{#                            {% for field in download_form %}#}
+{#                                <div class="row">#}
+{#                                    <div class="col col-md-8">#}
+{#                                        {{field.label}}:#}
+{#                                        <br><br>#}
+{#                                    </div>#}
+{#                                    <div class="col col-md-4">#}
+{#                                        {{field}}#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+{#                    </div>#}
+
                     <br><br><br>
 
-                    <button type="submit" class="btn row" style="background:#00bcd4; margin-top: 50px;">Upload</button>
+                    <button type="submit" class="btn row btn-success" style="margin-top: 50px;">Upload</button>
                 </form>
             </div>
         </div>
@@ -80,5 +144,8 @@
 
 
 {% block js %}
+
+{#    <script src={% static 'js/jquery-steps.min.js' %} ></script>#}
     <script src="{% static 'js/uploader.js' %}"></script>
+
 {% endblock %}

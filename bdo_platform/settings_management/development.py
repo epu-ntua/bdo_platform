@@ -20,10 +20,14 @@ PARSER_JWT = 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJiZG8iLCJleHAiOjE1NTIzODQ1ND
 # PARSER_URL = 'http://127.0.0.1:8080'
 PARSER_URL = 'http://212.101.173.21:8085'
 UPLOAD_URL = PARSER_URL + '/file/upload'
-DOWNLOAD_URL = PARSER_URL + '/file/download'
 PARSE_URL = PARSER_URL + '/parse'
 PARSABLE_FILES_URL = PARSER_URL + "/parsable"
 
+
+PROFILES_URL = PARSER_URL + "/fileHandler/metadataProfile"
+UPLOAD_WITHOUT_PROFILE_URL = PARSER_URL + '/fileHandler/file/upload'
+UPLOAD_WITH_PROFILE_URL = PARSER_URL + '/fileHandler/file/uploadAndParse'
+DOWNLOAD_URL = PARSER_URL + '/fileHandler/file/download'
 
 
 ZEPPELIN_URL = 'http://localhost:8080'
