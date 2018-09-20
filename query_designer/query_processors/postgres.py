@@ -433,9 +433,9 @@ def is_valid_range_for_chain(chain):
     max_of_mins = first_dim[0]
     min_of_maxes = first_dim[1]
     for dim in chain:
-        if dim[0] > max_of_mins:
+        if dim[0] is not None and  dim[0] > max_of_mins:
             max_of_mins = dim[0]
-        if dim[1] < min_of_maxes:
+        if dim[1] is not None and dim[1] < min_of_maxes:
             min_of_maxes = dim[1]
     if min_of_maxes < max_of_mins:
         return False
