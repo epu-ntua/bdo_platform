@@ -4,7 +4,7 @@ import psycopg2
 import time
 from threading import Thread
 
-from django.db import connections
+from django.db import connections, ProgrammingError
 
 from aggregator.models import Variable, Dimension
 from .utils import GRANULARITY_MIN_PAGES, ResultEncoder
@@ -81,8 +81,10 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
 
     # join
     join_clause = ''
+    all_joins_for_check = []
     for _from in self.document['from'][1:]:
         joins = []
+        joins_for_check = []
         for s in _from['select']:
             if 'joined' in s:
                 if s['name'].endswith('location_latitude'):
@@ -96,6 +98,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                     js = [(s['name'], s['joined'])]
 
                 for j in js:
+                    joins_for_check.append( ( ( _from['type'], selects[j[0]]['column'] ), ( self.document['from'][0]['type'], selects[j[1]]['column'] ) ) )
                     if s.get('aggregate', '') != '':
                         c_name = '%s(%s)' % (s.get('aggregate'), c_name)
                         joins.append('%s(%s.%s)=%s(%s.%s)' %
@@ -120,6 +123,11 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             join_clause += 'JOIN %s ON %s\n' % \
                            (selects[_from['select'][0]['name']]['table'],
                             ' AND '.join(joins))
+        all_joins_for_check.append(joins_for_check)
+
+    if not is_same_range_joins(all_joins_for_check):
+        raise ValueError("Datasets have columns in common but actually nothing to join (ranges with nothing in common)")
+
 
     # where
     filters = self.document.get('filters', '')
@@ -331,3 +339,121 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         self.save()
 
     return response
+
+
+def is_same_range_joins(join_list):
+    join_chain_list = create_join_chain_list_from_joins(join_list)
+    min_max_list = calculate_range_for_every_join_chain(join_chain_list)
+    return is_valid_range_all_chains(min_max_list)
+
+
+def create_join_chain_list_from_joins(join_list):
+    all_joins_list, chained_dimensions, join_chain_list, list_accessed_counter = init_variables(join_list)
+    for join in all_joins_list:
+        if not (chained_dimensions.__contains__(join[0]) and chained_dimensions.__contains__(join[1])):
+            chain_list = update_chain_join_list(join)
+            update_chained_dimensions(chained_dimensions, join)
+            add_joins_to_chain_if_exist(all_joins_list, chain_list, chained_dimensions, list_accessed_counter)
+            join_chain_list.append(chain_list)
+            list_accessed_counter += 1
+    return join_chain_list
+
+
+def calculate_range_for_every_join_chain(join_chain_list):
+    min_max_dim_chain_list = []
+    for join_chain in join_chain_list:
+        min_max_dim_list = []
+
+        for dim in join_chain:
+            min_dim, max_dim = get_min_max_dimension(dim)
+            min_max_dim_list.append((min_dim, max_dim))
+
+        min_max_dim_chain_list.append(min_max_dim_list)
+    # print(min_max_dim_chain_list)
+    return min_max_dim_chain_list
+
+
+def is_valid_range_all_chains(min_max_chain_list):
+    for chain in min_max_chain_list:
+        if not is_valid_range_for_chain(chain):
+            return False
+    return True
+
+
+def init_variables(join_list):
+    join_chain_list = []
+    chained_dimensions = []
+    all_joins_list = extract_all_joins_from_join_list(join_list)
+    list_accessed_counter = 0
+    return all_joins_list, chained_dimensions, join_chain_list, list_accessed_counter
+
+
+def update_chain_join_list(join):
+    chain_list = [join[0], join[1]]
+    return chain_list
+
+
+def update_chained_dimensions(chained_dimensions, join):
+    chained_dimensions.append(join[0])
+    chained_dimensions.append(join[1])
+
+
+def add_joins_to_chain_if_exist(all_joins_list, chain_list, chained_dimensions, list_accessed_counter):
+    list_size = len(all_joins_list)
+    for join2 in all_joins_list[list_accessed_counter:list_size]:
+        add_join_if_valid(chain_list, chained_dimensions, join2)
+
+
+def get_min_max_dimension(dim):
+    cursor = connections['default'].cursor()
+    min_max_dim_query = build_min_max_dimension_query(dim)
+    try:
+        cursor.execute(min_max_dim_query)
+    except ProgrammingError as e:
+        print "query execution failed due to: ", e
+        return None
+    res = cursor.fetchone()
+    return res[0], res[1]
+
+
+def build_min_max_dimension_query(dim):
+    min_max_dim_query = """
+                SELECT
+                    min,
+                    max
+                FROM aggregator_dimension d 
+                INNER JOIN aggregator_variable v 
+                ON d.variable_id = v.id  
+                WHERE d.title = '%s' AND variable_id = %s
+            """ % (dim[1], dim[0])
+    return min_max_dim_query
+
+
+def is_valid_range_for_chain(chain):
+    first_dim = next(iter(chain), None)
+    max_of_mins = first_dim[0]
+    min_of_maxes = first_dim[1]
+    for dim in chain:
+        if dim[0] > max_of_mins:
+            max_of_mins = dim[0]
+        if dim[1] < min_of_maxes:
+            min_of_maxes = dim[1]
+    if min_of_maxes < max_of_mins:
+        return False
+    return True
+
+
+def add_join_if_valid(chain_list, chained_dimensions, join2):
+    if join2[0] in chain_list and join2[1] not in chain_list:
+        chain_list.append(join2[1])
+        chained_dimensions.append(join2[1])
+    elif join2[1] in chain_list and join2[0] not in chain_list:
+        chain_list.append(join2[0])
+        chained_dimensions.append(join2[0])
+
+
+def extract_all_joins_from_join_list(join_list):
+    all_joins_list = []
+    for lists in join_list:
+        all_joins_list += lists
+    return all_joins_list
