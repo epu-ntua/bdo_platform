@@ -20,9 +20,9 @@ def execute_query(request, pk=None):
 
     # get or fake query object
     if not pk:
-        q = Query(document=json.loads(doc_str))
+        q = AbstractQuery(document=json.loads(doc_str))
     else:
-        q = Query.objects.get(pk=pk)
+        q = AbstractQuery.objects.get(pk=pk)
         try:
             q.document = json.loads(doc_str)
         except ValueError:
@@ -38,11 +38,12 @@ def execute_query(request, pk=None):
     try:
         dataset_list = []
         doc = q.document
+        print q.document
         for el in doc['from']:
             dataset = Variable.objects.get(id=int(el['type'])).dataset
             if dataset.id not in dataset_list:
-                dataset_list.append(dataset)
-
+                dataset_list.append(dataset.id)
+        print dataset_list
         for dataset_id in dataset_list:
             access_decision = PEP.access_to_dataset_for_query(request, dataset_id)
             if access_decision is False:
