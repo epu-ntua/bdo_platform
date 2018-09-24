@@ -429,13 +429,14 @@ def build_min_max_dimension_query(dim):
 
 
 def is_valid_range_for_chain(chain):
-    first_dim = next(iter(chain), None)
-    max_of_mins = first_dim[0]
-    min_of_maxes = first_dim[1]
+    max_of_mins, min_of_maxes = initialize_minofmaxes_and_maxOfmins(chain)
+    if min_of_maxes is None or max_of_mins is None:
+        return True
+
     for dim in chain:
-        if dim[0] > max_of_mins:
+        if dim[0] is not None and  dim[0] > max_of_mins:
             max_of_mins = dim[0]
-        if dim[1] < min_of_maxes:
+        if dim[1] is not None and dim[1] < min_of_maxes:
             min_of_maxes = dim[1]
     if min_of_maxes < max_of_mins:
         return False
@@ -456,3 +457,15 @@ def extract_all_joins_from_join_list(join_list):
     for lists in join_list:
         all_joins_list += lists
     return all_joins_list
+
+def initialize_minofmaxes_and_maxOfmins(chain):
+    first_dim = next(iter(chain), None)
+    max_of_mins = first_dim[0]
+    min_of_maxes = first_dim[1]
+
+    while min_of_maxes is None or max_of_mins is None:
+        first_dim = next(iter(chain), None)
+        max_of_mins = first_dim[0]
+        min_of_maxes = first_dim[1]
+
+    return max_of_mins, min_of_maxes
