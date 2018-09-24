@@ -52,8 +52,11 @@ def execute_query(request, pk=None):
         return HttpResponseForbidden()
 
     # execute
-    response, encoder = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers,
+    result = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers,
                                   with_encoder=True)
+    if result is None :
+        return JsonResponse(dict())
+    response, encoder = result
 
     # send results
     return JsonResponse(response, encoder=encoder)
