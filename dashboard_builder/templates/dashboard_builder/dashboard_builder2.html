@@ -297,7 +297,7 @@
         <select id="query-select" class="form-control" name="query" style="width: 300px !important;">
             <option disabled selected>-- select one of the saved queries --</option>
             {% for query in saved_queries %}
-                <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+                <option id="{{ query.id }}" value="{{ query.id }}">{{ query.title }}</option>
                 {#                <option id="{{ query.id }}" value="{{ query.id }}">{{ query.title }}</option>#}
             {% endfor %}
         </select>
