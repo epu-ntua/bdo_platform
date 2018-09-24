@@ -55,7 +55,7 @@ def execute_query(request, pk=None):
     result = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers,
                                   with_encoder=True)
     if result is None :
-        return JsonResponse(dict())
+        return JsonResponse({"error_message": "Datasets do not match both in space and time."})
     response, encoder = result
 
     # send results

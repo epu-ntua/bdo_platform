@@ -977,25 +977,36 @@ $(function () {
                         $("#viz_container").append(iframe);
                         // $('#viz_container iframe').attr('src', '/visualizations/get_line_chart_am/?query=' + id + '&y_var[]=' + y_var + '&x_var=' + x_var);
 
+                        if(response.hasOwnProperty('error_message')) {
+                            hide_gif();
+                            $('#chartdiv').hide();
+                            $('#paginationDiv').hide();
+                            $('.no-data-message').show();
 
+                            $('#error_message_span').html(response['error_message']);
+                            $('#error_message_alert').show();
 
-                        var $header = $('<tr />');
-                        $.each(response.headers.columns, function (idx, col) {
-                            $header.append($('<td />').text(col.title))
-                        });
-                        $table.find('thead').append($header);
-
-                        $.each(response.results, function (idx, res) {
-                            var $row = $('<tr />');
-                            $.each(res, function(jdx, resItem) {
-                                $row.append($('<td />').text(resItem));
+                            // alert(response['error_message']);
+                        }
+                        else {
+                            var $header = $('<tr />');
+                            $.each(response.headers.columns, function (idx, col) {
+                                $header.append($('<td />').text(col.title))
                             });
+                            $table.find('thead').append($header);
 
-                            $table.find('tbody').append($row);
-                        });
-                        updatePaginationButtons();
-                        $("#chart-content-tabs li").eq(1).find('a').click();
-                        $("#chart-content-tabs li").eq(0).find('a').click();
+                            $.each(response.results, function (idx, res) {
+                                var $row = $('<tr />');
+                                $.each(res, function (jdx, resItem) {
+                                    $row.append($('<td />').text(resItem));
+                                });
+
+                                $table.find('tbody').append($row);
+                            });
+                            updatePaginationButtons();
+                            $("#chart-content-tabs li").eq(1).find('a').click();
+                            $("#chart-content-tabs li").eq(0).find('a').click();
+                        }
                     },
                     error: function (response) {
                         hide_gif();
