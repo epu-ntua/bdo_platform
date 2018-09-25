@@ -412,7 +412,10 @@ def get_min_max_dimension(dim):
         print "query execution failed due to: ", e
         return None
     res = cursor.fetchone()
-    return res[0], res[1]
+    if res is not None:
+        return res[0], res[1]
+    else:
+        return None, None
 
 
 def build_min_max_dimension_query(dim):
