@@ -4,6 +4,7 @@ import psycopg2
 import time
 from threading import Thread
 
+import sys
 from django.db import connections, ProgrammingError
 
 from aggregator.models import Variable, Dimension
@@ -124,10 +125,12 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                            (selects[_from['select'][0]['name']]['table'],
                             ' AND '.join(joins))
         all_joins_for_check.append(joins_for_check)
-
+    print "Joins to check"
+    print all_joins_for_check
     if not is_same_range_joins(all_joins_for_check):
+        print "Datasets have columns in common but actually nothing to join (ranges with nothing in common)"
         raise ValueError("Datasets have columns in common but actually nothing to join (ranges with nothing in common)")
-
+    print "Query Continues"
 
     # where
     filters = self.document.get('filters', '')
@@ -415,7 +418,7 @@ def get_min_max_dimension(dim):
     if res is not None:
         return res[0], res[1]
     else:
-        return None, None
+        return (-1*sys.maxint), sys.maxint
 
 
 def build_min_max_dimension_query(dim):
