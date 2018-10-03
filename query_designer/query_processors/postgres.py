@@ -1,5 +1,7 @@
+import re
 from collections import OrderedDict
-import psycopg2
+from query_designer import models
+from query_designer.models import Query
 
 import time
 from threading import Thread
@@ -11,224 +13,26 @@ from .utils import GRANULARITY_MIN_PAGES, ResultEncoder
 
 
 def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
-    if dimension_values:
-        dimension_values = dimension_values.split(',')
-    else:
-        dimension_values = []
-
-    # select
+    dimension_values = preprocess_dimension_values(dimension_values)
     selects = OrderedDict()
     headers = []
     header_sql_types = []
-
     columns = []
     groups = []
-    for _from in self.document['from']:
-        v_obj = Variable.objects.get(pk=_from['type'])
+    prejoin_groups = []
 
-        for s in _from['select']:
-            if s['type'] != 'VALUE':
-                dimension = Dimension.objects.get(pk=s['type'])
-                column_name = dimension.data_column_name
-                column_unit = dimension.unit
-                column_axis = dimension.axis
-                column_step = dimension.step
-                sql_type = dimension.sql_type
+    c_name, v_obj, data_table_names= preprocess_document(columns, groups, prejoin_groups,
+                                                        header_sql_types, headers, selects, self)
+    prejoin_name = None
+    if len(self.document['from']) > 1:
+        prejoin_name = extract_prejoin_name(self.document['from'])
 
-            else:
-                if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                    column_name = v_obj.name
-                else:
-                    column_name = 'value'
-                column_unit = v_obj.unit
-                column_axis = None
-                column_step = None
-                sql_type = 'double precision'
-
-            selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
-            _from['name'] = v_obj.data_table_name
-
-            # if 'joined' not in s:
-            c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
-            if s.get('aggregate', '') != '':
-                c_name = '%s(%s)' % (s.get('aggregate'), c_name)
-
-            if not s.get('exclude', False):
-                header_sql_types.append(sql_type)
-                headers.append({
-                    'title': s['title'],
-                    'name': s['name'],
-                    'unit': column_unit,
-                    'step': column_step,
-                    'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
-                    'isVariable': s['type'] == 'VALUE',
-                    'axis': column_axis,
-                })
-
-                # add fields to select clause
-                columns.append((c_name, '%s' % s['name']))
-
-            # add fields to grouping
-            if s.get('groupBy', False):
-                groups.append(c_name)
-
-    # select
-    select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
-
-    # from
-    from_clause = 'FROM %s \n' % \
-                  (selects[selects.keys()[0]]['table'])
-
-    # join
-    join_clause = ''
-    all_joins_for_check = []
-    for _from in self.document['from'][1:]:
-        joins = []
-        joins_for_check = []
-        for s in _from['select']:
-            if 'joined' in s:
-                if s['name'].endswith('location_latitude'):
-                    js = [
-                        (s['name'], s['joined'] + '_latitude'),
-                        (s['name'].replace('_latitude', '_longitude'), s['joined'] + '_longitude'),
-                    ]
-                elif s['name'].endswith('location_longitude'):
-                    js = []
-                else:
-                    js = [(s['name'], s['joined'])]
-
-                for j in js:
-                    joins_for_check.append( ( ( _from['type'], selects[j[0]]['column'] ), ( self.document['from'][0]['type'], selects[j[1]]['column'] ) ) )
-                    if s.get('aggregate', '') != '':
-                        c_name = '%s(%s)' % (s.get('aggregate'), c_name)
-                        joins.append('%s(%s.%s)=%s(%s.%s)' %
-                                     (s.get('aggregate'),
-                                      _from['name'],
-                                      selects[j[0]]['column'],
-                                      s.get('aggregate'),
-                                      self.document['from'][0]['name'],
-                                      selects[j[1]]['column']))
-                    else:
-                        joins.append('%s.%s=%s.%s' %
-                                     (_from['name'],
-                                      selects[j[0]]['column'],
-                                      self.document['from'][0]['name'],
-                                      selects[j[1]]['column']))
-
-        print "LOOK FOR JOIN"
-        print selects
-        print _from['name']
-        if selects[_from['select'][0]['name']]['table'] != selects[self.document['from'][0]['select'][0]['name']]['table']:
-            print "WE HAVE JOIN"
-            join_clause += 'JOIN %s ON %s\n' % \
-                           (selects[_from['select'][0]['name']]['table'],
-                            ' AND '.join(joins))
-        all_joins_for_check.append(joins_for_check)
-
-    if not is_same_range_joins(all_joins_for_check):
-        raise ValueError("Datasets have columns in common but actually nothing to join (ranges with nothing in common)")
-
-
-    # where
-    filters = self.document.get('filters', '')
-    if not filters:
-        where_clause = ''
+    if is_query_for_average(self.document['from']) and prejoin_name is not None:
+        limit, offset, query, subquery_cnt = build_prejoin_query(prejoin_name, data_table_names, columns, prejoin_groups, self)
     else:
-        where_clause = self.process_filters(filters)
+        limit, offset, query, subquery_cnt = build_query(c_name, columns, groups, selects, self)
 
-    if where_clause:
-        where_clause = 'WHERE ' + where_clause + ' \n'
-
-    # grouping
-    group_clause = ''
-    if groups:
-        group_clause = 'GROUP BY %s\n' % ','.join(groups)
-
-    # ordering
-    order_by_clause = ''
-    orderings = self.document.get('orderings', [])
-    if orderings:
-        order_by_clause = 'ORDER BY %s\n' % ','.join([(o['name'] + ' ' + o['type']) for o in orderings])
-
-    # offset & limit
-    offset_clause = ''
-    offset = 0
-    limit_clause = ''
-    limit = None
-    if 'offset' in self.document and self.document['offset']:
-        offset = int(self.document['offset'])
-        offset_clause = 'OFFSET %d\n' % offset
-
-    if 'limit' in self.document and self.document['limit']:
-        limit = int(self.document['limit'])
-        limit_clause = 'LIMIT %d\n' % limit
-
-    # organize into subquery
-    subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + order_by_clause + ') AS SQ1\n'
-    subquery_cnt = 'SELECT COUNT(*) FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + ') AS SQ1\n'
-
-    # generate query
-    # q = subquery + \
-    #     order_by_clause + \
-    #     offset_clause + \
-    #     limit_clause
-    q = subquery + \
-        offset_clause + \
-        limit_clause
-    subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
-
-    import re
-    print 'Initial Query:'
-    print subquery
-    if len(re.findall(r'round\d', subquery)) > 0:
-        print 'Trying to fix round'
-        # round_num = str(subquery.split('round')[1][0])
-        round_num = str(re.findall(r'round\d', subquery)[0])[-1]
-        print round_num
-        # names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
-        # print
-        names = re.findall(r"round"+round_num+"\((.*?)\)", subquery)
-        for name in names:
-            subquery = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", subquery)
-        # print subquery
-
-        names = re.findall(r"round" + round_num +"\((.*?)\)", subquery_cnt)
-        for name in names:
-            subquery_cnt = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", subquery_cnt)
-        # print subquery_cnt
-
-        names = re.findall(r"round" + round_num +"\((.*?)\)", q)
-        for name in names:
-            q = re.sub(r"round"+round_num+"\((" + name + ")\)", "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", q)
-        # print q
-
-
-    if len(re.findall(r'date_trunc_(.*?)', subquery)) > 0:
-        print 'Trying to fix date_trunc'
-        time_trunc = str(subquery.split('date_trunc_')[1].split('(')[0])
-        # print
-        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", subquery)
-        for name in names:
-            subquery = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", subquery)
-        # print subquery
-
-        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", subquery_cnt)
-        for name in names:
-            subquery_cnt = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", subquery_cnt)
-        # print subquery_cnt
-
-        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", q)
-        for name in names:
-            q = re.sub(r"date_trunc_"+time_trunc+"\((" + name + ")\)", "date_trunc('" + time_trunc + "', " + name + ")", q)
-        # print q
-
-
-
-    # cursor = connection.cursor()
-    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-        cursor = connections['UBITECH_POSTGRES'].cursor()
-    else:
-        cursor = connections['default'].cursor()
+    cursor = choose_db_cursor(v_obj)
 
     if not only_headers:
         # execute query & return results
@@ -271,35 +75,22 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                 granularity = 0
 
             if granularity > 1:
-                q = """
+                query = """
                     SELECT %s FROM (
                         SELECT row_number() OVER () AS row_id, * FROM (%s) AS GQ
                     ) AS GQ_C
                     WHERE (row_id %% %d = 0)
-                """ % (','.join([c[1] for c in columns]), q, granularity)
+                """ % (','.join([c[1] for c in columns]), query, granularity)
         print "Executed query:"
-        print q
+        print query
         results = []
         if execute:
-            cursor.execute(q)
+            cursor.execute(query)
             all_rows = cursor.fetchall()
             print "First rows"
             print all_rows[:3]
             print header_sql_types
-            # all_rows = Query.threaded_fetchall(connection, q, self.count)
 
-            # we have to convert numeric results to float
-            # by default they're returned as strings to prevent loss of precision
-            # for row in all_rows:
-            #     res_row = []
-            #     for idx, h_type in enumerate(header_sql_types):
-            #         if (h_type == 'numeric' or h_type.startswith('numeric(')) and type(row[idx]) in [str, unicode]:
-            #         # if h_type == 'numeric' or h_type == 'double precision':
-            #             res_row.append(float(row[idx]))
-            #         else:
-            #             res_row.append(row[idx])
-            #
-            #     results.append(res_row)
             results = all_rows
     # include dimension values if requested
     for d_name in dimension_values:
@@ -330,7 +121,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     response['headers']['columns'] = headers
 
     if raw_query:
-        response['raw_query'] = q
+        response['raw_query'] = query
 
     # store headers
     self.headers = ResultEncoder(mode='postgres').encode(headers)
@@ -338,6 +129,388 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         self.save()
 
     return response
+
+
+def preprocess_dimension_values(dimension_values):
+    if dimension_values:
+        dimension_values = dimension_values.split(',')
+    else:
+        dimension_values = []
+    return dimension_values
+
+
+def preprocess_document(columns, groups, prejoin_groups, header_sql_types, headers, selects, self):
+    data_table_names = []
+    for _from in self.document['from']:
+        v_obj = Variable.objects.get(pk=_from['type'])
+
+        for s in _from['select']:
+            if s['type'] != 'VALUE':
+                dimension = Dimension.objects.get(pk=s['type'])
+                column_name = dimension.data_column_name
+                column_unit = dimension.unit
+                column_axis = dimension.axis
+                column_step = dimension.step
+                sql_type = dimension.sql_type
+            else:
+                if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                    column_name = v_obj.name
+                else:
+                    column_name = 'value'
+                column_unit = v_obj.unit
+                column_axis = None
+                column_step = None
+                sql_type = 'double precision'
+
+            selects[s['name']] = {'column': column_name, 'table': v_obj.data_table_name}
+            _from['name'] = v_obj.data_table_name
+
+            # if 'joined' not in s:
+            c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
+            if s.get('aggregate', '') != '':
+                c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+
+            if not s.get('exclude', False):
+                header_sql_types.append(sql_type)
+                headers.append({
+                    'title': s['title'],
+                    'name': s['name'],
+                    'unit': column_unit,
+                    'step': column_step,
+                    'quote': '' if sql_type.startswith('numeric') or sql_type.startswith('double') else "'",
+                    'isVariable': s['type'] == 'VALUE',
+                    'axis': column_axis,
+                })
+
+                # add fields to select clause
+                columns.append( (c_name, '%s' % s['name'], '%s' % s['title'], s.get('aggregate')) )
+
+            # add fields to grouping
+            if s.get('groupBy', False):
+                groups.append(c_name)
+                prejoin_groups.append('%s(%s)' % (s.get('aggregate'), selects[s['name']]['column']))
+        data_table_names.append(v_obj.data_table_name)
+    return c_name, v_obj, data_table_names
+
+
+def is_query_for_average(from_list):
+    for _from in from_list:
+        for s in _from['select']:
+            if 'type' in s and s['type'] == 'VALUE' and s['aggregate'] != 'AVG':
+                return False
+    return True
+
+
+def extract_prejoin_name(from_list):
+    variable_id1, variable_id2 = extract_variable_ids_from_doc(from_list)
+    dataset_id1 = extract_dataset_id_from_varible_ids(variable_id1)
+    dataset_id2 = extract_dataset_id_from_varible_ids(variable_id2)
+    return extract_prejoin_name_for_datasets(dataset_id1, dataset_id2)
+
+
+def build_prejoin_query(prejoin_name, data_table_names, columns, prejoin_groups, self):
+    select_clause = build_prejoin_select_clause(columns)
+    from_clause = 'FROM ' + prejoin_name + '\n'
+    where_clause = build_prejoin_where_clause(self, prejoin_name)
+    group_clause = build_group_by_clause(prejoin_groups)
+    order_by_clause = build_order_by_clause(self)
+    offset, offset_clause = build_offset_clause(self)
+    limit, limit_clause = build_limit_clause(self)
+
+    subquery = 'SELECT * FROM (' + select_clause + from_clause + where_clause + group_clause + order_by_clause + ') AS SQ1\n'
+    q = subquery + offset_clause + limit_clause
+    subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
+    print 'Initial Query:'
+    print subquery
+    q, subquery, subquery_cnt = fix_round(q, subquery, subquery_cnt)
+    q = fix_date_trunc(q, subquery, subquery_cnt)
+    return limit, offset, q, subquery_cnt
+
+
+def build_query(c_name, columns, groups, selects, self):
+    select_clause = build_select_clause(columns)
+    from_clause = build_from_clause(selects)
+    all_joins_for_check, join_clause = build_join_clause(c_name, selects, self)
+    if not is_same_range_joins(all_joins_for_check):
+        raise ValueError("Datasets have columns in common but actually nothing to join (ranges with nothing in common)")
+    where_clause = build_where_clause(self)
+    group_clause = build_group_by_clause(groups)
+    order_by_clause = build_order_by_clause(self)
+    offset, offset_clause = build_offset_clause(self)
+    limit, limit_clause = build_limit_clause(self)
+    # organize into subquery
+    subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + order_by_clause + ') AS SQ1\n'
+    q = subquery + offset_clause + limit_clause
+    subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
+    print 'Initial Query:'
+    print subquery
+    q, subquery, subquery_cnt = fix_round(q, subquery, subquery_cnt)
+    q = fix_date_trunc(q, subquery, subquery_cnt)
+    return limit, offset, q, subquery_cnt
+
+
+def choose_db_cursor(v_obj):
+    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+        cursor = connections['UBITECH_POSTGRES'].cursor()
+    else:
+        cursor = connections['default'].cursor()
+    return cursor
+
+
+def extract_prejoin_name_for_datasets(dataset_id1, dataset_id2):
+    query = """SELECT view_name 
+              FROM aggregator_joinofdatasets 
+              WHERE (dataset_first_id =%s AND dataset_second_id = %s) OR 
+                  (dataset_first_id = %s AND dataset_second_id = %s) """ \
+            % (dataset_id1, dataset_id2, dataset_id2, dataset_id1)
+    cursor = connections['default'].cursor()
+    try:
+        cursor.execute(query)
+    except ProgrammingError as e:
+        print "query execution failed due to: ", e
+        return None
+    res = cursor.fetchone()
+    if res is not None:
+        return res[0]
+    return None
+
+
+def build_select_clause(columns):
+    select_clause = 'SELECT ' + ','.join(['%s AS %s' % (c[0], c[1]) for c in columns]) + '\n'
+    return select_clause
+
+
+def build_prejoin_select_clause(columns):
+    select_clause = 'SELECT ' + ','.join(['%s(%s) AS %s' % (c[3], c[2], c[1]) for c in columns]) + '\n'
+    return select_clause
+
+
+def build_from_clause(selects):
+    from_clause = 'FROM %s \n' % \
+                  (selects[selects.keys()[0]]['table'])
+    return from_clause
+
+
+def build_join_clause(c_name, selects, self):
+    join_clause = ''
+    all_joins_for_check = []
+    for _from in self.document['from'][1:]:
+        joins = []
+        joins_for_check = []
+        for s in _from['select']:
+            if 'joined' in s:
+                if s['name'].endswith('location_latitude'):
+                    js = [
+                        (s['name'], s['joined'] + '_latitude'),
+                        (s['name'].replace('_latitude', '_longitude'), s['joined'] + '_longitude'),
+                    ]
+                elif s['name'].endswith('location_longitude'):
+                    js = []
+                else:
+                    js = [(s['name'], s['joined'])]
+
+                for j in js:
+                    joins_for_check.append(((_from['type'], selects[j[0]]['column']),
+                                            (self.document['from'][0]['type'], selects[j[1]]['column'])))
+                    if s.get('aggregate', '') != '':
+                        c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+                        joins.append('%s(%s.%s)=%s(%s.%s)' %
+                                     (s.get('aggregate'),
+                                      _from['name'],
+                                      selects[j[0]]['column'],
+                                      s.get('aggregate'),
+                                      self.document['from'][0]['name'],
+                                      selects[j[1]]['column']))
+                    else:
+                        joins.append('%s.%s=%s.%s' %
+                                     (_from['name'],
+                                      selects[j[0]]['column'],
+                                      self.document['from'][0]['name'],
+                                      selects[j[1]]['column']))
+
+        print "LOOK FOR JOIN"
+        print selects
+        print _from['name']
+        if selects[_from['select'][0]['name']]['table'] != \
+                selects[self.document['from'][0]['select'][0]['name']]['table']:
+            print "WE HAVE JOIN"
+            join_clause += 'JOIN %s ON %s\n' % \
+                           (selects[_from['select'][0]['name']]['table'],
+                            ' AND '.join(joins))
+        all_joins_for_check.append(joins_for_check)
+    return all_joins_for_check, join_clause
+
+
+def build_where_clause(self):
+    filters = self.document.get('filters', '')
+    if not filters:
+        where_clause = ''
+    else:
+        where_clause = self.process_filters(filters)
+
+    if where_clause:
+        where_clause = 'WHERE ' + where_clause + ' \n'
+    return where_clause
+
+
+def process_prejoin_filters(filters_json, self, view_name):
+    if type(filters_json) in [int, float]:
+        try:
+            filters = process_prejoin_leaf_filters(filters_json, self, view_name)
+        except:
+            return filters_json
+        return filters
+    if type(filters_json) in [str, unicode]:
+        try:
+            filters = process_prejoin_leaf_filters(filters_json, self, view_name)
+        except:
+            return filters_json
+        return "%s" % filters
+    _a = process_prejoin_filters(filters_json['a'], self, view_name)
+    _b = process_prejoin_filters(filters_json['b'], self, view_name)
+    result = '%s %s %s' % \
+             (('(%s)' % _a) if type(_a) not in [str, unicode, int, float] else _a,
+              Query.operator_to_str(filters_json['op']),
+              ('(%s)' % _b) if type(_b) not in [str, unicode, int, float] else _b)
+    return result
+
+
+def process_prejoin_leaf_filters(filters, self, view_name):
+    col_name = ''
+    from_order = int(filters[filters.find('i') + 1:filters.find('_')])
+    if from_order >= 0:
+        for x in self.document['from'][from_order]['select']:
+            if x['name'] == filters:
+                if x['type'] != 'VALUE':
+                    col_name = Dimension.objects.get(pk=x['type']).data_column_name
+                else:
+                    v_obj = Variable.objects.get(pk=int(self.document['from'][from_order]['type']))
+                    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                        col_name = v_obj.name
+                    else:
+                        col_name = 'value'
+        filters = view_name + '.' + col_name
+    return filters
+
+
+def build_prejoin_where_clause(self, view_name):
+    filters = self.document.get('filters', '')
+    if not filters:
+        where_clause = ''
+    else:
+        where_clause = process_prejoin_filters(filters, self, view_name)
+
+    if where_clause:
+        where_clause = 'WHERE ' + where_clause + ' \n'
+    return where_clause
+
+
+def build_group_by_clause(groups):
+    group_clause = ''
+    if groups:
+        group_clause = 'GROUP BY %s\n' % ','.join(groups)
+    return group_clause
+
+
+def build_order_by_clause(self):
+    order_by_clause = ''
+    orderings = self.document.get('orderings', [])
+    if orderings:
+        order_by_clause = 'ORDER BY %s\n' % ','.join([(o['name'] + ' ' + o['type']) for o in orderings])
+    return order_by_clause
+
+
+def build_limit_clause(self):
+    limit_clause = ''
+    limit = None
+    if 'limit' in self.document and self.document['limit']:
+        limit = int(self.document['limit'])
+        limit_clause = 'LIMIT %d\n' % limit
+    return limit, limit_clause
+
+
+def build_offset_clause(self):
+    offset_clause = ''
+    offset = 0
+    if 'offset' in self.document and self.document['offset']:
+        offset = int(self.document['offset'])
+        offset_clause = 'OFFSET %d\n' % offset
+    return offset, offset_clause
+
+
+def fix_date_trunc(q, subquery, subquery_cnt):
+    if len(re.findall(r'date_trunc_(.*?)', subquery)) > 0:
+        print 'Trying to fix date_trunc'
+        time_trunc = str(subquery.split('date_trunc_')[1].split('(')[0])
+        # print
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", subquery)
+        for name in names:
+            subquery = re.sub(r"date_trunc_" + time_trunc + "\((" + name + ")\)",
+                              "date_trunc('" + time_trunc + "', " + name + ")", subquery)
+        # print subquery
+
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", subquery_cnt)
+        for name in names:
+            subquery_cnt = re.sub(r"date_trunc_" + time_trunc + "\((" + name + ")\)",
+                                  "date_trunc('" + time_trunc + "', " + name + ")", subquery_cnt)
+        # print subquery_cnt
+
+        names = re.findall(r"date_trunc_" + time_trunc + "\((.*?)\)", q)
+        for name in names:
+            q = re.sub(r"date_trunc_" + time_trunc + "\((" + name + ")\)",
+                       "date_trunc('" + time_trunc + "', " + name + ")", q)
+        # print q
+    return q
+
+
+def fix_round(q, subquery, subquery_cnt):
+    if len(re.findall(r'round\d', subquery)) > 0:
+        print 'Trying to fix round'
+        # round_num = str(subquery.split('round')[1][0])
+        round_num = str(re.findall(r'round\d', subquery)[0])[-1]
+        print round_num
+        # names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
+        # print
+        names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
+        for name in names:
+            subquery = re.sub(r"round" + round_num + "\((" + name + ")\)",
+                              "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", subquery)
+        # print subquery
+
+        names = re.findall(r"round" + round_num + "\((.*?)\)", subquery_cnt)
+        for name in names:
+            subquery_cnt = re.sub(r"round" + round_num + "\((" + name + ")\)",
+                                  "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", subquery_cnt)
+        # print subquery_cnt
+
+        names = re.findall(r"round" + round_num + "\((.*?)\)", q)
+        for name in names:
+            q = re.sub(r"round" + round_num + "\((" + name + ")\)",
+                       "round(" + name + "::NUMERIC, " + round_num + ")::DOUBLE PRECISION", q)
+        # print q
+    return q, subquery, subquery_cnt
+
+
+def extract_variable_ids_from_doc(from_list):
+    variable_list = []
+    for _from in from_list:
+        variable_list.append(_from['type'])
+
+    return variable_list[0], variable_list[1]
+
+
+def extract_dataset_id_from_varible_ids(variable_id):
+    query = """SELECT dataset_id 
+              FROM aggregator_variable 
+              WHERE id =%s """ % variable_id
+    cursor = connections['default'].cursor()
+    try:
+        cursor.execute(query)
+    except ProgrammingError as e:
+        print "query execution failed due to: ", e
+        return None
+    res = cursor.fetchone()
+    return res[0]
 
 
 def is_same_range_joins(join_list):
@@ -429,12 +602,12 @@ def build_min_max_dimension_query(dim):
 
 
 def is_valid_range_for_chain(chain):
-    max_of_mins, min_of_maxes = initialize_minofmaxes_and_maxOfmins(chain)
+    max_of_mins, min_of_maxes = initialize_minofmaxes_and_maxofmins(chain)
     if min_of_maxes is None or max_of_mins is None:
         return True
 
     for dim in chain:
-        if dim[0] is not None and  dim[0] > max_of_mins:
+        if dim[0] is not None and dim[0] > max_of_mins:
             max_of_mins = dim[0]
         if dim[1] is not None and dim[1] < min_of_maxes:
             min_of_maxes = dim[1]
@@ -458,7 +631,8 @@ def extract_all_joins_from_join_list(join_list):
         all_joins_list += lists
     return all_joins_list
 
-def initialize_minofmaxes_and_maxOfmins(chain):
+
+def initialize_minofmaxes_and_maxofmins(chain):
     first_dim = next(iter(chain), None)
     max_of_mins = first_dim[0]
     min_of_maxes = first_dim[1]
