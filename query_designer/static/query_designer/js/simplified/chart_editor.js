@@ -1,140 +1,113 @@
-$('#viz_config select').select2();
+var query_id = $('#query-variables-select-container div').attr("id");
 
-function updateVariables(element) {
-    $('#addVizModal .variable-select').find('option').remove().end();
-    $('#addVizModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
-    var new_query_id = $('#selected_query').val();
-    var new_query_doc = {};
-    $.ajax({
-        url: '/queries/get_query_variables/',
-        data: {
-            id: new_query_id,
-            document: new_query_doc
-            },
-        type: 'GET',
-        success: function(result){
-            var variables = result['variables'];
-            var dimensions = result['dimensions'];
-            $('.variable-select').append($("<option></option>")
-                .attr("value", '')
-                .text('-- column select --'));
-            $.each(variables, function(k, v) {
-                $('.variable-select').append($("<option></option>")
-                    .attr("value", v)
-                    .text(k));
-            });
-
-            $.each(dimensions, function(k, v) {
-                $('.variable-select').append($("<option></option>")
-                    .attr("value", v)
-                    .text(k));
-            });
-        }
-    });
+function updateVariables() {
+    $('#myModal .variable-select').find('option').remove();
+    var content = $('#query-variables-select-container #' + String(query_id)).html();
+    $('#myModal .variable-select ').html(content);
 }
 
+$(".viz_item").click(function () {
+    var component_id = $(this).attr('data-viz-id');
+    var component_type = $(this).attr('data-viz-type');
+    var component_selector = 'li[data-viz-id="' + component_id + '"]';
 
-    $('#addVizModal .select2').on("click", function() {
-        $('.popover').popover('hide');
+    $(component_selector).popover({
+        html: true,
+        title: 'Configure visualisation',
+        trigger: 'manual',
+        content: function () {
+            return $('.all_viz_forms  #viz_' + String(component_id)).clone();
+        }
     });
+    updateVariables();
 
-    $('#addVizModal select').on('change', function() {
-        $('#addVizModal #viz_config').show();
-        var new_query_id = $(this).children(":selected").attr("data-query-id");
-        $('#addVizModal #selected_query').val(new_query_id);
-        $('.popover').popover('hide');
-          // updateVariables(this);
-    });
-
-
-
-    $(".viz_item").click(function (element) {
-      var component_id = $(this).attr('data-viz-id');
-      var component_selector = 'li[data-viz-id="'+component_id+'"]';
-      $.ajax({
-            url: '/dashboards/get_visualization_form_fields',
-            data: {
-                id: parseInt(component_id),
-                order: 1
-                },
-            type: 'GET',
-            success: function(form_fields){
-                $("#conf-container").html(form_fields);
-                $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
-                $("#conf-container").append('<button type="button" id="select_conf_cancel" class="btn btn-sm " data-toggle="popover">Cancel</button>');
-                $(component_selector).popover({
-                    html: true,
-                    title: 'Configure visualisation',
-                    trigger: 'manual',
-                    content: function() {
-                        return $('#conf-container').html();
-                    }
-                });
-                updateVariables($('#load-viz-query-select'));
-                $('.viz_item').not(component_selector).popover('hide');
-                $(component_selector).popover('toggle');
-                var popver_id = '#' + $(component_selector).attr('aria-describedby');
-                $(popver_id+' #select_conf_ok').click(function(e){
-                    $("#viz_container .outputLoadImg").show();
-                    submit_conf(component_selector);
-                    $(component_selector).popover("hide");
-                });
-                $(popver_id+' #select_conf_cancel').click(function(e){
-                    $(component_selector).popover("hide");
-                });
-            }
+    $(component_selector).popover('show');
+    $('#myModal .popover-content .variable-select').select(
+        {
+            placeholder: "Select Variable",
+        }
+    );
+    var popver_id = '#' + $(component_selector).attr('aria-describedby');
+    $(popver_id + ' #select_conf_ok').click(function () {
+        $("#viz_config .list-group").children().each(function () {
+            $(this).find("#selected_viz_span").hide();
         });
+
+        $(component_selector).find("#selected_viz_span").show();
+        submit_conf(component_selector, component_type);
+        $(component_selector).popover("hide");
+    });
+    $(popver_id + ' #select_conf_cancel').click(function () {
+        $(component_selector).popover("hide");
+    });
 });
 
 
-var viz_request = "";
-function submit_conf(component_selector) {
-    viz_request = "/visualizations/";
+function submit_conf(component_selector, component_type) {
     var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-    viz_request += $('#action').val();
-
     var submitted_args = $(conf_popover_id).find('.popover-content').clone();
     var selects = $(conf_popover_id).find('.popover-content').find("select");
-    $(selects).each(function(i) {
+    $(selects).each(function (i) {
         var select = this;
         $(submitted_args).find("select").eq(i).val($(select).val());
+        $('#config-viz-form').append(select);
     });
     $('#config-viz-form').empty();
     $('#config-viz-form').append(submitted_args);
 
+    if (component_type !== 'map') {
+        var viz_request = "/visualizations/" + $('#myModal').find('.modal-body').find('#action').val();
+        var chartData = $("#config-viz-form").serialize();
+        viz_request += '?' + chartData + '&query=' + query_id;
+        show_viz(viz_request);
+    }
+    else {
+        var json = [];
+        var mapChartData = getFormData($("#config-viz-form"), 0, query_id);
+        json.push(mapChartData);
+        viz_request = getMapVisualizationRequest(json);
+        show_viz(viz_request)
+    }
+    ;
+};
 
-    var myData = $("#config-viz-form").serialize();
-    viz_request += '?';
-    viz_request += myData;
-
-    viz_request += '&query=' + $('#selected_query').val();
-
-    show_viz(viz_request);
+function getMapVisualizationRequest(json) {
+    var viz_request = "/visualizations/get_map_visualization/?layer_count=1&";
+    var url = "";
+    for (var i = 0; i < json.length; i++) {
+        var obj = json[i];
+        for (var key in obj) {
+            url += "&" + (key) + obj['layer_id'] + "=" + (obj[key]);
+        }
+    }
+    url = url.replace("&", "");
+    viz_request += url;
+    return viz_request;
 }
 
 function show_viz(viz_request) {
-    var iframe = $('<iframe id="viz-iframe" ' +
-        'src="'+viz_request+'" frameborder="0" allowfullscreen="" onload="hide_gif();"'+
-        '></iframe>');
-    $("#viz_container iframe").remove();
-    $("#viz_container").append(iframe);
-    // $("#viz_container").html('<iframe id="viz-iframe" ' +
-    //     'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
-    //     '></iframe>');
+    // language=HTML
+    var htmlString = '<div class="loadingFrame"><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
+    $("#viz_container").html(htmlString);
+    $('#myModal #submit-modal-btn').show();
+    $("#viz_container .loadingFrame").css("display", "block");
+    $("#viz_container iframe").on("load", function () {
+        $(this).siblings(".loadingFrame").css("display", "none");
+    });
 }
 
-function hide_gif(){
-    $(".outputLoadImg").css( "display", "none" );
+function hide_gif() {
+    $(".outputLoadImg").css("display", "none");
 };
 
-
-// $("#toggleviz_group_container_btn").click(function () {
-//     if($('#viz_group_container').is(":visible")){
-//         $('#viz_group_container').collapse("hide");
-//         $('#viz_container').removeClass('col-sm-10').addClass('col-sm-12');
-//     }
-//     else{
-//         $('#viz_group_container').collapse("show");
-//         $('#viz_container').removeClass('col-sm-12').addClass('col-sm-10');
-//     }
-// });
+function getFormData(form, count, query) {
+    var unindexed_array = form.serializeArray();
+    var indexed_array = {};
+    $.map(unindexed_array, function (n) {
+        indexed_array[n['name']] = n['value'];
+    });
+    indexed_array['query'] = query;
+    indexed_array['layer_id'] = String(count);
+    indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000)) + 'layer' + String(count);
+    return indexed_array;
+}

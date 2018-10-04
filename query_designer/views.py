@@ -66,6 +66,7 @@ def simplified(request, pk=None):
     return render(request, 'query_designer/simplified.html', {
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
+        'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
         'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
         'AGGREGATES': AGGREGATES,
     })
