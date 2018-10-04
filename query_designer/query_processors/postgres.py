@@ -124,6 +124,9 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             join_clause += 'JOIN %s ON %s\n' % \
                            (selects[_from['select'][0]['name']]['table'],
                             ' AND '.join(joins))
+            if join_clause.replace(" ","").replace("\n","").replace(",", "").endswith("ON"):
+                raise ValueError("Invalid Join! No common columns for the datasets")
+
         all_joins_for_check.append(joins_for_check)
     print "Joins to check"
     print all_joins_for_check
