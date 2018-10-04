@@ -1,3 +1,32 @@
+/**
+ * This method translates the custom expression given by the user to the correct JSON
+ * @param customExpressionMap : this is a hashmap which has as key the symbol of the expression the user gave (e.g F1) and as value the value of the expression
+ * @param expression : this is the expression given by the user
+ * //TODO this is not working properly for parentheses (it ignores them). For example (F1 or F3) and F2 is evaluated as F1 or F3 and F2
+ */
+function buildCustomFilterFromExpressionMapAndExpression(customExpressionMap, expression) {
+    var filterTree = {};
+    var clearExpression = expression.replace("(", "").replace(")", "");
+    var expressionAndOperationTable = clearExpression.split(" ");
+    var expressionTable = expressionAndOperationTable.filter(expr => expr.startsWith("F"));
+    var operatorTable = expressionAndOperationTable.filter(expr => !expr.startsWith("F"));
+    var j = 0;
+    for (var i = 0; i < expressionTable.length; i++) {
+        var newFilter = customExpressionMap[expressionTable[i]];
+        if (i === 0) {
+            filterTree = newFilter;
+        } else {
+            filterTree = {
+                a: newFilter,
+                op: operatorTable[j],
+                b: JSON.parse(JSON.stringify(filterTree))
+            };
+            j++;
+        }
+    }
+    return filterTree;
+}
+
 $(function () {
     /* `QueryToolbox` is the object responsible for the behaviour of the Toolbox Charts component */
     var QueryToolbox = {
@@ -401,47 +430,52 @@ $(function () {
 
             var filterTree = {};
 
-            // if (filters.length === 0) {
-            //     return filterTree;
-            // }
+            var expression = $('#filters-expr-input').val();
+            var exprType = $('#chart-filters > .filter-expr').attr('data-expr_type');
+            var customExpressionMap = {};
 
-            // find pattern
-            // assume ALL_AND
-            $.each(filters, function(idx, filter) {
+            $.each(filters, function (idx, filter) {
                 var aName;
-                $.each(queryDocument.from, function(idx, _from) {
-                    $.each(_from.select, function(jdx, attr) {
-                        if(attr.type === "VALUE") {
+                $.each(queryDocument.from, function (idx, _from) {
+                    $.each(_from.select, function (jdx, attr) {
+                        if (attr.type === "VALUE") {
                             // if (String(attr.name).split(new RegExp("i[0-9]+_"))[1] === filter.a) {
                             if (parseInt(_from.type) === parseInt(filter.a)) {
                                 aName = attr.name;
                             }
                         }
-                        else{
+                        else {
                             if (attr.type == filter.a) {
                                 aName = attr.name;
                             }
                         }
                     })
                 });
-
                 var newFilter = {
                     a: aName,
                     op: filter.op,
                     b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
                 };
-
-                if (idx === 0) {
-                    filterTree = newFilter;
+                if (exprType === 'CUSTOM') {
+                    var mapIndex = idx + 1;
+                    customExpressionMap["F" + mapIndex] = newFilter;
                 } else {
-                    filterTree = {
-                        a: newFilter,
-                        op: 'AND',
-                        b: JSON.parse(JSON.stringify(filterTree))
-                    };
+                    if (idx === 0) {
+                        filterTree = newFilter;
+                    } else {
+                        var exprOperator = (exprType === 'ALL_OR') ? 'OR' : 'AND';
+                        filterTree = {
+                            a: newFilter,
+                            op: exprOperator,
+                            b: JSON.parse(JSON.stringify(filterTree))
+                        };
+                    }
                 }
             });
 
+            if (exprType === 'CUSTOM') {
+                filterTree = buildCustomFilterFromExpressionMapAndExpression(customExpressionMap,expression);
+            }
             var latitude_dim_id = $('#selected_dimensions option[data-type="latitude"]').val();
             var longitude_dim_id = $('#selected_dimensions option[data-type="longitude"]').val();
             if ((bounds[0] !== -90) || (bounds[2] !== 90) || (bounds[1] !== -180) || (bounds[3] !== 180)){
