@@ -11,6 +11,7 @@ $(".viz_item").click(function () {
     var component_type = $(this).attr('data-viz-type');
     var component_selector = 'li[data-viz-id="' + component_id + '"]';
 
+
     $(component_selector).popover({
         html: true,
         title: 'Configure visualisation',
@@ -21,12 +22,11 @@ $(".viz_item").click(function () {
     });
     updateVariables();
 
+
     $(component_selector).popover('show');
-    $('#myModal .popover-content .variable-select').select(
-        {
-            placeholder: "Select Variable",
-        }
-    );
+    $('div.popover-content .variable-select').each(function (i, e){$("#" + $(e).attr("id")).select2({placeholder:"Select Variable(s)", width: 'element'})});
+    $('div.popover-content select').not(".variable-select").each(function (i, e){$("#" + $(e).attr("id")).select2({placeholder:"Select a value", width: 'element'})});
+
     var popver_id = '#' + $(component_selector).attr('aria-describedby');
     $(popver_id + ' #select_conf_ok').click(function () {
         $("#viz_config .list-group").children().each(function () {
@@ -87,12 +87,12 @@ function getMapVisualizationRequest(json) {
 
 function show_viz(viz_request) {
     // language=HTML
-    var htmlString = '<div class="loadingFrame"><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
+    var htmlString = '<div class="outputLoadImg"><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
     $("#viz_container").html(htmlString);
     $('#myModal #submit-modal-btn').show();
-    $("#viz_container .loadingFrame").css("display", "block");
+    $("#viz_container .outputLoadImg").css("display", "block");
     $("#viz_container iframe").on("load", function () {
-        $(this).siblings(".loadingFrame").css("display", "none");
+        $(this).siblings(".outputLoadImg").css("display", "none");
     });
 }
 

@@ -832,7 +832,8 @@ def map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id
             q = TempQuery(document=q.document)
             doc = q.document
 
-            doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+            if order_var != "" and order_var is not None:
+                doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
 
             # if doc['limit'] > marker_limit:
             doc['limit'] = marker_limit
@@ -1234,8 +1235,8 @@ def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_fil
             q = TempQuery(document=q.document)
             doc = q.document
 
-            doc['orderings'] = []
-            doc['limit'] = []
+            # doc['orderings'] = []
+            # doc['limit'] = []
 
 
             for f in doc['from']:
@@ -1847,7 +1848,7 @@ def get_histogram_chart_am(request):
                     "from histogram; ".format(table_col, from_table, bins, where_clause)
         # print raw_query
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
-        result = execute_query_method(request, query)[0]
+        result = execute_query_method(query)[0]
 
         cursor.execute(raw_query)
         data = cursor.fetchall()
@@ -1935,7 +1936,7 @@ def get_histogram_2d_am(request):
         # print raw_query
 
 
-        query_data = execute_query_method(request, query)
+        query_data = execute_query_method(query)
 
         result_data = query_data[0]['results']
         result_headers = query_data[0]['headers']
@@ -2338,7 +2339,7 @@ def get_column_chart_am(request):
         # print doc
 
 
-        query_data = execute_query_method(request, query)
+        query_data = execute_query_method(query)
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
 
