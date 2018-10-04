@@ -1,10 +1,36 @@
 #file-upload-picker {
     /*text-align: center;*/
-    /*margin: auto;*/
+    margin: auto;
     margin-left: auto;
 }
 
 .label-radio {
     font-size: 30px;
     font-weight: bold;
+}
+
+#profile-dropdown{
+    width: 100px;
+}
+
+#download input{
+    width: 100%;
+}
+
+#download select{
+    width: 100%;
+}
+
+.nav>li {
+    display: inline-block !important;
+}
+
+.nav-pills>li {
+     float: none !important;
+    width: 40%;
+}
+
+.nav-pills>li>a {
+    font-size: 12pt !important;
+    background-color: #d0d0d0;
 }

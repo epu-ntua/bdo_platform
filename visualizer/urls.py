@@ -7,11 +7,11 @@ urlpatterns = [
     url('^map_folium/$', views.map_viz_folium, name='map-viz-folium'),
 
     url('^map_heat/$', views.map_heatmap, name='map_heatmap'),
-
+    url('^map_course/$', views.map_course, name='map_course'),
 
     url('^map_course_mt/$', views.map_course_mt, name='map_course_mt'),
 
-
+    url('^map_plotline/$', views.map_plotline, name='map_plotline'),
     url('^map_course_time/$', views.map_course_time, name='map_course_time'),
     url('^map_markers_in_time/$', views.map_markers_in_time, name='map_markers_in_time'),
 
@@ -24,13 +24,7 @@ urlpatterns = [
     url('^test_request/$', views.test_request, name='test_request'),
     url('^test_request_zep/$', views.test_request_zep, name='test_request_zep'),
     url('^get_map_simple/$', views.get_map_simple, name='get_map_simple'),
-
     url('^get_map_contour/$', views.map_viz_folium_contour, name='get_map_contour'),
-    url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium-heat'),
-    url('^map_course/$', views.map_course, name='map_course'),
-    url('^map_plotline/$', views.map_plotline, name='map_plotline'),
-
-    url('^get_map_visualization/$', views.map_visualizer, name='get_map_visualization'),
 
     url('^get_pie_chart/$', views.get_pie_chart, name='get_pie_chart'),
     url('^get_line_chart/$', views.get_line_chart, name='get_line_chart'),

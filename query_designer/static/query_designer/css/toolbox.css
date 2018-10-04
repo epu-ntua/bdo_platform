@@ -4,6 +4,23 @@
     background-color: white;
 }
 
+#error_message_alert{
+    display: none;
+    width: 50%;
+    position: absolute;
+    top: 43vh;
+    z-index: 99;
+    margin-left: 25% !important;
+    background-color: #a00000cf;
+    font-size: 13pt;
+}
+
+#error_message_alert a{
+    top: -15px;
+    right: 0;
+    font-size: x-large;
+}
+
 .chart-control ul {
   list-style: none;
   margin-left:3px;

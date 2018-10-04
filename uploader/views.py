@@ -2,14 +2,14 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render
-from forms import DatasetsForm, FileUploadForm, FileDownloadForm
+from forms import ProfilesForm, FileUploadForm, FileDownloadForm
 from requests import Request, Session
-from bdo_platform.settings import UPLOAD_URL, DOWNLOAD_URL, PARSER_JWT
+from bdo_platform.settings import UPLOAD_WITH_PROFILE_URL, UPLOAD_WITHOUT_PROFILE_URL, DOWNLOAD_URL, PARSER_JWT
 import json
 
 
 def upload_form(request):
-    dataset_form = DatasetsForm()
+    profile_form = ProfilesForm(initial={'profile': -1})
     file_upload_form = FileUploadForm()
     file_download_form = FileDownloadForm()
 
@@ -17,8 +17,6 @@ def upload_form(request):
     success_alert = False
 
     if request.method == 'POST':
-        # Retrieve data
-        data = json.loads(request.POST["dataset"])
 
         # Initialize a session for the request
         s = Session()
@@ -28,7 +26,14 @@ def upload_form(request):
             try:
                 f = request.FILES['upload']
                 files = {'file': f}
-                req = Request('POST', UPLOAD_URL, data=data, files=files, headers={'Authorization': PARSER_JWT})
+
+                profile = str(request.POST["profile"])
+                if profile == '-1':
+                    req = Request('POST', UPLOAD_WITHOUT_PROFILE_URL, files=files, headers={'Authorization': PARSER_JWT})
+
+                else:
+                    req = Request('POST', UPLOAD_WITH_PROFILE_URL, data= {"profile": profile}, files=files, headers={'Authorization': PARSER_JWT})
+
                 prep = req.prepare()
                 resp = s.send(prep, timeout=None)
 
@@ -37,21 +42,46 @@ def upload_form(request):
             except:
                 pass
         else:
-            data["downloadUrl"] = request.POST["download"]
-            data["fileName"] = request.POST["name"]
+            try:
+                print request.POST
+                method = str(request.POST["method"])
+                url = str(request.POST["url"])
+                directory = str(request.POST["directory"])
+                filename = str(request.POST["name"])
+                username = str(request.POST["username"])
+                password = str(request.POST["password"])
+                profile = str(request.POST["profile"])
+                print 'info'
+                print method, url, directory, filename, username, password, profile
 
-            req = Request('POST', DOWNLOAD_URL, json=data, headers={'Authorization': PARSER_JWT})
-            prep = req.prepare()
-            resp = s.send(prep)
+                if profile == '-1':
+                    metadataProfileId = None
+                else:
+                    metadataProfileId = profile
 
-            if resp.status_code == 200:
-                success_alert = True
+                data = dict()
+                data["downloadMethod"] = method
+                data["downloadURL"] = url
+                data["downloadDirectory"] = directory
+                data["fileName"] = filename
+                data["username"] = username
+                data["password"] = password
+                data["metadataProfileId"] = metadataProfileId
+
+                req = Request('POST', DOWNLOAD_URL, json=data, headers={'Authorization': PARSER_JWT})
+                prep = req.prepare()
+                resp = s.send(prep, timeout=None)
+
+                if resp.status_code == 200:
+                    success_alert = True
+            except:
+                pass
 
         s.close()
 
         submitted_alert = True
 
-    return render(request, 'upload-form.html', {'dataset_form': dataset_form,
+    return render(request, 'upload-form.html', {'profile_form': profile_form,
                                                 'upload_form': file_upload_form,
                                                 'download_form': file_download_form,
                                                 'submitted_alert': submitted_alert,

@@ -12,7 +12,6 @@ class Visualization(Model):
     hidden = BooleanField(default=False)
     icon = ImageField(upload_to='visualizer/static/visualizer/img/',
                       default='visualizer/static/visualizer/img/default-img.jpg')
-    type = CharField(max_length=512, default='')
     # info has the following structure
     """
         {

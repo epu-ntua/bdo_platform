@@ -100,7 +100,7 @@ def init_variables(dimension):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('aggregator', '0013_auto_20180506_2318'),
+        ('aggregator', '0015_auto_20180915_2057'),
     ]
 
     operations = [

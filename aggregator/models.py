@@ -1,5 +1,4 @@
 from django.contrib.postgres.fields import ArrayField
-from django.db import models
 from django.db.models import *
 from django.contrib.auth.models import User
 from django.db.models.signals import pre_delete
@@ -26,8 +25,8 @@ class Dataset(Model):
     references = ArrayField(TextField(), null=True)
     stored_at = CharField(max_length=32, choices=DATASET_STORAGES, default='LOCAL_POSTGRES')
     table_name = CharField(max_length=200)
-    state = CharField(max_length=10,default='public')
-    dataset_user = models.ManyToManyField(User)
+    private = BooleanField(default=False)
+    owner = ForeignKey(User, related_name='dataset_owner', null=True)
 
     class Meta:
         ordering = ['-id']
@@ -43,6 +42,16 @@ class Dataset(Model):
 
     def __unicode__(self):
         return self.title
+
+    access_list = ManyToManyField(User, through='DatasetAccess')
+
+
+class DatasetAccess(Model):
+    user = ForeignKey(User, on_delete=CASCADE)
+    dataset = ForeignKey(Dataset, on_delete=CASCADE)
+    start = DateField()
+    end = DateField()
+    valid = BooleanField()
 
 
 class BaseVariable(Model):

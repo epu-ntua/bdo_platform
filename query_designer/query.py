@@ -9,8 +9,9 @@ from django.http import JsonResponse
 
 from aggregator.models import *
 from query_designer.query_processors.utils import ResultEncoder
-
 from django.http import HttpResponseForbidden
+from django.core.exceptions import PermissionDenied
+from access_controller.policy_enforcement_point import PEP
 
 
 def execute_query(request, pk=None):
@@ -20,38 +21,46 @@ def execute_query(request, pk=None):
 
         # get or fake query object
         if not pk:
-            q = Query(document=json.loads(doc_str))
-            dimension_values = request.POST.get('dimension_values', '')
-            variable = request.POST.get('variable', '')
-            only_headers = request.POST.get('only_headers', '').lower() == 'true'
-            response, encoder = q.execute(request, dimension_values=dimension_values, variable=variable,
-                                          only_headers=only_headers,
-                                          with_encoder=True)
-            return JsonResponse(response, encoder=encoder)
-
+            q = AbstractQuery(document=json.loads(doc_str))
         else:
-            q = Query.objects.get(pk=pk)
+            q = AbstractQuery.objects.get(pk=pk)
             try:
                 q.document = json.loads(doc_str)
             except ValueError:
                 pass
+        # print q.document
+        # print q.raw_query
+        # get POST params
+        dimension_values = request.POST.get('dimension_values', '')
+        variable = request.POST.get('variable', '')
+        only_headers = request.POST.get('only_headers', '').lower() == 'true'
 
-            # print q.document
-            # print q.raw_query
-            # get POST params
-            dimension_values = request.POST.get('dimension_values', '')
-            variable = request.POST.get('variable', '')
-            only_headers = request.POST.get('only_headers', '').lower() == 'true'
+        # check for the access
+        try:
+            dataset_list = []
+            doc = q.document
+            print q.document
+            for el in doc['from']:
+                dataset = Variable.objects.get(id=int(el['type'])).dataset
+                if dataset.id not in dataset_list:
+                    dataset_list.append(dataset.id)
+            print dataset_list
+            for dataset_id in dataset_list:
+                access_decision = PEP.access_to_dataset_for_query(request, dataset_id)
+                if access_decision is False:
+                    raise PermissionDenied
+        except:
+            return HttpResponseForbidden()
 
-            # execute
-            result = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers,
-                               with_encoder=True)
-            if result is None:
-                return JsonResponse(dict())
-            response, encoder = result
+        # execute
+        result = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers,
+                                      with_encoder=True)
+        if result is None :
+            return JsonResponse({"error_message": "Datasets do not match both in space and time."})
+        response, encoder = result
 
-            # send results
-            return JsonResponse(response, encoder=encoder)
+        # send results
+        return JsonResponse(response, encoder=encoder)
     else:
         return HttpResponseForbidden()
 
