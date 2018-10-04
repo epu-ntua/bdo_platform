@@ -108,7 +108,10 @@ def map_visualizer(request):
             variable = str(request.GET.get('feat_1'+str(count), ''))
             query = str(request.GET.get('query'+str(count), ''))
             agg_function = str(request.GET.get('agg_func'+str(count), 'avg'))
-            m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file, request)
+            try:
+                m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file)
+            except Exception:
+                return HttpResponse('An error occurred, map cannot be presented for the query')
             old_map_id_list.append(old_map_id)
         # Map Course
         elif (layer_id == str(15)):
@@ -1615,11 +1618,12 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, c
 
         return m, ret_html, map_id
 
-    except HttpResponseNotFound:
-        return HttpResponseNotFound
-    except Exception:
-        print Exception.message.capitalize()
-        return HttpResponseNotFound
+    except HttpResponseNotFound as httpNotFound:
+        print "Http response not found"
+        raise httpNotFound
+    except Exception as e:
+        print "An error occurred. Details: ", e.message
+        raise e
 
 
 def map_viz_folium_heatmap_time(request):
