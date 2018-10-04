@@ -109,7 +109,7 @@ def map_visualizer(request):
             query = str(request.GET.get('query'+str(count), ''))
             agg_function = str(request.GET.get('agg_func'+str(count), 'avg'))
             try:
-                m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file)
+                m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, request, cached_file)
             except Exception:
                 return HttpResponse('An error occurred, map cannot be presented for the query')
             old_map_id_list.append(old_map_id)
@@ -1356,7 +1356,7 @@ def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_fil
 
 
 
-def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file, request):
+def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, request, cached_file):
     try:
         print('ENTERING CONTOURS')
 
