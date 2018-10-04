@@ -125,14 +125,14 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                            (selects[_from['select'][0]['name']]['table'],
                             ' AND '.join(joins))
             if join_clause.replace(" ","").replace("\n","").replace(",", "").endswith("ON"):
-                raise ValueError("Invalid Join! No common columns for the datasets")
+                raise ValueError("No common columns for all the datasets. They cannot be combined.")
 
         all_joins_for_check.append(joins_for_check)
     print "Joins to check"
     print all_joins_for_check
     if not is_same_range_joins(all_joins_for_check):
         print "Datasets have columns in common but actually nothing to join (ranges with nothing in common)"
-        raise ValueError("Datasets have columns in common but actually nothing to join (ranges with nothing in common)")
+        raise ValueError("Datasets do not match both in space and time. They cannot be combined.")
     print "Query Continues"
 
     # where

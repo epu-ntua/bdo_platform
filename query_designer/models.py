@@ -279,13 +279,10 @@ class AbstractQuery(Model):
             from query_designer.query_processors.solr import process as q_process
             encoder = SolrResultEncoder
 
-        try:
-            data = q_process(self, dimension_values=dimension_values, variable=variable,
-                         only_headers=only_headers, commit=commit,
-                         execute=execute, raw_query=raw_query)
-        except ValueError as ve:
-            print "Invalid Join. Datasets have nothing in common"
-            return None
+
+        data = q_process(self, dimension_values=dimension_values, variable=variable,
+                     only_headers=only_headers, commit=commit,
+                     execute=execute, raw_query=raw_query)
 
         return data, encoder
 
@@ -293,7 +290,7 @@ class AbstractQuery(Model):
         try:
             doc = self.document
         except ValueError:
-            return JsonResponse({'error': 'Invalid query document'}, status=400)
+            return JsonResponse({'error_message': 'Invalid query document'}, status=400)
 
         result = self.process(dimension_values, variable, only_headers, commit, execute=True)
 

@@ -52,15 +52,17 @@ def execute_query(request, pk=None):
         except:
             return HttpResponseForbidden()
 
-        # execute
-        result = q.execute(dimension_values=dimension_values,
-                           variable=variable,
-                           only_headers=only_headers,
-                           with_encoder=True)
-        if result is None :
-            return JsonResponse({"error_message": "Datasets do not match both in space and time."})
+        try:
+            # execute
+            result = q.execute(dimension_values=dimension_values,
+                               variable=variable,
+                               only_headers=only_headers,
+                               with_encoder=True)
+        except ValueError as ve:
+            return JsonResponse({"error_message": str(ve.message)})
         response, encoder = result
-
+        # import pdb
+        # pdb.set_trace()
         # send results
         return JsonResponse(response, encoder=encoder)
     else:
