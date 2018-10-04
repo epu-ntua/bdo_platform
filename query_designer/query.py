@@ -53,8 +53,10 @@ def execute_query(request, pk=None):
             return HttpResponseForbidden()
 
         # execute
-        result = q.execute(dimension_values=dimension_values, variable=variable, only_headers=only_headers,
-                                      with_encoder=True)
+        result = q.execute(dimension_values=dimension_values,
+                           variable=variable,
+                           only_headers=only_headers,
+                           with_encoder=True)
         if result is None :
             return JsonResponse({"error_message": "Datasets do not match both in space and time."})
         response, encoder = result

@@ -291,34 +291,20 @@ class AbstractQuery(Model):
 
         return data, encoder
 
-    def execute(self, request, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=True):
+    def execute(self, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=True):
+        try:
+            doc = self.document
+        except ValueError:
+            return JsonResponse({'error': 'Invalid query document'}, status=400)
 
-        user = request.user
-        dataset_list = []
-        if user.is_authenticated():
+        result = self.process(dimension_values, variable, only_headers, commit, execute=True)
 
-            try:
-                doc = self.document
-            except ValueError:
-                return JsonResponse({'error': 'Invalid query document'}, status=400)
-            for el in doc['from']:
-                k = Variable.objects.get(id=int(el['type'])).dataset
-                if k.id not in dataset_list:
-                    if k.state == 'private':
-                        dataset_list.append(k)
+        if with_encoder:
+            return result
 
-            for el in dataset_list:
-                if el not in user.dataset_set.all():
-                    raise PermissionDenied
-            result = self.process(dimension_values, variable, only_headers, commit, execute=True)
+        encoder = result[1]
+        return json.loads(encoder().encode(result[0]))
 
-            if with_encoder:
-                return result
-
-            encoder = result[1]
-            return json.loads(encoder().encode(result[0]))
-        else:
-            raise PermissionDenied
 
 
     @property

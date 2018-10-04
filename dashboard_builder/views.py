@@ -23,7 +23,7 @@ def build_dynamic_dashboard(request):
         num_of_dashboards = Dashboard.objects.count()
         toCreate = request.GET.get('toCreate', 'None')
         form_class = forms.CkEditorForm
-        return render(request, 'dashboard_builder/dashboard_builder2.html', {
+        return render(request, 'dashboard_builder/dashboardbuilder3.html', {
             'dashboard_title': num_of_dashboards+1,
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
