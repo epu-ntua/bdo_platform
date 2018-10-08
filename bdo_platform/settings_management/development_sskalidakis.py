@@ -2,7 +2,7 @@ from bdo_platform.settings_management.development import *
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'bdo_platform',
+        'NAME': 'bdo_local_database',
         'USER': 'postgres',
         'PASSWORD': 'sssshmmy',
         'HOST': 'localhost',
