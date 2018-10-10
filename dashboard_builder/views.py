@@ -12,16 +12,18 @@ from . import forms
 import json
 
 def build_dynamic_dashboard(request):
+
     if request.method == 'GET':
         user = request.user
         if request.user.is_authenticated():
             saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
+            # saved_queries = []
         else:
             saved_queries = []
         num_of_dashboards = Dashboard.objects.count()
         toCreate = request.GET.get('toCreate', 'None')
         form_class = forms.CkEditorForm
-        return render(request, 'dashboard_builder/dashboard_builder2.html', {
+        return render(request, 'dashboard_builder/dashboardbuilder3.html', {
             'dashboard_title': num_of_dashboards+1,
             'sidebar_active': 'products',
             'saved_queries': saved_queries,

@@ -1,0 +1,107 @@
+{% load static %}
+
+
+
+<div class="all_viz_forms"  style="display: none;" >
+    {% for viz in available_viz %}
+        <div id="viz_{{ viz.id }}">
+
+            <input id="1+++viz_id"  class="full-width " name="viz_id"  value="{{ viz.id }}" style="display: none">
+            <input id="action"  class=" full-width " name="action"  value="{{ viz.view_name }}" style="display: none">
+
+            {% for argument in viz.info.arguments %}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group label-floating is-empty">
+                            {% if argument.type != 'QUERY' %}
+                                <label class="control-label">{{ argument.title }}</label>
+                            {% endif %}
+                            {% if argument.type == 'QUERY' %}
+                            {% elif argument.type == 'COLUMN' %}
+                                <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" style="width: 250px" >
+
+                                </select>
+                            {% elif argument.type == 'COLUMNLIST' %}
+                                <select id="{{ argument.name }}" class="form-control full-width variables-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
+
+                                </select>
+                            {% elif argument.type == 'AGG_FUNCTION' %}
+                                <select id="{{ argument.name }}" class="form-control full-width aggregate-select" name="{{ argument.name }}" >
+{#                                    <option value="">Select Aggregation Function</option>#}
+                                    <option value="AVG">Average</option>
+                                    <option value="SUM">Sum</option>
+{#                                    <option value="COUNT">Count</option>#}
+                                    <option value="MAX">Maximum</option>
+                                    <option value="MIN">Minimum</option>
+                                </select>
+        {#                    {% elif argument.type == 'DIMENSION' %}#}
+        {#                        <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" >#}
+        {#                            <option disabled selected value>-- select dimension --</option>#}
+        {#                        </select>#}
+                            {% elif argument.type == 'SPATIAL_COV' %}
+                                 <div id="newmap" style="min-height: 200px; width: 100%; margin-top: 10px;">
+                                 </div>
+                                <div id="choices">
+                                    <select style="width: 100%; border: 2px solid grey; border-radius: 1em;" id="mapchoices">
+                                        <option value="-1">Choose Predefined</option>
+                                        <option value="0">Baltic Sea</option>
+                                        <option value="1">Sea Of Japan</option>
+                                        <option value="2">Red Sea</option>
+                                        <option value="3">Mediterranean</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-12">
+                                    <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Latitude, from: </span>
+                                    <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                        <input step="0.001" type="number" id="min_lat" class="form-control" style="width:100%">
+                                    </div>
+                                    <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
+                                    <div class="form-group col-sm-3" style=";margin: 1px 1px;">
+                                        <input step="0.001" type="number" id="max_lat" class="form-control" style="width:100%">
+                                    </div>
+                                </div>
+                                <div class="col-sm-12">
+                                    <span class="col-sm-3" style="padding: 10px 0px;color: #ababaa;">Longitude, from: </span>
+                                    <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                        <input step="0.001" type="number" id="min_lon" class="form-control" style="width:100%">
+                                    </div>
+                                    <span class="col-sm-1" style="padding: 10px 0px;color: #ababaa;">to: </span>
+                                    <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
+                                        <input step="0.001" type="number" id="max_lon" class="form-control" style="width:100%">
+                                    </div>
+                                </div>s
+                           {% elif argument.type == 'INT' %}
+                                <input id="{{ argument.name }}" type="number" step="1" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}">
+                            {% elif argument.type == 'FLOAT' %}
+                                <input id="{{ argument.name }}" type="number" step="0.001" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}">
+                            {% elif argument.type == 'BOOLEAN' %}
+                                <input id="{{ argument.name }}" type="checkbox" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}"
+                                    {% if argument.default ==  "TRUE" %}checked {% endif %}><br>
+                            {% elif argument.type == 'SELECT' %}
+                                <select id="{{ argument.name }}" class="form-control full-width select-select" name="{{ argument.name }}" >
+                                    <option></option>
+                                    {% for option in argument.options %}
+                                         <option value="{{ option.value }}">{{ option.text }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <input id="{{ argument.name }}" type="text" class="form-control full-width " name="{{ argument.name }}"  value="{{ argument.default }}">
+                            {% endif %}
+                            <span class="material-input"></span>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                    <p>This visualization requires no further arguments.</p>
+            {% endfor %}
+            <button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+            <button type="button" id="select_conf_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>
+        </div>
+    {% endfor %}
+</div>
+
+{#<script src="{% static "js/leaflet-areaselect.js" %}"></script>#}
+{#<script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}"></script>#}
+{#<script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>#}
+{#<script type="text/javascript" src="{% static 'js/datepicker.js' %}"></script>#}
+

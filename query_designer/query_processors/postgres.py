@@ -124,12 +124,15 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             join_clause += 'JOIN %s ON %s\n' % \
                            (selects[_from['select'][0]['name']]['table'],
                             ' AND '.join(joins))
+            if join_clause.replace(" ","").replace("\n","").replace(",", "").endswith("ON"):
+                raise ValueError("No common columns for all the datasets. They cannot be combined.")
+
         all_joins_for_check.append(joins_for_check)
     print "Joins to check"
     print all_joins_for_check
     if not is_same_range_joins(all_joins_for_check):
         print "Datasets have columns in common but actually nothing to join (ranges with nothing in common)"
-        raise ValueError("Datasets have columns in common but actually nothing to join (ranges with nothing in common)")
+        raise ValueError("Datasets do not match both in space and time. They cannot be combined.")
     print "Query Continues"
 
     # where
@@ -228,10 +231,11 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
 
 
     # cursor = connection.cursor()
-    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-        cursor = connections['UBITECH_POSTGRES'].cursor()
-    else:
-        cursor = connections['default'].cursor()
+    if execute:
+        if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+            cursor = connections['UBITECH_POSTGRES'].cursor()
+        else:
+            cursor = connections['default'].cursor()
 
     if not only_headers:
         # execute query & return results

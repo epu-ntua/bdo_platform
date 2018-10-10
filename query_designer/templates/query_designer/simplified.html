@@ -40,6 +40,10 @@
             cursor: pointer;
             box-shadow: 1px 1px 10px grey;
         }
+
+        .btn-change:hover{
+            background-color:#30526a ;
+        }
     </style>
 {% endblock %}
 
@@ -56,12 +60,6 @@
             </div>
         </div>
         <!-- /.col-lg-12 -->
-    </div>
-
-    <div id="error_message_alert" class="alert alert-danger alert-dismissible row" >
-{#        <a href="" class="close" data-dismiss="alert" aria-label="close">&times;</a>#}
-        <a class="close" onclick="$('.alert').hide()">&times;</a>
-        <strong>Query Failed!</strong><span id="error_message_span"></span>
     </div>
     <!-- /.row -->
     <!-- end PAGE TITLE AREA -->
@@ -197,7 +195,10 @@
 
     <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
 
-    <script src="{% static "js/leaflet-areaselect.js" %}"></script>
+{#    <script src="{% static "js/leaflet-areaselect.js" %}"></script>#}
+    <script src="{% static "query_designer/js/simplified/area-select/simple-shape.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/area-select/rectangle.js" %}"></script>
+
 
     <script src="{% static "query_designer/js/simplified/selbound.js" %}"></script>
     <script src="{% static "query_designer/js/simplified/chart_editor.js" %}"></script>
