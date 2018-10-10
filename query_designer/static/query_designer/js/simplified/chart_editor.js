@@ -22,6 +22,20 @@ $(".viz_item").click(function () {
     });
     updateVariables();
 
+    function areAllFieldsFilled() {
+        var result = true
+        var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+        var selects = $(conf_popover_id).find('.popover-content').find("select");
+        $(selects).each(function (i) {
+            var select = this;
+            if ($(select).val() === "") {
+                alert("Please fill all the fields of the form and resubmit!")
+                result = false
+                return false    //this is used for the break from each function
+            }
+        })
+        return result
+    }
 
     $(component_selector).popover('show');
     $('div.popover-content .variable-select').each(function (i, e){$("#" + $(e).attr("id")).select2({placeholder:"Select Variable(s)", width: 'element'})});
@@ -29,13 +43,14 @@ $(".viz_item").click(function () {
 
     var popver_id = '#' + $(component_selector).attr('aria-describedby');
     $(popver_id + ' #select_conf_ok').click(function () {
-        $("#viz_config .list-group").children().each(function () {
-            $(this).find("#selected_viz_span").hide();
-        });
-
-        $(component_selector).find("#selected_viz_span").show();
-        submit_conf(component_selector, component_type);
-        $(component_selector).popover("hide");
+        if (areAllFieldsFilled()) {
+            $("#viz_config .list-group").children().each(function () {
+                $(this).find("#selected_viz_span").hide();
+            });
+            $(component_selector).find("#selected_viz_span").show();
+            submit_conf(component_selector, component_type);
+            $(component_selector).popover("hide");
+        }
     });
     $(popver_id + ' #select_conf_cancel').click(function () {
         $(component_selector).popover("hide");
