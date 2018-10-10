@@ -23,17 +23,17 @@ $(".viz_item").click(function () {
     updateVariables();
 
     function areAllFieldsFilled() {
-        var result = true
+        var result = true;
         var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
         var selects = $(conf_popover_id).find('.popover-content').find("select");
-        $(selects).each(function (i) {
-            var select = this;
+        $(selects).each(function () {
+            let select = this;
             if ($(select).val() === "") {
-                alert("Please fill all the fields of the form and resubmit!")
-                result = false
-                return false    //this is used for the break from each function
+                alert("Please fill all the fields of the form and resubmit!");
+                result = false;
+                return false;    //this is used for the break from each function
             }
-        })
+        });
         return result
     }
 
