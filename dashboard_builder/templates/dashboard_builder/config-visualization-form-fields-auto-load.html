@@ -22,15 +22,15 @@
 
                                 </select>
                             {% elif argument.type == 'COLUMNLIST' %}
-                                <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
+                                <select id="{{ argument.name }}" class="form-control full-width variables-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
 
                                 </select>
                             {% elif argument.type == 'AGG_FUNCTION' %}
                                 <select id="{{ argument.name }}" class="form-control full-width aggregate-select" name="{{ argument.name }}" >
-                                    <option disabled selected value>-- select aggregation function --</option>
+{#                                    <option value="">Select Aggregation Function</option>#}
                                     <option value="AVG">Average</option>
                                     <option value="SUM">Sum</option>
-                                    <option value="COUNT">Count</option>
+{#                                    <option value="COUNT">Count</option>#}
                                     <option value="MAX">Maximum</option>
                                     <option value="MIN">Minimum</option>
                                 </select>

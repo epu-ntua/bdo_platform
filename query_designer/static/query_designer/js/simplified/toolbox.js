@@ -4,6 +4,7 @@
  * @param expression : this is the expression given by the user
  * //TODO this is not working properly for parentheses (it ignores them). For example (F1 or F3) and F2 is evaluated as F1 or F3 and F2
  */
+
 function buildCustomFilterFromExpressionMapAndExpression(customExpressionMap, expression) {
     var filterTree = {};
     var clearExpression = expression.replace("(", "").replace(")", "");
@@ -28,6 +29,7 @@ function buildCustomFilterFromExpressionMapAndExpression(customExpressionMap, ex
 }
 
 $(function () {
+
     /* `QueryToolbox` is the object responsible for the behaviour of the Toolbox Charts component */
     var QueryToolbox = {
         objects: [],
@@ -982,6 +984,7 @@ $(function () {
             // request data
             var runQuery = function(id) {
                 // update data table headers & data
+
                 var $table = $("#graph-data-table");
                 $table.find('thead').empty();
                 $table.find('tbody').empty();

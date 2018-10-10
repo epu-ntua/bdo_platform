@@ -1,10 +1,36 @@
-var query_id = $('#query-variables-select-container div').attr("id");
+// var query_id = $('#query-variables-select-container div').attr("id");
 
 function updateVariables() {
+    var record;
     $('#myModal .variable-select').find('option').remove();
-    var content = $('#query-variables-select-container #' + String(query_id)).html();
+    $('#myModal .variables-select').find('option').remove();
+    $('.current_query_select_options').find('option').remove();
+    var json_query_document = QueryToolbox.generateQueryDoc();
+    // console.log(JSON.stringify(json_query_document));
+    var list_of_options = [];
+    // $('.current_query_select_options').append('<option value="">Select a Variable or Dimension</option>');
+    for (var i=0; i<json_query_document["from"].length; i++){
+        for (var j=0; j<json_query_document["from"][i]["select"].length; j++){
+            record = json_query_document["from"][i]["select"][j];
+            var flag = false;
+            for (var element in list_of_options) {
+                if (String(record["title"]) === String(element)) {
+                    flag = true;
+                }
+            }
+            if (flag === false) {
+                $('.current_query_select_options').append('<option value=' + String(record["name"]) + '>' + String(record["title"]) + '</option>');
+                list_of_options.push(String(record["title"]));
+            }
+        }
+    }
+    var content = $('.current_query_select_options').html();
+
     $('#myModal .variable-select ').html(content);
+    $('#myModal .variables-select ').html(content);
+
 }
+
 
 $(".viz_item").click(function () {
     var component_id = $(this).attr('data-viz-id');
@@ -24,9 +50,21 @@ $(".viz_item").click(function () {
 
 
     $(component_selector).popover('show');
-    $('div.popover-content .variable-select').each(function (i, e){$("#" + $(e).attr("id")).select2({placeholder:"Select Variable(s)", width: 'element'})});
-    $('div.popover-content select').not(".variable-select").each(function (i, e){$("#" + $(e).attr("id")).select2({placeholder:"Select a value", width: 'element'})});
+    $(".popover-content .variable-select").dropdown({
+        clearable: true,
+        placeholder: 'Select a Variable or Dimension'
 
+    });
+    $(".popover-content .variables-select").dropdown({
+        clearable: true,
+        placeholder: 'Select Variable(s) or Dimension(s)'
+    });
+    $(".popover-content .aggregate-select").dropdown({
+        clearable: true,
+        placeholder: 'Select an Aggregate Function'
+    });
+    // $(".dropdown").css("margin","3px");
+    $(".control-label").css("margin-bottom","3px");
     var popver_id = '#' + $(component_selector).attr('aria-describedby');
     $(popver_id + ' #select_conf_ok').click(function () {
         $("#viz_config .list-group").children().each(function () {
@@ -58,12 +96,12 @@ function submit_conf(component_selector, component_type) {
     if (component_type !== 'map') {
         var viz_request = "/visualizations/" + $('#myModal').find('.modal-body').find('#action').val();
         var chartData = $("#config-viz-form").serialize();
-        viz_request += '?' + chartData + '&query=' + query_id;
+        viz_request += '?' + chartData + '&query=' + $('#selected_query').attr('value');
         show_viz(viz_request);
     }
     else {
         var json = [];
-        var mapChartData = getFormData($("#config-viz-form"), 0, query_id);
+        var mapChartData = getFormData($("#config-viz-form"), 0, $('#selected_query').attr('value'));
         json.push(mapChartData);
         viz_request = getMapVisualizationRequest(json);
         show_viz(viz_request)
