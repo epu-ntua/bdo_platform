@@ -12,6 +12,8 @@
 {% block css %}
 
     {% leaflet_css %}
+{#    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css">#}
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
     <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
 
     <link href="{% static "query_designer/css/toolbox.css" %}" rel="stylesheet">
@@ -24,7 +26,7 @@
 
 
     <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css">
+
 
     <style>
         #createPreBuildLink{
@@ -39,6 +41,10 @@
         #createPreBuildLink:hover{
             cursor: pointer;
             box-shadow: 1px 1px 10px grey;
+        }
+
+        .btn-change:hover{
+            background-color:#30526a ;
         }
     </style>
 {% endblock %}
@@ -248,11 +254,15 @@
 
     <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
 
-    <script src="{% static "js/leaflet-areaselect.js" %}"></script>
+{#    <script src="{% static "js/leaflet-areaselect.js" %}"></script>#}
+    <script src="{% static "query_designer/js/simplified/area-select/simple-shape.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/area-select/rectangle.js" %}"></script>
+
 
     <script src="{% static "query_designer/js/simplified/selbound.js" %}"></script>
     <script src="{% static "query_designer/js/simplified/chart_editor.js" %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.js"></script>
+{#    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.js"></script>#}
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
 
     {% if auto_open %}
         <script>

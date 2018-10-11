@@ -1,68 +1,69 @@
 <div class="coverage-map-filters ">
     <div class="row" style="text-align: left;">
-        <h4 class="col-sm-9" style="margin: 0; display: inline-block;">Filter by spatio-temporal coverage</h4>
-        <button id="resetMapBounds" class="btn btn-default btn-sm pull-right col-sm-3" style="margin: -3px 0px;padding: 2px 19px;">Reset</button>
+        <h4 class="" style="margin: 0; display: inline-block;">Select Spatial Coverage</h4>
+        <button id="resetMapBounds" class="btn btn-change" style="position:relative;bottom:2px; padding: 2px 7px 2px 7px; text-transform: capitalize;">Reset</button>
     </div>
     <div id="mapselection" class="selection">
-            <div class="" style="padding-left: 0; padding-right: 0;">
-                <div id="mappreview" data-toggle="modal" data-target="#mapModal" style="cursor: pointer; height: 150px; margin-top: 15px; margin-bottom: 10px; border: solid 2px grey; border-radius: 1em;">
-                </div>
+        <div class="" style="padding-left: 0; padding-right: 0;">
+            <div id="mappreview" data-toggle="modal" data-target="#mapModal" style="cursor: pointer; height: 150px; margin-top: 15px; margin-bottom: 10px; border: solid 2px grey; border-radius: 1em;">
             </div>
-            <div class="">
-                <div id="choices">
-                    <select style="border: 2px solid grey; border-radius: 1em;" id="mapchoices">
-                        <option value="-1">Choose Predefined</option>
-                        <option value="0">Baltic Sea</option>
-                        <option value="1">Sea Of Japan</option>
-                        <option value="2">Red Sea</option>
-                        <option value="3">mediterranean</option>
-                    </select>
-                </div>
-{#                <div id="mapbtn" style="display: inline;">#}
-{#                    <button class="btn btn-primary btn-xs" id="selbutton" data-toggle="modal" data-target="#mapModal">Choose Region</button>#}
-{#                </div>#}
+        </div>
+        <div class="">
+            <div id="choices">
+                <select style="border: 2px solid grey; border-radius: 1em;" id="mapchoices">
+                    <option></option>
+                    <option value="0">Baltic Sea</option>
+                    <option value="1">Sea Of Japan</option>
+                    <option value="2">Red Sea</option>
+                    <option value="3">mediterranean</option>
+                </select>
             </div>
-            <div class="row" style="margin: 5px;">
-                <div class="col-sm-12" style="margin: 0px;">
-                    <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
-                        <p>Latitude, from:</p>
-                    </div>
-                    <div class='col-sm-3' style="padding: 0px;">
-                        <input class="form-control" id="lat_min" type='number' step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
-                    </div>
-                    <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
-                        <p>to:</p>
-                    </div>
-                    <div class='col-sm-3' style="padding: 0px;">
-                        <input class="form-control" id="lat_max" type='number'  step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
-                    </div>
-                </div>
-                <div class="col-sm-12" style="margin: 0px;">
-                    <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
-                        <p>Longitude, from:</p>
-                    </div>
-                    <div class='col-sm-3' style="padding: 0px;">
-                        <input class="form-control" id="lon_min" type='number'  step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
-                    </div>
-                    <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
-                        <p>to:</p>
-                    </div>
-                    <div class='col-sm-3' style="padding: 0px;">
-                        <input class="form-control" id="lon_max" type='number' step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
-                    </div>
-                </div>
-                <input hidden type="number" id="areaSelectWidth" value="" >
-                <input hidden type="number" id="areaSelectHeight" value="">
+        </div>
 
-                <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
+        <div class="row" style="margin: 5px;">
+            <div class="col-sm-12" style="margin: 0px;">
+                <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
+                    <p>Latitude, from:</p>
+                </div>
+                <div class='col-sm-3' style="padding: 0px;">
+                    <input class="form-control" id="lat_min" type='number' step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                </div>
+                <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
+                    <p>to:</p>
+                </div>
+                <div class='col-sm-3' style="padding: 0px;">
+                    <input class="form-control" id="lat_max" type='number'  step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                </div>
             </div>
+            <div class="col-sm-12" style="margin: 0px;">
+                <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
+                    <p>Longitude, from:</p>
+                </div>
+                <div class='col-sm-3' style="padding: 0px;">
+                    <input class="form-control" id="lon_min" type='number'  step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                </div>
+                <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
+                    <p>to:</p>
+                </div>
+                <div class='col-sm-3' style="padding: 0px;">
+                    <input class="form-control" id="lon_max" type='number' step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                </div>
+            </div>
+            <input hidden type="number" id="areaSelectWidth" value="" >
+            <input hidden type="number" id="areaSelectHeight" value="">
 
+            <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
+            </div>
     </div>
 </div>
 
 <div class="coverage-date-filters">
 {#    <div style="text-align: left;"><h4 style="margin: 0;">Filter by temporal coverage</h4></div>#}
-    <div class="row">
+    <div class="row" style="text-align: left;">
+        <h4 class="" style="margin:0; display: inline-block;">Select Temporal Coverage</h4>
+        <button id="resetDates" class="btn btn-change" style="position:relative;bottom:2px; padding: 2px 7px 2px 7px; text-transform: capitalize;">Reset</button>
+    </div>
+    <div class="row" style="margin-top:15px">
         <div class="coverage-date-filters-icon">
         </div>
         <div class='col-sm-6'>
