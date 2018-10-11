@@ -48,7 +48,7 @@ urlpatterns = [
     url(r'^on-demand/', include('on_demand.urls')),
 
     # uploader
-    url(r'^upload/', include('uploader.urls')),
+    # url(r'^upload/', include('uploader.urls')),
 
     # parser
     url(r'^parse/', include('data_parser.urls')),
