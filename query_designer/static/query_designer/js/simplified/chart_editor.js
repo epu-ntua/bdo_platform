@@ -55,6 +55,7 @@ $(".viz_item").click(function () {
         placeholder: 'Select a Variable or Dimension'
 
     });
+    $(".popover-content .variable-select").dropdown('clear');
     $(".popover-content .variables-select").dropdown({
         clearable: true,
         placeholder: 'Select Variable(s) or Dimension(s)'
@@ -63,6 +64,7 @@ $(".viz_item").click(function () {
         clearable: true,
         placeholder: 'Select an Aggregate Function'
     });
+     $(".popover-content .aggregate-select").dropdown('clear');
     // $(".dropdown").css("margin","3px");
     $(".control-label").css("margin-bottom","3px");
     var popver_id = '#' + $(component_selector).attr('aria-describedby');
