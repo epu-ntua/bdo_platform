@@ -18,10 +18,15 @@ DATABASES = {
         }
 }
 
-SPARK_SUBMIT_PATH = ''
-#
-# # dev server URL
-# SERVER_URL = 'http://127.0.0.1:8000'
+SPARK_SUBMIT_PATH = 'C:\\Spark\\spark-2.2.0-bin-hadoop2.7\\bin\\spark-submit'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+TEST_SERVICES = False
+
+ZEPPELIN_URL = 'http://localhost:8080'
+ZEPPELIN_DB = 'UBITECH_POSTGRES'
+
+LIVY_URL = 'http://212.101.173.18:55647'
+
+SERVICE_BUILDER_BASE_NOTE = '2DUGVE329'
+BASE_NOTE_ARG_PARAGRAPH = '20181012-165458_6385633'
 DEBUG = True

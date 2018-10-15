@@ -27,6 +27,7 @@ from matplotlib.cm import get_cmap
 from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 import pylab as pl
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 from query_designer.models import TempQuery
@@ -2111,11 +2112,11 @@ def test_request_zep(request):
     # response = requests.delete("http://localhost:8080/api/notebook/"+str(notebook_id))
     return render(request, 'visualizer/table_zep.html', {'notebook_id': notebook_id, 'paragraph_id': viz_paragraph_id})
 
-def load_and_modify_query_chart(query_pk, x_var, y_var_list, agg_function):
+def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
-
+    x_flag = False
     for f in doc['from']:
         for s in f['select']:
             if s['name'] in y_var_list:
@@ -2124,9 +2125,13 @@ def load_and_modify_query_chart(query_pk, x_var, y_var_list, agg_function):
             elif s['name'] == x_var:
                 s['groupBy'] = True
                 s['exclude'] = False
+                x_flag = True
             else:
                 s['exclude'] = True
-    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+    if x_flag == True:
+        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+    else:
+        raise ValueError('Ordering Variable is not valid or not given.')
     query.document = doc
     return query
 
@@ -2198,7 +2203,7 @@ def get_line_chart_am(request):
     try:
         query_pk = int(query_pk)
     except ValueError:
-        raise ValueError('Query ID must be an integer.')
+        raise ValueError('Query ID not valid.')
     df = str(request.GET.get('df', ''))
     notebook_id = str(request.GET.get('notebook_id', ''))
 
@@ -2207,12 +2212,13 @@ def get_line_chart_am(request):
     agg_function = str(request.GET.get('agg_func', 'avg'))
     if not agg_function.lower() in AGGREGATE_VIZ:
         raise ValueError('Aggregate function is not valid.')
-
     if query_pk != 0:
-        query = load_and_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+        query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
         json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
-    else:
+    elif df != '':
         json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list)
+    else:
+        raise ValueError('Either query ID or dataframe name has to be specified.')
 
     if 'time' in x_var:
         isDate = 'true'
@@ -2223,224 +2229,62 @@ def get_line_chart_am(request):
                   {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate})
 
 
-def get_pie_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
-
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
-    key_var = str(request.GET.get('key_var', ''))
-    value_var = str(request.GET.get('value_var', ''))
-    agg_func = str(request.GET.get('agg_func', 'avg'))
-
-    if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-        doc = query.document
-        print doc
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == value_var:
-                    s['aggregate'] = agg_func
-                    s['exclude'] = False
-                elif s['name'] == key_var:
-                    s['groupBy'] = True
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-        print doc
-
-        doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
-        query.document = doc
-        # raw_query = query.raw_query
-        # print doc
-
-
-        query_data = execute_query_method(query)
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-
-        value_var_index = key_var_index = 0
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == value_var:
-                value_var_index = idx
-            elif c['name'] == key_var:
-                key_var_index = idx
-
-        json_data = []
-        for d in data:
-            json_data.append({value_var: d[0], key_var: str(d[1])})
-
-    else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=key_var, order_type='ASC')
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=key_var, order_type='ASC')
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print json_data
-
-    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
-
 
 def get_column_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
-
+    query_pk = str(request.GET.get('query', '0'))
+    try:
+        query_pk = int(query_pk)
+    except ValueError:
+        raise ValueError('Query ID not valid.')
     df = str(request.GET.get('df', ''))
     notebook_id = str(request.GET.get('notebook_id', ''))
 
-
     x_var = str(request.GET.get('x_var', ''))
-    y_var = request.GET.getlist('y_var[]')
-    y_var_list = y_var
+    y_var_list = request.GET.getlist('y_var[]')
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
     if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-
-        doc = query.document
-        print doc
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] in y_var_list:
-                    s['aggregate'] = agg_function
-                    s['exclude'] = False
-                elif s['name'] == x_var:
-                    s['groupBy'] = True
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-        print doc
-
-        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-        query.document = doc
-        # raw_query = query.raw_query
-        # print doc
-
-
-        query_data = execute_query_method(query)
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-
-        x_var_index = 0
-        y_var_index = []
-        y_var_indlist = []
-        y_m_unit = []
-        y_title_list = []
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] in y_var_list:
-                y_var_index.insert(len(y_var_index), idx)
-                y_var_indlist.insert(len(y_var_indlist), c['name'])
-                y_m_unit.insert(len(y_m_unit), c['unit'].encode('ascii'))
-                y_title_list.insert(len(y_title_list), c['title'].encode('ascii'))
-            elif c['name'] == x_var:
-                x_var_index = idx
-
-        json_data = []
-        for d in data:
-            count = 0
-            dict = {}
-            for y_index in y_var_index:
-                newvar = str(y_var_indlist[count]).encode('ascii')
-                dict.update({newvar: str(d[y_index]).encode('ascii')})
-                count = count + 1
-
-            dict.update({x_var: str(d[x_var_index])})
-            json_data.append(dict)
-        print (json_data)
+        query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+        json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
+    elif df != '':
+        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list)
     else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print json_data
-        y_m_unit = []
-        y_title_list = []
-        for x in y_var_list:
-            # TODO: use proper names
-            y_title_list.insert(0, str(x))
-            y_m_unit.insert(0, str('unknown unit'))
-
+        raise ValueError('Either query ID or dataframe name has to be specified.')
 
     if 'time' in x_var:
         isDate = 'true'
     else:
         isDate = 'false'
+
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_title_list, 'category_col': x_var, 'isDate': isDate})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate})
 
 
-def get_data_table(request):
-    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-    limit = 50
-
-    query_pk = int(str(request.GET.get('query', '0')))
-    page = int(request.GET.get('page', 1))
-
+def get_pie_chart_am(request):
+    query_pk = str(request.GET.get('query', '0'))
+    try:
+        query_pk = int(query_pk)
+    except ValueError:
+        raise ValueError('Query ID not valid.')
     df = str(request.GET.get('df', ''))
     notebook_id = str(request.GET.get('notebook_id', ''))
 
+    key_var = str(request.GET.get('key_var', ''))
+    value_var = str(request.GET.get('value_var', ''))
+    agg_function = str(request.GET.get('agg_func', 'avg'))
+
     if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-
-        q = TempQuery(document=query.document)
-        # offset = page * limit
-        # if query.document['limit'] > offset:
-        #     query.document['offset'] = page * limit
-        #
-        # if query.document['limit'] > limit:
-        #     query.document['limit'] = limit
-
-        result = execute_query_method(q)[0]
-        data = result['results']
-        headers = result['headers']['columns']
-        isJSON = False
-
+        query = load_modify_query_chart(query_pk, key_var, [value_var],agg_function)
+        json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, key_var, [value_var])
+    elif df !='':
+        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list)
     else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0] #GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        isJSON = True
-        print 'table data:'
-        print data[:3]
+        raise ValueError('Either query ID or dataframe name has to be specified.')
 
-        headers = [key for key in data[0].keys()]
+    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
 
+def data_table_paginate(data, page, limit):
     paginator = Paginator(data, limit)  # Show 25 contacts per page
-
     try:
         page_data = paginator.page(page)
     except PageNotAnInteger:
@@ -2449,6 +2293,56 @@ def get_data_table(request):
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
         page_data = paginator.page(paginator.num_pages)
+    return page_data
+
+def load_execute_query_data_table(query_pk):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    q = TempQuery(document=query.document)
+    result = execute_query_method(q)[0]
+    data = result['results']
+    headers = result['headers']['columns']
+    return data, headers
+
+def load_execute_dataframe_data(request, df, notebook_id):
+    livy = False
+    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+    if len(service_exec) > 0:
+        service_exec = service_exec[0]  # GET LAST
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        livy = service_exec.service.through_livy
+    if livy:
+        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    headers = [key for key in data[0].keys()]
+    return data, headers
+
+
+
+def get_data_table(request):
+    query_pk = str(request.GET.get('query', '0'))
+    try:
+        query_pk = int(query_pk)
+    except ValueError:
+        raise ValueError('Query ID not valid.')
+    limit = 50
+    page = int(request.GET.get('page', 1))
+    df = str(request.GET.get('df', ''))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+
+    if query_pk != 0:
+        data, headers = load_execute_query_data_table(query_pk)
+        isJSON = False
+    else:
+        load_execute_dataframe_data(request, df, notebook_id)
+        isJSON = True
+
+    page_data = data_table_paginate(data, page, limit)
 
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': int(query_pk), 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
