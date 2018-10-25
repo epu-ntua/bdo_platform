@@ -1,8 +1,7 @@
 #!/bin/sh
 
-git for-each-ref --shell --format="ref=%(refname)" refs/heads | \
-while read entry
-do
+for branch in $(git for-each-ref --format='%(refname)' refs/heads/); do
+	git checkout "$branch"
 	git pull
 	git rm -r --cached development*
 	git add -A
