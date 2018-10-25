@@ -63,10 +63,11 @@ def simplified(request, pk=None):
     user_datasets = user_datasets | public_datasets
     dataset_list = public_datasets | user_datasets | user_with_access_datasets
 
+
     return render(request, 'query_designer/simplified.html', {
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
-        'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
+        'temp_queries_count': TempQuery.objects.last().id,
         'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
         'AGGREGATES': AGGREGATES,
     })

@@ -24,7 +24,7 @@
 
 
     <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css">
 
     <style>
         #createPreBuildLink{
@@ -183,6 +183,7 @@
 {% endblock %}
 
 {% block modal %}
+
     <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
             <!-- Modal content-->
@@ -209,17 +210,17 @@
                     {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
 
                     <div id="query-variables-select-container" style="display: none;">
-
-                        <div id={{ query.id }}>
-                            <option></option>
-                            {% for el in query.document.from %}
-                                {% for var in el.select %}
-                                    <option value="{{ var.name }}">{{ var.title }}</option>
-                                {% endfor %}
-                            {% endfor %}
+                        <div class='current_query_select_options' id={{ temp_queries_count }}>
+{#                            <option></option>#}
+{#                            {% for el in query.document.from %}#}
+{#                                {% for var in el.select %}#}
+{#                                    <option value="{{ var.name }}">{{ var.title }}</option>#}
+{#                                {% endfor %}#}
+{#                            {% endfor %}#}
                         </div>
 
                     </div>
+
                 </div>
             </div>
         </div>
@@ -251,6 +252,7 @@
 
     <script src="{% static "query_designer/js/simplified/selbound.js" %}"></script>
     <script src="{% static "query_designer/js/simplified/chart_editor.js" %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.js"></script>
 
     {% if auto_open %}
         <script>
