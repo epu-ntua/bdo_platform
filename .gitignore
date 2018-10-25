@@ -105,3 +105,12 @@ aggregator/datasets
 /bdo_platform/settings_management/development_gtsapelas.py
 /temp/*
 /service_builder/static/services_files/*
+/bdo_platform/settings_management/development_bdodev.py
+/bdo_platform/settings_management/development.py
+/bdo_platform/settings_management/development_mkontoulis.py
+/bdo_platform/settings_management/development_dpap.py
+/bdo_platform/settings_management/development_vkarakolis.py
+/bdo_platform/settings_management/development_sskalidakis.py
+/bdo_platform/settings_management/development_smouzakitis.py
+/bdo_platform/settings_management/development_spitsios.py
+/bdo_platform/settings_management/development_tfyts.py
