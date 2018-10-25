@@ -45,6 +45,9 @@ urlpatterns = [
     # new query designer template
     url('new_template/$', views.new_template, name='new_template'),
 
+
+    url('clean/$', views.clean, name='clean'),
+
     # basic page
     url('$', views.index, name='home'),
 ]
