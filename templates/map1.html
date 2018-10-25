@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script>L_PREFER_CANVAS = false; L_NO_TOUCH = false; L_DISABLE_3D = false;</script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.2.0/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.2.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" />
+    <link rel="stylesheet" href="https://rawgit.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css" />
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    
+            <style> #map_3fcaf25f263c4c58b9d4d7c41d03a1ea {
+                position : relative;
+                width : 100.0%;
+                height: 100.0%;
+                left: 0.0%;
+                top: 0.0%;
+                }
+            </style>
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.css" />
+</head>
+<body>    
+    
+            <div class="folium-map" id="map_3fcaf25f263c4c58b9d4d7c41d03a1ea" ></div>
+        
+</body>
+<script>    
+    
+
+            
+                var southWest = L.latLng(-90, -180);
+                var northEast = L.latLng(90, 180);
+                var bounds = L.latLngBounds(southWest, northEast);
+            
+
+            var map_3fcaf25f263c4c58b9d4d7c41d03a1ea = L.map(
+                                  'map_3fcaf25f263c4c58b9d4d7c41d03a1ea',
+                                  {center: [0,0],
+                                  zoom: 2,
+                                  maxBounds: bounds,
+                                  layers: [],
+                                  worldCopyJump: false,
+                                  crs: L.CRS.EPSG3857
+                                 });
+            
+        
+    
+            var tile_layer_f461fe06725149c389f307fa28623fb6 = L.tileLayer(
+                'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ',
+                {
+  "attribution": "Map data &copy;<a href=\"http://openstreetmap.org\">OpenStreetMap</a>contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery \u00a9 <a href=\"http://mapbox.com\">Mapbox</a>", 
+  "detectRetina": false, 
+  "maxZoom": 30, 
+  "minZoom": 2, 
+  "noWrap": false, 
+  "subdomains": "abc"
+}
+                ).addTo(map_3fcaf25f263c4c58b9d4d7c41d03a1ea);
+        
+    
+            L.control.fullscreen({
+                position: 'topright',
+                title: 'Expand me',
+                titleCancel: 'Exit me',
+                forceSeparateButton: true,
+                }).addTo(map_3fcaf25f263c4c58b9d4d7c41d03a1ea);
+            map_3fcaf25f263c4c58b9d4d7c41d03a1ea.on('enterFullscreen', function(){
+                console.log('entered fullscreen');
+            });
+
+        
+    
+            var feature_group_14677b21423c4615a430aec3540615d0 = L.featureGroup(
+                ).addTo(map_3fcaf25f263c4c58b9d4d7c41d03a1ea);
+        
+    
+
+            var marker_619b1f8e9ae44ea797c62da82bb34c3a = L.marker(
+                [35.875,19.5],
+                {
+                    icon: new L.Icon.Default()
+                    }
+                )
+                .addTo(feature_group_14677b21423c4615a430aec3540615d0);
+            
+    
+
+                var icon_cbd684e1db414d6eab4d7525e783d849 = L.AwesomeMarkers.icon({
+                    icon: 'info-sign',
+                    iconColor: 'white',
+                    markerColor: 'blue',
+                    prefix: 'glyphicon',
+                    extraClasses: 'fa-rotate-0'
+                    });
+                marker_619b1f8e9ae44ea797c62da82bb34c3a.setIcon(icon_cbd684e1db414d6eab4d7525e783d849);
+            
+    
+            var popup_55fd05269e4d4774890bc81e0f639966 = L.popup({maxWidth: '300'});
+
+            
+                var html_602600f6c7e041d991719ae23a533b62 = $('<div id="html_602600f6c7e041d991719ae23a533b62" style="width: 100.0%; height: 100.0%;">i0_sea_water_temperature: 21.5111<br>Latitude: 35.875<br>Longitude: 19.5</div>')[0];
+                popup_55fd05269e4d4774890bc81e0f639966.setContent(html_602600f6c7e041d991719ae23a533b62);
+            
+
+            marker_619b1f8e9ae44ea797c62da82bb34c3a.bindPopup(popup_55fd05269e4d4774890bc81e0f639966);
+
+            
+        
+    
+
+            var marker_3e9e359c53a94096b77ed555d75890ad = L.marker(
+                [35.875,19.5625],
+                {
+                    icon: new L.Icon.Default()
+                    }
+                )
+                .addTo(feature_group_14677b21423c4615a430aec3540615d0);
+            
+    
+
+                var icon_08e9fae57be24300b7a65d64072d6960 = L.AwesomeMarkers.icon({
+                    icon: 'info-sign',
+                    iconColor: 'white',
+                    markerColor: 'blue',
+                    prefix: 'glyphicon',
+                    extraClasses: 'fa-rotate-0'
+                    });
+                marker_3e9e359c53a94096b77ed555d75890ad.setIcon(icon_08e9fae57be24300b7a65d64072d6960);
+            
+    
+            var popup_264f7b8ff07743b2bb54669494ae7d67 = L.popup({maxWidth: '300'});
+
+            
+                var html_4c1f41ad63ea44168d227b4c51eb30fe = $('<div id="html_4c1f41ad63ea44168d227b4c51eb30fe" style="width: 100.0%; height: 100.0%;">i0_sea_water_temperature: 21.4587<br>Latitude: 35.875<br>Longitude: 19.5625</div>')[0];
+                popup_264f7b8ff07743b2bb54669494ae7d67.setContent(html_4c1f41ad63ea44168d227b4c51eb30fe);
+            
+
+            marker_3e9e359c53a94096b77ed555d75890ad.bindPopup(popup_264f7b8ff07743b2bb54669494ae7d67);
+
+            
+        
+    
+
+            var marker_1259b338eaa444f284b4b0b9fc0cb9c9 = L.marker(
+                [35.875,19.625],
+                {
+                    icon: new L.Icon.Default()
+                    }
+                )
+                .addTo(feature_group_14677b21423c4615a430aec3540615d0);
+            
+    
+
+                var icon_06ad00671e804fc49a90c8f700ba5aac = L.AwesomeMarkers.icon({
+                    icon: 'info-sign',
+                    iconColor: 'white',
+                    markerColor: 'blue',
+                    prefix: 'glyphicon',
+                    extraClasses: 'fa-rotate-0'
+                    });
+                marker_1259b338eaa444f284b4b0b9fc0cb9c9.setIcon(icon_06ad00671e804fc49a90c8f700ba5aac);
+            
+    
+            var popup_802c0c2dab4c4b5da6cc926e93dfac81 = L.popup({maxWidth: '300'});
+
+            
+                var html_f7a5c8cb087f44d0a4657b0911614671 = $('<div id="html_f7a5c8cb087f44d0a4657b0911614671" style="width: 100.0%; height: 100.0%;">i0_sea_water_temperature: 21.386<br>Latitude: 35.875<br>Longitude: 19.625</div>')[0];
+                popup_802c0c2dab4c4b5da6cc926e93dfac81.setContent(html_f7a5c8cb087f44d0a4657b0911614671);
+            
+
+            marker_1259b338eaa444f284b4b0b9fc0cb9c9.bindPopup(popup_802c0c2dab4c4b5da6cc926e93dfac81);
+
+            
+        
+    
+
+            var marker_26d112a5b0fd458db78bafad3e3c0bfc = L.marker(
+                [35.875,19.6875],
+                {
+                    icon: new L.Icon.Default()
+                    }
+                )
+                .addTo(feature_group_14677b21423c4615a430aec3540615d0);
+            
+    
+
+                var icon_878105aaed324f2d984e6e1d46e52b28 = L.AwesomeMarkers.icon({
+                    icon: 'info-sign',
+                    iconColor: 'white',
+                    markerColor: 'blue',
+                    prefix: 'glyphicon',
+                    extraClasses: 'fa-rotate-0'
+                    });
+                marker_26d112a5b0fd458db78bafad3e3c0bfc.setIcon(icon_878105aaed324f2d984e6e1d46e52b28);
+            
+    
+            var popup_9cdf4e05118b49069deec766fe8d5a98 = L.popup({maxWidth: '300'});
+
+            
+                var html_f7f7a4f31a684c1cb6dc690e3f586b76 = $('<div id="html_f7f7a4f31a684c1cb6dc690e3f586b76" style="width: 100.0%; height: 100.0%;">i0_sea_water_temperature: 21.2954<br>Latitude: 35.875<br>Longitude: 19.6875</div>')[0];
+                popup_9cdf4e05118b49069deec766fe8d5a98.setContent(html_f7f7a4f31a684c1cb6dc690e3f586b76);
+            
+
+            marker_26d112a5b0fd458db78bafad3e3c0bfc.bindPopup(popup_9cdf4e05118b49069deec766fe8d5a98);
+
+            
+        
+    
+
+            var marker_44a87d6639364f5287c1e3f3416a2d37 = L.marker(
+                [35.875,19.75],
+                {
+                    icon: new L.Icon.Default()
+                    }
+                )
+                .addTo(feature_group_14677b21423c4615a430aec3540615d0);
+            
+    
+
+                var icon_d5aef59bbc584d2696de130d56c34e7e = L.AwesomeMarkers.icon({
+                    icon: 'info-sign',
+                    iconColor: 'white',
+                    markerColor: 'blue',
+                    prefix: 'glyphicon',
+                    extraClasses: 'fa-rotate-0'
+                    });
+                marker_44a87d6639364f5287c1e3f3416a2d37.setIcon(icon_d5aef59bbc584d2696de130d56c34e7e);
+            
+    
+            var popup_0d9ad8f1cc4247e199be637bb3a15bc4 = L.popup({maxWidth: '300'});
+
+            
+                var html_9aa9048265e146449e926a2b8871a7b5 = $('<div id="html_9aa9048265e146449e926a2b8871a7b5" style="width: 100.0%; height: 100.0%;">i0_sea_water_temperature: 21.2612<br>Latitude: 35.875<br>Longitude: 19.75</div>')[0];
+                popup_0d9ad8f1cc4247e199be637bb3a15bc4.setContent(html_9aa9048265e146449e926a2b8871a7b5);
+            
+
+            marker_44a87d6639364f5287c1e3f3416a2d37.bindPopup(popup_0d9ad8f1cc4247e199be637bb3a15bc4);
+
+            
+        
+    
+                
+
+                map_3fcaf25f263c4c58b9d4d7c41d03a1ea.fitBounds(
+                    [[35.875, 19.5], [35.875, 19.75]],
+                    {}
+                    );
+            
+    
+            var layer_control_77ad0064fa944080af40faa8220570e1 = {
+                base_layers : { "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyj1ijoiz3rzyxblbgfziiwiysi6imnqowgwdgr4ntbrmmwycxmydg4wnmj5cmmifq.lan_zadukn3ktc7vd0fuqq" : tile_layer_f461fe06725149c389f307fa28623fb6, },
+                overlays : { "Markers - Layer: i0_sea_water_temperature / Query ID: 839" : feature_group_14677b21423c4615a430aec3540615d0, }
+                };
+            L.control.layers(
+                layer_control_77ad0064fa944080af40faa8220570e1.base_layers,
+                layer_control_77ad0064fa944080af40faa8220570e1.overlays,
+                {position: 'topright',
+                 collapsed: true,
+                 autoZIndex: true
+                }).addTo(map_3fcaf25f263c4c58b9d4d7c41d03a1ea);
+        
+</script>
