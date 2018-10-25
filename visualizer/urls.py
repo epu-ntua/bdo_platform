@@ -12,7 +12,6 @@ urlpatterns = [
     url('^map_course_mt/$', views.map_course_mt, name='map_course_mt'),
 
     url('^map_plotline/$', views.map_plotline, name='map_plotline'),
-    url('^map_course_time/$', views.map_course_time, name='map_course_time'),
     url('^map_markers_in_time/$', views.map_markers_in_time, name='map_markers_in_time'),
 
 

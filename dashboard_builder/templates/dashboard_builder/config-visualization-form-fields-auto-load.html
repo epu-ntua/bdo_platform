@@ -18,10 +18,14 @@
                             {% endif %}
                             {% if argument.type == 'QUERY' %}
                             {% elif argument.type == 'COLUMN' %}
+                                <select id="{{ argument.name }}" class="form-control full-width column-select" name="{{ argument.name }}" style="width: 250px" >
+
+                                </select>
+                            {% elif argument.type == 'VARIABLE' %}
                                 <select id="{{ argument.name }}" class="form-control full-width variable-select" name="{{ argument.name }}" style="width: 250px" >
 
                                 </select>
-                            {% elif argument.type == 'COLUMNLIST' %}
+                            {% elif argument.type == 'VARIABLE_LIST' %}
                                 <select id="{{ argument.name }}" class="form-control full-width variables-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
 
                                 </select>

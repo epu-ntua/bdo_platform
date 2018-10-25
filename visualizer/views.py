@@ -1,11 +1,11 @@
 from __future__ import unicode_literals, division
 # -*- coding: utf-8 -*-
-import pdb
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.db import connection, connections
 from rest_framework.views import APIView
 from forms import MapForm
+import time
 
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -45,8 +45,7 @@ FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige'
 
 AGGREGATE_VIZ = ['max','min','avg','sum']
 
-def map_visualizer(request):
-
+def create_map():
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
@@ -70,95 +69,110 @@ def map_visualizer(request):
         title='Expand me',
         title_cancel='Exit me',
         force_separate_button=True).add_to(m)
+    return m
 
+def get_plotline_parameters(request, count):
+    cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
+    try:
+        marker_limit = int(request.GET.get("m_limit" + str(count), 200))
+    except ValueError:
+        raise ValueError('Marker limit is not valid.')
+    if marker_limit <= 0:
+        raise ValueError('Marker limit has to be a positive number.')
+    color = str(request.GET.get('color' + str(count), 'blue'))
+    # order_var = str(request.GET.get('order_var' + str(count), ''))
+    # ship_id = str(request.GET.get('ship_id' + str(count), ''))
+    lat_col = str(request.GET.get('lat_col' + str(count), 'lat'))
+    lon_col = str(request.GET.get('lon_col' + str(count), 'lon'))
+    return cached_file, marker_limit, color, lat_col, lon_col
+
+def get_heatmap_parameters(request, count):
+    cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
+    lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
+    lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
+    heat_col = str(request.GET.get('heat_col' + str(count), ''))
+    return cached_file, heat_col, lat_col,lon_col
+
+def map_visualizer(request):
+    m = create_map()
     js_list = []
     old_map_id_list = []
     extra_js = ""
-    layer_count = int(request.GET.get("layer_count", 0))
+    try:
+        layer_count = int(request.GET.get("layer_count", 0))
+    except ValueError:
+        raise ValueError('Layer count is not valid.')
 
     for count in range(0, layer_count):
-        layer_id = request.GET.get("viz_id"+str(count))
+        try:
+            layer_id = int(request.GET.get("viz_id" + str(count)))
+        except ValueError:
+            raise ValueError('Visualisation ID of layer ' + str(count) + 'is not valid.')
         # Plotline
-        if (layer_id == str(18)):
-            print ('Plotline')
-            cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
-            marker_limit = request.GET.get("m_limit"+str(count),200)
-            print marker_limit
-            query = int(str(request.GET.get('query'+str(count), '0')))
-            df = str(request.GET.get('df'+str(count), ''))
-            print df
-            notebook_id = str(request.GET.get('notebook_id'+str(count), ''))
-            color = str(request.GET.get('color'+str(count), 'blue'))
-            print color
-            order_var = str(request.GET.get('order_var'+str(count), ''))
-            print order_var
-            ship_id = str(request.GET.get('ship_id'+str(count), ''))
-            lat_col = str(request.GET.get('lat_col'+str(count), 'latitude'))
-            print lat_col
-            lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
-            print lon_col
-            # map_id = str(request.GET.get('map_id'+str(count), ''))
-            m, extra_js = map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id, lat_col, lon_col, m, request, cached_file)
+        try:
+            if (layer_id == Visualization.objects.get(view_name='map_plotline').id):
+                query_pk, df, notebook_id = get_data_parameters(request, str(count))
+                cached_file, marker_limit, color, lat_col, lon_col = get_plotline_parameters(request, count)
+                m, extra_js = map_plotline(marker_limit, query_pk, df, notebook_id, color, lat_col,
+                                           lon_col, m, request, cached_file)
+        except ObjectDoesNotExist:
+            pass
         # Contours
-        elif (layer_id == str(4)):
-            print ('Contours')
-            # Gather the arguments
-            cached_file = str(request.GET.get('cached_file_id'+str(count), ''))
-            n_contours = int(request.GET.get('n_contours'+str(count), 20))
-            step = float(request.GET.get('step'+str(count), 0.1))
-            variable = str(request.GET.get('feat_1'+str(count), ''))
-            query = str(request.GET.get('query'+str(count), ''))
-            agg_function = str(request.GET.get('agg_func'+str(count), 'avg'))
-            try:
-                m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, request, cached_file)
-            except Exception:
-                return HttpResponse('An error occurred, map cannot be presented for the query')
-            old_map_id_list.append(old_map_id)
-        # Map Course
-        elif (layer_id == str(15)):
-            print ('Markers')
-            cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
-            marker_limit = int(request.GET.get('m_limit'+str(count), '100'))
-            print marker_limit
-            query = int(str(request.GET.get('query'+str(count), '0')))
+        try:
+            if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
+                print ('Contours')
+                # Gather the arguments
+                cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
+                n_contours = int(request.GET.get('n_contours' + str(count), 20))
+                step = float(request.GET.get('step' + str(count), 0.1))
+                variable = str(request.GET.get('feat_1' + str(count), ''))
+                query = str(request.GET.get('query' + str(count), ''))
+                agg_function = str(request.GET.get('agg_func' + str(count), 'avg'))
+                m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m,
+                                                                 cached_file)
+                old_map_id_list.append(old_map_id)
+        except ObjectDoesNotExist:
+            pass
+            # Map Course
+        try:
+            if (layer_id == Visualization.objects.get(view_name='map_course').id):
+                print ('Markers')
+                cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
+                marker_limit = int(request.GET.get('m_limit' + str(count), '100'))
+                print marker_limit
+                query = int(str(request.GET.get('query' + str(count), '0')))
 
-            df = str(request.GET.get('df'+str(count), ''))
-            print df
-            notebook_id = str(request.GET.get('notebook_id'+str(count), ''))
+                df = str(request.GET.get('df' + str(count), ''))
+                print df
+                notebook_id = str(request.GET.get('notebook_id' + str(count), ''))
 
-            order_var = str(request.GET.get('order_var'+str(count), ''))
-            print order_var
-            variable = str(request.GET.get('col_var'+str(count), ''))
-            print variable
-            agg_function = str(request.GET.get('agg_func'+str(count), 'avg'))
+                order_var = str(request.GET.get('order_var' + str(count), ''))
+                print order_var
+                variable = str(request.GET.get('col_var' + str(count), ''))
+                print variable
+                agg_function = str(request.GET.get('agg_func' + str(count), 'avg'))
 
-            lat_col = str(request.GET.get('lat_col'+str(count), 'latitude'))
-            print lat_col
-            lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
-            print lon_col
+                lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
+                print lat_col
+                lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
+                print lon_col
 
-            color_col = str(request.GET.get('color_col'+str(count), ''))
-            m, extra_js = map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function, lat_col, lon_col,color_col, m, request, cached_file)
+                color_col = str(request.GET.get('color_col' + str(count), ''))
+                m, extra_js = map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function,
+                                         lat_col, lon_col, color_col, m, request, cached_file)
+        except ObjectDoesNotExist:
+            pass
         # Heatmap
-        elif (layer_id == str(19)):
-            print ('Heatmap')
-            cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
-            query = int(str(request.GET.get('query'+str(count), '0')))
-            df = str(request.GET.get('df'+str(count), ''))
-            print df
-            notebook_id = str(request.GET.get('notebook_id'+str(count), ''))
+        try:
+            if (layer_id == Visualization.objects.get(view_name='map_heatmap').id):
+                query_pk, df, notebook_id = get_data_parameters(request, str(count))
+                cached_file, heat_col, lat_col, lon_col = get_heatmap_parameters(request, count)
+                m, extra_js = map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, cached_file, request)
+        except:
+            pass
 
-            heat_col = str(request.GET.get('heat_col'+str(count), 'frequency'))
-            print heat_col
-            lat_col = str(request.GET.get('lat_col'+str(count), 'latitude'))
-            print lat_col
-            lon_col = str(request.GET.get('lon_col'+str(count), 'longitude'))
-            print lon_col
-            m, extra_js = map_heatmap(query, df, notebook_id, lat_col, lon_col, heat_col, m, cached_file, request)
-
-        if (extra_js!=""):
+        if (extra_js != ""):
             js_list.append(extra_js)
-
 
     folium.LayerControl().add_to(m)
     m.save('templates/map1.html')
@@ -188,173 +202,6 @@ def map_visualizer(request):
 
 
 
-def map_viz_folium_heatmap(request):
-    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    location = [0, 0]
-    zoom_start = 2
-    max_zoom = 13
-    min_zoom = 2
-
-
-    m = folium.Map(location=location,
-                   zoom_start=zoom_start,
-                   max_zoom=max_zoom,
-                   min_zoom=min_zoom,
-                   max_bounds=True,
-                   tiles=tiles_str+token_str,
-                   attr=attr_str)
-
-    np.random.seed(3141592)
-    initial_data = (
-        np.random.normal(size=(100, 2)) * np.array([[1, 1]]) +
-        np.array([[48, 5]])
-    )
-    move_data = np.random.normal(size=(100, 2)) * 0.01
-    data = [(initial_data + move_data * i).tolist() for i in range(100)]
-
-    # hm = plugins.HeatMapWithTime(data)
-    # hm.add_to(m)
-
-    time_index = [
-        (datetime.now() + k * timedelta(1)).strftime('%Y-%m-%d') for
-        k in range(len(data))
-    ]
-    hm = plugins.HeatMapWithTime(
-        data,
-        index=time_index,
-        radius=0.5,
-        scale_radius=True,
-        auto_play=True,
-        max_opacity=0.3
-    )
-
-    hm.add_to(m)
-
-    m.save('templates/map.html')
-    map_html = open('templates/map.html', 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    # print map_id
-    js_all = soup.findAll('script')
-    # print(js_all)
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-    # print(js_all)
-    css_all = soup.findAll('link')
-    if len(css_all) > 3:
-        css_all = [css.prettify() for css in css_all[3:]]
-    # print js
-    # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
-
-
-
-def map_course_time(request):
-    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    location = [0, 0]
-    zoom_start = 2
-    max_zoom = 30
-    min_zoom = 2
-
-    m = folium.Map(location=location,
-                   zoom_start=zoom_start,
-                   max_zoom=max_zoom,
-                   min_zoom=min_zoom,
-                   max_bounds=True,
-                   tiles=tiles_str + token_str,
-                   attr=attr_str)
-
-    plugins.Fullscreen(
-        position='topright',
-        title='Expand me',
-        title_cancel='Exit me',
-        force_separate_button=True).add_to(m)
-
-    if request.method == "GET":
-        markersum = int(request.GET.get("markers", 50))
-        ship = request.GET.get("ship", "all")
-        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
-        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
-
-        query_pk = int(str(request.GET.get('query', '')))
-
-
-    data = get_data(query_pk, markersum, ship, mindate, maxdate)
-
-    var_index = data['var']
-    ship_index = data['ship']
-    time_index = data['time']
-    lat_index = data['lat']
-    lon_index = data['lon']
-    data = data['data']
-
-    course = []
-    times = []
-    dates = []
-    speeds = []
-    colours = []
-    currboat = int(data[0][ship_index])
-    datas = []
-
-    for index in range(0, len(data) - 1):
-        d = data[index]
-
-        lat = float(d[lat_index])
-        lon = float(d[lon_index])
-        date = str(d[time_index])
-        cship = int(d[ship_index])
-        speed = float(d[var_index])
-        colour = 'blue'
-        if speed > 75.0:
-            colour = 'red'
-
-        if cship != currboat:
-            geo = createjson(course, times, dates, currboat, speeds, colours)
-            datas.append(geo)
-            currboat = cship
-            colours = []
-            course = []
-            times = []
-            dates = []
-            speeds = []
-
-        colours.append(colour)
-        course.append([lon, lat])
-        times.append(transpose(date))
-        dates.append(date)
-        speeds.append(speed)
-
-    geo = createjson(course, times, dates, currboat, speeds, colours)
-    datas.append(geo)
-    datas = json.dumps(datas)
-
-    #import pdb;pdb.set_trace()
-
-    m.save('templates/map.html')
-    map_html = open('templates/map.html', 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    # print map_id
-    js_all = soup.findAll('script')
-    # print(js_all)
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-    # print(js_all)
-    css_all = soup.findAll('link')
-    if len(css_all) > 3:
-        css_all = [css.prettify() for css in css_all[3:]]
-    # print js
-    # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_time.html',
-                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': datas})
 
 
 def map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function, lat_col, lon_col, color_col, m, request,cached_file):
@@ -520,7 +367,7 @@ def map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_fu
             min_lon = d[lon_index]
 
         folium.Marker(
-            location=[d[lat_index],d[lon_index]],
+            location=[d[lat_index], d[lon_index]],
             popup=str(variable)+": "+str(d[var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
             icon=folium.Icon(color=marker_color),
             # radius=2,
@@ -821,136 +668,124 @@ def map_course_mt(request):
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'markerType':'circle', 'centroids': convert_unicode_json(featureCollection1), 'data_points': convert_unicode_json(featureCollection2)})
 
 
-def map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id, lat_col, lon_col, m, request, cached_file):
+def get_plotline_query_data(query):
+    query_data = execute_query_method(query)
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
 
-    # import pdb
-    # pdb.set_trace()
+    lat_index = lon_index = -1
+    for idx, c in enumerate(result_headers['columns']):
+        if str(c['name']).find('lat') >= 0:
+            lat_index = idx
+        elif str(c['name']).find('lon') >= 0:
+            lon_index = idx
+    return data, lat_index, lon_index
+
+
+def get_map_query_data(query, variable, order_var, color_col):
+    query_data = execute_query_method(query)
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+
+    var_index = order_var_index = color_index = lat_index = lon_index = -1
+    for idx, c in enumerate(result_headers['columns']):
+        if str(c['name']).find('lat') >= 0:
+            lat_index = idx
+        elif str(c['name']).find('lon') >= 0:
+            lon_index = idx
+        elif c['name'] == variable:
+            var_index = idx
+        elif str(c['name']) == order_var:
+            order_var_index = idx
+        elif str(c['name']) == color_col:
+            color_index = idx
+    return data, lat_index, lon_index, var_index, order_var_index, color_index
+
+
+def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color_col, marker_limit, auto_order = False):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    if auto_order == True:
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'].find('time') >= 0:
+                    order_var = s['name']
+
+    for f in doc['from']:
+        for s in f['select']:
+            if s['name'] == variable:
+                s['exclude'] = False
+            elif str(s['name']) == order_var:
+                s['exclude'] = False
+            elif str(s['name']) == color_col:
+                s['exclude'] = False
+            elif str(s['name']).find(lat_col) >= 0:
+                s['exclude'] = False
+            elif str(s['name']).find(lon_col) >= 0:
+                s['exclude'] = False
+            else:
+                s['exclude'] = True
+
+    if order_var != '':
+        doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+    if marker_limit != '':
+        doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
+def create_plotline_points(data, lat_index, lon_index):
+    points = []
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+
+    for s in data:
+        points.append([float(s[lat_index]), float(s[lon_index])])
+        if s[lat_index] > max_lat:
+            max_lat = s[lat_index]
+        if s[lat_index] < min_lat:
+            min_lat = s[lat_index]
+        if s[lon_index] > max_lon:
+            max_lon = s[lon_index]
+        if s[lon_index] < min_lon:
+            min_lon = s[lon_index]
+
+    max_lat = float(max_lat)
+    min_lat = float(min_lat)
+    max_lon = float(max_lon)
+    min_lon = float(min_lon)
+
+    return points, min_lat, max_lat, min_lon, max_lon
+
+
+def map_plotline(marker_limit, query_pk, df, notebook_id, color, lat_col, lon_col, m, request, cached_file):
     dict = {}
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query_pk != 0:
+            query = load_modify_query_map(query_pk, '', '', 'lat', 'lon', '', marker_limit, True)
+            data, lat_index, lon_index, nu1, nu2, nu3 = get_map_query_data(query, '', '', '')
+            points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
 
-        if query != 0:
-            q = AbstractQuery.objects.get(pk=int(query))
-            q = TempQuery(document=q.document)
-            doc = q.document
-
-            if order_var != "" and order_var is not None:
-                doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
-
-            # if doc['limit'] > marker_limit:
-            doc['limit'] = marker_limit
-            # print(doc)
-
-            for f in doc['from']:
-                for s in f['select']:
-                    if s['name'] == order_var:
-                        s['exclude'] = False
-                    elif str(s['name']).find('latitude') >= 0:
-                        s['exclude'] = False
-                    elif str(s['name']).find('longitude') >= 0:
-                        s['exclude'] = False
-                    else:
-                        s['exclude'] = True
-
-            q.document = doc
-
-            query_data = execute_query_method(q)
-            data = query_data[0]['results']
-            result_headers = query_data[0]['headers']
-
-            lat_index = lon_index = -1
-            order_var_index = -1
-            var_index = -1
-            for idx, c in enumerate(result_headers['columns']):
-                if c['name'] == order_var:
-                    order_var_index = idx
-                elif str(c['name']).find('latitude') >= 0:
-                    lat_index = idx
-                elif str(c['name']).find('longitude') >= 0:
-                    lon_index = idx
-
-            # points = [[float(s[lat_index]), float(s[lon_index])] for s in data]
-            points=[]
-            min_lat = 90
-            max_lat = -90
-            min_lon = 180
-            max_lon = -180
-
-            for s in data:
-                points.append([float(s[lat_index]), float(s[lon_index])])
-                if s[lat_index] > max_lat:
-                    max_lat = s[lat_index]
-                if s[lat_index] < min_lat:
-                    min_lat = s[lat_index]
-                if s[lon_index] > max_lon:
-                    max_lon = s[lon_index]
-                if s[lon_index] < min_lon:
-                    min_lon = s[lon_index]
-
-            max_lat = float(max_lat)
-            min_lat = float(min_lat)
-            max_lon = float(max_lon)
-            min_lon = float(min_lon)
-            print(points[:5])
-
+        elif df != '':
+            data, y_m_unit, y_title_list = get_chart_dataframe_data(request, notebook_id, df, '', [], False)
+            points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_col, lon_col)
         else:
-            print ("json-case")
-
-            livy = False
-            service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-            if len(service_exec) > 0:
-                service_exec = service_exec[0]  # GET LAST
-                session_id = service_exec.livy_session
-                exec_id = service_exec.id
-                updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-                livy = service_exec.service.through_livy
-            if livy:
-                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
-            else:
-                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-                run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-                json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-                delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            # print json_data
-
-            # points = [[float(s[lat_col]), float(s[lon_col])] for s in json_data]
-
-            points = []
-            min_lat = 90
-            max_lat = -90
-            min_lon = 180
-            max_lon = -180
-
-            for s in json_data:
-                points.append([float(s[lat_col]), float(s[lon_col])])
-                if s[lat_col] > max_lat:
-                    max_lat = s[lat_col]
-                if s[lat_col] < min_lat:
-                    min_lat = s[lat_col]
-                if s[lon_col] > max_lon:
-                    max_lon = s[lon_col]
-                if s[lon_col] < min_lon:
-                    min_lon = s[lon_col]
-
-            max_lat = float(max_lat)
-            min_lat = float(min_lat)
-            max_lon = float(max_lon)
-            min_lon = float(min_lon)
-            print(points[:5])
+            raise ValueError('Either query ID or dataframe name has to be specified.')
 
         dict['min_lat'] = min_lat
         dict['max_lat'] = max_lat
         dict['min_lon'] = min_lon
         dict['max_lon'] = max_lon
-
         dict['points'] = points
-        # print dict
-
+        # create cached file with necessary data and info
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dict, f)
-
-
     else:
-        print('PLOTLINE DATA IS CACHED!!!')
+        print('Plotline Data is Cached!')
         with open('visualizer/static/visualizer/temp/' + cached_file) as f:
             cached_data = json.load(f)
         min_lat = cached_data['min_lat']
@@ -959,26 +794,15 @@ def map_plotline(marker_limit, query, df, notebook_id, color, order_var, ship_id
         max_lon = cached_data['max_lon']
 
         points = cached_data['points']
-        # data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
-
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer / Ship ID: ' + str(ship_id)+' / Query ID: '+str(query), overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(''), overlay=True,
                                               control=True).add_to(m)
-    folium.PolyLine(points,
-                    color=color,
-                    weight=3,
-                    opacity=0.9,
+    folium.PolyLine(points, color='blue', weight=2.5, opacity=0.8,
                     ).add_to(pol_group_layer)
 
-    # Arrows are created
-    for i in range (1,len(points)):
-        arrows = get_arrows(m, 1, locations=[points[i-1], points[i]])
-        for arrow in arrows:
-            arrow.add_to(pol_group_layer)
-
-
+    create_plotline_arrows(points, m, pol_group_layer)
     ret_html = ""
     return m, ret_html
 
@@ -1151,139 +975,28 @@ def map_markers_in_time(request):
                       {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType})
 
 
-# def map_heatmap(request):
-#     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-#     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-#     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-#                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-#                'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-#     location = [0, 0]
-#     zoom_start = 2
-#     max_zoom = 15
-#     min_zoom = 2
-#
-#     m = folium.Map(location=location,
-#                    zoom_start=zoom_start,
-#                    max_zoom=max_zoom,
-#                    min_zoom=min_zoom,
-#                    max_bounds=True,
-#                    tiles=tiles_str + token_str,
-#                    attr=attr_str)
-#
-#     if request.method == "POST":
-#
-#         form = MapForm(request.POST)
-#         if form.is_valid():
-#             data = request.data
-#             markersum = data["markers"]
-#             ship = data["ship"]
-#             mindate = request.POST.get("min_date", 2000)
-#             maxdate = request.POST.get("max_date", 2017)
-#         else:
-#             markersum = 50
-#             ship = "all"
-#             mindate = 2000
-#             maxdate = 2017
-#
-#     else:
-#         markersum = int(request.GET.get("markers", 5000))
-#         ship = request.GET.get("ship", "all")
-#         mindate = int(request.POST.get("min_date", 2000))
-#         maxdate = int(request.POST.get("max_date", 2017))
-#
-#     query_pk = int(str(request.GET.get('query', '')))
-#     data = get_data(query_pk, markersum, ship, mindate, maxdate)
-#     heat = []
-#
-#     lat_index = data['lat']
-#     lon_index = data['lon']
-#     data = data['data']
-#
-#     for d in data:
-#         heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
-#
-#     HeatMap(heat, name="Heat Map").add_to(m)
-#
-#
-#     folium.LayerControl().add_to(m)
-#
-#
-#     m.save('templates/map.html')
-#     map_html = open('templates/map.html', 'r').read()
-#     soup = BeautifulSoup(map_html, 'html.parser')
-#     map_id = soup.find("div", {"class": "folium-map"}).get('id')
-#     # print map_id
-#     js_all = soup.findAll('script')
-#     # print(js_all)
-#     if len(js_all) > 5:
-#         js_all = [js.prettify() for js in js_all[5:]]
-#     # print(js_all)
-#     css_all = soup.findAll('link')
-#     if len(css_all) > 3:
-#         css_all = [css.prettify() for css in css_all[3:]]
-#     # print js
-#     # os.remove('templates/map.html')
-#     return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
+def get_heatmap_query_data(query):
+    pass
 
 
 
-def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_file,request):
+def map_heatmap(query_pk, df, notebook_id, lat_col, lon_col,heat_col, m, cached_file, request):
     dict = {}
-
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
-        if query != 0:
-            q = AbstractQuery.objects.get(pk=int(query))
-            q = TempQuery(document=q.document)
-            doc = q.document
-
-            # doc['orderings'] = []
-            # doc['limit'] = []
-
-
-            for f in doc['from']:
-                for s in f['select']:
-                    if str(s['name']).find('latitude') >= 0:
-                        s['exclude'] = False
-                    elif str(s['name']).find('longitude') >= 0:
-                        s['exclude'] = False
-                    elif s['name'] == heat_col:
-                        s['exclude'] = False
-                    else:
-                        s['exclude'] = True
-
-            q.document = doc
-
-            lat_index = lon_index = var_index = -1
-            result = execute_query_method(q)[0]
-            result_data = result['results']
-            result_headers = result['headers']
-
-            print result_headers
-            for idx, c in enumerate(result_headers['columns']):
-                if str(c['name']).find('lat') >= 0:
-                    lat_index = idx
-                elif str(c['name']).find('lon') >= 0:
-                    lon_index = idx
-                elif c['name'] == heat_col:
-                    var_index = idx
-
-            data = result_data
+        if query_pk != 0:
+            query = load_modify_query_map(query_pk, heat_col, '', 'lat', 'lon', '', '', False)
+            data, lat_index, lon_index, var_index, nu1, nu2 = get_map_query_data(query, heat_col, '', '')
         else:
-            print ("json-case")
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            # print json_data
-
-            data = []
+            data, headers = load_execute_dataframe_data(request, df, notebook_id)
+            heatmap_data = []
             lat_index = 0
             lon_index = 1
             var_index = 2
 
-            for s in json_data:
+            for s in data:
                 row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
-                data.append(row)
+                heatmap_data.append(row)
 
         min_lat = 90
         max_lat = -90
@@ -1358,7 +1071,7 @@ def map_heatmap(query, df, notebook_id, lat_col, lon_col,heat_col, m, cached_fil
 
 
 
-def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, request, cached_file):
+def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file):
     try:
         print('ENTERING CONTOURS')
 
@@ -1736,23 +1449,6 @@ def map_viz_folium_heatmap_time(request):
     data_list.append(data_moment_list)
     time_list.append(curr_time.strftime("%Y-%m-%dT%H:%M:%S"))
 
-
-    print data_list
-    print time_list
-    # initial_data = (
-    #     np.random.normal(size=(100, 2)) * np.array([[1, 1]]) +
-    #     np.array([[48, 5]])
-    # )
-    # move_data = np.random.normal(size=(100, 2)) * 0.01
-    # data = [(initial_data + move_data * i).tolist() for i in range(100)]
-
-    # hm = plugins.HeatMapWithTime(data)
-    # hm.add_to(m)
-    #
-    # time_index = [
-    #     (datetime.now() + k * timedelta(1)).strftime('%Y-%m-%d') for
-    #     k in range(len(data))
-    # ]
     hm = plugins.HeatMapWithTime(
         data_list,
         index=time_list,
@@ -1760,8 +1456,6 @@ def map_viz_folium_heatmap_time(request):
         scale_radius=True,
         auto_play=True,
         max_opacity=0.9,
-
-
     )
 
     hm.add_to(m)
@@ -1932,10 +1626,6 @@ def get_histogram_2d_am(request):
         doc['limit'] = []
         doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
         query.document = doc
-        # raw_query = query.raw_query
-        # print doc
-        # print raw_query
-
 
         query_data = execute_query_method(query)
 
@@ -2098,24 +1788,13 @@ def get_histogram_2d_am(request):
                    'bin_x': bin_x_contr, 'bin_y': bin_y_contr, 'legend_id': legpath})
 
 
-def test_request_zep(request):
-    query = 6
-    raw_query = Query.objects.get(pk=query).raw_query
-    print raw_query
 
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    # response = requests.delete("http://localhost:8080/api/notebook/"+str(notebook_id))
-    return render(request, 'visualizer/table_zep.html', {'notebook_id': notebook_id, 'paragraph_id': viz_paragraph_id})
-
-def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function):
+def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering = True):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
+    print 'DOCUMENT ARXIKOU QUERY'
+    print doc
     x_flag = False
     for f in doc['from']:
         for s in f['select']:
@@ -2128,10 +1807,11 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function):
                 x_flag = True
             else:
                 s['exclude'] = True
-    if x_flag == True:
-        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-    else:
-        raise ValueError('Ordering Variable is not valid or not given.')
+    if ordering == True:
+        if x_flag == True:
+            doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+        else:
+            raise ValueError('Ordering Variable is not valid or not given.')
     query.document = doc
     return query
 
@@ -2170,7 +1850,7 @@ def get_chart_query_data(query, x_var, y_var_list):
     return json_data, y_m_unit, y_title_list
 
 
-def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list):
+def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, ordering = True):
     y_m_unit = []
     y_title_list = []
     livy = False
@@ -2182,10 +1862,16 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list):
         updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
         livy = service_exec.service.through_livy
     if livy:
-        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+        if ordering:
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+        else:
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
     else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var,
+        if ordering:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var,
                                                           order_type='ASC')
+        else:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
         run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
@@ -2198,15 +1884,19 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list):
     return json_data, y_m_unit, y_title_list
 
 
-def get_line_chart_am(request):
-    query_pk = str(request.GET.get('query', '0'))
+def get_data_parameters(request, layer_count):
+    query_pk = str(request.GET.get('query'+layer_count, '0'))
     try:
         query_pk = int(query_pk)
     except ValueError:
         raise ValueError('Query ID not valid.')
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
+    df = str(request.GET.get('df'+layer_count, ''))
+    notebook_id = str(request.GET.get('notebook_id'+layer_count, ''))
+    return query_pk, df, notebook_id
 
+
+def get_line_chart_am(request):
+    query_pk, df, notebook_id = get_data_parameters(request, '')
     x_var = str(request.GET.get('x_var', ''))
     y_var_list = request.GET.getlist('y_var[]')
     agg_function = str(request.GET.get('agg_func', 'avg'))
@@ -2216,7 +1906,7 @@ def get_line_chart_am(request):
         query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
         json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
     elif df != '':
-        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list)
+        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
     else:
         raise ValueError('Either query ID or dataframe name has to be specified.')
 
@@ -2229,15 +1919,8 @@ def get_line_chart_am(request):
                   {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate})
 
 
-
 def get_column_chart_am(request):
-    query_pk = str(request.GET.get('query', '0'))
-    try:
-        query_pk = int(query_pk)
-    except ValueError:
-        raise ValueError('Query ID not valid.')
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
+    query_pk, df, notebook_id = get_data_parameters(request, '')
 
     x_var = str(request.GET.get('x_var', ''))
     y_var_list = request.GET.getlist('y_var[]')
@@ -2247,7 +1930,7 @@ def get_column_chart_am(request):
         query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
         json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
     elif df != '':
-        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list)
+        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
     else:
         raise ValueError('Either query ID or dataframe name has to be specified.')
 
@@ -2261,13 +1944,7 @@ def get_column_chart_am(request):
 
 
 def get_pie_chart_am(request):
-    query_pk = str(request.GET.get('query', '0'))
-    try:
-        query_pk = int(query_pk)
-    except ValueError:
-        raise ValueError('Query ID not valid.')
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
+    query_pk, df, notebook_id = get_data_parameters(request, '')
 
     key_var = str(request.GET.get('key_var', ''))
     value_var = str(request.GET.get('value_var', ''))
@@ -2277,11 +1954,12 @@ def get_pie_chart_am(request):
         query = load_modify_query_chart(query_pk, key_var, [value_var],agg_function)
         json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, key_var, [value_var])
     elif df !='':
-        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list)
+        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
     else:
         raise ValueError('Either query ID or dataframe name has to be specified.')
 
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
+
 
 def data_table_paginate(data, page, limit):
     paginator = Paginator(data, limit)  # Show 25 contacts per page
@@ -2295,6 +1973,7 @@ def data_table_paginate(data, page, limit):
         page_data = paginator.page(paginator.num_pages)
     return page_data
 
+
 def load_execute_query_data_table(query_pk):
     query = AbstractQuery.objects.get(pk=query_pk)
     q = TempQuery(document=query.document)
@@ -2302,6 +1981,7 @@ def load_execute_query_data_table(query_pk):
     data = result['results']
     headers = result['headers']['columns']
     return data, headers
+
 
 def load_execute_dataframe_data(request, df, notebook_id):
     livy = False
@@ -2325,249 +2005,30 @@ def load_execute_dataframe_data(request, df, notebook_id):
 
 
 def get_data_table(request):
-    query_pk = str(request.GET.get('query', '0'))
-    try:
-        query_pk = int(query_pk)
-    except ValueError:
-        raise ValueError('Query ID not valid.')
+    query_pk, df, notebook_id = get_data_parameters(request, '')
     limit = 50
-    page = int(request.GET.get('page', 1))
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
+    page = int(request.GET.get('page',1))
     if query_pk != 0:
         data, headers = load_execute_query_data_table(query_pk)
         isJSON = False
-    else:
+    elif df != '':
         load_execute_dataframe_data(request, df, notebook_id)
         isJSON = True
+    else:
+        raise ValueError('Either query ID or dataframe name has to be specified.')
 
     page_data = data_table_paginate(data, page, limit)
 
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': int(query_pk), 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
-
-def get_pie_chart(request):
-    type = 'pieChart'
-    chart = pieChart(name=type, color_category='category20c', height=450, width=450)
-    xdata = ["Orange", "Banana", "Pear", "Kiwi", "Apple", "Strawberry", "Pineapple"]
-    ydata = [3, 4, 0, 1, 5, 7, 3]
-    extra_serie = {"tooltip": {"y_start": "", "y_end": " cal"}}
-    chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
-    chart.buildcontent()
-    html = chart.htmlcontent
-    return render(request, 'visualizer/piechart.html', {'html': html})
+def create_plotline_arrows(points, m, pol_group_layer):
+    for i in range (1,len(points)):
+        arrows = get_arrows(m, 1, locations=[points[i-1], points[i]])
+        for arrow in arrows:
+            arrow.add_to(pol_group_layer)
 
 
-def get_line_chart(request):
-    try:
-        # Gather the arguments
-        x_var = str(request.GET.get('x_var', ''))
-        y_var = str(request.GET.get('y_var', ''))
-        query = str(request.GET.get('query', ''))
-
-        # Perform a query and get data
-        headers, data = get_test_data(query, request.user)
-        print data[:100]
-        # Find the columns of the selected variables and the rest dimensions
-        other_dims = list()
-        for idx, col in enumerate(headers['columns']):
-            if str(col['name']) == x_var:
-                x_var_col = idx
-            elif str(col['name']) == y_var:
-                y_var_col = idx
-            else:
-                other_dims.append(idx)
-        print x_var_col
-        print y_var_col
-        print other_dims
-        # Find the first values for each of the rest dimensions
-        other_dims_first_vals = list()
-        for d in other_dims:
-            other_dims_first_vals.append(str(data[0][d]))
-        print other_dims_first_vals
-        # Select only data with the same (first) value on any other dimensions except lat/lon
-        data = [(str(d[x_var_col]), float(d[y_var_col])) for d in data if filter_data(d, other_dims, other_dims_first_vals) == 0]
-        print data[:100]
-
-        xdata = []
-        ydata = []
-        for x, y in sorted(data):
-            xdata.append(time.mktime(datetime.strptime(x, "%Y-%m-%d %H:%M:%S").timetuple()) * 1000)
-            ydata.append(y)
-        print ydata
-        print xdata
-
-        type = "lineChart"
-        chart = lineChart(name=type, x_is_date=True,
-                          x_axis_format="%Y-%m-%d %H:%M:%S", y_axis_format=".3f",
-                          width=1000, height=500,
-                          show_legend=True)
-
-        extra_serie = {"tooltip": {"y_start": "Dummy ", "y_end": " Dummy"},
-                       "date_format": "%Y-%m-%d %H:%M:%S"}
-        chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
-        chart.buildcontent()
-        html = chart.htmlcontent
-        return render(request, 'visualizer/piechart.html', {'html': html})
-    except HttpResponseNotFound:
-        return HttpResponseNotFound
-    except Exception:
-        return HttpResponseNotFound
-
-
-def get_table_zep(request):
-    query = int(str(request.GET.get('query', '')))
-    raw_query = Query.objects.get(pk=query).raw_query
-    # print raw_query
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
-
-
-def get_line_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_line_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
-
-
-def get_bar_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_bar_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
-
-
-def get_area_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_area_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/" + str(notebook_id) + "/paragraph/" + str(viz_paragraph_id) + "?asIframe")
-
-
-def get_scatter_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_scatter_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/" + str(notebook_id) + "/paragraph/" + str(viz_paragraph_id) + "?asIframe")
-
-
-def get_pie_chart_zep(request):
-    query_pk = int(str(request.GET.get('query', '')))
-    query = Query.objects.get(pk=query_pk)
-    raw_query = query.raw_query
-    # print raw_query
-    key_var = str(request.GET.get('key_var', ''))
-    value_var = str(request.GET.get('value_var', ''))
-
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=key_var)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
-
-    set_zep_paragraph_pie_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, value_vars=value_var, key_var=key_var)
-    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
-
-    # restart_zep_interpreter(interpreter_id='')
-
-    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
-
-
-def get_arrows(m, n_arrows, locations, color='#68A7EE', size=7):
+def get_arrows(m, n_arrows, locations, color='#68A7EE', size=6):
     '''
     Get a list of correctly placed and rotated
     arrows/markers to be plotted
@@ -2584,18 +2045,10 @@ def get_arrows(m, n_arrows, locations, color='#68A7EE', size=7):
     '''
 
     Point = namedtuple('Point', field_names=['lat', 'lon'])
-
-    # creating point from our Point named tuple
     p1 = Point(locations[0][0], locations[0][1])
     p2 = Point(locations[1][0], locations[1][1])
-
-    # getting the rotation needed for our marker.
-    # Subtracting 90 to account for the marker's orientation
-    # of due East(get_bearing returns North)
     rotation = get_bearing(p1, p2) - 90
-
     arrows = []
-
     arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
                                                 fill_color=color, number_of_sides=3,
                                                 radius=size, rotation=rotation).add_to(m))
@@ -2618,76 +2071,45 @@ def get_bearing(p1, p2):
     '''
 
     long_diff = np.radians(p2.lon - p1.lon)
-
     lat1 = np.radians(p1.lat)
     lat2 = np.radians(p2.lat)
-
     x = np.sin(long_diff) * np.cos(lat2)
     y = (np.cos(lat1) * np.sin(lat2)
          - (np.sin(lat1) * np.cos(lat2)
             * np.cos(long_diff)))
     bearing = np.degrees(np.arctan2(x, y))
-
-    # adjusting for compass bearing
     if bearing < 0:
         return bearing + 360
     return bearing
 
+def get_aggregate_query_data(query, variable):
+    query_data = execute_query_method(query)
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+
+    variable_index = 0
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'] == variable:
+            variable_index = idx
+
+    value = round(data[0][variable_index], 3)
+    unit = result_headers['columns'][variable_index]['unit']
+    return value, unit
+
 
 def get_aggregate_value(request):
-    query_pk = int(str(request.GET.get('query', '0')))
+    query_pk, df, notebook_id = get_data_parameters(request, '')
+
     variable = str(request.GET.get('variable', ''))
-    agg_function = str(request.GET.get('agg_function', ''))
 
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
+    agg_function = str(request.GET.get('agg_function', 'avg'))
+    if not agg_function.lower() in AGGREGATE_VIZ:
+        raise ValueError('Aggregate function is not valid.')
     if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-        doc = query.document
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == variable:
-                    s['aggregate'] = agg_function
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-        query.document = doc
-
-        query_data = execute_query_method(query)
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-
-        variable_index = 0
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == variable:
-                variable_index = idx
-
-        value = round(data[0][variable_index], 3)
-        unit = result_headers['columns'][variable_index]['unit']
-
+        query = load_modify_query_chart(query_pk, '', [variable], agg_function, False)
+        value, unit = get_aggregate_query_data(query, variable)
     else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print data[:3]
-        value = data
-        unit = '?'
-
-        headers = [key for key in data[0].keys()]
+        value, unit, var_list = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
 
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit})
 
@@ -3011,13 +2433,314 @@ def createjson(lonlat,time,status,color):
     return geo
 
 
-def make_map(bbox):
-    fig, ax = plt.subplots(figsize=(8, 6))
-    # ax.set_extent(bbox)
-    ax.coastlines(resolution='50m')
-    return fig, ax
+
 
 def execute_query_method(q):
     result = q.execute()
     return result
 
+
+def get_pie_chart(request):
+    type = 'pieChart'
+    chart = pieChart(name=type, color_category='category20c', height=450, width=450)
+    xdata = ["Orange", "Banana", "Pear", "Kiwi", "Apple", "Strawberry", "Pineapple"]
+    ydata = [3, 4, 0, 1, 5, 7, 3]
+    extra_serie = {"tooltip": {"y_start": "", "y_end": " cal"}}
+    chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
+    chart.buildcontent()
+    html = chart.htmlcontent
+    return render(request, 'visualizer/piechart.html', {'html': html})
+
+
+def get_line_chart(request):
+    try:
+        # Gather the arguments
+        x_var = str(request.GET.get('x_var', ''))
+        y_var = str(request.GET.get('y_var', ''))
+        query = str(request.GET.get('query', ''))
+
+        # Perform a query and get data
+        headers, data = get_test_data(query, request.user)
+        print data[:100]
+        # Find the columns of the selected variables and the rest dimensions
+        other_dims = list()
+        for idx, col in enumerate(headers['columns']):
+            if str(col['name']) == x_var:
+                x_var_col = idx
+            elif str(col['name']) == y_var:
+                y_var_col = idx
+            else:
+                other_dims.append(idx)
+        print x_var_col
+        print y_var_col
+        print other_dims
+        # Find the first values for each of the rest dimensions
+        other_dims_first_vals = list()
+        for d in other_dims:
+            other_dims_first_vals.append(str(data[0][d]))
+        print other_dims_first_vals
+        # Select only data with the same (first) value on any other dimensions except lat/lon
+        data = [(str(d[x_var_col]), float(d[y_var_col])) for d in data if filter_data(d, other_dims, other_dims_first_vals) == 0]
+        print data[:100]
+
+        xdata = []
+        ydata = []
+        for x, y in sorted(data):
+            xdata.append(time.mktime(datetime.strptime(x, "%Y-%m-%d %H:%M:%S").timetuple()) * 1000)
+            ydata.append(y)
+        print ydata
+        print xdata
+
+        type = "lineChart"
+        chart = lineChart(name=type, x_is_date=True,
+                          x_axis_format="%Y-%m-%d %H:%M:%S", y_axis_format=".3f",
+                          width=1000, height=500,
+                          show_legend=True)
+
+        extra_serie = {"tooltip": {"y_start": "Dummy ", "y_end": " Dummy"},
+                       "date_format": "%Y-%m-%d %H:%M:%S"}
+        chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
+        chart.buildcontent()
+        html = chart.htmlcontent
+        return render(request, 'visualizer/piechart.html', {'html': html})
+    except HttpResponseNotFound:
+        return HttpResponseNotFound
+    except Exception:
+        return HttpResponseNotFound
+
+
+def get_table_zep(request):
+    query = int(str(request.GET.get('query', '')))
+    raw_query = Query.objects.get(pk=query).raw_query
+    # print raw_query
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
+
+
+def get_line_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_line_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
+
+
+def get_bar_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_bar_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
+
+
+def get_area_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_area_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/" + str(notebook_id) + "/paragraph/" + str(viz_paragraph_id) + "?asIframe")
+
+
+def get_scatter_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_scatter_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, y_vars=y_var, x_var=x_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/" + str(notebook_id) + "/paragraph/" + str(viz_paragraph_id) + "?asIframe")
+
+
+def get_pie_chart_zep(request):
+    query_pk = int(str(request.GET.get('query', '')))
+    query = Query.objects.get(pk=query_pk)
+    raw_query = query.raw_query
+    # print raw_query
+    key_var = str(request.GET.get('key_var', ''))
+    value_var = str(request.GET.get('value_var', ''))
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=key_var)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
+    reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    set_zep_paragraph_pie_chart(notebook_id=notebook_id, paragraph_id=viz_paragraph_id, query_doc=query.document, value_vars=value_var, key_var=key_var)
+    # drop_all_paragraph_id = create_zep_drop_all_paragraph(notebook_id=notebook_id, title='')
+    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=drop_all_paragraph_id)
+
+    # restart_zep_interpreter(interpreter_id='')
+
+    return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
+
+def test_request_zep(request):
+    query = 6
+    raw_query = Query.objects.get(pk=query).raw_query
+    print raw_query
+
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+
+    # response = requests.delete("http://localhost:8080/api/notebook/"+str(notebook_id))
+    return render(request, 'visualizer/table_zep.html', {'notebook_id': notebook_id, 'paragraph_id': viz_paragraph_id})
+
+def map_viz_folium_heatmap(request):
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    location = [0, 0]
+    zoom_start = 2
+    max_zoom = 13
+    min_zoom = 2
+
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str + token_str,
+                   attr=attr_str)
+
+    np.random.seed(3141592)
+    initial_data = (
+        np.random.normal(size=(100, 2)) * np.array([[1, 1]]) +
+        np.array([[48, 5]])
+    )
+    move_data = np.random.normal(size=(100, 2)) * 0.01
+    data = [(initial_data + move_data * i).tolist() for i in range(100)]
+
+    # hm = plugins.HeatMapWithTime(data)
+    # hm.add_to(m)
+
+    time_index = [
+        (datetime.now() + k * timedelta(1)).strftime('%Y-%m-%d') for
+        k in range(len(data))
+    ]
+    hm = plugins.HeatMapWithTime(
+        data,
+        index=time_index,
+        radius=0.5,
+        scale_radius=True,
+        auto_play=True,
+        max_opacity=0.3
+    )
+
+    hm.add_to(m)
+
+    m.save('templates/map.html')
+    map_html = open('templates/map.html', 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    # print map_id
+    js_all = soup.findAll('script')
+    # print(js_all)
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # print js
+    # os.remove('templates/map.html')
+    return render(request, 'visualizer/map_viz_folium.html',
+                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
+
+
+
+        # def make_map(bbox):
+#     fig, ax = plt.subplots(figsize=(8, 6))
+#     # ax.set_extent(bbox)
+#     ax.coastlines(resolution='50m')
+#     return fig, ax

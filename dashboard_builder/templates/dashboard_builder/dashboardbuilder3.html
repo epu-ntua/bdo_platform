@@ -5,7 +5,7 @@
 {% block css %}
 
     <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
-
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css">
     {% for viz in available_viz %}
         <style>
             #{{ viz.view_name}}_tip{
@@ -13,6 +13,7 @@
                 position: relative;
                 bottom:1px;
             }
+
             li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
                 opacity: inherit;
                 margin:auto;
@@ -26,13 +27,16 @@
         #cke_editor1 .cke_contents{
             height: 350px !important;
         }
+
         .modal-content{
             height: 90vh;
             overflow: auto;
         }
+
         #myModal .nav-pills > li.active a{
             background-color: #30526a !important;
         }
+
         #myModal .nav>li {
             display: inline-block !important;
             width: 40% !important;
@@ -47,6 +51,7 @@
             float: none !important;
             background-color: #b6b6b6;
         }
+
         .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
         .viz_item{
             cursor: pointer;
@@ -56,6 +61,7 @@
             position: absolute;
             z-index: 999;
         }
+
         #loadImg {
             display: table-cell;
             width: 100%;
@@ -64,30 +70,36 @@
             text-align: center;
             vertical-align: middle;
         }
+
         .popover {
             width: 500px;
             max-width: 600px;
             min-height: 230px;
         }
+
         .popover-content {
             width: 100%;
         }
+
         .modal-header {
             padding-top: 16px !important;
             padding-left: 0px !important;
             padding-right: 0px !important;
         }
+
         .modal .modal-content .modal-body {
             height: 75vh;
             overflow-y: auto;
             padding: 0 24px 0 24px;
         }
+
         .modal .modal-dialog {
             margin-top: 5px;
             padding-top: 0;
             padding-bottom: 5px;
             width: 90%;
         }
+
         #viz_container {
             background-color: #d8d8d8;
             height: 500px;
@@ -95,6 +107,7 @@
             padding: 0;
             position: relative;
         }
+
         #viz_container iframe, #dynamic_dashboard iframe {
             background-color: darkgray;
 {#            height: 100%;#}
@@ -103,6 +116,7 @@
             margin: 0;
             padding: 0;
         }
+
         {#Dashboard Additions#}
         .gridster .gridster-item {
             -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
@@ -115,6 +129,7 @@
         ul {
             list-style: none;
         }
+
         .wrap1{
             position: absolute;
             top: 0;
@@ -125,6 +140,7 @@
             opacity: 0;
             display: none;
         }
+
         .deletebtn{
             position: absolute;
             right: 0;
@@ -135,22 +151,27 @@
             color: white;
             width: 30px;
         }
+
         .deletebtn:hover{
             background-color: #9e0000;
             cursor: pointer;
         }
+
         .iframeHeader{
             height: 37px;
             width: 100%;
             background-color: #30526a;
             text-align: center;
         }
+
         .iframeHeader .form-group.is-focused .form-control{
             background-image: linear-gradient(#D2D2D2, #D2D2D2), linear-gradient(#D2D2D2, #D2D2D2);
         }
+
         .iframeHeader:hover{
             cursor: pointer;
         }
+
         .iframe-class{
             height: calc(100% - 37px);
             padding: 0px;
@@ -159,13 +180,16 @@
         #myModal .iframe-class{
             height: 100%;
         }
+
         .iframeHeader .form-group{
             margin: 0px 0px 0px 0px !important;
         }
+
         .iframeHeader .form-group .form-control{
             color: #FFFFFF;
             min-width: 70%;
         }
+
         #scroll_down_area{
             display: none;
             width: 100%;
@@ -176,7 +200,9 @@
             opacity: 100;
             {#background-color: #0b2e13;#}
             display: none;
+
         }
+
         .modal-tab{
             width:50%;
             height: 30px;
@@ -186,17 +212,22 @@
             box-shadow: 0px -1px 5px grey;
             border-bottom: 1px solid black;
         }
+
         .modal-tab:hover{
             cursor: pointer;
         }
+
+
         #modal-tab-notes{
 {#            background-color: #617b8e;#}
         }
+
         .note_wrapper{
             padding: 10px;
             width: 100%;
             height: calc(100% - 37px);
             overflow: auto;
+
         }
     </style>
 
@@ -260,8 +291,8 @@
     </div>
 
     <div id="query-container" style="display: none;">
-        <select id="query-select" class="form-control " name="query" style="width: 300px !important;">
-            <option></option>
+        <select id="query-select" class="ui search selection form-control " name="query" style="width: 300px !important;">
+
             {% for query in saved_queries %}
                 <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
             {% endfor %}
@@ -337,17 +368,6 @@
                                 </button>
                             </div>
 
-
-{#                            <div class="dropdown row" id="layers-list" style="position: absolute; right:200px; display: none;z-index:2;">#}
-{#                                <button class="btn btn-primary dropdown-toggle" id="menu1" type="button" data-toggle="dropdown">Layers#}
-{#                                <span class="caret"></span></button>#}
-{#                                <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">#}
-{#                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">HTML</a></li>#}
-{#                                </ul>#}
-{#                            </div>#}
-
-
-
                             <div class="row" id="viz_config" style="display: none">
                                 <ul class="list-group collapse in col-sm-2" style="width: 15%">
                                     {% for viz in available_viz %}
@@ -366,28 +386,44 @@
                                 </div>
                             </div>
 {#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
-                        {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
+                            {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
 
-                        <div id="query-variables-select-container" style="display: none;">
-                             {% for query in saved_queries %}
-                                <div id={{ query.id }}>
-                                    <option></option>
-                                    {% for el in query.document.from %}
-                                        {% for var in el.select %}
-                                            <option value="{{ var.name }}">{{ var.title }}</option>
+                            <div id="query-variables-select-container" >
+                                {% for query in saved_queries %}
+                                    <div id={{ query.id }}>
+                                        {% for el in query.document.from %}
+                                            {% for var in el.select %}
+                                                {% if var.exclude == False or var.exclude == ''%}
+                                                     {% if var.type == 'VALUE' %}
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
+                                                     {% endif %}
+
+                                                {% endif %}
+                                            {% endfor %}
                                         {% endfor %}
-                                    {% endfor %}
-                                </div>
-                             {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div id="query-dimensions-select-container" >
+                                {% for query in saved_queries %}
+                                    <div id={{ query.id }}>
+                                        {% for el in query.document.from %}
+                                            {% for var in el.select %}
+                                                {% if var.exclude == False or var.exclude == ''%}
+                                                    {% if var.type != 'VALUE' %}
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
+                                                     {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
                         </div>
 
-                        </div>
 
+                        <div class="row tab-pane fade" id="viz_note"></div>
 
-
-                        <div class="row tab-pane fade" id="viz_note">
-
-                        </div>
                         <input type="hidden" id="selected_query" value="">
                     </div>
 
@@ -415,30 +451,24 @@
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
     <script src="https://cdn.ckeditor.com/4.9.2/standard/ckeditor.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.js"></script>
 
 
 
-    <script>
-	  $('.ui.dropdown').dropdown();
-    </script>
 
-    <script>
-        $(document).ready(function(){
-            $(".dropdown-toggle").dropdown();
-        });
-    </script>
 
     <script type="text/javascript">
-        {#var textEditor = null;#}
-     function pageScroll() {
+        function pageScroll() {
                 $('#main-panel').scrollTop();
                 {#scrolldelay = setTimeout('pageScroll()',100); // scrolls every 100 milliseconds#}
             }
         var app = angular.module('myApp', ['gridster']);
+
         app.config(function ($interpolateProvider) {
             $interpolateProvider.startSymbol('[[');
             $interpolateProvider.endSymbol(']]');
         });
+
         app.controller('MainCtrl', function ($scope) {
             $scope.counter = "0";
             $scope.tempInnerHtml = "";
@@ -476,6 +506,7 @@
                     }
                 },
             };
+
             $scope.standardItems = [];
             function toggleSaveBtn() {
                 if ($('#widgetParent li').length > 0 ){
@@ -485,9 +516,15 @@
                     $('#save_dashboard_btn').hide();
                 }
             }
+
+
             $("#myModal #submit-modal-btn").click(function () {
+
                 var tempid = "#widget" + $scope.counter;
+
                 $scope.standardItems[$scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
+
+
                 $(tempid).append('<div class="loadingFrame">\n' +
                     '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
                     '                </div>');
@@ -497,10 +534,21 @@
                 $(tempid).find("iframe").on( "load", function(){
                     $(this).siblings(".loadingFrame").css( "display", "none" );
                 });
+
+                $('#layers-list ul').empty();
+                $("#query_name_span").text(null);
+
+                layer_count = 0;
+                layer_json = [];
+                selected_visualization = null;
+                first_time = true ;
+                $('#add_layer_btn').hide();
+                $('#layers-list').hide();
                 $('.viz_item').popover('hide');
                 $('#myModal #viz_config').hide();
                 $('#myModal #submit-modal-btn').hide();
             });
+
             $("#myModal #submit-note-btn").click(function () {
                 var myData = textEditor.getData();
                 var tempid = "#widget" + $scope.counter;
@@ -547,6 +595,7 @@
                 $('#myModal #viz_config').hide();
                 $('#myModal #submit-modal-btn').hide();
             });
+
             var makeWidget =function (){
                 $scope.counter++;
                 var tempTitle = "Widget" + $scope.counter;
@@ -560,6 +609,7 @@
                     title: tempTitle
                 });
             };
+
             $('#new_widget_btn').click(makeWidget);
             $('#scroll_down_area').mouseenter(function () {
                 window.scrollBy(0, 40);
@@ -600,6 +650,7 @@
                     $('#save_dashboard_btn').show();
                 }
             });
+
             $('#save_dashboard_btn').click(function () {
                 var postEndpoint = "/dashboards/save/";
                 var pk = $('#dashboard_pk').val();
@@ -657,42 +708,76 @@
             $('.viz_item').popover('hide');
         });
         var new_query_id;
-{#        function updateVariables(element) {#}
-{#            $('#myModal .variable-select').find('option').remove().end();#}
-{#            $('#myModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));#}
-{#            new_query_id = $('#myModal #selected_query').val();#}
-{#            var new_query_doc = {};#}
-{#            $.ajax({#}
-{#                url: '/queries/get_query_variables/',#}
-{#                data: {#}
-{#                    id: new_query_id,#}
-{#                    document: new_query_doc#}
-{#                },#}
-{#                type: 'GET',#}
-{#                success: function (result) {#}
-{#                    var variables = result['variables'];#}
-{#                    var dimensions = result['dimensions'];#}
-{#                    $('.variable-select').append($("<option></option>")#}
-{#                    .attr("value", '')#}
-{#                    .text(''));#}
-{#                    $.each(variables, function (k, v) {#}
-{#                        $('#myModal .variable-select').append($("<option></option>")#}
-{#                            .attr("value", v)#}
-{#                            .text(k));#}
-{#                    });#}
-{##}
-{#                    $.each(dimensions, function (k, v) {#}
-{#                        $('#myModal .variable-select').append($("<option></option>")#}
-{#                            .attr("value", v)#}
-{#                            .text(k));#}
-{#                    });#}
-{#                }#}
-{#            });#}
-{#        }#}
+
         function updateVariables(element){
             $('#myModal .variable-select').find('option').remove();
-            var content = $('#query-variables-select-container #'+String(new_query_id)).html();
-            $('#myModal .variable-select ').html(content);
+            $('#myModal .variables-select ').find('option').remove();
+            var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
+            var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
+            $('#myModal .variable-select ').html(variables_content);
+            $('#myModal .variables-select ').html(variables_content);
+            $('#myModal .column-select ').html(variables_content + dimensions_content);
+        }
+        function populate_selects(){
+             $(".popover-content .variable-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select a Variable',
+                });
+            $(".popover-content .variable-select").dropdown('clear');
+
+            $(".popover-content .column-select").dropdown({
+                clearable: true,
+                placeholder: 'Select a Variable or Dimension',
+
+            });
+            $(".popover-content .column-select").dropdown('clear');
+            $(".popover-content .variables-select").dropdown({
+                clearable: true,
+                placeholder: 'Select Variable(s)',
+            });
+            $(".popover-content .aggregate-select").dropdown({
+                placeholder: 'Select an Aggregate Function'
+            });
+             $(".popover-content .aggregate-select").dropdown('restore defaults');
+
+            $(".control-label").css("margin-bottom","3px");
+
+             $(".popover-content .column-select").dropdown('setting','onChange',function () {
+                var selected_val = $(".popover-content .column-select").dropdown('get value');
+                var var_list = $(".popover-content .variables-select").dropdown('get value');
+                var var_select = $(".popover-content .variable-select").dropdown('get value');
+                if ((jQuery.inArray(selected_val,var_list)!= -1) &&(selected_val!='') && (selected_val!=null) ||(selected_val==var_select)){
+                    alert('Please choose a variable or dimension that is not already in use.');
+                    $(".popover-content .column-select").dropdown('clear');
+                }
+             })
+
+            $(".popover-content .variable-select").dropdown('setting','onChange',function () {
+                var selected_val = $(".popover-content .variable-select").dropdown('get value');
+                var var_list = $(".popover-content .variables-select").dropdown('get value');
+                var col_select = $(".popover-content .column-select").dropdown('get value');
+                if ((jQuery.inArray(selected_val,var_list)!= -1) &&(selected_val!='') && (selected_val!=null) || (selected_val==col_select)){
+                    alert('Please choose a variable that is not already in use.');
+                    $(".popover-content .variable-select").dropdown('clear');
+                }
+             })
+
+            $(".popover-content .variables-select").dropdown('setting','onChange',function () {
+                var selected_val = $(".popover-content .variables-select").dropdown('get value');
+                var var_select = $(".popover-content .variable-select").dropdown('get value');
+                var col_select = $(".popover-content .column-select").dropdown('get value');
+                var flag = false;
+                for (var i=0; i < selected_val.length; i++){
+                    if ((selected_val[i] == var_select)||(selected_val[i] == col_select)){
+                        flag = true;
+                    }
+                }
+                if ((selected_val!='') && (selected_val!=null) && flag){
+                    $(".popover-content .variables-select").dropdown('clear');
+                    alert('Please choose a variable that is not already in use.');
+
+                }
+             })
         }
     </script>
     <script>
@@ -781,11 +866,8 @@
                 }
             }).click(function (e) {
                 $(this).popover('toggle');
-                $('.popover-content .form-group #query-select').select2(
-                    {
-                        placeholder:"Select Query",
-                     }
-                );
+                $('.popover-content .form-group #query-select').dropdown();
+
                 $('.popover-content #query-select').on('change', function () {
                     new_query_id = $(this).children(":selected").attr("id");
                     {#                    alert(new_query_id);#}
@@ -820,11 +902,10 @@
                 });
                 updateVariables($('#query-select'));
                 $(component_selector).popover('show');
-                $('#myModal .popover-content .variable-select').select2(
-                      {
-                        placeholder:"Select Variable",
-                     }
-                );
+                populate_selects();
+
+
+
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id + ' #select_conf_ok').click(function (e) {
                     selected_visualization = $(component_selector).text();
@@ -945,9 +1026,9 @@
             $("#dismiss-modal-btn").click(function m(e) {
                 $('#layers-list ul').empty();
                 $("#query_name_span").text(null);
+
                 layer_count = 0;
                 layer_json = [];
-                json;
                 selected_visualization = null;
                 first_time = true ;
                 $('#add_layer_btn').hide();
