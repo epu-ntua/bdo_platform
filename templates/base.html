@@ -178,15 +178,23 @@
 
 
                             <li>
-                                <form class="navbar-form navbar-right" role="search" method="GET" action="{% url 'search' %}">
-                                    <div class="form-group  is-empty">
-                                        <input type="text" class="form-control" placeholder="Search" name="q">
-                                        <span class="material-input"></span>
-                                    </div>
-                                    <button type="submit" class="btn btn-white btn-round btn-just-icon">
-                                        <i class="material-icons">search</i><div class="ripple-container"></div>
-                                    </button>
-                                </form>
+{#                                <form class="navbar-form navbar-right" role="search" method="GET" action="{% url 'search' %}">#}
+{#                                    <div class="form-group  is-empty">#}
+{#                                        <input type="text" class="form-control" placeholder="Search" name="q">#}
+{#                                        <span class="material-input"></span>#}
+{#                                    </div>#}
+{#                                    <button type="submit" class="btn btn-white btn-round btn-just-icon">#}
+{#                                        <i class="material-icons">search</i><div class="ripple-container"></div>#}
+{#                                    </button>#}
+{#                                </form>#}
+
+
+
+                                <a href="{% url 'feedback_form:home' %}" class="dropdown-toggle" >
+                                    <span style='display: inline-block;font-family: "Roboto", "Helvetica", "Arial", sans-serif;font-size: 12pt;text-transform: none; position:relative;bottom:3px; margin-right: 15px;'>Feedback</span>
+                                    <i class="fas fa-comments" style="font-size: 20px;position: relative;bottom: 2px"></i>
+                                    <p class="hidden-lg hidden-md">Feedback</p>
+                                </a>
                             </li>
 
 							<li class="dropdown">
