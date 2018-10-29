@@ -229,6 +229,10 @@
             overflow: auto;
 
         }
+        .disabled {
+            pointer-events:none;
+            opacity:0.6;
+        }
     </style>
 
 {% endblock %}
@@ -388,7 +392,7 @@
 {#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
                             {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
 
-                            <div id="query-variables-select-container" >
+                            <div id="query-variables-select-container" hidden>
                                 {% for query in saved_queries %}
                                     <div id={{ query.id }}>
                                         {% for el in query.document.from %}
@@ -404,7 +408,7 @@
                                     </div>
                                 {% endfor %}
                             </div>
-                            <div id="query-dimensions-select-container" >
+                            <div id="query-dimensions-select-container" hidden >
                                 {% for query in saved_queries %}
                                     <div id={{ query.id }}>
                                         {% for el in query.document.from %}
@@ -535,18 +539,6 @@
                     $(this).siblings(".loadingFrame").css( "display", "none" );
                 });
 
-                $('#layers-list ul').empty();
-                $("#query_name_span").text(null);
-
-                layer_count = 0;
-                layer_json = [];
-                selected_visualization = null;
-                first_time = true ;
-                $('#add_layer_btn').hide();
-                $('#layers-list').hide();
-                $('.viz_item').popover('hide');
-                $('#myModal #viz_config').hide();
-                $('#myModal #submit-modal-btn').hide();
             });
 
             $("#myModal #submit-note-btn").click(function () {
@@ -611,6 +603,10 @@
             };
 
             $('#new_widget_btn').click(makeWidget);
+            $('#new_widget_btn').click(function () {
+                $('#submit-modal-btn').show();
+                $('#modal-tab-data').trigger('click');
+            });
             $('#scroll_down_area').mouseenter(function () {
                 window.scrollBy(0, 40);
                 scrolldelay = setTimeout('pageScroll()', 200);
@@ -768,23 +764,28 @@
                 var col_select = $(".popover-content .column-select").dropdown('get value');
                 var flag = false;
                 for (var i=0; i < selected_val.length; i++){
-                    if ((selected_val[i] == var_select)||(selected_val[i] == col_select)){
+                    if (selected_val[i] == var_select){
+                        $(".popover-content .variable-select").dropdown('clear');
+                        flag = true;
+                    }
+                    if(selected_val[i] == col_select){
+                        $(".popover-content .column-select").dropdown('clear');
                         flag = true;
                     }
                 }
                 if ((selected_val!='') && (selected_val!=null) && flag){
-                    $(".popover-content .variables-select").dropdown('clear');
                     alert('Please choose a variable that is not already in use.');
-
                 }
              })
         }
+
     </script>
     <script>
         {#Variable to store active ckeditor version #}
         var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
         {#Function to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
+            $('#submit-modal-btn').show();
             $('#layers-list ul').empty();
             $("#query_name_span").text(null);
             var layer_count = 0;
@@ -792,13 +793,14 @@
             var json;
             var selected_visualization = null;
             var first_time = true ;
+            var vis_created_flag = false;
             $("#add_layer_btn").click(function () {
                 if((new_query_id!=null)&&(selected_visualization!=null)) {
                     alert("Layer is now saved. Please add a new layer!");
                     $("#viz_config").find("ul").children().each(function (index) {
-                    if ($(this).attr("data-viz-type") != "map") {
-                        $(this).remove();
-                    }
+                        if ($(this).attr("data-viz-type") != "map") {
+                            $(this).addClass('disabled');
+                        }
                     });
                     $(".list-group").css('visibility','hidden');
                     $("#viz_config .list-group").children().each(function () {
@@ -812,7 +814,7 @@
                             layer_json[i][key] = obj[key];
                         }
                     }
-                    $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
+                    $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;pointer-events:none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
                     $(".layer_list_element #btn"+String(layer_count)).click(function () {
                          $("#viz_config .list-group").children().each(function () {
                                 $(this).find("#selected_viz_span").hide();
@@ -905,7 +907,6 @@
                 populate_selects();
 
 
-
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id + ' #select_conf_ok').click(function (e) {
                     selected_visualization = $(component_selector).text();
@@ -986,6 +987,8 @@
                         mapVizUrlCreator(json, layer_count);
                     }
                 };
+                vis_created_flag = true;
+
             };
             function mapVizUrlCreator(json,my_layer_count){
                 var viz_request = "/visualizations/get_map_visualization/?";
@@ -1024,22 +1027,48 @@
                 });
             }
             $("#dismiss-modal-btn").click(function m(e) {
-                $('#layers-list ul').empty();
-                $("#query_name_span").text(null);
-
-                layer_count = 0;
-                layer_json = [];
-                selected_visualization = null;
-                first_time = true ;
-                $('#add_layer_btn').hide();
-                $('#layers-list').hide();
+                refresh_visualisation_modal();
                 $('#select_viz_popover').prop('disabled', true);
                 $('#select_conf_popover').prop('disabled', true);
                 $('#myModal #viz_container').html('<div class="loadingFrame">\n' +
                     '                    <img src="{% static 'img/loading_gif.gif' %}"/>\n' +
                     '                </div>');
             });
+
+            $("#myModal #submit-modal-btn").click(function () {
+                if (vis_created_flag!=false){
+                refresh_visualisation_modal();
+                }else{
+                    alert('Please create a Visualisation first.')
+                }
+            });
+            $("#myModal #submit-note-btn").click(function () {
+                refresh_visualisation_modal();
+            });
+
+            function refresh_visualisation_modal(){
+                $('#layers-list ul').empty();
+                $("#query_name_span").text(null);
+                layer_count = 0;
+                layer_json = [];
+                selected_visualization = null;
+                first_time = true ;
+                vis_created_flag = false;
+                $('#add_layer_btn').hide();
+                $('#layers-list').hide();
+                $("#viz_config .list-group").children().each(function () {
+                    $(this).find("#selected_viz_span").hide();
+                });
+                $("#viz_config").find("ul").children().each(function (index) {
+                        $(this).removeClass('disabled');
+                });
+                $('.viz_item').popover('hide');
+                $('#myModal #viz_config').hide();
+
+            }
         });
+
+
         function getCookie(name) {
             var cookieValue = null;
             if (document.cookie && document.cookie != '') {
