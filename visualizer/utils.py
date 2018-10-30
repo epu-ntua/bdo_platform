@@ -254,14 +254,9 @@ def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name
     data['title'] = title
     conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
     data['text'] = '%spark.pyspark' \
-                   '\n'+df_name+'= spark.read.format("jdbc")' \
-                   '.option("url", "jdbc:postgresql://'+conn_dict["HOST"]+':'+conn_dict["PORT"]+'/'+conn_dict["NAME"]+'?user='+conn_dict["USER"]+'&password='+conn_dict["PASSWORD"]+'")' \
-                   '.option("driver", "org.postgresql.Driver")' \
-                   '.option("database", "'+conn_dict["NAME"]+'")' \
-                   '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
-                   '.load()' \
+                   '\n'+df_name+'= load_df("(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
                    '\n'+df_name+'.printSchema()'
-
+    data['editorHide'] = True
     # data['text'] =  '%spark.pyspark' \
     #                 '\n' + df_name + '= spark.read.format("jdbc")' \
     #                 '.option("url", "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234")' \

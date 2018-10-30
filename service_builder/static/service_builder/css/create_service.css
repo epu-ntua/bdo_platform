@@ -89,7 +89,7 @@
 }
 
 .holder{
-    margin-top: -90px;
+    margin-top: -220px;
     position:relative;
     z-index: 0;
 }
@@ -103,7 +103,7 @@
     top:0;
     left:0;
     width:100%;
-    height: 110px;
+    height: 220px;
     background-color: #f9f9f9;
     border-width: 2px;
     border-bottom-width: 2px;
