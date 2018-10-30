@@ -3,7 +3,7 @@ import requests
 import json
 from django.db import connections
 
-from bdo_platform import settings
+#from bdo_platform import settings
 from service_building_conf import db, get_job_arguments_and_info, get_spark_query
 
 

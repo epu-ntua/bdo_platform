@@ -25,9 +25,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SECRET_KEY = 'i-lcdaw&=80_zgbc&^1(0p&)a2(joi^@*!4(8-%zk^u4s+g@4r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['bdo-dev.epu.ntua.gr', 'localhost']
 
 
 # Application definition
@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django_nvd3',
     'djangobower',
     'ckeditor',
+    'ckeditor_uploader',
 
     #scheduled_tasks
     'background_task',
@@ -100,15 +101,16 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.cache.FetchFromCacheMiddleware',
 
-    # 'bdo_main_app.middleware.LoginRequiredMiddleware',
+    'bdo_main_app.middleware.LoginRequiredMiddleware',
 ]
 
 LOGIN_EXEMPT_URLS = (
     r'^$',
     r'^about$',
     r'^register$',
-    r'/service_builder/api/createInputFileForHCMRSpillSimulator/',
-    r'/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/'
+    r'^accounts/',
+    r'^service_builder/api/createInputFileForHCMRSpillSimulator/',
+    r'^service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/'
 )
 
 CACHES = {
@@ -194,6 +196,11 @@ BOWER_INSTALLED_APPS = (
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
+#STATICFILES_FINDERS = (
+#'django.contrib.staticfiles.finders.FileSystemFinder',
+#'django.contrib.staticfiles.finders.AppDirectoriesFinder',    #causes verbose duplicate notifications in django 1.9
+#)
+
 
 STATIC_URL = '/static/'
 
@@ -207,7 +214,7 @@ DATE_FORMAT = 'Y-m%d'
 USE_L10N = False
 
 #ck editor settings
-# CKEDITOR_BASEPATH = "/staticfiles/ckeditor/ckeditor"
+#CKEDITOR_BASEPATH = "/staticfiles/ckeditor"
 CKEDITOR_UPLOAD_PATH ='uploads/'
 
 CKEDITOR_CONFIGS = {

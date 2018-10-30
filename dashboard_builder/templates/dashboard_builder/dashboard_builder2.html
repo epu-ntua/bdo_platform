@@ -3,8 +3,8 @@
 {% load static %}
 
 {% block css %}
-    <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
-{#    <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>#}
+    {#<link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/> #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-gridster/0.13.15/angular-gridster.css" %}/>
     {% for viz in available_viz %}
         <style>
             #{{ viz.view_name}}_tip{
