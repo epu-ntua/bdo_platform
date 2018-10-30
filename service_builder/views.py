@@ -377,7 +377,7 @@ def submit_service_args(request, service_id):
         for name, info in queries.iteritems():
             for original_paragraph_id in info['paragraphs']:
                 raw_query = TempQuery.objects.get(pk=int(info['temp_q'])).raw_query
-                new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=0, df_name="df_"+name)
+                new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=2, df_name="df_"+name)
                 if settings.TEST_SERVICES:
                     excluded_paragraphs.append(original_paragraph_id)
                     new_created_paragraphs.append(new_query_paragraph_id)
