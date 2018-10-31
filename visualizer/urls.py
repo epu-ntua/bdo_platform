@@ -42,6 +42,7 @@ urlpatterns = [
     url('^get_scatter_chart_zep/$', views.get_scatter_chart_zep, name='get_scatter_chart_zep'),
 
     url('^get_line_chart_am/$', views.get_line_chart_am, name='get_line_chart_am'),
+    url('^get_time_series_am/$', views.get_time_series_am, name='get_time_series_am'),
     url('^get_pie_chart_am/$', views.get_pie_chart_am, name='get_pie_chart_am'),
     url('^get_column_chart_am/$', views.get_column_chart_am, name='get_column_chart_am'),
     url('^get_histogram_chart_am/$', views.get_histogram_chart_am, name='get_histogram_chart_am'),

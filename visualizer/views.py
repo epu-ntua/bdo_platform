@@ -1815,6 +1815,37 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
     query.document = doc
     return query
 
+def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, ordering = True):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+
+    x_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if s['name'] in y_var_list:
+                s['aggregate'] = agg_function
+                s['exclude'] = False
+            elif (str(s['name']).find('time') >= 0) and (s['exclude'] is not True):
+                order_var = s['name'].encode('ascii')
+                if not existing_temp_res:
+                    s['groupBy'] = True
+                    s['aggregate'] = temporal_resolution
+                    min_period = temporal_resolution
+                else:
+                    min_period = s['aggregate']
+                s['exclude'] = False
+                x_flag = True
+            else:
+                s['exclude'] = True
+    if ordering == True:
+        if x_flag == True:
+            doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+        else:
+            raise ValueError('Time is not a dimension of the chosen query.')
+    query.document = doc
+    return query, order_var, min_period
+
 
 def get_chart_query_data(query, x_var, y_var_list):
     query_data = execute_query_method(query)
@@ -1916,7 +1947,32 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+
+
+
+def get_time_series_am(request):
+    query_pk, df, notebook_id = get_data_parameters(request, '')
+    existing_temp_res = request.GET.get('use_existing_temp_res', '') == 'on'
+    temporal_resolution = str(request.GET.get('temporal_resolution', ''))
+    y_var_list = request.GET.getlist('y_var[]')
+    agg_function = str(request.GET.get('agg_func', 'avg'))
+    if not agg_function.lower() in AGGREGATE_VIZ:
+        raise ValueError('Aggregate function is not valid.')
+    if query_pk != 0:
+        query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function)
+        json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, order_var, y_var_list)
+        min_chart_period = chart_min_period_finder(min_period)
+    elif df != '':
+        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
+        order_var = 'time'.encode('ascii')
+        min_chart_period = 'ss'
+    else:
+        raise ValueError('Either query ID or dataframe name has to be specified.')
+
+    return render(request, 'visualizer/line_chart_am.html',
+                  {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
+
 
 
 def get_column_chart_am(request):
@@ -1925,7 +1981,8 @@ def get_column_chart_am(request):
     x_var = str(request.GET.get('x_var', ''))
     y_var_list = request.GET.getlist('y_var[]')
     agg_function = str(request.GET.get('agg_func', 'avg'))
-
+    if not agg_function.lower() in AGGREGATE_VIZ:
+        raise ValueError('Aggregate function is not valid.')
     if query_pk != 0:
         query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
         json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
@@ -1940,7 +1997,7 @@ def get_column_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_pie_chart_am(request):
@@ -2439,6 +2496,19 @@ def execute_query_method(q):
     result = q.execute()
     return result
 
+def chart_min_period_finder(min_period):
+    if min_period == 'date_trunc_minute':
+        return 'mm'
+    elif min_period == 'date_trunc_hour':
+        return 'hh'
+    elif min_period == 'date_trunc_day':
+        return 'DD'
+    elif min_period == 'date_trunc_month':
+        return 'MM'
+    elif min_period == 'date_trunc_year':
+        return 'YYYY'
+    else:
+        return 'ss'
 
 def get_pie_chart(request):
     type = 'pieChart'
