@@ -141,6 +141,7 @@ $("#select_data_popover").click(function () {
 
                 });
                 populate_selects();
+                specific_viz_form_configuration();
 
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id + ' #select_conf_ok').click(function (e) {
@@ -174,10 +175,11 @@ $("#select_data_popover").click(function () {
                 $('#myModal .variable-select ').html(variables_content);
                 $('#myModal .variables-select ').html(variables_content);
                 $('#myModal .column-select ').html(variables_content + dimensions_content);
+                $('#myModal .columns-select ').html(variables_content + dimensions_content);
             }
             function populate_selects(){
 
-                $('.checkbox').checkbox().first().checkbox({
+                $('#use_existing_temp_res').parent().checkbox().first().checkbox({
                     onChecked: function(){
                         $('#temporal_resolution').parent().addClass('disabled');
                     },
@@ -186,6 +188,18 @@ $("#select_data_popover").click(function () {
                     }
                 });
                 $('.checkbox').parent().removeClass('form-group label-floating');
+
+                $('#select_all_columns').parent().checkbox().first().checkbox({
+                    onChecked: function(){
+                        const options = $('.popover-content .columns-select #column_choice> option').toArray().map(
+                        (obj) => obj.value
+                      );
+                      $('.popover-content .columns-select #column_choice').dropdown('set exactly', options);
+                    },
+                    onUnchecked: function() {
+                      $('.popover-content .columns-select #column_choice').dropdown('clear');
+                    },
+                });
 
                  $(".popover-content .variable-select").dropdown({
                         clearable: true,
@@ -203,6 +217,12 @@ $("#select_data_popover").click(function () {
                     clearable: true,
                     placeholder: 'Select Variable(s)',
                 });
+
+                 $(".popover-content .columns-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select Variables or Dimensions',
+                });
+
                 $(".popover-content .aggregate-select").dropdown({
                     placeholder: 'Select an Aggregate Function'
                 });
@@ -393,6 +413,17 @@ $("#select_data_popover").click(function () {
                 });
                 $('.viz_item').popover('hide');
                 $('#myModal #viz_config').hide();
+
+            }
+
+            function specific_viz_form_configuration(){
+                //FOR PIE CHART
+                var pie_chart_id = $('#viz_config ul li[data-viz-name="get_pie_chart_am"]').attr('data-viz-id');
+                var pie_chart_agg_select = $('.popover-content #viz_'+pie_chart_id+' .aggregate-select');
+                pie_chart_agg_select.dropdown('set selected' , 'COUNT');
+                pie_chart_agg_select.find('option[value= "MAX"]').remove();
+                pie_chart_agg_select.find('option[value= "MIN"]').remove();
+                pie_chart_agg_select.find('option[value= "AVG"]').remove();
 
             }
         });

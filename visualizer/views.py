@@ -43,7 +43,7 @@ from folium.plugins import HeatMap, MarkerCluster
 FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
                  'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
 
-AGGREGATE_VIZ = ['max','min','avg','sum']
+AGGREGATE_VIZ = ['max', 'min', 'avg', 'sum', 'count']
 
 def create_map():
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
@@ -1793,8 +1793,6 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
-    print 'DOCUMENT ARXIKOU QUERY'
-    print doc
     x_flag = False
     for f in doc['from']:
         for s in f['select']:
@@ -2008,7 +2006,7 @@ def get_pie_chart_am(request):
     agg_function = str(request.GET.get('agg_func', 'avg'))
 
     if query_pk != 0:
-        query = load_modify_query_chart(query_pk, key_var, [value_var],agg_function)
+        query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function)
         json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, key_var, [value_var])
     elif df !='':
         json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
@@ -2017,23 +2015,33 @@ def get_pie_chart_am(request):
 
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
 
+#
+# def data_table_paginate(data, page, limit):
+#     paginator = Paginator(data, limit)  # Show 25 contacts per page
+#     try:
+#         page_data = paginator.page(page)
+#     except PageNotAnInteger:
+#         # If page is not an integer, deliver first page.
+#         page_data = paginator.page(1)
+#     except EmptyPage:
+#         # If page is out of range (e.g. 9999), deliver last page of results.
+#         page_data = paginator.page(paginator.num_pages)
+#     return page_data
 
-def data_table_paginate(data, page, limit):
-    paginator = Paginator(data, limit)  # Show 25 contacts per page
-    try:
-        page_data = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        page_data = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        page_data = paginator.page(paginator.num_pages)
-    return page_data
 
-
-def load_execute_query_data_table(query_pk):
+def load_execute_query_data_table(query_pk, offset, limit, column_choice):
     query = AbstractQuery.objects.get(pk=query_pk)
     q = TempQuery(document=query.document)
+    doc = q.document
+    for f in doc['from']:
+        for s in f['select']:
+            if s['name'] in column_choice:
+                s['exclude'] = False
+            else:
+                s['exclude'] = True
+    doc['limit'] = limit
+    doc['offset'] = offset
+    q.document = doc
     result = execute_query_method(q)[0]
     data = result['results']
     headers = result['headers']['columns']
@@ -2063,20 +2071,28 @@ def load_execute_dataframe_data(request, df, notebook_id):
 
 def get_data_table(request):
     query_pk, df, notebook_id = get_data_parameters(request, '')
+    column_choice = request.GET.getlist('column_choice[]')
     limit = 50
-    page = int(request.GET.get('page',1))
+    offset = int(request.GET.get('offset', 0))
     if query_pk != 0:
-        data, headers = load_execute_query_data_table(query_pk)
+        if column_choice.__len__() != 0:
+            data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice)
+        else:
+            data = []
+            headers = []
         isJSON = False
     elif df != '':
-        load_execute_dataframe_data(request, df, notebook_id)
+        data, headers = load_execute_dataframe_data(request, df, notebook_id)
         isJSON = True
     else:
         raise ValueError('Either query ID or dataframe name has to be specified.')
 
-    page_data = data_table_paginate(data, page, limit)
+    if data.__len__() < limit:
+        has_next = False
+    else:
+        has_next = True
 
-    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': int(query_pk), 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
+    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
 def create_plotline_arrows(points, m, pol_group_layer):
     for i in range (1,len(points)):
