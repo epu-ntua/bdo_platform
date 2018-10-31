@@ -12,6 +12,7 @@ import requests
 import collections
 from django.db import connections
 from django.conf import settings
+from service_builder.models import ServiceInstance
 
 
 def convert_unicode_json(data):
@@ -185,7 +186,7 @@ def clone_zep_note(notebook_id, name):
 
 def run_zep_note(notebook_id, exclude=[], mode='zeppelin'):
     if mode == 'livy':
-        session_id = create_livy_session()
+        session_id = create_livy_session(notebook_id)
     response_status = 500
     # number of tries
     counter = 1
@@ -199,11 +200,23 @@ def run_zep_note(notebook_id, exclude=[], mode='zeppelin'):
             print 'excluded paragraph: {0}'.format(str(p['id']))
     if mode == 'livy':
         for p in paragraphs:
-            run_zep_paragraph(notebook_id, p, session_id, mode)
+            run_result = run_zep_paragraph(notebook_id, p, session_id, mode)
         return session_id
     else:
         for p in paragraphs:
-            run_zep_paragraph(notebook_id, p, 0, mode)
+            run_result = run_zep_paragraph(notebook_id, p, 0, mode, 1)
+            if run_result == 1:
+                paragraphs = []
+                response = requests.get(settings.ZEPPELIN_URL + "/api/notebook/" + str(notebook_id))
+                response_json = response.json()
+                for p in response_json['body']['paragraphs']:
+                    if str(p['id']) not in exclude:
+                        paragraphs.append(p['id'])
+                    else:
+                        print 'excluded paragraph: {0}'.format(str(p['id']))
+                for p in paragraphs:
+                    run_result = run_zep_paragraph(notebook_id, p, 0, mode, 2)
+                break
         return 0
 
 def create_zep_test_query_paragraph(notebook_id, title, raw_query):
@@ -313,7 +326,7 @@ def execute_code_on_livy(code, session_id, kind):
     return statement_id
 
 
-def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
+def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode, attempt=2):
     if mode == 'livy':
         data = dict()
         str_data = json.dumps(data)
@@ -328,6 +341,7 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
 
         if code is not None or code != '':
             execute_code_on_livy(code=code, session_id=livy_session_id, kind=kind)
+        return 0 #end
     else:
         response_status = 500
         counter = 3
@@ -339,8 +353,16 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
             counter -= 1
             response_status = response.status_code
             if response_status != 200 and counter == 1:
-                restart_zep_interpreter(settings.ZEPPELIN_SPARK_INTERPRETER)
+                if attempt == 1:
+                    import time
+                    time.sleep(7)
+                    restart_zep_interpreter(settings.ZEPPELIN_SPARK_INTERPRETER)
+                    return 1
+                else:
+                    # return 2
+                    return HttpResponse(status=500)
             if counter == 0:
+                # return 2
                 return HttpResponse(status=500)
 
 
@@ -688,6 +710,7 @@ def set_zep_paragraph_pie_chart(notebook_id, paragraph_id, query_doc, value_vars
 
 
 def restart_zep_interpreter(interpreter_id):
+    print "RESTARTING INTERPRETER!!!"
     interpreter_id = 'settings.ZEPPELIN_SPARK_INTERPRETER'
     response = requests.put(settings.ZEPPELIN_URL+"/api/interpreter/setting/restart/"+interpreter_id)
     print response
@@ -836,21 +859,34 @@ def get_zep_getDict_paragraph_response(notebook_id, paragraph_id):
 
 
 def create_livy_session():
+    print 'looking for livy session'
     host = settings.LIVY_URL
-    data = { 'kind': 'pyspark',
-             'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
-             'driverMemory': '7g',
-             'driverCores': 2,
-             'numExecutors': 2,
-             'executorMemory': '5g',
-             'executorCores': 2,
-             'heartbeatTimeoutInSecond': 60,
-             'conf': {'spark.driver.maxResultSize': '2g'}}
     headers = {'Content-Type': 'application/json'}
-    response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
-    print response
+
+    # data = { 'kind': 'pyspark',
+    #          'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
+    #          'driverMemory': '2g',
+    #          'driverCores': 2,
+    #          'numExecutors': 1,
+    #          'executorMemory': '2g',
+    #          'executorCores': 2,
+    #          'heartbeatTimeoutInSecond': 120,
+    #          'conf': {'spark.driver.maxResultSize': '2g'}}
+    # response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
+    # print response
+
+    sessions = requests.get(host + '/sessions', headers=headers).json()['sessions']
+    ids = [int(s['id']) for s in sessions]
+    print 'session ids'
+    print ids
+    for id in ids:
+        if len(ServiceInstance.objects.filter(livy_session=id)) == 0:
+            serviceInstance = ServiceInstance.objects.get(notebook_id=notebook_id)
+            serviceInstance.livy_session = id
+            serviceInstance.save()
+            session_id = id
+            break
     try:
-        session_id = response['id']
         state = ''
         while state != 'idle':
             state = requests.get(host + '/sessions/' + str(session_id) + '/state', headers=headers).json()['state']
