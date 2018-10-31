@@ -337,10 +337,11 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
             response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/run/" + str(notebook_id) + "/" + str(paragraph_id), data=str_data)
             print response
             counter -= 1
-            if counter < 0:
-                return HttpResponse(status=500)
             response_status = response.status_code
-            # TODO: CHANGE THE ABOVE CODE BECAUSE EVERY TIME STATUS 500 IS RETURNED
+            if response_status != 200 and counter == 1:
+                restart_zep_interpreter(settings.ZEPPELIN_SPARK_INTERPRETER)
+            if counter == 0:
+                return HttpResponse(status=500)
 
 
 def create_zep_viz_paragraph(notebook_id, title):
@@ -687,7 +688,7 @@ def set_zep_paragraph_pie_chart(notebook_id, paragraph_id, query_doc, value_vars
 
 
 def restart_zep_interpreter(interpreter_id):
-    interpreter_id = '2D6CA11G8'
+    interpreter_id = 'settings.ZEPPELIN_SPARK_INTERPRETER'
     response = requests.put(settings.ZEPPELIN_URL+"/api/interpreter/setting/restart/"+interpreter_id)
     print response
 
