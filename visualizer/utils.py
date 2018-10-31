@@ -858,7 +858,7 @@ def get_zep_getDict_paragraph_response(notebook_id, paragraph_id):
     return json_data
 
 
-def create_livy_session():
+def create_livy_session(notebook_id):
     print 'looking for livy session'
     host = settings.LIVY_URL
     headers = {'Content-Type': 'application/json'}
