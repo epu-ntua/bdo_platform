@@ -34,7 +34,8 @@ $(function () {
         variables: [],
         groupings: [],
         orderings: [],
-        resolutions: [],
+        temporal_resolution: '',
+        spatial_resolution: '',
         selected_filters: [],
 
         // the Query Toolbox objects, only one is created
@@ -104,7 +105,7 @@ $(function () {
 
 
             // set field value
-            var $fieldset = $('<div class="fieldset">' + '<br />' + '<div class="row" style="margin: 0"><div class="col-xs-3 col-prefix" style="' +'">' + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
+            var $fieldset = $('<div class="fieldset">' +config.label+'<br />' + '<div class="row" style="margin: 0"><div class="col-xs-3 col-prefix" style="' +'">' + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
             $fieldset.find('.col-main').append($fieldInput);
             $fieldset.find('.col-main').append($fieldInputShown);
 
@@ -221,7 +222,7 @@ $(function () {
 
                     // if spatial resolution is used
                     if ((name === 'latitude') || (name === 'longitude')) {
-                        if ($("#spatial_resolution").val() !== "none"){
+                        if (QueryToolbox.spatial_resolution !== ""){
                             groupBy = true;
                             if ($("#spatial_resolution").val() === "1")
                                 dimAggregate = 'round0';
@@ -233,7 +234,7 @@ $(function () {
                     }
                     // if temporal resolution is used
                     if (name === 'time') {
-                        if ($("#temporal_resolution").val() !== "none"){
+                        if (QueryToolbox.temporal_resolution !== ""){
                             groupBy = true;
                             if($("#temporal_resolution").val() === "hour")
                                 dimAggregate = 'date_trunc_hour';
