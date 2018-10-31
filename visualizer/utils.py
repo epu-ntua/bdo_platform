@@ -863,29 +863,32 @@ def create_livy_session(notebook_id):
     host = settings.LIVY_URL
     headers = {'Content-Type': 'application/json'}
 
-    # data = { 'kind': 'pyspark',
-    #          'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
-    #          'driverMemory': '2g',
-    #          'driverCores': 2,
-    #          'numExecutors': 1,
-    #          'executorMemory': '2g',
-    #          'executorCores': 2,
-    #          'heartbeatTimeoutInSecond': 120,
-    #          'conf': {'spark.driver.maxResultSize': '2g'}}
-    # response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
+    data = { 'kind': 'pyspark',
+             'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
+             'driverMemory': '2g',
+             'driverCores': 2,
+             'numExecutors': 1,
+             'executorMemory': '2g',
+             'executorCores': 2,
+             'heartbeatTimeoutInSecond': 120,
+             'conf': {'spark.driver.maxResultSize': '2g'}}
+    response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
     # print response
 
     sessions = requests.get(host + '/sessions', headers=headers).json()['sessions']
     ids = [int(s['id']) for s in sessions]
     print 'session ids'
     print ids
+    cnt=0
     for id in ids:
+        cnt += 1
         if len(ServiceInstance.objects.filter(livy_session=id)) == 0:
             serviceInstance = ServiceInstance.objects.get(notebook_id=notebook_id)
             serviceInstance.livy_session = id
             serviceInstance.save()
             session_id = id
             break
+    requests.post(host + '/sessions', data=json.dumps(data), headers=headers)
     try:
         state = ''
         while state != 'idle':
