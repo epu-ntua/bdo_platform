@@ -62,9 +62,13 @@ def simplified(request, pk=None):
     # combine user and public datasets to show to the user
     user_datasets = user_datasets | public_datasets
     dataset_list = public_datasets | user_datasets | user_with_access_datasets
+    organization_list = Organization.objects.all()
+    variable_list = Variable.objects.all()
 
 
     return render(request, 'query_designer/simplified.html', {
+        'organizations' : organization_list,
+        'variables' : variable_list,
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
         'temp_queries_count': TempQuery.objects.last().id,

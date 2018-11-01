@@ -43,7 +43,6 @@
 
 .dataset-section {
     margin-bottom: 10px;
-    width: 100%;
 }
 
 .variable-section {
@@ -114,4 +113,25 @@
 
 .selection-confirm .select2-container {
     width: 300px !important;
+}
+
+.left {
+    width:25%;
+}
+
+.center_col {
+    width:45%;
+}
+
+.right {
+    width:30%;
+}
+.column {
+    float: left;
+    padding: 0px;
+}
+
+.dataset1_info_div {
+    height: 40vh;
+    overflow-y: scroll;
 }

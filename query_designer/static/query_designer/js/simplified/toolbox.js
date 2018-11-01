@@ -1619,7 +1619,7 @@ $(function () {
         var $last = $('.chart-control .fieldset:last');
 
         $('#select-data-modal').dialog({
-            width: '60vw',
+            width: '90vw',
             position: {my: 'center'},
             title: 'Select data'
         });

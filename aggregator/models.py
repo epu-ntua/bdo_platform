@@ -17,6 +17,13 @@ DATASET_STORAGES = (
     ('UBITECH_SOLR', 'Solr instance at http://212.101.173.50:8983'),
 )
 
+class Organization(Model):
+    title = TextField()
+    description = TextField()
+
+    def __unicode__(self):
+        return u'%s' % self.title
+
 
 class Dataset(Model):
     title = TextField()
@@ -27,6 +34,7 @@ class Dataset(Model):
     table_name = CharField(max_length=200)
     private = BooleanField(default=False)
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
+    organization = ForeignKey(Organization, related_name= 'datasets', default = 1)
 
     class Meta:
         ordering = ['-id']
@@ -58,7 +66,7 @@ class BaseVariable(Model):
     name = CharField(max_length=256)
     title = CharField(max_length=256)
     unit = CharField(max_length=256)
-    description = TextField(null=True)
+    # description = TextField(null=True)
 
     class Meta:
         abstract = True
