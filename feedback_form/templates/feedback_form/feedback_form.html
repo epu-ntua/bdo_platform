@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block css %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <style>
+    .checked {
+        color: orange;
+    }
+    .field{
+        width: 50%;
+    }
+    .rating_star{
+        cursor: pointer;
+    }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2>We need your feedback.</h2>
+    <form action="{% url 'feedback_form:home' %}" method="POST" class="ui form">
+        {% csrf_token %}
+        <p>
+            <input name="customer_name" id ="id_customer_name" value={{ user }} hidden>
+        </p>
+        <div class="field" style="margin-bottom :10px;"><label for="id_service">About:</label>
+            <select name="service" id="id_service">
+                <option value="platform_general">The platform in general</option>
+                <option value="dataset_exploration">Exploring Datasets</option>
+                <option value="visualiation_creation">Creating a Visualisation/Chart</option>
+                <option value="dashboard_creation">Creating a Dashboard</option>
+                <option value="service_creation">Creating a Service</option>
+                <option value="service_execution">Running your own Service</option>
+                <option value="pilot_service_mare_protection">Running Mare Protection Service </option>
+                <option value="pilot_service_vessel_anomaly_detection">Running Vessel Anomaly Detection Service </option>
+                <option value="pilot_primary_wave_energy_assessment">Primary Wave Energy Assessment Service </option>
+                <option value="pilot_route_anomaly_detection">Running Route Anomaly Detection Service </option>
+                <option value="pilot_service_anek">Running Fuel Consumption Reduction Service (ANEK)</option>
+                <option value="pilot_service_fnk">Running  Fuel Consumption Reduction Service (FNK) </option>
+                <option value="">Making a new Request</option>
+            </select>
+        </div>
+        <div class="field" style="margin-bottom: 10px"><label for="id_details">Details</label>
+            <textarea  name="details" id="id_details" required></textarea>
+        </div>
+        <div class="field">
+            <label for="id_star_rating">Star Rating</label>
+            <p id="id_star_rating" style="display: inline-block; ">
+                <span id ="1" class="fa fa-star rating_star"></span>
+                <span id ="2" class="fa fa-star rating_star"></span>
+                <span id ="3" class="fa fa-star rating_star"></span>
+                <span id ="4" class="fa fa-star rating_star"></span>
+                <span id ="5" class="fa fa-star rating_star"></span>
+            </p>
+        </div>
+        <p>
+            <input  name="rating" id="id_rating" value="0" hidden>
+        </p>
+
+        <input id="submit-button" class="btn btn-sm btn-primary pull-left" type="submit" />
+    </form>
+
+
+{% endblock %}
+
+{% block js %}
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    <script>
+         $( document ).ready(function() {
+             $('.rating_star').click(function () {
+                 var chosen_star = $(this).attr('id');
+                 for (var i=1; i<=5; i++){
+                     if(i<=chosen_star) {
+                         $('.rating_star#' + String(i)).addClass("checked")
+                     }
+                     else{
+                          $('.rating_star#' + String(i)).removeClass("checked")
+                     }
+                 }
+                 $('#id_rating').val(String(chosen_star));
+             })
+
+             $('#id_service').dropdown('restore defaults');
+             $('.ui.selection.dropdown').css('min-width','20em');
+
+        });
+
+    </script>
+
+
+{% endblock %}

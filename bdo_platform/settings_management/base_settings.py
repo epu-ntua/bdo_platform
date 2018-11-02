@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'uploader',
     'on_demand',
     'data_parser',
+    'feedback_form'
 ]
 
 AUTHENTICATION_BACKENDS = (
