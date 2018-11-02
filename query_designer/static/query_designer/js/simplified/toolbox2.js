@@ -36,7 +36,7 @@ $(function () {
         orderings: [],
         temporal_resolution: '',
         spatial_resolution: '',
-        selected_filters: [],
+        filters: [],
 
         // the Query Toolbox objects, only one is created
         objects: [],
@@ -289,8 +289,6 @@ $(function () {
 
         /* Gets the data based on the fields & options selected by the user */
         fetchQueryData: function () {
-            // update available filters
-            this.filterManager.updateFilters(this._getChartInfo().values);
 
             var doc = this.generateQueryDoc();
             if (doc.from.length === 0) {
@@ -532,9 +530,26 @@ $(function () {
 
             // gather individual filters
             var filters = this.getFilterArray();
-            var time_dim_id = $('#selected_dimensions option[data-type="time"]').val();
-            if (startdate !== null) filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
-            if (enddate !== null) filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
+
+            // Gather temporal filters
+            var time_dim_id = null;
+            $.each(QueryToolbox.variables, function (vidx, variable) {
+                $.each(variable.dimensions, function (didx, dimension) {
+                    if(dimension.title === 'time'){
+                        time_dim_id = dimension.id
+                    }
+                });
+            });
+            if (startdate !== null){
+                if (time_dim_id !== null) {
+                    filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
+                }
+            }
+            if (enddate !== null){
+                if (time_dim_id !== null) {
+                    filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
+                }
+            }
 
             var filterTree = {};
 
@@ -584,24 +599,49 @@ $(function () {
             if (exprType === 'CUSTOM') {
                 filterTree = buildCustomFilterFromExpressionMapAndExpression(customExpressionMap,expression);
             }
-            var latitude_dim_id = $('#selected_dimensions option[data-type="latitude"]').val();
-            var longitude_dim_id = $('#selected_dimensions option[data-type="longitude"]').val();
-            if ((bounds[0] !== -90) || (bounds[2] !== 90) || (bounds[1] !== -180) || (bounds[3] !== 180)){
-                // filters.push({a: '<'+latitude_dim_id+','+longitude_dim_id+'>', op: 'inside_rect', b: '<<'+bounds[0].toString()+','+bounds[1].toString()+'>,<'+bounds[2].toString()+','+bounds[3].toString()+'>>'});
-                var newFilter = {
-                    a: '<'+latitude_dim_id+','+longitude_dim_id+'>',
-                    op: 'inside_rect',
-                    b: '<<'+bounds[0].toString()+','+bounds[1].toString()+'>,<'+bounds[2].toString()+','+bounds[3].toString()+'>>'
-                };
-                if (Object.keys(filterTree).length === 0){
-                    filterTree = newFilter;
+
+            // Gather spatial filters
+            var latitude_dim_id = null;
+            var longitude_dim_id = null;
+            $.each(QueryToolbox.variables, function (vidx, variable) {
+                $.each(variable.dimensions, function (didx, dimension) {
+                    if(dimension.title === 'latitude'){
+                        latitude_dim_id = dimension.id
+                    }
+                    if(dimension.title === 'longitude'){
+                        longitude_dim_id = dimension.id
+                    }
+                });
+            });
+            if (startdate !== null){
+                if (time_dim_id !== null) {
+                    filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
                 }
-                else{
-                    filterTree = {
-                        a: newFilter,
-                        op: 'AND',
-                        b: JSON.parse(JSON.stringify(filterTree))
+            }
+            if (enddate !== null){
+                if (time_dim_id !== null) {
+                    filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
+                }
+            }
+
+            if ((bounds[0] !== -90) || (bounds[2] !== 90) || (bounds[1] !== -180) || (bounds[3] !== 180)){
+                if ((latitude_dim_id !== null) && (longitude_dim_id !== null)) {
+                    // filters.push({a: '<'+latitude_dim_id+','+longitude_dim_id+'>', op: 'inside_rect', b: '<<'+bounds[0].toString()+','+bounds[1].toString()+'>,<'+bounds[2].toString()+','+bounds[3].toString()+'>>'});
+                    var newFilter = {
+                        a: '<' + latitude_dim_id + ',' + longitude_dim_id + '>',
+                        op: 'inside_rect',
+                        b: '<<' + bounds[0].toString() + ',' + bounds[1].toString() + '>,<' + bounds[2].toString() + ',' + bounds[3].toString() + '>>'
                     };
+                    if (Object.keys(filterTree).length === 0) {
+                        filterTree = newFilter;
+                    }
+                    else {
+                        filterTree = {
+                            a: newFilter,
+                            op: 'AND',
+                            b: JSON.parse(JSON.stringify(filterTree))
+                        };
+                    }
                 }
             }
 
@@ -648,8 +688,6 @@ $(function () {
                     })
                 }
 
-                // update filter counter
-                this.updateFilterCounter();
 
                 // filter join mode
                 var $filterExpr = $('#chart-filters > .filter-expr');
@@ -663,12 +701,6 @@ $(function () {
                 }
             },
 
-            updateFilters: function(variables) {
-                var variableTypes = [];
-                $.each(variables, function(idx, variable) {
-                   variableTypes.push(variable.type);
-                });
-            },
 
             /* Open the filter manager popup */
             show: function () {
@@ -757,30 +789,52 @@ $(function () {
 
             addFilter: function (filterVariable, filterOperator, filterValue) {
                 // add the new filters
-                var filterVariable = filterVariable || $('#new-filter-variable').val();
+                var filterColumn = filterVariable || $('#new-filter-variable').val();
                 var filterOperator = filterOperator || $('#new-filter-operator').val();
                 var filterValue = filterValue || $('[name="new-filter-value"]').val();
+
                 // type: variable or dimension
                 var filterType = $('[name="new-filter-value"]').attr('data-type');
-                var title = filterValue;
+
+                // What is displayed as value in the title of the filter
+                var filterValueTitle = filterValue;
                 if ($('select[name="new-filter-value"]').length > 0) {
-                    title = $('select[name="new-filter-value"] option:selected').text()
+                    filterValueTitle = $('select[name="new-filter-value"] option:selected').text()
                 } else {
-                    title = filterValue.split("'").join('')
+                    filterValueTitle = filterValue.split("'").join('')
                 }
-                var filterStr = filterVariable + filterOperator + filterValue;
+
+                // What is displayed as filter
+                var filterStr = filterColumn + filterOperator + filterValue;
                 // humanized title of the filter
-                var filterTitle = $('#new-filter-variable option[value="' + filterVariable + '"]').text() + ' ' +filterOperator + ' ' + title;
+                var filterTitle = $('#new-filter-variable option[value="' + filterColumn + '"]').text() + ' ' +filterOperator + ' ' + filterValueTitle;
+
                 // create filter name
-                var filterName = 'F' + ($('#chart-filters .filter').length + 1);
+                // find last filter
+                var last_filter = 0;
+                $.each(Object.keys(QueryToolbox.filters), function (_, fName) {
+                    if(last_filter < parseInt(String(fName).split('F')[1])){
+                        last_filter = parseInt(String(fName).split('F')[1])
+                    }
+                });
+                var filterName = 'F' + (last_filter + 1);
+
                 // add to filters
                 $('#chart-filters').append('<div class="filter" data-name="' + filterName + '" data-title="' + filterTitle +
-                    '" data-a="' + filterVariable +'" data-op="' + filterOperator + '" data-b="' + filterValue + '">' + filterStr + '</div>');
-                // update counter
-                this.updateFilterCounter();
+                    '" data-a="' + filterColumn +'" data-op="' + filterOperator + '" data-b="' + filterValue + '">' + filterTitle + '</div>');
+
+                QueryToolbox.filters[filterName] =
+                    {
+                        title: filterTitle,
+                        a: filterColumn,
+                        op: filterOperator,
+                        b: filterValue
+                    };
+
+
                 // re-load popup
                 this.load();
-                console.log( filterStr );
+                // console.log( filterStr );
                 // mark as unsaved
                 QueryToolbox.tabMarker.currentUnsaved()
             },
@@ -816,6 +870,9 @@ $(function () {
                 reload = reload || true;
                 // remove the filter
                 $('#chart-filters > .filter[data-name="' + filterName + '"]').remove();
+
+                delete QueryToolbox.filters[filterName];
+
                 // re-load popup
                 if (reload) {
                     this.load();
@@ -838,17 +895,12 @@ $(function () {
                     $expressionInput.hide();
                 }
             },
-
-            updateFilterCounter: function () {
-                var len = $('#chart-filters').find('> .filter').length;
-                if (len == 0) {
-                    len = '-'
-                }
-                $('.filter-edit-open > .filter-counter').text(len)
-            }
         }
     };
 
+
+
+    // Add the select2 flieds
     $('#resolution select').select2();
     $('#query-controls-container select').select2();
     /* Filter dialog should always use select2 */

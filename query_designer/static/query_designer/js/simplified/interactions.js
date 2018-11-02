@@ -181,20 +181,33 @@ $(function() {
     $('body').on('change', '#spatial_resolution', function (e) {
         // update spatial resolution
         QueryToolbox.spatial_resolution = $("#spatial_resolution").val();
-
+        // if spatial resolution is defined
         if($("#spatial_resolution").val() !== ''){
+            // Each variable should have an aggregation function
             $("select[name='field_aggregate']").each(function () {
                 $(this).val("AVG");
                 $(this).trigger("change");
             });
+            // Disable the 'no-aggregate' option
             $("select[name='field_aggregate']").find('option[value=""]').each(function () {
                 $(this).attr('disabled', 'disabled');
             });
         }
+        // if spatial resolution is NOT defined
         else{
-            $("select[name='field_aggregate']").find('option[value=""]').each(function () {
-                $(this).attr('disabled', false);
-            });
+            // check if spatial resolution is defined
+            if ($("#temporal_resolution").val() === "") {
+                // check if group-by is defined and either reset or not the aggregate values
+                if ($('[name="category"]').val().length === 0) {
+                    $("select[name='field_aggregate']").find('option[value=""]').each(function () {
+                        $(this).attr('disabled', false);
+                    });
+                    $("select[name='field_aggregate']").each(function () {
+                        $(this).val("");
+                        $(this).trigger("change");
+                    });
+                }
+            }
         }
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
@@ -206,18 +219,30 @@ $(function() {
         QueryToolbox.temporal_resolution = $("#temporal_resolution").val();
 
         if($("#temporal_resolution").val() !== ''){
+            // Each variable should have an aggregation function
             $("select[name='field_aggregate']").each(function () {
-                $(this).find('option[value=""]').attr('disabled', true);
                 $(this).val("AVG");
                 $(this).trigger("change");
             });
+            // Disable the 'no-aggregate' option
+            $("select[name='field_aggregate']").find('option[value=""]').each(function () {
+                $(this).attr('disabled', 'disabled');
+            });
         }
         else{
-            $("select[name='field_aggregate']").each(function () {
-                $(this).find('option[value=""]').attr('disabled', false);
-                $(this).val("");
-                $(this).trigger("change");
-            });
+            // check if spatial resolution is defined
+            if ($("#spatial_resolution").val() === "") {
+                // check if group-by is defined and either reset or not the aggregate values
+                if ($('[name="category"]').val().length === 0) {
+                    $("select[name='field_aggregate']").find('option[value=""]').each(function () {
+                        $(this).attr('disabled', false);
+                    });
+                    $("select[name='field_aggregate']").each(function () {
+                        $(this).val("");
+                        $(this).trigger("change");
+                    });
+                }
+            }
         }
         $("select[name='field_aggregate']").select2();
         // mark as unsaved
@@ -241,10 +266,30 @@ $(function() {
 
         // if a group by column is selected, put the AVG as the default aggr function to all variables
         if($("select[name='category']").val().length > 0){
+            // Each variable should have an aggregation function
             $("select[name='field_aggregate']").each(function () {
                 $(this).val("AVG");
                 $(this).trigger("change");
             });
+            // Disable the 'no-aggregate' option
+            $("select[name='field_aggregate']").find('option[value=""]').each(function () {
+                $(this).attr('disabled', 'disabled');
+            });
+        }
+        else{
+            // check if spatial resolution is defined
+            if ($("#spatial_resolution").val() === "") {
+                // check if temporal resolution is defined
+                if ($("#temporal_resolution").val() === "") {
+                    $("select[name='field_aggregate']").find('option[value=""]').each(function () {
+                        $(this).attr('disabled', false);
+                    });
+                    $("select[name='field_aggregate']").each(function () {
+                        $(this).val("");
+                        $(this).trigger("change");
+                    });
+                }
+            }
         }
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
@@ -445,12 +490,14 @@ function updateFilterByField(){
     $.each(QueryToolbox.variables, function (idx, variable) {
         $.each(variable.dimensions, function (_, dimension) {
             if ($filterSelectField.find("option[data-title='" + dimension.title + "']").length === 0) {
-                var newOption = new Option(dimension.title, 'dimension__'+dimension.id, false, false);
-                newOption.setAttribute('data-forVariable', variable.id);
-                newOption.setAttribute('data-dimension-id', dimension.id);
-                newOption.setAttribute('data-title', dimension.title);
-                newOption.setAttribute('data-type', 'dimension');
-                $filterSelectField.append(newOption);
+                if((dimension.title !== 'time') && (dimension.title !== 'latitude') && (dimension.title !== 'longitude')) {
+                    var newOption = new Option(dimension.title, 'dimension__' + dimension.id, false, false);
+                    newOption.setAttribute('data-forVariable', variable.id);
+                    newOption.setAttribute('data-dimension-id', dimension.id);
+                    newOption.setAttribute('data-title', dimension.title);
+                    newOption.setAttribute('data-type', 'dimension');
+                    $filterSelectField.append(newOption);
+                }
             }
         });
         // Append the variable, too
@@ -461,6 +508,4 @@ function updateFilterByField(){
         $filterSelectField.append(newOption);
     });
     $filterSelectField.trigger('change');
-
-    QueryToolbox.filterManager.updateFilters(QueryToolbox._getChartInfo().values);
 }

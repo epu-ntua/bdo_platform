@@ -1,40 +1,6 @@
 $(function() {
     var $modal = $('#select-data-modal');
 
-    /* Autocomplete */
-    $modal.find('#data-filter-search').on('keyup', function() {
-        var term = $(this).val().toLowerCase();
-
-        // hide/show variables
-        $.each($modal.find('.variable-section'), function(idx, section) {
-            var $section = $(section);
-
-            if ($section.text().toLowerCase().indexOf(term) >= 0) {
-                $section.removeClass('hidden')
-            } else {
-                $section.addClass('hidden')
-            }
-        });
-
-        // hide-show datasets
-        $.each($modal.find('.dataset-section'), function(idx, section) {
-            var $section = $(section);
-
-            if ($section.find('.variable-section').length === $section.find('.variable-section.hidden').length) {
-                $section.addClass('hidden')
-            } else {
-                $section.removeClass('hidden')
-            }
-        });
-
-        // hide-show no results
-        if ($modal.find('.variable-section:not(.hidden)').length === 0) {
-            $modal.find('.no-results').removeClass('hidden')
-        } else {
-            $modal.find('.no-results').addClass('hidden')
-        }
-    });
-
     /* Select variable */
     $modal.find('.variable-section').on('click', function() {
         $modal.find('.variable-section').removeClass('selected');
