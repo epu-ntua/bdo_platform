@@ -11,7 +11,7 @@ urlpatterns = [
 
     url('^map_course_mt/$', views.map_course_mt, name='map_course_mt'),
 
-    url('^map_plotline/$', views.map_plotline, name='map_plotline'),
+    # url('^getmap_plotline/$', views.map_plotline, name='map_plotline'),
     url('^map_markers_in_time/$', views.map_markers_in_time, name='map_markers_in_time'),
 
 
@@ -27,7 +27,7 @@ urlpatterns = [
     url('^get_map_contour/$', views.map_viz_folium_contour, name='get_map_contour'),
     url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium-heat'),
     url('^map_course/$', views.map_course, name='map_course'),
-    url('^map_plotline/$', views.map_plotline, name='map_plotline'),
+    url('^get_map_plotline_vessel_course/$', views.get_map_plotline_vessel_course, name='get_map_plotline_vessel_course'),
 
     url('^get_map_visualization/$', views.map_visualizer, name='get_map_visualization'),
 

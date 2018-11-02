@@ -79,12 +79,9 @@ def get_plotline_parameters(request, count):
         raise ValueError('Marker limit is not valid.')
     if marker_limit <= 0:
         raise ValueError('Marker limit has to be a positive number.')
-    color = str(request.GET.get('color' + str(count), 'blue'))
-    # order_var = str(request.GET.get('order_var' + str(count), ''))
-    # ship_id = str(request.GET.get('ship_id' + str(count), ''))
     lat_col = str(request.GET.get('lat_col' + str(count), 'lat'))
     lon_col = str(request.GET.get('lon_col' + str(count), 'lon'))
-    return cached_file, marker_limit, color, lat_col, lon_col
+    return cached_file, marker_limit, lat_col, lon_col
 
 def get_heatmap_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
@@ -110,10 +107,10 @@ def map_visualizer(request):
             raise ValueError('Visualisation ID of layer ' + str(count) + 'is not valid.')
         # Plotline
         try:
-            if (layer_id == Visualization.objects.get(view_name='map_plotline').id):
+            if (layer_id == Visualization.objects.get(view_name='get_map_plotline_vessel_course').id):
                 query_pk, df, notebook_id = get_data_parameters(request, str(count))
-                cached_file, marker_limit, color, lat_col, lon_col = get_plotline_parameters(request, count)
-                m, extra_js = map_plotline(marker_limit, query_pk, df, notebook_id, color, lat_col,
+                cached_file, marker_limit, lat_col, lon_col = get_plotline_parameters(request, count)
+                m, extra_js = get_map_plotline_vessel_course(marker_limit, query_pk, df, notebook_id, lat_col,
                                            lon_col, m, request, cached_file)
         except ObjectDoesNotExist:
             pass
@@ -689,9 +686,9 @@ def get_map_query_data(query, variable, order_var, color_col):
 
     var_index = order_var_index = color_index = lat_index = lon_index = -1
     for idx, c in enumerate(result_headers['columns']):
-        if str(c['name']).find('lat') >= 0:
+        if str(c['name']).find('latitude') >= 0:
             lat_index = idx
-        elif str(c['name']).find('lon') >= 0:
+        elif str(c['name']).find('longitude') >= 0:
             lon_index = idx
         elif c['name'] == variable:
             var_index = idx
@@ -702,15 +699,56 @@ def get_map_query_data(query, variable, order_var, color_col):
     return data, lat_index, lon_index, var_index, order_var_index, color_index
 
 
-def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color_col, marker_limit, auto_order = False):
+def load_modify_query_plotline_vessel(query_pk, variable, order_var, lat_col, lon_col, color_col, marker_limit, auto_order=False):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
+
+
+
+    if auto_order == True and time_flag == False:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+
+    for f in doc['from']:
+        for s in f['select']:
+            if (str(s['name']).find('time') >= 0) and (s['exclude'] is not True):
+                order_var = s['name']
+                s['groupBy'] = True
+                s['aggregate'] = 'date_trunc_minute'
+            elif (str(s['name']).find('platform_id') >= 0) and (s['exclude'] is not True):
+                s['groupBy'] = True
+                s['exclude'] = False
+            elif (str(s['name']).find(lat_col) >= 0) and (s['exclude'] is not True):
+                s['exclude'] = False
+            elif (str(s['name']).find(lon_col) >= 0) and (s['exclude'] is not True):
+                s['exclude'] = False
+            else:
+                s['exclude'] = True
+
+    if order_var != '':
+        doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+    if marker_limit != '':
+        doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
+def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color_col, marker_limit, auto_order=False):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+
+    time_flag = False
     if auto_order == True:
         for f in doc['from']:
             for s in f['select']:
-                if s['name'].find('time') >= 0:
+                if (str(s['name']).find('time') >= 0) and (s['exclude'] is not True):
                     order_var = s['name']
+                    time_flag = True
+
+    if auto_order == True and time_flag == False:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
 
     for f in doc['from']:
         for s in f['select']:
@@ -762,11 +800,11 @@ def create_plotline_points(data, lat_index, lon_index):
     return points, min_lat, max_lat, min_lon, max_lon
 
 
-def map_plotline(marker_limit, query_pk, df, notebook_id, color, lat_col, lon_col, m, request, cached_file):
+def get_map_plotline_vessel_course(marker_limit, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
     dict = {}
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
-            query = load_modify_query_map(query_pk, '', '', 'lat', 'lon', '', marker_limit, True)
+            query = load_modify_query_map(query_pk, '', '', 'latitude', 'longitude', '', marker_limit, True)
             data, lat_index, lon_index, nu1, nu2, nu3 = get_map_query_data(query, '', '', '')
             points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
 
@@ -1809,7 +1847,7 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
         if x_flag == True:
             doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
         else:
-            raise ValueError('Ordering Variable is not valid or not given.')
+            raise ValueError('-Variable or Dimension for the X-Axis of Line-Charts and Column-Charts is needed.\n-Variable or Dimension for creating the sub-groups of the Pie-Chart is needed.')
     query.document = doc
     return query
 
@@ -1840,7 +1878,7 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
         if x_flag == True:
             doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
         else:
-            raise ValueError('Time is not a dimension of the chosen query.')
+            raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     query.document = doc
     return query, order_var, min_period
 
@@ -1918,26 +1956,29 @@ def get_data_parameters(request, layer_count):
     try:
         query_pk = int(query_pk)
     except ValueError:
-        raise ValueError('Query ID not valid.')
+        raise ValueError('The given Query ID not valid.')
     df = str(request.GET.get('df'+layer_count, ''))
     notebook_id = str(request.GET.get('notebook_id'+layer_count, ''))
     return query_pk, df, notebook_id
 
 
 def get_line_chart_am(request):
-    query_pk, df, notebook_id = get_data_parameters(request, '')
-    x_var = str(request.GET.get('x_var', ''))
-    y_var_list = request.GET.getlist('y_var[]')
-    agg_function = str(request.GET.get('agg_func', 'avg'))
-    if not agg_function.lower() in AGGREGATE_VIZ:
-        raise ValueError('Aggregate function is not valid.')
-    if query_pk != 0:
-        query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
-        json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
-    elif df != '':
-        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
-    else:
-        raise ValueError('Either query ID or dataframe name has to be specified.')
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        x_var = str(request.GET.get('x_var', ''))
+        y_var_list = request.GET.getlist('y_var[]')
+        agg_function = str(request.GET.get('agg_func', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
+        elif df != '':
+            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
         isDate = 'true'
@@ -1950,23 +1991,26 @@ def get_line_chart_am(request):
 
 
 def get_time_series_am(request):
-    query_pk, df, notebook_id = get_data_parameters(request, '')
-    existing_temp_res = request.GET.get('use_existing_temp_res', '') == 'on'
-    temporal_resolution = str(request.GET.get('temporal_resolution', ''))
-    y_var_list = request.GET.getlist('y_var[]')
-    agg_function = str(request.GET.get('agg_func', 'avg'))
-    if not agg_function.lower() in AGGREGATE_VIZ:
-        raise ValueError('Aggregate function is not valid.')
-    if query_pk != 0:
-        query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function)
-        json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, order_var, y_var_list)
-        min_chart_period = chart_min_period_finder(min_period)
-    elif df != '':
-        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
-        order_var = 'time'.encode('ascii')
-        min_chart_period = 'ss'
-    else:
-        raise ValueError('Either query ID or dataframe name has to be specified.')
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        existing_temp_res = request.GET.get('use_existing_temp_res', '') == 'on'
+        temporal_resolution = str(request.GET.get('temporal_resolution', ''))
+        y_var_list = request.GET.getlist('y_var[]')
+        agg_function = str(request.GET.get('agg_func', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function)
+            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, order_var, y_var_list)
+            min_chart_period = chart_min_period_finder(min_period)
+        elif df != '':
+            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
+            order_var = 'time'.encode('ascii')
+            min_chart_period = 'ss'
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     return render(request, 'visualizer/line_chart_am.html',
                   {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
@@ -1974,20 +2018,23 @@ def get_time_series_am(request):
 
 
 def get_column_chart_am(request):
-    query_pk, df, notebook_id = get_data_parameters(request, '')
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
 
-    x_var = str(request.GET.get('x_var', ''))
-    y_var_list = request.GET.getlist('y_var[]')
-    agg_function = str(request.GET.get('agg_func', 'avg'))
-    if not agg_function.lower() in AGGREGATE_VIZ:
-        raise ValueError('Aggregate function is not valid.')
-    if query_pk != 0:
-        query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
-        json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
-    elif df != '':
-        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
-    else:
-        raise ValueError('Either query ID or dataframe name has to be specified.')
+        x_var = str(request.GET.get('x_var', ''))
+        y_var_list = request.GET.getlist('y_var[]')
+        agg_function = str(request.GET.get('agg_func', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
+        elif df != '':
+            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
         isDate = 'true'
@@ -1999,34 +2046,25 @@ def get_column_chart_am(request):
 
 
 def get_pie_chart_am(request):
-    query_pk, df, notebook_id = get_data_parameters(request, '')
-
-    key_var = str(request.GET.get('key_var', ''))
-    value_var = str(request.GET.get('value_var', ''))
-    agg_function = str(request.GET.get('agg_func', 'avg'))
-
-    if query_pk != 0:
-        query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function)
-        json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, key_var, [value_var])
-    elif df !='':
-        json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
-    else:
-        raise ValueError('Either query ID or dataframe name has to be specified.')
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        key_var = str(request.GET.get('key_var', ''))
+        value_var = str(request.GET.get('value_var', ''))
+        agg_function = str(request.GET.get('agg_func', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function)
+            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, key_var, [value_var])
+        elif df !='':
+            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
 
-#
-# def data_table_paginate(data, page, limit):
-#     paginator = Paginator(data, limit)  # Show 25 contacts per page
-#     try:
-#         page_data = paginator.page(page)
-#     except PageNotAnInteger:
-#         # If page is not an integer, deliver first page.
-#         page_data = paginator.page(1)
-#     except EmptyPage:
-#         # If page is out of range (e.g. 9999), deliver last page of results.
-#         page_data = paginator.page(paginator.num_pages)
-#     return page_data
 
 
 def load_execute_query_data_table(query_pk, offset, limit, column_choice):
@@ -2070,22 +2108,27 @@ def load_execute_dataframe_data(request, df, notebook_id):
 
 
 def get_data_table(request):
-    query_pk, df, notebook_id = get_data_parameters(request, '')
-    column_choice = request.GET.getlist('column_choice[]')
-    limit = 50
-    offset = int(request.GET.get('offset', 0))
-    if query_pk != 0:
-        if column_choice.__len__() != 0:
-            data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice)
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        column_choice = request.GET.getlist('column_choice[]')
+        limit = 50
+        offset = int(request.GET.get('offset', 0))
+        if not column_choice:
+            raise ValueError('At least one column of the given query has to be selected.')
+        if query_pk != 0:
+            if column_choice.__len__() != 0:
+                data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice)
+            else:
+                data = []
+                headers = []
+            isJSON = False
+        elif df != '':
+            data, headers = load_execute_dataframe_data(request, df, notebook_id)
+            isJSON = True
         else:
-            data = []
-            headers = []
-        isJSON = False
-    elif df != '':
-        data, headers = load_execute_dataframe_data(request, df, notebook_id)
-        isJSON = True
-    else:
-        raise ValueError('Either query ID or dataframe name has to be specified.')
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     if data.__len__() < limit:
         has_next = False
@@ -2171,18 +2214,20 @@ def get_aggregate_query_data(query, variable):
 
 
 def get_aggregate_value(request):
-    query_pk, df, notebook_id = get_data_parameters(request, '')
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
 
-    variable = str(request.GET.get('variable', ''))
-
-    agg_function = str(request.GET.get('agg_function', 'avg'))
-    if not agg_function.lower() in AGGREGATE_VIZ:
-        raise ValueError('Aggregate function is not valid.')
-    if query_pk != 0:
-        query = load_modify_query_chart(query_pk, '', [variable], agg_function, False)
-        value, unit = get_aggregate_query_data(query, variable)
-    else:
-        value, unit, var_list = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
+        variable = str(request.GET.get('variable', ''))
+        agg_function = str(request.GET.get('agg_function', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query = load_modify_query_chart(query_pk, '', [variable], agg_function, False)
+            value, unit = get_aggregate_query_data(query, variable)
+        else:
+            value, unit, var_list = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit})
 

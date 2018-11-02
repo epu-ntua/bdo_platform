@@ -187,6 +187,7 @@ $("#select_data_popover").click(function () {
                         $('#temporal_resolution').parent().removeClass('disabled');
                     }
                 });
+
                 $('.checkbox').parent().removeClass('form-group label-floating');
 
                 $('#select_all_columns').parent().checkbox().first().checkbox({
@@ -417,13 +418,29 @@ $("#select_data_popover").click(function () {
             }
 
             function specific_viz_form_configuration(){
-                //FOR PIE CHART
+                //PIE CHART
                 var pie_chart_id = $('#viz_config ul li[data-viz-name="get_pie_chart_am"]').attr('data-viz-id');
                 var pie_chart_agg_select = $('.popover-content #viz_'+pie_chart_id+' .aggregate-select');
                 pie_chart_agg_select.dropdown('set selected' , 'COUNT');
                 pie_chart_agg_select.find('option[value= "MAX"]').remove();
                 pie_chart_agg_select.find('option[value= "MIN"]').remove();
                 pie_chart_agg_select.find('option[value= "AVG"]').remove();
+
+                //TIME SERIES
+                var time_series_id = $('#viz_config ul li[data-viz-name="get_time_series_am"]').attr('data-viz-id');
+                var time_series_checkbox = $('.popover-content #viz_'+time_series_id+' #use_existing_temp_res');
+                time_series_checkbox.parent().checkbox('check');
+
+                // PLOTLINE VESSEL COURSE
+                var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
+                var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #m_limit');
+                plotline_vessel_course_input.change(function () {
+                    if (plotline_vessel_course_input.val()>=1000){
+                        alert('Please set the limit below 1000.');
+                        plotline_vessel_course_input.val(999);
+                    }
+                });
+
 
             }
         });
