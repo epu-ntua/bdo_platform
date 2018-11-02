@@ -563,12 +563,12 @@ $(function () {
                     $.each(_from.select, function (jdx, attr) {
                         if (attr.type === "VALUE") {
                             // if (String(attr.name).split(new RegExp("i[0-9]+_"))[1] === filter.a) {
-                            if (parseInt(_from.type) === parseInt(filter.a)) {
+                            if (parseInt(_from.type) === parseInt(String(filter.a).split('variable__')[1])) {
                                 aName = attr.name;
                             }
                         }
                         else {
-                            if (attr.type == filter.a) {
+                            if (parseInt(attr.type) === parseInt(String(filter.a).split('dimension__')[1])) {
                                 aName = attr.name;
                             }
                         }
