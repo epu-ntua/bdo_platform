@@ -876,19 +876,29 @@ def create_livy_session(notebook_id):
     # print response
 
     sessions = requests.get(host + '/sessions', headers=headers).json()['sessions']
-    ids = [int(s['id']) for s in sessions]
+    ids_states = [(int(s['id']),s['state'] ) for s in sessions]
     print 'session ids'
-    print ids
+    print ids_states
     cnt=0
-    for id in ids:
+    session_id = -1
+    print 'looking for session in list'
+    for (id, state) in ids_states:
         cnt += 1
         if len(ServiceInstance.objects.filter(livy_session=id)) == 0:
-            serviceInstance = ServiceInstance.objects.get(notebook_id=notebook_id)
-            serviceInstance.livy_session = id
-            serviceInstance.save()
-            session_id = id
-            break
-    requests.post(host + '/sessions', data=json.dumps(data), headers=headers)
+            if state == 'starting' or state == 'idle':
+                serviceInstance = ServiceInstance.objects.get(notebook_id=notebook_id)
+                serviceInstance.livy_session = id
+                serviceInstance.save()
+                session_id = id
+                break
+    print 'found session?'
+    print session_id
+    response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
+    if session_id == -1:
+        try:
+            session_id = response['id']
+        except Exception:
+            raise Exception('Failed')
     try:
         state = ''
         while state != 'idle':
