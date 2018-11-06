@@ -8,6 +8,17 @@ select {
   font-family: 'FontAwesome', 'sans-serif';
 }
 
+#select2-id_order-results .select2-results__option {
+    cursor: pointer;
+    width: 50%;
+    display: inline-block;
+    border-left: 1px ridge #bbbbbb;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
 #error_message_alert{
     display: none;
     width: 50%;

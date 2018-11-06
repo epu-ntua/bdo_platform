@@ -325,7 +325,7 @@ $(function() {
             }
             if(column_type === 'variable'){
                 var variable_id = $(opt).data("variable-id");
-                $orderingSelectField.find("option").filter("[data-variable-id='"+dimension_id+"']").not("[data-ordering='"+ordering+"']").attr('disabled', 'disabled');
+                $orderingSelectField.find("option").filter("[data-variable-id='"+variable_id+"']").not("[data-ordering='"+ordering+"']").attr('disabled', 'disabled');
             }
         });
         // $orderingSelectField.select2();
@@ -496,7 +496,7 @@ function updateOrderByField() {
             // Append the dimensions
             if ($orderbySelectField.find("option[data-title='" + dimension.title + "']").length === 0) {
                 //Ascending order
-                var newOption = new Option(dimension.title + ' <i class="fa fa-arrow-up"></i>', 'dimension__'+dimension.id+'__ASC', false, false);
+                var newOption = new Option('<i class="fa fa-arrow-up"></i> ' + dimension.title, 'dimension__'+dimension.id+'__ASC', false, false);
                 newOption.setAttribute('data-forVariable', variable.id);
                 newOption.setAttribute('data-dimension-id', dimension.id);
                 newOption.setAttribute('data-ordering', 'ASC');
@@ -510,7 +510,7 @@ function updateOrderByField() {
                 });
                 $orderbySelectField.append(newOption);
                 //Descending order
-                newOption = new Option(dimension.title + ' <i class="fa fa-arrow-down"></i>', 'dimension__'+dimension.id+'__DESC', false, false);
+                newOption = new Option('<i class="fa fa-arrow-down"></i> ' + dimension.title, 'dimension__'+dimension.id+'__DESC', false, false);
                 newOption.setAttribute('data-forVariable', variable.id);
                 newOption.setAttribute('data-dimension-id', dimension.id);
                 newOption.setAttribute('data-ordering', 'DESC');
@@ -527,7 +527,7 @@ function updateOrderByField() {
         });
         // Append the variable, too
         //Ascending order
-        var newOption = new Option(variable.title + ' (Metric #'+(idx+1)+')' + ' <i class="fa fa-arrow-up"></i>', 'variable__'+variable.id+'__ASC', false, false);
+        var newOption = new Option('<i class="fa fa-arrow-up"></i> ' + variable.title + ' (Metric #'+(idx+1)+')', 'variable__'+variable.id+'__ASC', false, false);
         newOption.setAttribute('data-variable-id', variable.id);
         newOption.setAttribute('data-ordering', 'ASC');
         newOption.setAttribute('data-title', variable.title);
@@ -540,7 +540,7 @@ function updateOrderByField() {
         });
         $orderbySelectField.append(newOption);
         //Descending order
-        newOption = new Option(variable.title + ' (Metric #'+(idx+1)+')' + ' <i class="fa fa-arrow-down"></i>', 'variable__'+variable.id+'__DESC', false, false);
+        newOption = new Option('<i class="fa fa-arrow-down"></i> ' + variable.title + ' (Metric #'+(idx+1)+')', 'variable__'+variable.id+'__DESC', false, false);
         newOption.setAttribute('data-variable-id', variable.id);
         newOption.setAttribute('data-ordering', 'DESC');
         newOption.setAttribute('data-title', variable.title);
