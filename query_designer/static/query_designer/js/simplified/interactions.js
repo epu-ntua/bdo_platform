@@ -174,6 +174,17 @@ $(function() {
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
         QueryToolbox.removeVariableField($(this).closest('.fieldset'));
+        $(".fieldset").each(function (idx, elem) {
+            $(elem).find('.metric-cnt').text(String(idx+1));
+        });
+
+        var variable_id = $(this).closest('.fieldset').find('[name="variable_field"]').data('variable-id');
+        $.each(QueryToolbox.variables, function (idx, variable) {
+            if(parseInt(variable_id) === parseInt(variable.id)){
+                QueryToolbox.variables.splice(idx, 1);
+                return false; // break
+            }
+        });
         updateQDfields();
     });
 
@@ -256,11 +267,11 @@ $(function() {
         var $categorySelectField = $('[name="category"]');
         // The already selected values
         var $selected_options = $categorySelectField.find("option:selected");
-        $.each($selected_options, function (_, $option) {
+        $.each($selected_options, function (_, option) {
             QueryToolbox.groupings.push(
-                {'dimension_id': $option.data('dimension-id'),
-                 'dimension_title': $option.data('title'),
-                 'dimension_forVariable': $option.data('forvariable')
+                {'dimension_id': $(option).data('dimension-id'),
+                 'dimension_title': $(option).data('title'),
+                 'dimension_forVariable': $(option).data('forvariable')
                 })
         });
 
@@ -299,25 +310,25 @@ $(function() {
     $('body').on('change', 'select[name="orderby"]', function (e) {
         QueryToolbox.orderings = [];
         // The ordering select field
-        var $orderingSelectField = $('[name="ordering"]');
+        var $orderingSelectField = $('[name="orderby"]');
         // The already selected values
         var $selected_options = $orderingSelectField.find("option:selected");
-        $.each($selected_options, function (_, $option) {
-            if($option.data('type') === 'dimension'){
+        $.each($selected_options, function (_, option) {
+            if($(option).data('type') === 'dimension'){
                 QueryToolbox.orderings.push(
-                    {'dimension_id': $option.data('dimension-id'),
-                     'title': $option.data('title'),
-                     'dimension_forVariable': $option.data('forvariable'),
-                     'ordering': $option.data('ordering'),
+                    {'dimension_id': $(option).data('dimension-id'),
+                     'title': $(option).data('title'),
+                     'dimension_forVariable': $(option).data('forvariable'),
+                     'ordering': $(option).data('ordering'),
                      'type': 'dimension'
                     }
                 )
             }
             else{
                 QueryToolbox.orderings.push(
-                    {'variable_id': $option.data('variable-id'),
-                     'title': $option.data('title'),
-                     'ordering': $option.data('ordering'),
+                    {'variable_id': $(option).data('variable-id'),
+                     'title': $(option).data('title'),
+                     'ordering': $(option).data('ordering'),
                      'type': 'variable'
                     }
                 )
@@ -422,8 +433,9 @@ function updateGroupByField() {
     // The groupby select field
     var $categorySelectField = $('[name="category"]');
 
-    // The already selected values
-    var selected_values = $categorySelectField.val();
+    // Empty the field to re-enter the options
+    $categorySelectField.find("option").remove();
+    $categorySelectField.val('');
 
     $.each(QueryToolbox.variables, function (_, variable) {
         $.each(variable.dimensions, function (_, dimension) {
@@ -433,6 +445,12 @@ function updateGroupByField() {
                 newOption.setAttribute('data-forVariable', variable.id);
                 newOption.setAttribute('data-dimension-id', dimension.id);
                 newOption.setAttribute('data-title', dimension.title);
+                // if a dimensions was previously selected, then select it again
+                $.each(QueryToolbox.groupings, function (idx, elem) {
+                    if(elem.dimension_title === dimension.title){
+                        newOption.setAttribute('selected','selected');
+                    }
+                });
                 // Append it to the select
                 $categorySelectField.append(newOption);
             }
@@ -444,6 +462,11 @@ function updateGroupByField() {
 function updateOrderByField() {
     // The orderby select field
     var $orderbySelectField = $('[name="orderby"]');
+
+    // Empty the field to re-enter the options
+    $orderbySelectField.find("option").remove();
+    $orderbySelectField.val('');
+
     $.each(QueryToolbox.variables, function (idx, variable) {
         $.each(variable.dimensions, function (_, dimension) {
             // Append the dimensions
@@ -455,6 +478,12 @@ function updateOrderByField() {
                 newOption.setAttribute('data-ordering', 'ASC');
                 newOption.setAttribute('data-title', dimension.title);
                 newOption.setAttribute('data-type', 'dimension');
+                // if a dimensions was previously selected, then select it again
+                $.each(QueryToolbox.orderings, function (idx, elem) {
+                    if((elem.type === 'dimension') && (elem.title === dimension.title) && (elem.ordering === 'ASC')){
+                        newOption.setAttribute('selected','selected');
+                    }
+                });
                 $orderbySelectField.append(newOption);
                 //Descending order
                 newOption = new Option(dimension.title + ' - DESC', 'dimension__'+dimension.id+'__DESC', false, false);
@@ -463,6 +492,12 @@ function updateOrderByField() {
                 newOption.setAttribute('data-ordering', 'DESC');
                 newOption.setAttribute('data-title', dimension.title);
                 newOption.setAttribute('data-type', 'dimension');
+                // if a dimensions was previously selected, then select it again
+                $.each(QueryToolbox.orderings, function (idx, elem) {
+                    if((elem.type === 'dimension') && (elem.title === dimension.title) && (elem.ordering === 'DESC')){
+                        newOption.setAttribute('selected','selected');
+                    }
+                });
                 $orderbySelectField.append(newOption);
             }
         });
@@ -473,6 +508,12 @@ function updateOrderByField() {
         newOption.setAttribute('data-ordering', 'ASC');
         newOption.setAttribute('data-title', variable.title);
         newOption.setAttribute('data-type', 'variable');
+        // if the variable was previously selected, then select it again
+        $.each(QueryToolbox.orderings, function (idx, elem) {
+            if((elem.type === 'variable') && (parseInt(elem.variable_id) === parseInt(variable.id)) && (elem.ordering === 'ASC')){
+                newOption.setAttribute('selected','selected');
+            }
+        });
         $orderbySelectField.append(newOption);
         //Descending order
         newOption = new Option(variable.title + ' (Metric #'+(idx+1)+')' + ' - DESC', 'variable__'+variable.id+'__DESC', false, false);
@@ -480,6 +521,12 @@ function updateOrderByField() {
         newOption.setAttribute('data-ordering', 'DESC');
         newOption.setAttribute('data-title', variable.title);
         newOption.setAttribute('data-type', 'variable');
+        // if the variable was previously selected, then select it again
+        $.each(QueryToolbox.orderings, function (idx, elem) {
+            if((elem.type === 'variable') && (parseInt(elem.variable_id) === parseInt(variable.id)) && (elem.ordering === 'DESC')){
+                newOption.setAttribute('selected','selected');
+            }
+        });
         $orderbySelectField.append(newOption);
     });
     $orderbySelectField.trigger('change');
@@ -487,13 +534,19 @@ function updateOrderByField() {
 
 function updateFilterByField(){
     var $filterSelectField = $('#new-filter-variable');
+
+    // Empty the field to re-enter the options
+    $filterSelectField.find("option").remove();
+    $filterSelectField.val('');
+
+
     $.each(QueryToolbox.variables, function (idx, variable) {
         $.each(variable.dimensions, function (_, dimension) {
             if ($filterSelectField.find("option[data-title='" + dimension.title + "']").length === 0) {
                 if((dimension.title !== 'time') && (dimension.title !== 'latitude') && (dimension.title !== 'longitude')) {
                     var newOption = new Option(dimension.title, 'dimension__' + dimension.id, false, false);
-                    newOption.setAttribute('data-forVariable', variable.id);
-                    newOption.setAttribute('data-dimension-id', dimension.id);
+                    newOption.setAttribute('data-forvariable', variable.id);
+                    newOption.setAttribute('data-id', dimension.id);
                     newOption.setAttribute('data-title', dimension.title);
                     newOption.setAttribute('data-type', 'dimension');
                     $filterSelectField.append(newOption);
@@ -502,10 +555,42 @@ function updateFilterByField(){
         });
         // Append the variable, too
         var newOption = new Option(variable.title + ' (Metric #'+(idx+1)+')', 'variable__'+variable.id, false, false);
-        newOption.setAttribute('data-variable-id', variable.id);
+        newOption.setAttribute('data-id', variable.id);
         newOption.setAttribute('data-title', variable.title);
         newOption.setAttribute('data-type', 'variable');
+        newOption.setAttribute('data-forvariable', variable.id);
         $filterSelectField.append(newOption);
     });
     $filterSelectField.trigger('change');
+
+    // if a filter was previously defined, then define it again
+    updateSelectedFilters();
+}
+
+function updateSelectedFilters(){
+    var updated_filters = [];
+
+    $.each(Object.keys(QueryToolbox.filters), function (fidx, fkey) {
+        var found = false;
+        var filter = QueryToolbox.filters[fkey];
+        $.each(QueryToolbox.variables, function (vidx, variable) {
+            // Is it a dimension filter?
+            if ((filter.a_type === "dimension") && (found === false)) {
+                $.each(variable.dimensions, function (didx, dimension) {
+                    if (filter.a_title === dimension.title) {
+                        filter.a = dimension.id;
+                        filter.a_forVariable = variable.id;
+                        updated_filters[fkey] = filter;
+                        found = true;
+                    }
+                })
+            }
+            if ((filter.a_type === "variable") && (parseInt(filter.a) === parseInt(variable.id))) {
+                updated_filters[fkey] = filter;
+            }
+        })
+    });
+
+    QueryToolbox.filters = updated_filters;
+    $(".filter-counter").text(Object.keys(QueryToolbox.filters).length);
 }

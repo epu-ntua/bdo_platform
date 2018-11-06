@@ -217,7 +217,6 @@ $(function () {
                 $.each(variable.dimensions, function(jdx, dim) {
                     var name = dim.title;
                     var groupBy = $('select[name="category"]').val().indexOf(dim.id) >= 0;
-                    var orderBy = $('select[name="orderby"]').val().indexOf(dim.id) >= 0;
                     var dimAggregate = '';
 
                     // if spatial resolution is used
@@ -272,14 +271,21 @@ $(function () {
                         })
                     }
                     _from.select.push(dimension);
-                    if(orderBy) {
-                        var selected_index = $('select[name="orderby"]').val().indexOf(dim.id);
-                        var ordering = $('select[name="orderby"]').find('option:selected').eq(selected_index).data('ordering');
-                        result.orderings.push({type: ordering, name: 'i' + String(idx) + '_' + name});
-                    }
+
+                    $.each(QueryToolbox.orderings, function (oidx, elem) {
+                        if((elem.type === "dimension") && (parseInt(elem.dimension_id) === parseInt(dim.id))) {
+                            result.orderings.push({type: elem.ordering, name: 'i' + String(idx) + '_' + name});
+                        }
+                    });
                 });
                 // add to query
                 result.from.push(_from);
+
+                $.each(QueryToolbox.orderings, function (oidx, elem) {
+                    if((elem.type === "variable") && (parseInt(elem.variable_id) === parseInt(variable.id))) {
+                        result.orderings.push({type: elem.ordering, name: 'i' + String(idx) + '_' + variable.name});
+                    }
+                });
             });
             // add filters
             result.filters = this.constructFiltersParam(result);
@@ -508,19 +514,25 @@ $(function () {
 
         // *** FILTERS ***
         getFilterArray: function () {
+            return QueryToolbox.filters;
             var filters = [];
-            $.each($('#chart-filters > .filter'), function (idx, flt) {
-                var $flt = $(flt);
-                filters.push({
-                    'name': $flt.data('name'),
-                    'title': $flt.data('title'),
-                    'a': $flt.data('a'),
-                    'op': $flt.data('op'),
-                    'b': $flt.data('b')
-                });
+            $.each(Object.keys(QueryToolbox.filters), function (fidx, fkey) {
+                filters.push(QueryToolbox.filters[fkey])
             });
-
             return filters
+            // var filters = [];
+            // $.each($('#chart-filters > .filter'), function (idx, flt) {
+            //     var $flt = $(flt);
+            //     filters.push({
+            //         'name': $flt.data('name'),
+            //         'title': $flt.data('title'),
+            //         'a': $flt.data('a'),
+            //         'op': $flt.data('op'),
+            //         'b': $flt.data('b')
+            //     });
+            // });
+            //
+            // return filters
         },
 
         constructFiltersParam: function (queryDocument) {
@@ -557,18 +569,19 @@ $(function () {
             var exprType = $('#chart-filters > .filter-expr').attr('data-expr_type');
             var customExpressionMap = {};
 
-            $.each(filters, function (idx, filter) {
+            $.each(Object.keys(QueryToolbox.filters), function (idx, fkey) {
+                var filter = QueryToolbox.filters[fkey];
                 var aName;
                 $.each(queryDocument.from, function (idx, _from) {
                     $.each(_from.select, function (jdx, attr) {
                         if (attr.type === "VALUE") {
                             // if (String(attr.name).split(new RegExp("i[0-9]+_"))[1] === filter.a) {
-                            if (parseInt(_from.type) === parseInt(String(filter.a).split('variable__')[1])) {
+                            if ((filter.a_type === "variable") && (parseInt(_from.type) === parseInt(filter.a))) {
                                 aName = attr.name;
                             }
                         }
                         else {
-                            if (parseInt(attr.type) === parseInt(String(filter.a).split('dimension__')[1])) {
+                            if ((filter.a_type === "dimension") && (parseInt(attr.type) === parseInt(filter.a))) {
                                 aName = attr.name;
                             }
                         }
@@ -668,7 +681,7 @@ $(function () {
 
                 // show/hide expression settings
                 var $filterExprSettings = $filterModal.find('#filter-expr-settings');
-                if (filters.length > 1) {
+                if (Object.keys(QueryToolbox.filters).length > 1) {
                     $filterExprSettings.show();
                 } else {
                     $filterExprSettings.hide();
@@ -678,14 +691,15 @@ $(function () {
                 var $filterTable = $filterModal.find('table');
                 var $filterTableBody = $filterTable.find('tbody');
                 $filterTableBody.empty();
-                if (filters.length == 0) {
+                if (Object.keys(QueryToolbox.filters).length == 0) {
                     var $placeholderRow = $('<tr class="placeholder-row"><td>-</td><td><em>' + 'No filters found' + '</em></td><td></td></tr>');
                     $filterTableBody.append($placeholderRow);
                 } else {
-                    $.each(filters, function (idx, filter) {
-                        var $filterTr = $('<tr><td>' + filter.name + '</td><td>' + filter.title + '</td><td><div class="remove-filter-btn"><i class="fa fa-times"></i></div></td></tr>');
+                    $.each(Object.keys(QueryToolbox.filters), function (fidx, fkey) {
+                        var filter = QueryToolbox.filters[fkey];
+                        var $filterTr = $('<tr><td>' + fkey + '</td><td>' + filter.filter_string + '</td><td><div class="remove-filter-btn"><i class="fa fa-times"></i></div></td></tr>');
                         $filterTableBody.append($filterTr);
-                    })
+                    });
                 }
 
 
@@ -787,27 +801,21 @@ $(function () {
                 });
             },
 
-            addFilter: function (filterVariable, filterOperator, filterValue) {
+            addFilter: function () {
                 // add the new filters
-                var filterColumn = filterVariable || $('#new-filter-variable').val();
-                var filterOperator = filterOperator || $('#new-filter-operator').val();
-                var filterValue = filterValue || $('[name="new-filter-value"]').val();
+                var filterColumnId = parseInt($('#new-filter-variable').find("option:selected").data('id'));
+                var filterColumnType = $('#new-filter-variable').find("option:selected").data('type');
+                var filterColumnTitle = $('#new-filter-variable').find("option:selected").data('title');
+                var filterColumnforVariable = $('#new-filter-variable').find("option:selected").data('forvariable');
+                var filterOperator = $('#new-filter-operator').val();
+                var filterOperatorSymbol = $('#new-filter-operator option:selected').text();
+                var filterValue = $('[name="new-filter-value"]').val();
 
-                // type: variable or dimension
-                var filterType = $('[name="new-filter-value"]').attr('data-type');
-
-                // What is displayed as value in the title of the filter
-                var filterValueTitle = filterValue;
-                if ($('select[name="new-filter-value"]').length > 0) {
-                    filterValueTitle = $('select[name="new-filter-value"] option:selected').text()
-                } else {
-                    filterValueTitle = filterValue.split("'").join('')
-                }
+                if (filterColumnType === "variable")
+                        filterColumnTitle = $('#new-filter-variable').find("option:selected").text();
 
                 // What is displayed as filter
-                var filterStr = filterColumn + filterOperator + filterValue;
-                // humanized title of the filter
-                var filterTitle = $('#new-filter-variable option[value="' + filterColumn + '"]').text() + ' ' +filterOperator + ' ' + filterValueTitle;
+                var filterStr = filterColumnTitle + ' ' + filterOperatorSymbol + ' ' + filterValue;
 
                 // create filter name
                 // find last filter
@@ -820,21 +828,24 @@ $(function () {
                 var filterName = 'F' + (last_filter + 1);
 
                 // add to filters
-                $('#chart-filters').append('<div class="filter" data-name="' + filterName + '" data-title="' + filterTitle +
-                    '" data-a="' + filterColumn +'" data-op="' + filterOperator + '" data-b="' + filterValue + '">' + filterTitle + '</div>');
+                $('#chart-filters').append('<div class="filter" data-name="' + filterName + '" data-title="' + filterStr +
+                    '" data-a="' + filterColumnId +'" data-a_type="' + filterColumnType +'" data-a_title="' + filterColumnTitle +'" data-op="' + filterOperator + '" data-b="' + filterValue + '">' + filterStr + '</div>');
 
                 QueryToolbox.filters[filterName] =
                     {
-                        title: filterTitle,
-                        a: filterColumn,
+                        a: filterColumnId,
+                        a_title: filterColumnTitle,
+                        a_type: filterColumnType,
+                        a_forVariable: filterColumnforVariable,
                         op: filterOperator,
-                        b: filterValue
+                        b: filterValue,
+                        filter_string: filterStr
                     };
 
-
+                $(".filter-counter").text(Object.keys(QueryToolbox.filters).length);
                 // re-load popup
                 this.load();
-                // console.log( filterStr );
+
                 // mark as unsaved
                 QueryToolbox.tabMarker.currentUnsaved()
             },
@@ -851,27 +862,13 @@ $(function () {
                 return result
             },
 
-            setFilter: function (variable, value) {
-                var filterClear = variable == 'istheinvestmentinabuilding_12' && value == '__clear__';
-                // remove all filters for this variable
-                var that = this;
-                $.each(this.getVariableFilters(variable), function (idx, filterName) {
-                    that.removeFilter(filterName, false)
-                });
-                // set new filter if any
-                if (!filterClear) {
-                    this.addFilter(variable, '=', value)
-                } else {
-                    this.load();
-                }
-            },
-
             removeFilter: function (filterName, reload) {
                 reload = reload || true;
                 // remove the filter
                 $('#chart-filters > .filter[data-name="' + filterName + '"]').remove();
 
                 delete QueryToolbox.filters[filterName];
+                $(".filter-counter").text(Object.keys(QueryToolbox.filters).length);
 
                 // re-load popup
                 if (reload) {
