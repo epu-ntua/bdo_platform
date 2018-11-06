@@ -5,6 +5,7 @@ from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils.text import slugify
 from django.db import connection
+from django.db import models
 
 import math
 
@@ -27,6 +28,12 @@ class Dataset(Model):
     table_name = CharField(max_length=200)
     private = BooleanField(default=False)
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
+    joined_with_dataset = models.ManyToManyField("self",through = 'JoinOfDatasets',
+                                                         symmetrical=False,
+                                                        related_name='joined_to')
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         ordering = ['-id']
@@ -52,6 +59,12 @@ class DatasetAccess(Model):
     start = DateField()
     end = DateField()
     valid = BooleanField()
+
+
+class JoinOfDatasets(Model):
+    dataset_first = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='first')
+    dataset_second = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='second')
+    view_name = models.CharField(max_length=100)
 
 
 class BaseVariable(Model):
