@@ -35,26 +35,63 @@ $(function() {
         }
     });
 
-    /* Select variable */
-    $modal.find('.variable-section').on('click', function() {
-        $modal.find('.variable-section').removeClass('selected');
-        $(this).addClass('selected');
+    /* select variable */
+    window.getDataSelection = function() {
+        let dims = [];
+        $('#group-by-select option').each(function () {
+            dims.push({
+                value: $(this).val(),
+                title: $(this).text().split(',')[0]
+            })
+        });
 
-        var $selectionCol = $modal.find('.selection-confirm > div');
-        $selectionCol.removeClass('hidden');
+        let datasetInfoDivElem = $('.dataset1_info_div');
+        return {
+            value: datasetInfoDivElem.find('.variable-section.selected').find('.variable-name').text(),
+            title: datasetInfoDivElem.find('.variable-section.selected').find('.variable-title').text(),
+            id: datasetInfoDivElem.find('.variable-section.selected').find('.variable-id').text(),
+            unit: datasetInfoDivElem.find('.variable-section.selected').find('.variable-unit').text(),
+            aggregate: $('#selection-aggregate').val(),
+            groupBy: $('#group-by-select').val(),
+            dimensions: dims
+        }
+    };
+
+    $(".dataset-metadata-btn").click(function () {
+        $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
+    });
+
+
+     $(".dataset-title").click(function () {
+         let $dataset1InfoDiv = $('.dataset1_info_div');
+         $dataset1InfoDiv.find(".dataset-info").remove();
+        // $(this).clone().appendTo('.dataset1_info_div');
+        $(this).parent().parent().clone().appendTo('.dataset1_info_div');
+        $dataset1InfoDiv.get(0).classList.remove('collapse');
+         $dataset1InfoDiv.find(".dataset-info").find(".variables1").show();
+         $dataset1InfoDiv.find(".dataset-info").find(".dataset-name").find(".dimensions").show();
+    });
+
+   $('.dataset1_info_div').on('click', ".variable-title", function() {
+
+       $modal.find('.variable-section').removeClass('selected');
+        $(this).parent().parent().addClass('selected');
+
+       let $selectionCol = $('.selection-confirm > div');
+       $selectionCol.removeClass('hidden');
         // $selectionCol.find('#selection-aggregate').val('AVG').trigger('change');
         $selectionCol.find('#selection-aggregate').val(null).trigger('change');
 
 
         // remove old group by
-        $modal.find('#group-by-select').remove();
+        $('#group-by-select').remove();
 
         // add group by options
         var $gSelect = $('<select />')
             .attr('id', 'group-by-select')
             .attr('multiple', 'multiple');
 
-        $.each($(this).find('.dimensions > span'), function(idx, dimension) {
+        $.each($(this).parent().parent().find('.dimensions > span'), function(idx, dimension) {
             var $dimension = $(dimension);
 
             var $opt = $('<option />')
@@ -69,34 +106,8 @@ $(function() {
         });
 
         // add & config plugin
-        $modal.find('.selection-group-by').append($gSelect);
+        $('.selection-group-by').append($gSelect);
         $("#group-by-select").val(null).trigger('change');
         $gSelect.select2();
-    });
-
-    window.getDataSelection = function() {
-        var dims = [];
-        $('#group-by-select option').each(function () {
-            dims.push({
-                value: $(this).val(),
-                title: $(this).text().split(',')[0]
-            })
-        });
-        return {
-            value: $modal.find('.variable-section.selected').find('.variable-name').text(),
-            title: $modal.find('.variable-section.selected').find('.variable-title').text(),
-            id: $modal.find('.variable-section.selected').find('.variable-id').text(),
-            unit: $modal.find('.variable-section.selected').find('.variable-unit').text(),
-            aggregate: $modal.find('#selection-aggregate').val(),
-            groupBy: $modal.find('#group-by-select').val(),
-            dimensions: dims
-        }
-    };
-    
-    $(".dataset-metadata-btn").click(function () {
-        $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
-    });
-     $(".dataset-title").click(function () {
-        $(this).closest(".dataset-section").find('.dataset_collapse_div').collapse("toggle");
     });
 });
