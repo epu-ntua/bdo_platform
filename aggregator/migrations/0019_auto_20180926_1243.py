@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aggregator', '0014_min_max_dimension_column'),
+        ('aggregator', '0016_min_max_dimension_column'),
     ]
 
     operations = [
