@@ -279,10 +279,9 @@ class AbstractQuery(Model):
             from query_designer.query_processors.solr import process as q_process
             encoder = SolrResultEncoder
 
-
         data = q_process(self, dimension_values=dimension_values, variable=variable,
-                     only_headers=only_headers, commit=commit,
-                     execute=execute, raw_query=raw_query)
+                         only_headers=only_headers, commit=commit,
+                         execute=execute, raw_query=raw_query)
 
         return data, encoder
 

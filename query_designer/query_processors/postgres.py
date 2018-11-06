@@ -652,9 +652,12 @@ def initialize_minofmaxes_and_maxofmins(chain):
     max_of_mins = first_dim[0]
     min_of_maxes = first_dim[1]
 
-    while min_of_maxes is None or max_of_mins is None:
+    chain_size = len(chain)
+    cnt = 0
+    while (min_of_maxes is None or max_of_mins is None) and cnt < chain_size:
         first_dim = next(iter(chain), None)
         max_of_mins = first_dim[0]
         min_of_maxes = first_dim[1]
+        cnt += 1
 
     return max_of_mins, min_of_maxes
