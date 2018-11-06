@@ -37,7 +37,7 @@ $(function() {
 
     /* select variable */
     window.getDataSelection = function() {
-        let dims = [];
+        var dims = [];
         $('#group-by-select option').each(function () {
             dims.push({
                 value: $(this).val(),
@@ -45,7 +45,7 @@ $(function() {
             })
         });
 
-        let datasetInfoDivElem = $('.dataset1_info_div');
+        var datasetInfoDivElem = $('.dataset1_info_div');
         return {
             value: datasetInfoDivElem.find('.variable-section.selected').find('.variable-name').text(),
             title: datasetInfoDivElem.find('.variable-section.selected').find('.variable-title').text(),
@@ -63,7 +63,7 @@ $(function() {
 
 
      $(".dataset-title").click(function () {
-         let $dataset1InfoDiv = $('.dataset1_info_div');
+         var $dataset1InfoDiv = $('.dataset1_info_div');
          $dataset1InfoDiv.find(".dataset-info").remove();
         // $(this).clone().appendTo('.dataset1_info_div');
         $(this).parent().parent().clone().appendTo('.dataset1_info_div');
@@ -77,7 +77,7 @@ $(function() {
        $modal.find('.variable-section').removeClass('selected');
         $(this).parent().parent().addClass('selected');
 
-       let $selectionCol = $('.selection-confirm > div');
+       var $selectionCol = $('.selection-confirm > div');
        $selectionCol.removeClass('hidden');
         // $selectionCol.find('#selection-aggregate').val('AVG').trigger('change');
         $selectionCol.find('#selection-aggregate').val(null).trigger('change');
