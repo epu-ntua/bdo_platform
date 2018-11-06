@@ -4,6 +4,10 @@
     background-color: white;
 }
 
+select {
+  font-family: 'FontAwesome', 'sans-serif';
+}
+
 #error_message_alert{
     display: none;
     width: 50%;
