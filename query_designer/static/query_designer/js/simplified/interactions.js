@@ -313,6 +313,23 @@ $(function() {
         var $orderingSelectField = $('[name="orderby"]');
         // The already selected values
         var $selected_options = $orderingSelectField.find("option:selected");
+
+        // Disable the opposite ordering types
+        $orderingSelectField.find("option").attr('disabled', false);
+        $.each($selected_options, function (_, opt) {
+            var ordering = $(opt).data("ordering");
+            var column_type = $(opt).data("type");
+            if(column_type === 'dimension'){
+                var dimension_id = $(opt).data("dimension-id");
+                $orderingSelectField.find("option").filter("[data-dimension-id='"+dimension_id+"']").not("[data-ordering='"+ordering+"']").attr('disabled', 'disabled');
+            }
+            if(column_type === 'variable'){
+                var variable_id = $(opt).data("variable-id");
+                $orderingSelectField.find("option").filter("[data-variable-id='"+dimension_id+"']").not("[data-ordering='"+ordering+"']").attr('disabled', 'disabled');
+            }
+        });
+        $orderingSelectField.select2();
+
         $.each($selected_options, function (_, option) {
             if($(option).data('type') === 'dimension'){
                 QueryToolbox.orderings.push(
