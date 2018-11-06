@@ -46,8 +46,8 @@ urlpatterns = [
     url('new_template/$', views.new_template, name='new_template'),
 
 
-    url('clean/$', views.clean, name='clean'),
+    # url('clean/$', views.clean, name='clean'),
 
     # basic page
-    url('$', views.index, name='home'),
+    url('$', views.clean, name='clean'),
 ]
