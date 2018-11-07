@@ -1,3 +1,7 @@
+.modal-backdrop{
+    z-index: 0 !important;
+}
+
 #select-data-modal table{
     table-layout: fixed;
     width: 100%;
