@@ -921,6 +921,9 @@ $(function () {
     $('#selection-aggregate').select2();
 
 
+    $("#select-data-modal #dataset-filter-section select").select2({ width: '100%' });
+
+
     function updatePaginationButtons() {
         if($("#graph-data-table tbody tr").length < 50){
             $('#dataNextBtn').prop('disabled', true);

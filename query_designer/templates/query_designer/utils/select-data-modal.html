@@ -5,18 +5,19 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Select Data</h4>
+                <h2 class="modal-title">Select Data</h2>
             </div>
 
             <div class="modal-body">
 
                 <div class="row">
-                    <div class="column left">
+                    <div id="dataset-filter-section" class="col-sm-2">
+                        <h3>Filters</h3>
                         <input id="searchDatasetInput" type="text" placeholder="Search Dataset..">
                         <br/><br/>
                         <label>Search by variable: </label>
                         <br/>
-                        <select id="var-select" style="width: 150px;" title="select variable">
+                        <select id="var-select" title="select variable">
                             <option value=""></option>
                             {% for var in variables %}
                                 <option value="{{ var.safe_name }}">{{ var.safe_name }}</option>
@@ -25,7 +26,7 @@
                         <br/><br/>
                         <label>Organization: </label>
                         <br/>
-                        <select id="org-select" style="width: 150px;" title="select organization">
+                        <select id="org-select" title="select organization">
                             {% for org in organizations %}
                                 <option value="{{ org.title }}">{{ org.title }}</option>
                             {% endfor %}
@@ -41,8 +42,8 @@
                         <label>Depth information: </label>
                         <input type="checkbox" value="depth" id="filter-by-depth" title="Only datasets with depth info"/>
                     </div>
-                    <div class="column center_col">
-                        <h2 style="text-align: center;"> Select Datasets </h2>
+                    <div id="dataset-list-section" class="col-sm-6">
+                        <h3>BDO Datasets</h3>
                         <div class="selection-body">
                             <div class="no-results {% if datasets %}hidden{% endif %}">No results found</div>
                             {% for dataset in datasets.all %}
@@ -92,10 +93,10 @@
                             <br/>
                         </div>
                     </div>
-                    <div class="column right">
-                        <h2 style="text-align: center;"> Selected dataset info </h2>
+                    <div id="dataset-info-section" class="col-sm-4">
+                        <h3>Dataset info</h3>
                         <div class="collapse dataset1_info_div"></div>
-                        <div class="selection-confirm row">
+                        <div class="selection-confirm">
                             <div class="col-xs-12 hidden">
                                 <div class="row">
                                     <div class="col-xs-8">
@@ -172,4 +173,9 @@
     $(".org-title").click(function () {
         $(this).closest(".org-section").find('.dataset_collapse_div').collapse("toggle");
     });
+
+
+
+
+
 </script>

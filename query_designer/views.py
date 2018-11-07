@@ -78,8 +78,12 @@ def clean(request, pk=None):
     # combine user and public datasets to show to the user
     user_datasets = user_datasets | public_datasets
     dataset_list = public_datasets | user_datasets | user_with_access_datasets
+    organization_list = Organization.objects.all()
+    variable_list = Variable.objects.all()
 
     return render(request, 'query_designer/clean.html', {
+        'organizations': organization_list,
+        'variables': variable_list,
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
         'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
