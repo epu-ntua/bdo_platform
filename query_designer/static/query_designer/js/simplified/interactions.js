@@ -1,14 +1,6 @@
 $(function() {
 
     // *** DATA SELECTION MODAL *** //
-    /* Open the data selection modal to add variables */
-    $('body').on('click', '.add-value-field', function () {
-        $('#select-data-modal').dialog({
-            width: '60vw',
-            position: {my: 'center'},
-            title: 'Select data'
-        });
-    });
 
     /* Close the data selection modal on cancel*/
     $('#selection-close-btn').on('click', function () {
@@ -329,13 +321,13 @@ $(function() {
             }
         });
         // $orderingSelectField.select2();
+        // $orderingSelectField.select2({
+            // width: "100%",
+            // escapeMarkup: function(markup) {
+            //     return markup;
+            // }
+        // });
 
-        $orderingSelectField.select2({
-            width: "100%",
-            escapeMarkup: function(markup) {
-                return markup;
-            }
-        });
 
         $.each($selected_options, function (_, option) {
             if($(option).data('type') === 'dimension'){
@@ -371,6 +363,7 @@ $(function() {
                 variable.aggregate = aggr;
             }
         });
+        $(this).select2();
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
     });

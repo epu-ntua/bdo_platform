@@ -216,7 +216,13 @@ $(function () {
                 // push dimensions
                 $.each(variable.dimensions, function(jdx, dim) {
                     var name = dim.title;
-                    var groupBy = $('select[name="category"]').val().indexOf(dim.id) >= 0;
+                    var groupBy = false;
+                    $.each(QueryToolbox.groupings, function (_, elem) {
+                       if(parseInt(dim.id) === parseInt(elem.dimension_id)){
+                           groupBy = true;
+                           return false;
+                       }
+                    });
                     var dimAggregate = '';
 
                     // if spatial resolution is used
@@ -899,7 +905,12 @@ $(function () {
 
     // Add the select2 flieds
     $('#resolution select').select2();
-    $('#query-controls-container select').select2();
+    $('#query-controls-container select').select2({
+        width: "100%",
+        escapeMarkup: function(markup) {
+            return markup;
+        }
+    });
     /* Filter dialog should always use select2 */
     $('#filters-modal select').select2();
     /* Limit input should use select2, with tags also */

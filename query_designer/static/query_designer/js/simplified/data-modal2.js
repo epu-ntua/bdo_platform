@@ -31,10 +31,10 @@ $(function() {
     window.getDataSelection = function() {
         // Gather the dimensions of the selected variable
         var dims = [];
-        $('#group-by-select option').each(function () {
+        $modal.find('.variable-section.selected').find('.dimensions span').each(function () {
             dims.push({
-                id: $(this).val(),
-                title: $(this).text().split(',')[0]
+                id: $(this).data('type'),
+                title: $(this).data('name')
             })
         });
         return {

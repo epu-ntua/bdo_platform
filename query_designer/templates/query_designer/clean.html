@@ -107,7 +107,7 @@
 
                         <div id="chart-control-list">
                             <div class="row btn-container" style="margin-left:0; padding: 0;">
-                                <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" style="">
+                                <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal" style="">
                                     <i class="fa fa-plus"></i> Select data
                                 </div>
                                 <div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;">
@@ -257,7 +257,7 @@
 
     {% leaflet_js %}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>#}
 {#    <script src="{% static 'query_designer/js/handsontable/handsontable.full.min.js' %}"></script>#}
 
 {#    <link href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">#}
@@ -265,7 +265,7 @@
 
     <script src="{% static "query_designer/js/simplified/toolbox2.js" %}"></script>
 
-    <script src="{% static "query_designer/js/simplified/data-modal2.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/data-modal.js" %}"></script>
 
     <script src="{% static "query_designer/js/simplified/interactions.js" %}"></script>
 

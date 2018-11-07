@@ -75,69 +75,71 @@ $(function() {
    $('.dataset1_info_div').on('click', ".variable-title", function() {
 
        $modal.find('.variable-section').removeClass('selected');
-        $(this).parent().parent().addClass('selected');
-    /* Select variable */
-    $modal.find('.variable-section').on('click', function() {
-        $modal.find('.variable-section').removeClass('selected');
-        $(this).addClass('selected');
+       $(this).parent().parent().addClass('selected');
+       /* Select variable */
+       $modal.find('.variable-section').on('click', function () {
+           $modal.find('.variable-section').removeClass('selected');
+           $(this).addClass('selected');
 
-       var $selectionCol = $('.selection-confirm > div');
-       $selectionCol.removeClass('hidden');
-        // $selectionCol.find('#selection-aggregate').val('AVG').trigger('change');
-        $selectionCol.find('#selection-aggregate').val(null).trigger('change');
+           var $selectionCol = $('.selection-confirm > div');
+           $selectionCol.removeClass('hidden');
+           // $selectionCol.find('#selection-aggregate').val('AVG').trigger('change');
+           $selectionCol.find('#selection-aggregate').val(null).trigger('change');
 
 
-        // remove old group by
-        $('#group-by-select').remove();
+           // remove old group by
+           $('#group-by-select').remove();
 
-        // add group by options
-        var $gSelect = $('<select />')
-            .attr('id', 'group-by-select')
-            .attr('multiple', 'multiple');
+           // add group by options
+           var $gSelect = $('<select />')
+               .attr('id', 'group-by-select')
+               .attr('multiple', 'multiple');
 
-        $.each($(this).parent().parent().find('.dimensions > span'), function(idx, dimension) {
-            var $dimension = $(dimension);
+           $.each($(this).parent().parent().find('.dimensions > span'), function (idx, dimension) {
+               var $dimension = $(dimension);
 
-            var $opt = $('<option />')
-                .attr('value', $dimension.data('type'))
-                .text($dimension.text());
+               var $opt = $('<option />')
+                   .attr('value', $dimension.data('type'))
+                   .text($dimension.text());
 
-            if ($dimension.text().toLowerCase().indexOf('time') >= 0) {
-                $opt.attr('selected', 'selected');
+               if ($dimension.text().toLowerCase().indexOf('time') >= 0) {
+                   $opt.attr('selected', 'selected');
+               }
+
+               $gSelect.append($opt);
+           });
+
+           // add & config plugin
+           $('.selection-group-by').append($gSelect);
+           $("#group-by-select").val(null).trigger('change');
+           $gSelect.select2();
+       });
+
+       window.getDataSelection = function() {
+            // Gather the dimensions of the selected variable
+            var dims = [];
+            $modal.find('.variable-section.selected').find('.dimensions span').each(function () {
+                dims.push({
+                    id: $(this).data('type'),
+                    title: $(this).data('name')
+                })
+            });
+            return {
+                id: $modal.find('.variable-section.selected').find('.variable-id').text(),
+                name: $modal.find('.variable-section.selected').find('.variable-name').text(),
+                title: $modal.find('.variable-section.selected').find('.variable-title').text(),
+                unit: $modal.find('.variable-section.selected').find('.variable-unit').text(),
+                aggregate: $modal.find('#selection-aggregate').val(),
+                groupBy: $modal.find('#group-by-select').val(),
+                dimensions: dims
             }
+        };
 
-            $gSelect.append($opt);
-        });
-
-        // add & config plugin
-        $('.selection-group-by').append($gSelect);
-        $("#group-by-select").val(null).trigger('change');
-        $gSelect.select2();
-    });
-
-    window.getDataSelection = function() {
-        var dims = [];
-        $('#group-by-select option').each(function () {
-            dims.push({
-                value: $(this).val(),
-                title: $(this).text().split(',')[0]
-            })
-        });
-        return {
-            value: $modal.find('.variable-section.selected').find('.variable-name').text(),
-            title: $modal.find('.variable-section.selected').find('.variable-title').text(),
-            id: $modal.find('.variable-section.selected').find('.variable-id').text(),
-            unit: $modal.find('.variable-section.selected').find('.variable-unit').text(),
-            aggregate: $modal.find('#selection-aggregate').val(),
-            groupBy: $modal.find('#group-by-select').val(),
-            dimensions: dims
-        }
-    };
-    
-    $(".dataset-metadata-btn").click(function () {
-        $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
-    });
-     $(".dataset-title").click(function () {
-        $(this).closest(".dataset-section").find('.dataset_collapse_div').collapse("toggle");
-    });
+       $(".dataset-metadata-btn").click(function () {
+           $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
+       });
+       $(".dataset-title").click(function () {
+           $(this).closest(".dataset-section").find('.dataset_collapse_div').collapse("toggle");
+       });
+   })
 });
