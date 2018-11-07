@@ -76,6 +76,10 @@ $(function() {
 
        $modal.find('.variable-section').removeClass('selected');
         $(this).parent().parent().addClass('selected');
+    /* Select variable */
+    $modal.find('.variable-section').on('click', function() {
+        $modal.find('.variable-section').removeClass('selected');
+        $(this).addClass('selected');
 
        var $selectionCol = $('.selection-confirm > div');
        $selectionCol.removeClass('hidden');
@@ -109,5 +113,31 @@ $(function() {
         $('.selection-group-by').append($gSelect);
         $("#group-by-select").val(null).trigger('change');
         $gSelect.select2();
+    });
+
+    window.getDataSelection = function() {
+        var dims = [];
+        $('#group-by-select option').each(function () {
+            dims.push({
+                value: $(this).val(),
+                title: $(this).text().split(',')[0]
+            })
+        });
+        return {
+            value: $modal.find('.variable-section.selected').find('.variable-name').text(),
+            title: $modal.find('.variable-section.selected').find('.variable-title').text(),
+            id: $modal.find('.variable-section.selected').find('.variable-id').text(),
+            unit: $modal.find('.variable-section.selected').find('.variable-unit').text(),
+            aggregate: $modal.find('#selection-aggregate').val(),
+            groupBy: $modal.find('#group-by-select').val(),
+            dimensions: dims
+        }
+    };
+    
+    $(".dataset-metadata-btn").click(function () {
+        $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
+    });
+     $(".dataset-title").click(function () {
+        $(this).closest(".dataset-section").find('.dataset_collapse_div').collapse("toggle");
     });
 });

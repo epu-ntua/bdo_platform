@@ -9,8 +9,8 @@ function buildCustomFilterFromExpressionMapAndExpression(customExpressionMap, ex
     var filterTree = {};
     var clearExpression = expression.replace("(", "").replace(")", "");
     var expressionAndOperationTable = clearExpression.split(" ");
-    var expressionTable = expressionAndOperationTable.filter(expr => expr.startsWith("F"));
-    var operatorTable = expressionAndOperationTable.filter(expr => !expr.startsWith("F"));
+    // var expressionTable = expressionAndOperationTable.filter(expr => expr.startsWith("F"));
+    // var operatorTable = expressionAndOperationTable.filter(expr => !expr.startsWith("F"));
     var j = 0;
     for (var i = 0; i < expressionTable.length; i++) {
         var newFilter = customExpressionMap[expressionTable[i]];
@@ -32,6 +32,12 @@ $(function () {
 
     /* `QueryToolbox` is the object responsible for the behaviour of the Toolbox Charts component */
     var QueryToolbox = {
+        variables: [],
+        groupings: [],
+        orderings: [],
+        resolutions: [],
+        selected_filters: [],
+
         objects: [],
 
         current: function () {
@@ -106,7 +112,7 @@ $(function () {
 
                     /* for (var j = 0; j < chartPolicy.incrStep; j++) {
                         chartOptions.fields.push({
-                            metric: chartPolicy.valueFields[0].value
+                            metric: chartPolicy.variables[0].value
                         })
                     } */
 
@@ -129,7 +135,7 @@ $(function () {
             $.ajax({
                 url: '/queries/simplified/config/',
                 success: function (chartPolicy) {
-                    obj.chartPolicy.valueFields = chartPolicy.valueFields;
+                    obj.chartPolicy.variables = chartPolicy.variables;
 
                     // update the UI
                     $.each($('select[name="value_field"]'), function(idx, select) {
@@ -137,7 +143,7 @@ $(function () {
                             val = $select.val();
 
                         $select.find('> option[value!=""]').remove();
-                        $.each(obj.chartPolicy.valueFields, function(idx, valueField) {
+                        $.each(obj.chartPolicy.variables, function(idx, valueField) {
                             var $option = $('<option />');
 
                             $option.attr('value', valueField.value);
@@ -153,10 +159,12 @@ $(function () {
 
         /* Creates an option (group or metric) fieldset */
         renderChartOptionsField: function (config) {
+            console.log(config);
             // create select
             var $fieldSelect = $('<select />')
                 .attr('name', config.name);
 
+            // THESE NEXT TO FIELDS ARE NEEDED, OTHERWISE GROUP BY AND ORDERINGS WILL BE APPLIED BY DEFAULT
             if (config.name === 'category') {
                 $fieldSelect.attr('multiple', 'multiple');
             }
@@ -164,9 +172,9 @@ $(function () {
                 $fieldSelect.attr('multiple', 'multiple');
             }
 
-            if (config.id) {
-                $fieldSelect.attr('id', config.id);
-            }
+            // if (config.id) {
+            //     $fieldSelect.attr('id', config.id);
+            // }
 
             if (typeof(config.aggregate) !== 'undefined') {
                 var $aggregateSelect = $('<select name="field_aggregate" />');
@@ -181,10 +189,7 @@ $(function () {
                     $aggregateSelect.append($option);
                 });
 
-                // set initial aggregate
-                $aggregateSelect.val(config.aggregate);
-                $fieldSelect.attr('data-aggregate', config.aggregate);
-                $fieldSelect.data('aggregate', config.aggregate);
+
             }
 
             if (config.emptyChoice) {
@@ -290,48 +295,6 @@ $(function () {
             $btnContainer.append('<div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;"><i class="fa fa-play-circle"></i> Run</div>');
             $controlList.append($btnContainer);
 
-
-            /* load fields */
-            var that = this;
-            $.each(obj.chartOptions.fields, function (idx, field) {
-                var suffix = '',
-                    cnt = (idx + 1),
-                    value = field.metric;
-
-                if (obj.chartType == 'xy/scatter/bubble') {
-                    cnt = Math.floor(idx / 3) + 1;
-                    if (idx % 3 == 0) {
-                        suffix += ' (X axis)'
-                    }
-                    else if (idx % 3 == 1) {
-                        suffix += ' (Y axis)'
-                    } else {
-                        suffix += ' (value)';
-                        value = '';
-                        defaultAggregate = 'AVG';
-                    }
-                }
-
-                var label = 'Metric #<span class="metric-cnt">' + cnt + '</span>' + suffix;
-
-                if (typeof(field.aggregate) === 'undefined') {
-                    field.aggregate = defaultAggregate;
-                }
-
-                var $fieldset = that.renderChartOptionsField({
-                    choices: obj.chartPolicy.valueFields,
-                    emptyChoice: (obj.chartType == 'xy/scatter/bubble') && (idx % 3 == 2),
-                    name: 'value_field',
-                    label: label,
-                    value: value,
-                    aggregate: field.aggregate,
-                    aggregates: obj.chartPolicy.aggregates,
-                    canConfig: obj.chartPolicy.canConfig,
-                    canDelete: idx + 1 > obj.chartPolicy.min,
-                    xy: obj.chartType == "xy/scatter/bubble"
-                });
-                $chartControls.append($fieldset);
-            });
 
             // append the whole list
             $controlList.append($chartControls);
@@ -544,292 +507,6 @@ $(function () {
                 values: values,
                 columns: columns
             };
-        },
-
-        _constructGraph: function (fields) {
-            var obj = this.objects[this.current()];
-            var that = this;
-            var valueAxesMap = {}, valueAxes = [];
-            var ui = 0;
-
-            this.chart.valueAxes = undefined;
-            $.each(Object.keys(fields), function (idx, field) {
-                if ((field == 'number_of_projects') || (field == 'total_projects')) {
-                    return
-                }
-
-                var u = fields[field];
-                if (!(u in valueAxesMap)) {
-                    ui++;
-
-                    var position = "left";
-                    if (ui % 2 == 0) {
-                        position = "right"
-                    }
-
-                    var axis = {
-                        "id": "v" + ui,
-                        "title": u,
-                        "axisThickness": 1,
-                        "axisAlpha": 1,
-                        "position": position,
-                        "offset": Math.floor((ui - 1) / 2) * 80
-                    };
-                    valueAxesMap[u] = axis;
-                    valueAxes.push(axis);
-                }
-            });
-
-            if ((obj.chartType == 'column') || (obj.chartType == 'bar') || (obj.chartType == 'line') || (obj.chartType == 'area') || (obj.chartType == 'pie & donut') || obj.chartType == 'other charts' || obj.chartType == 'xy/scatter/bubble') {
-                var ct = $('select[name="category"]').val();
-                var vfs = $('select[name="value_field"]');
-
-                var values = [];
-
-                this.chart.graphs = [];
-                this.chart.valueAxes = [];
-
-                var openField = '';
-                var bulletStyles = ['round', 'square', 'triangle', 'diamond'];
-                $.each(vfs, function (idx, vf) {
-                    // create the field name (including the aggregate)
-                    var aggregate = $(vf).data('aggregate');
-                    // if aggregate property was not found
-                    if (typeof(aggregate) === "undefined") {
-                        aggregate = 'AVG'
-                    }
-
-                    if (obj.chartFormat == 'candlestick') {
-                        aggregate = ''
-                    }
-                    var fname = $(vf).val();
-                    if (aggregate != '') {
-                        fname += '.' + aggregate
-                    }
-
-                    values.push(fname);
-
-                    // number of projects info
-                    var number_of_projects_info = '<br /> Number of projects' + ': [[number_of_projects]]';
-
-                    // create the chart options
-                    if ((obj.chartType == 'xy/scatter/bubble') && (idx % 3 == 2)) {
-                        var cnt = ((idx - 2) / 3);
-                        var x = values[idx - 2];
-                        var xTitle = $(vfs[idx - 2]).find('option:selected').text();
-                        var y = values[idx - 1];
-                        var yTitle = $(vfs[idx - 1]).find('option:selected').text();
-                        var v = values[idx];
-                        var vTitle = $(vfs[idx]).find('option:selected').text();
-
-                        var balloonText = xTitle + ":<b>[[x]]</b><br> " + xTitle + ":<b>[[y]]</b>";
-                        if (vTitle != 'No value') {
-                            balloonText += "<br>" + vTitle + ":<b>[[value]]</b>" + number_of_projects_info
-                        }
-
-                        var v2 = $(vfs[idx - 2]).val();
-                        var aggr = $(vfs[idx - 2]).data('aggregate');
-                        if (aggr) {
-                            v2 += '.' + aggr
-                        }
-                        var v1 = $(vfs[idx - 1]).val();
-                        aggr = $(vfs[idx - 1]).data('aggregate');
-                        if (aggr) {
-                            v1 += '.' + aggr
-                        }
-
-                        var g = {
-                            "balloonText": balloonText,
-                            "bullet": bulletStyles[cnt % bulletStyles.length],
-                            "id": "AmGraph-" + cnt,
-                            "lineAlpha": 0,
-                            "bulletSize": 2,
-                            "valueField": v,
-                            "xField": x,
-                            "yField": y,
-                            "xValueAxis": valueAxesMap[fields[v2]].id,
-                            "yValueAxis": valueAxesMap[fields[v1]].id
-                        };
-
-                        if (obj.chartFormat == "markers and lines" || obj.chartFormat == "with lines") {
-                            g.lineAlpha = 1;
-                            if (obj.chartFormat == "with lines") {
-                                g.bulletAlpha = 0
-                            }
-                        } else if (obj.chartFormat == "zoom and scroll") {
-                            g.chartCursor = {
-                                "enabled": true
-                            };
-                            g.chartScrollbar = {
-                                "enabled": true
-                            }
-                        } else if (obj.chartFormat == "fills") {
-                            g.fillAlphas = 0.49;
-                            g.bulletAlpha = 0
-                        }
-
-                        that.chart.graphs.push(g)
-                    }
-                    else if ((obj.chartType == 'column') || (obj.chartType == 'bar') || (obj.chartType == 'line') || (obj.chartType == 'area') || (obj.chartFormat == 'candlestick')) {
-                        // field title
-                        var ttl_prefix = '';
-                        if (aggregate != '') {
-                            ttl_prefix = $('select[name="field_aggregate"] option[value="' + aggregate + '"]').get(0).textContent + ' '
-                        }
-                        var ttl = ttl_prefix + $(vf).find('option:selected').text();
-
-                        var graphConfig = {
-                            "balloonText": "[[title]] of [[category]]: <b>[[value]]</b> " + fields[fname] + number_of_projects_info,
-                            "id": "AmGraph-" + idx,
-                            "title": ttl,
-                            "valueAxes": []
-                        };
-
-                        if (obj.chartFormat != 'candlestick') {
-                            graphConfig.valueAxis = valueAxesMap[fields[fname]].id
-                        }
-
-                        if (obj.chartFormat == 'clustered and stacked' && idx == 2) {
-                            graphConfig.newStack = true;
-                        }
-
-                        if (obj.chartFormat == 'floating columns' || obj.chartFormat == 'floating bars') {
-                            graphConfig.stackType = "regular";
-                            if (idx == 0) {
-                                openField = fname;
-                            } else {
-                                graphConfig.closeField = fname;
-                                graphConfig.openField = openField;
-                            }
-                        } else if (obj.chartFormat != 'candlestick') {
-                            graphConfig.valueField = fname
-                        }
-
-                        if (obj.chartType == 'line') {
-                            graphConfig.lineThickness = 2;
-
-                            if (obj.chartFormat == 'smoothed line') {
-                                graphConfig.type = "smoothedLine";
-                            }
-
-                            if (obj.chartFormat == 'step line') {
-                                graphConfig.type = 'step';
-                            }
-                            else if (obj.chartFormat == 'step no risers') {
-                                graphConfig.type = 'step';
-                                graphConfig.noStepRisers = true;
-                            } else {
-                                graphConfig.bullet = bulletStyles[idx % bulletStyles.length];
-                            }
-                        }
-                        else if ((obj.chartFormat == 'column and line' || obj.chartFormat == 'bar and line') && idx == 1) {
-                            graphConfig.lineThickness = 2;
-                            graphConfig.bullet = "round";
-                        }
-                        else if ((obj.chartType == 'area')) {
-                            if ((obj.chartFormat == 'stacked area') || (obj.chartFormat == '100% stacked area')) {
-                                graphConfig.fillAlphas = 0.75;
-                            } else {
-                                graphConfig.fillAlphas = Math.min(Math.max(1 / vfs.length, 0.15), 0.75);
-                            }
-
-                            graphConfig.lineAlpha = 0;
-                        }
-                        else if (obj.chartFormat == 'candlestick') {
-                            graphConfig.balloonText = "10% percentile:<b>[[low]]</b><br>25% percentile:<b>[[open]]</b><br>75% percentile:<b>[[close]]</b><br>90% percentile:<b>[[high]]</b><br>";
-                            graphConfig.closeField = fname + '.PERCENTILE_CONT_75';
-                            graphConfig.fillAlphas = 0.9;
-                            graphConfig.fillColors = "#7f8da9";
-                            graphConfig.highField = fname + '.PERCENTILE_CONT_90';
-                            graphConfig.lineColor = "#7f8da9";
-                            graphConfig.lowField = fname + '.PERCENTILE_CONT_10';
-                            graphConfig.negativeFillColors = "#db4c3c";
-                            graphConfig.negativeLineColor = "#db4c3c";
-                            graphConfig.openField = fname + '.PERCENTILE_CONT_25';
-                            graphConfig.type = "candlestick";
-                            graphConfig.valueField = fname + '.PERCENTILE_CONT_75'
-                        }
-                        else {
-                            graphConfig.type = "column";
-                            graphConfig.fillAlphas = 1;
-                        }
-
-                        if (obj.chartFormat == 'floating columns' || obj.chartFormat == 'floating bars') {
-                            if (idx == 1) {
-                                that.chart.graphs.push(graphConfig);
-                            }
-                        } else {
-                            that.chart.graphs.push(graphConfig);
-                        }
-
-                        if (idx < valueAxes.length) {
-                            var valueAxe = valueAxes[idx];
-
-                            if (obj.chartFormat == 'logarithmic scale') {
-                                valueAxe.logarithmic = true;
-                            }
-
-                            valueAxe.stackType = 'none';
-                            if (obj.chartFormat == 'stacked' || obj.chartFormat == '3d stacked' || obj.chartFormat == 'stacked area' || obj.chartFormat == 'clustered and stacked' || obj.chartFormat == 'floating columns' && obj.chartFormat != 'floating bars') {
-                                valueAxe.stackType = 'regular';
-                            } else if (obj.chartFormat == '100% stacked' || obj.chartFormat == '3d 100% stacked' || obj.chartFormat == '100% stacked area' || obj.chartFormat == '100% stacked line') {
-                                valueAxe.stackType = '100%'
-                            }
-
-                            /* On stacked graphs we need a single value axis */
-                            if ((idx > 0) && (valueAxe.stackType != 'none')) {
-                                if (valueAxes[idx].title != valueAxes[0].title) {
-                                    valueAxes[0].title = ''
-                                }
-                                valueAxes[idx] = null;
-                            }
-                        }
-                    } else if (obj.chartType == 'pie & donut') {
-                        that.chart.valueField = fname;
-                    } else if (obj.chartFormat == 'radar' || obj.chartFormat == 'polar') {
-                        that.chart.graphs.push({
-                            "balloonText": "<b>[[value]]</b>" + number_of_projects_info,
-                            "bullet": bulletStyles[idx % bulletStyles.length],
-                            "id": "AmGraph-" + idx,
-                            "valueField": fname
-                        });
-
-                        var valueAxe = {
-                            "axisTitleOffset": 20,
-                            "id": "ValueAxis-1",
-                            "minimum": 0,
-                            "axisAlpha": 0.15,
-                            "dashLength": 3
-                        };
-                        if (obj.chartFormat == 'polar') {
-                            valueAxe.gridType = "circles";
-                        }
-                        that.chart.valueAxes = [valueAxe]
-                    }
-                });
-
-                /* Only keep necessary value axes */
-                if (!(obj.chartFormat == 'radar' || obj.chartFormat == 'polar')) {
-                    this.chart.valueAxes = [];
-                    $.each(valueAxes, function (idx, valueAxe) {
-                        if (valueAxe != null) {
-                            that.chart.valueAxes.push(valueAxe);
-                        }
-                    });
-                }
-            }
-        },
-
-        updateChartInfo: function (result) {
-            // number of projects
-            $('.totalobservations').text(result.info.number_of_projects);
-            $('#total-project-counter').text(result.info.total_projects);
-
-            if (result.info.number_of_projects == 0) {
-                $('#no-data-message').show();
-            } else {
-                $('#no-data-message').hide();
-            }
         },
 
         generateQueryDoc: function() {
@@ -1081,28 +758,6 @@ $(function () {
             }
         },
 
-        /* Switch to another chart */
-        switchTo: function (idx) {
-            // save previous options
-            QueryToolbox.saveChartInfo();
-
-            // change active tab
-            $('#chart-picker li').removeClass('active');
-            $('#chart-picker li:nth-of-type(' + (idx + 1) + ')').addClass('active');
-
-            // switch chart
-            var obj = this.objects[idx];
-            this.renderChartOptions(obj);
-            this.refreshValueFields();
-            this.chart = obj.chart;
-            $('#chartdiv')
-                // .empty()
-                .append(this.chart);
-
-            // update chart name field
-            $('#chart-name input').val(obj.chartTitle);
-        },
-
         /* Get the `CSRF` token */
         getCsrfMiddlewareToken: function () {
             return $('#chart-container input[name="csrfmiddlewaretoken"]').val()
@@ -1198,27 +853,6 @@ $(function () {
                     console.log(error)
                 }
             });
-        },
-
-        /* Close an open chart */
-        close: function (chartIndex) {
-            // get the tab that will be closed
-            var $tab = $('#chart-picker li:nth-of-type(' + (chartIndex + 1) + ')');
-
-            if ($tab.hasClass('active')) {
-                // active tab closes - must switch to another tab
-                var $newActive = $tab.prevAll(':not(.hidden)').first();
-                if ($newActive.length == 0) {
-                    $newActive = $tab.nextAll(':not(.hidden)').first();
-                }
-                if ($newActive.length > 0) {
-                    this.switchTo($newActive.index())
-                    $tab.addClass('hidden')
-                }
-            } else {
-                // inactive tab closes
-                $tab.addClass('hidden')
-            }
         },
 
         rename: function (title) {
@@ -1685,7 +1319,7 @@ $(function () {
             var obj = QueryToolbox.objects[QueryToolbox.current()];
 
             var $fieldset = QueryToolbox.renderChartOptionsField({
-                choices: obj.chartPolicy.valueFields,
+                choices: obj.chartPolicy.variables,
                 emptyChoice: false,
                 name: 'value_field',
                 label: label,
@@ -1802,13 +1436,6 @@ $(function () {
         $('.selection-confirm .col-xs-12').addClass('hidden');
     });
 
-    /* Switch chart */
-    $('body').on('click', '#chart-picker li a', function (e) {
-        QueryToolbox.switchTo($(this).parent().index());
-
-        e.preventDefault();
-        e.stopPropagation()
-    });
 
     /* Close tab */
     $('body').on('click', '#chart-picker li a .close-tab', function (e) {
