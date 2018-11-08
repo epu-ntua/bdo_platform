@@ -73,15 +73,20 @@ def create_map():
 
 def get_plotline_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
+    platform_id = int(request.GET.get("platform_id" + str(count), 0))
+    color = str(request.GET.get('plotline_color' + str(count), 'blue'))
+    if color not in FOLIUM_COLORS:
+        raise ValueError('The chosen color is not supported.')
+    marker_limit = str(request.GET.get("m_limit" + str(count), '1'))
     try:
-        marker_limit = int(request.GET.get("m_limit" + str(count), 200))
+        marker_limit = int(marker_limit)
     except ValueError:
-        raise ValueError('Marker limit is not valid.')
+        raise ValueError('Number of positions is not valid.')
     if marker_limit <= 0:
-        raise ValueError('Marker limit has to be a positive number.')
+        raise ValueError('Number of positions has to be a positive number.')
     lat_col = str(request.GET.get('lat_col' + str(count), 'lat'))
     lon_col = str(request.GET.get('lon_col' + str(count), 'lon'))
-    return cached_file, marker_limit, lat_col, lon_col
+    return cached_file, marker_limit, platform_id, color, lat_col, lon_col
 
 def get_heatmap_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
@@ -96,80 +101,83 @@ def map_visualizer(request):
     old_map_id_list = []
     extra_js = ""
     try:
-        layer_count = int(request.GET.get("layer_count", 0))
-    except ValueError:
-        raise ValueError('Layer count is not valid.')
-
-    for count in range(0, layer_count):
         try:
-            layer_id = int(request.GET.get("viz_id" + str(count)))
+            layer_count = int(request.GET.get("layer_count", 0))
         except ValueError:
-            raise ValueError('Visualisation ID of layer ' + str(count) + 'is not valid.')
-        # Plotline
-        try:
-            if (layer_id == Visualization.objects.get(view_name='get_map_plotline_vessel_course').id):
-                query_pk, df, notebook_id = get_data_parameters(request, str(count))
-                cached_file, marker_limit, lat_col, lon_col = get_plotline_parameters(request, count)
-                m, extra_js = get_map_plotline_vessel_course(marker_limit, query_pk, df, notebook_id, lat_col,
-                                           lon_col, m, request, cached_file)
-        except ObjectDoesNotExist:
-            pass
-        # Contours
-        try:
-            if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
-                print ('Contours')
-                # Gather the arguments
-                cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
-                n_contours = int(request.GET.get('n_contours' + str(count), 20))
-                step = float(request.GET.get('step' + str(count), 0.1))
-                variable = str(request.GET.get('feat_1' + str(count), ''))
-                query = str(request.GET.get('query' + str(count), ''))
-                agg_function = str(request.GET.get('agg_func' + str(count), 'avg'))
-                m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m,
-                                                                 cached_file)
-                old_map_id_list.append(old_map_id)
-        except ObjectDoesNotExist:
-            pass
-            # Map Course
-        try:
-            if (layer_id == Visualization.objects.get(view_name='map_course').id):
-                print ('Markers')
-                cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
-                marker_limit = int(request.GET.get('m_limit' + str(count), '100'))
-                print marker_limit
-                query = int(str(request.GET.get('query' + str(count), '0')))
+            raise ValueError('Layer counter is not valid.')
 
-                df = str(request.GET.get('df' + str(count), ''))
-                print df
-                notebook_id = str(request.GET.get('notebook_id' + str(count), ''))
+        for count in range(0, layer_count):
+            try:
+                layer_id = int(request.GET.get("viz_id" + str(count)))
+            except ValueError:
+                raise ValueError('Visualisation ID of layer ' + str(count) + 'is not valid.')
+            # Plotline VesselCourse
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_plotline_vessel_course').id):
+                    query_pk, df, notebook_id = get_data_parameters(request, str(count))
+                    cached_file, marker_limit, platform_id, color, lat_col, lon_col = get_plotline_parameters(request, count)
+                    m, extra_js = get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col,
+                                               lon_col, m, request, cached_file)
+            except ObjectDoesNotExist:
+                pass
+            # Contours
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
+                    print ('Contours')
+                    # Gather the arguments
+                    cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
+                    n_contours = int(request.GET.get('n_contours' + str(count), 20))
+                    step = float(request.GET.get('step' + str(count), 0.1))
+                    variable = str(request.GET.get('feat_1' + str(count), ''))
+                    query = str(request.GET.get('query' + str(count), ''))
+                    agg_function = str(request.GET.get('agg_func' + str(count), 'avg'))
+                    m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m,
+                                                                     cached_file)
+                    old_map_id_list.append(old_map_id)
+            except ObjectDoesNotExist:
+                pass
+                # Map Course
+            try:
+                if (layer_id == Visualization.objects.get(view_name='map_course').id):
+                    print ('Markers')
+                    cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
+                    marker_limit = int(request.GET.get('m_limit' + str(count), '100'))
+                    print marker_limit
+                    query = int(str(request.GET.get('query' + str(count), '0')))
 
-                order_var = str(request.GET.get('order_var' + str(count), ''))
-                print order_var
-                variable = str(request.GET.get('col_var' + str(count), ''))
-                print variable
-                agg_function = str(request.GET.get('agg_func' + str(count), 'avg'))
+                    df = str(request.GET.get('df' + str(count), ''))
+                    print df
+                    notebook_id = str(request.GET.get('notebook_id' + str(count), ''))
 
-                lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
-                print lat_col
-                lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
-                print lon_col
+                    order_var = str(request.GET.get('order_var' + str(count), ''))
+                    print order_var
+                    variable = str(request.GET.get('col_var' + str(count), ''))
+                    print variable
+                    agg_function = str(request.GET.get('agg_func' + str(count), 'avg'))
 
-                color_col = str(request.GET.get('color_col' + str(count), ''))
-                m, extra_js = map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function,
-                                         lat_col, lon_col, color_col, m, request, cached_file)
-        except ObjectDoesNotExist:
-            pass
-        # Heatmap
-        try:
-            if (layer_id == Visualization.objects.get(view_name='map_heatmap').id):
-                query_pk, df, notebook_id = get_data_parameters(request, str(count))
-                cached_file, heat_col, lat_col, lon_col = get_heatmap_parameters(request, count)
-                m, extra_js = map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, cached_file, request)
-        except:
-            pass
+                    lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
+                    print lat_col
+                    lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
+                    print lon_col
 
-        if (extra_js != ""):
-            js_list.append(extra_js)
+                    color_col = str(request.GET.get('color_col' + str(count), ''))
+                    m, extra_js = map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function,
+                                             lat_col, lon_col, color_col, m, request, cached_file)
+            except ObjectDoesNotExist:
+                pass
+            # Heatmap
+            try:
+                if (layer_id == Visualization.objects.get(view_name='map_heatmap').id):
+                    query_pk, df, notebook_id = get_data_parameters(request, str(count))
+                    cached_file, heat_col, lat_col, lon_col = get_heatmap_parameters(request, count)
+                    m, extra_js = map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, cached_file, request)
+            except:
+                pass
+
+            if (extra_js != ""):
+                js_list.append(extra_js)
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     folium.LayerControl().add_to(m)
     m.save('templates/map1.html')
@@ -678,6 +686,20 @@ def get_plotline_query_data(query):
             lon_index = idx
     return data, lat_index, lon_index
 
+def get_map_plotline_vessel_query_data(query):
+    query_data = execute_query_method(query)
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+
+    time_index = lat_index = lon_index = -1
+    for idx, c in enumerate(result_headers['columns']):
+        if str(c['name']).find('latitude') >= 0:
+            lat_index = idx
+        elif str(c['name']).find('longitude') >= 0:
+            lon_index = idx
+        elif str(c['name']).find('time') >= 0:
+            time_index = idx
+    return data, lat_index, lon_index, time_index
 
 def get_map_query_data(query, variable, order_var, color_col):
     query_data = execute_query_method(query)
@@ -699,15 +721,11 @@ def get_map_query_data(query, variable, order_var, color_col):
     return data, lat_index, lon_index, var_index, order_var_index, color_index
 
 
-def load_modify_query_plotline_vessel(query_pk, variable, order_var, lat_col, lon_col, color_col, marker_limit, auto_order=False):
+def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
-
-
-
-    if auto_order == True and time_flag == False:
-        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    time_flag = platform_flag = lat_flag = lon_flag = False
 
     for f in doc['from']:
         for s in f['select']:
@@ -715,20 +733,42 @@ def load_modify_query_plotline_vessel(query_pk, variable, order_var, lat_col, lo
                 order_var = s['name']
                 s['groupBy'] = True
                 s['aggregate'] = 'date_trunc_minute'
+                time_flag = True
             elif (str(s['name']).find('platform_id') >= 0) and (s['exclude'] is not True):
+                platform_id_filtername = str(s['name'])
+                s['exclude'] = True
+                platform_flag = True
+            elif (str(s['name']).find('latitude') >= 0) and (s['exclude'] is not True):
+                s['exclude'] = False
                 s['groupBy'] = True
+                s['aggregate'] = 'round2'
+                lat_flag = True
+            elif (str(s['name']).find('longitude') >= 0) and (s['exclude'] is not True):
                 s['exclude'] = False
-            elif (str(s['name']).find(lat_col) >= 0) and (s['exclude'] is not True):
-                s['exclude'] = False
-            elif (str(s['name']).find(lon_col) >= 0) and (s['exclude'] is not True):
-                s['exclude'] = False
+                s['aggregate'] = 'round2'
+                s['groupBy'] = True
+                lon_flag = True
             else:
                 s['exclude'] = True
 
-    if order_var != '':
+    if not time_flag:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
         doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
-    if marker_limit != '':
-        doc['limit'] = marker_limit
+
+    if not platform_flag:
+        raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        if doc['filters'].__len__() == 0:
+            doc['filters'] = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
+        else:
+            alpha_argument = doc["filters"]
+            beta_argument = '{"a":"' + str(platform_id_filtername) + '", "b": '+ str(platform_id) + ', "op": "eq"}'
+            doc['filters'] = json.loads('{"a":"' + str(alpha_argument) + '", "b": ' + str(beta_argument) + ', "op": "AND"}')
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
 
     query.document = doc
     return query
@@ -781,6 +821,7 @@ def create_plotline_points(data, lat_index, lon_index):
     min_lon = 180
     max_lon = -180
 
+
     for s in data:
         points.append([float(s[lat_index]), float(s[lon_index])])
         if s[lat_index] > max_lat:
@@ -800,12 +841,12 @@ def create_plotline_points(data, lat_index, lon_index):
     return points, min_lat, max_lat, min_lon, max_lon
 
 
-def get_map_plotline_vessel_course(marker_limit, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
+def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
     dict = {}
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
-            query = load_modify_query_map(query_pk, '', '', 'latitude', 'longitude', '', marker_limit, True)
-            data, lat_index, lon_index, nu1, nu2, nu3 = get_map_query_data(query, '', '', '')
+            query = load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id)
+            data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
             points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
 
         elif df != '':
@@ -837,10 +878,10 @@ def get_map_plotline_vessel_course(marker_limit, query_pk, df, notebook_id, lat_
 
     pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(''), overlay=True,
                                               control=True).add_to(m)
-    folium.PolyLine(points, color='blue', weight=2.5, opacity=0.8,
+    folium.PolyLine(points, color=color, weight=2.5, opacity=0.8,
                     ).add_to(pol_group_layer)
 
-    create_plotline_arrows(points, m, pol_group_layer)
+    create_plotline_arrows(points, m, pol_group_layer, color)
     ret_html = ""
     return m, ret_html
 
@@ -2137,14 +2178,22 @@ def get_data_table(request):
 
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
-def create_plotline_arrows(points, m, pol_group_layer):
-    for i in range (1,len(points)):
-        arrows = get_arrows(m, 1, locations=[points[i-1], points[i]])
+def create_plotline_arrows(points, m, pol_group_layer, color):
+    last_arrow = folium.RegularPolygonMarker(location=[points[len(points) - 1][0], points[len(points) - 1][1]],
+                                             fill_color=color, number_of_sides=6,
+                                             radius=8).add_to(m)
+    last_arrow.add_to(pol_group_layer)
+    first_arrow = True
+    for i in range(1, len(points)):
+        arrows = get_arrows(m, 1, first_arrow, locations=[points[i-1], points[i]], color=color, size=7)
+        first_arrow = False
         for arrow in arrows:
             arrow.add_to(pol_group_layer)
 
 
-def get_arrows(m, n_arrows, locations, color='#68A7EE', size=6):
+
+
+def get_arrows(m, n_arrows, first_arrow, locations, color='#68A7EE', size=5):
     '''
     Get a list of correctly placed and rotated
     arrows/markers to be plotted
@@ -2165,9 +2214,14 @@ def get_arrows(m, n_arrows, locations, color='#68A7EE', size=6):
     p2 = Point(locations[1][0], locations[1][1])
     rotation = get_bearing(p1, p2) - 90
     arrows = []
-    arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
-                                                fill_color=color, number_of_sides=3,
-                                                radius=size, rotation=rotation).add_to(m))
+    if first_arrow:
+        arrows.append(folium.RegularPolygonMarker(location=[locations[0][0], locations[0][1]],
+                                                  fill_color=color, number_of_sides=6,
+                                                  radius=8, rotation=rotation).add_to(m))
+    else:
+        arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
+                                                    fill_color=color, number_of_sides=3,
+                                                    radius=size, rotation=rotation).add_to(m))
     return arrows
 
 

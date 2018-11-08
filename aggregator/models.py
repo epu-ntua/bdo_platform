@@ -9,7 +9,7 @@ from django.db import connection
 import math
 
 from netCDF4._netCDF4 import num2date
-
+from django.contrib.postgres.fields import JSONField
 
 DATASET_STORAGES = (
     ('LOCAL_POSTGRES', 'Local PostgreSQL instance'),
@@ -27,6 +27,7 @@ class Dataset(Model):
     table_name = CharField(max_length=200)
     private = BooleanField(default=False)
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
+    arguments = JSONField(default={})
 
     class Meta:
         ordering = ['-id']

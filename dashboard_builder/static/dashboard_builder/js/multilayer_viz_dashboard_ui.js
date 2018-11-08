@@ -135,9 +135,9 @@ $("#select_data_popover").click(function () {
                     var_select = null;
                     col_select = null;
                     flag = false;
-                    var selects_in_popover = '.popover-content #viz_' + component_id + ' .ui.dropdown';
+                    var selects_in_popover = '.popover-content #viz_' + component_id;
                     $(selects_in_popover).remove();
-                    $(component_selector).popover('dispose');
+                    $(component_selector).popover('destroy');
 
                 });
                 populate_selects();
@@ -170,12 +170,17 @@ $("#select_data_popover").click(function () {
             function updateVariables(element){
                 $('#myModal .variable-select').find('option').remove();
                 $('#myModal .variables-select ').find('option').remove();
+                $('#myModal .column-select ').find('option').remove();
+                $('#myModal .columns-select ').find('option').remove();
+                $('#myModal .ais-select ').find('option').remove();
                 var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
                 var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
+                var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
                 $('#myModal .variable-select ').html(variables_content);
                 $('#myModal .variables-select ').html(variables_content);
                 $('#myModal .column-select ').html(variables_content + dimensions_content);
                 $('#myModal .columns-select ').html(variables_content + dimensions_content);
+                $("#myModal .dataset-argument-select").html(dataset_arguments_content);
             }
             function populate_selects(){
 
@@ -234,6 +239,11 @@ $("#select_data_popover").click(function () {
                 });
                 $(".popover-content .select-select").dropdown('restore defaults');
 
+                $(".popover-content .dataset-argument-select").dropdown({
+                    placeholder: 'Select one of the chosen arguments'
+                });
+                $(".popover-content .dataset-argument-select").dropdown('restore defaults');
+
                 $(".control-label").css("margin-bottom","3px");
 
                 $(".popover-content .column-select").dropdown('setting','onChange',function () {
@@ -265,22 +275,25 @@ $("#select_data_popover").click(function () {
                     var_select = $(".popover-content .variable-select").dropdown('get value');
                     col_select = $(".popover-content .column-select").dropdown('get value');
                     flag = false;
-                    for (var i=0; i < selected_val.length; i++){
-                        if (selected_val[i] === var_select){
-                            $(".popover-content .variable-select").dropdown('clear');
-                            flag = true;
-                            selected_val = null;
-                            var_select = null;
+                    if (selected_val!==null && selected_val!=='' && selected_val!==undefined) {
+                        var limit = selected_val.length
+                        for (var i = 0; i < limit; i++) {
+                            if (selected_val[i] === var_select) {
+                                $(".popover-content .variable-select").dropdown('clear');
+                                flag = true;
+                                selected_val = null;
+                                var_select = null;
+                            }
+                            if (selected_val[i] === col_select) {
+                                $(".popover-content .column-select").dropdown('clear');
+                                flag = true;
+                                selected_val = null;
+                                col_select = null;
+                            }
                         }
-                        if(selected_val[i] === col_select){
-                            $(".popover-content .column-select").dropdown('clear');
-                            flag = true;
-                            selected_val = null;
-                            col_select = null;
+                        if ((selected_val !== '') && (selected_val !== null) && flag) {
+                            alert('Please choose a variable that is not already in use.');
                         }
-                    }
-                    if ((selected_val!=='') && (selected_val!==null) && flag){
-                        alert('Please choose a variable that is not already in use.');
                     }
                  })
             }
@@ -434,14 +447,13 @@ $("#select_data_popover").click(function () {
                 // PLOTLINE VESSEL COURSE
                 var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
                 var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #m_limit');
-                plotline_vessel_course_input.change(function () {
-                    if (plotline_vessel_course_input.val()>=1000){
-                        alert('Please set the limit below 1000.');
-                        plotline_vessel_course_input.val(999);
+                plotline_vessel_course_input.val(0);
+                plotline_vessel_course_input.on('input',function () {
+                    if (plotline_vessel_course_input.val()>=100 || plotline_vessel_course_input.val()<0){
+                        alert('Please set the limit below 100 and above 0.');
+                        plotline_vessel_course_input.val(0);
                     }
                 });
-
-
             }
         });
 

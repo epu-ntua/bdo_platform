@@ -213,6 +213,17 @@
                                 {% endfor %}
                             </div>
                         </div>
+                        <div id = "query-datasets-extra-arguments" hidden>
+                             {% for key,values in datasets_of_queries_lists.items %}
+                                    <div id={{ key }}>
+                                        {% for el in values %}
+                                            {% for argument in el.arguments.platform_id %}
+                                                <option value="{{ argument }}">{{ argument }}</option>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                            {% endfor %}
+                        </div>
 
 
                         <div class="row tab-pane fade" id="viz_note"></div>
