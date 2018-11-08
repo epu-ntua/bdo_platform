@@ -142,4 +142,10 @@ $(function() {
            $(this).closest(".dataset-section").find('.dataset_collapse_div').collapse("toggle");
        });
    })
+
+
+
+    // $("#dataset-filter-section select").change(function () {
+    //     jplist.refresh();
+    // });
 });

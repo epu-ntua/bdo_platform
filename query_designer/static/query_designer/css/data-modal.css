@@ -80,6 +80,38 @@
     color: white;
 }
 
+#select-data-modal .modal-body #dataset-filter-section input{
+    color: white;
+}
+
+#select-data-modal .form-group.is-focused .form-control {
+    outline: none;
+    background-image: linear-gradient(#fffcfe, #fef7ff), linear-gradient(rgba(210, 210, 210, 0.61), rgba(210, 210, 210, 0.6));
+    background-size: 100% 2px, 100% 1px;
+    box-shadow: none;
+    transition-duration: 0.3s;
+}
+
+#select-data-modal .form-group {
+    margin: 10px 0 0 0;
+}
+
+#select-data-modal .form-group label {
+    font-size: 14px;
+}
+
+#select-data-modal .checkbox label {
+    font-size: 14px;
+}
+
+#select-data-modal .checkbox .checkbox-material {
+    padding-left: 0;
+}
+
+#select-data-modal .checkbox input[type=checkbox]:not(:checked) + .checkbox-material .check {
+    background: white;
+}
+
 #select-data-modal .modal-body #dataset-info-section {
     height: 100%;
     background-color: #ececec;
