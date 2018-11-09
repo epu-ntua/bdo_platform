@@ -133,51 +133,42 @@
                         <div class="selection-body">
                             {% for dataset in datasets.all %}
                                 <div class="dataset_collapse_div dataset-section">
-                                    <div class="dataset-info">
-                                        <div class="dataset-name" id={{ dataset.id }}>
-                                            <div class="organization-div" hidden data-organization-id="{{ dataset.organization.id }}">
+                                    <div class="dataset-name" data-dataset-id="{{ dataset.id }}" data-selected>
+{#                                            <i class="fa fa-database"></i>#}
+                                        <div class="dataset-title">
+                                            {{ dataset.title }}
+                                        </div>
+                                        <div class="dataset-organization">
+                                            {{ dataset.organization.title }}
+                                        </div>
+                                    </div>
+                                    <div class="dataset-info hidden">
+                                        <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
+                                            <div class="dataset-title">
+                                                {{ dataset.title }}
+                                            </div>
+                                            <div class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">
                                                 {{ dataset.organization.title }}
                                             </div>
-                                            <i class="fa fa-database"></i>
-                                            <span class="dataset-title"
-                                                  title="show/hide variables">{{ dataset.title }}</span>
-                                            <div class="dimensions" hidden>
-                                                dimensions :
-                                                    {% for dim in dataset.variables.first.dimensions.all %}
-                                                        <span data-type="{{ dim.pk }}">{{ dim.name }}, </span>
-                                                    {% endfor %}
-                                            </div>
-                                            <div class="is-private" hidden data-dataset-private='{{ dataset.private }}'>
-                                                {{ dataset.private }}
-                                            </div>
-                                            <div class="has-time" hidden data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
-                                            </div>
-                                            <div class="has-depth" hidden data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
-                                            </div>
-
-                                            <div class="dataset-source" hidden>{{ dataset.source }} </div>
+                                            <span class="is-private hidden" data-dataset-private='{{ dataset.private }}'></span>
+                                            <span class="has-time hidden" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'></span>
+                                            <span class="has-depth hidden" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'></span>
                                         </div>
-                                        <div class="variables1" hidden>
+                                        <div class="dataset-variables-div" >
                                             {% for variable in dataset.variables.all %}
-                                                <div class="{{ variable.safe_name }}"></div>
                                                 <div class="variable-section" data-variable-name="{{ variable.safe_name }}">
-                                                    <div class="variable-name "
-                                                         hidden>{{ variable.safe_name }}</div>
-                                                    <div>
-                                                        <span class="variable-id " hidden>{{ variable.id }}</span>
-                                                        <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}</span>
-                                                        (<span class="variable-unit">{{ variable.unit }}</span>)
-                                                    </div>
-
-                                                    <div class="dimensions" hidden>
-                                                        {% for dimension in variable.dimensions.all %}
-                                                            <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}, </span>
-                                                        {% endfor %}
-                                                    </div>
+                                                    <span class="variable-id " hidden>{{ variable.id }}</span>
+                                                    <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}</span>
+                                                    (<span class="variable-unit">{{ variable.unit }}</span>)
                                                 </div>
-
                                             {% endfor %}
-
+                                        </div>
+                                        <div class="dataset-dimensions-div">
+                                            {% for dimension in dataset.variables.first.dimensions.all %}
+                                                <div class="dimension-section" data-dimension-name="{{ dimension.name }}">
+                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
+                                                </div>
+                                            {% endfor %}
                                         </div>
                                     </div>
                                 </div>
@@ -189,7 +180,27 @@
                     </div>
                     <div id="dataset-info-section" class="col-sm-4">
                         <h3>Dataset info</h3>
-                        <div class="collapse dataset1_info_div"></div>
+                        <div id="dataset_info_div" class="hidden">
+                            <div id="dataset_basic_info_div">
+
+                            </div>
+                            <div id="pills_div">
+                                <ul class="nav nav-pills nav-justified">
+                                  <li class="active"><a href="#dataset-variables-div" data-toggle="pill" >Variables</a></li>
+                                  <li><a href="#dataset-dimensions-div" data-toggle="pill" >Dimensions</a></li>
+                                </ul>
+                            </div>
+                            <div id="dataset_var_dim_div">
+                                <div class="tab-content">
+                                    <div id="dataset-variables-div" class="tab-pane fade in active">
+
+                                    </div>
+                                    <div id="dataset-dimensions-div" class="tab-pane fade">
+
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
                         <div class="selection-confirm">
                             <div class="col-xs-12 hidden">
                                 <div class="row">
@@ -225,14 +236,3 @@
         </div>
     </div>
 </div>
-
-<script src="{% static 'js/jquery-3.1.0.min.js' %}"></script>
-
-<script>
-
-
-    $(".org-title").click(function () {
-        $(this).closest(".org-section").find('.dataset_collapse_div').collapse("toggle");
-    });
-
-</script>

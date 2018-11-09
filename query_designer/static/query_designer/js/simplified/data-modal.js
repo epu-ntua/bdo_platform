@@ -1,84 +1,32 @@
 $(function() {
     var $modal = $('#select-data-modal');
 
-    /* Autocomplete */
-    $modal.find('#data-filter-search').on('keyup', function() {
-        var term = $(this).val().toLowerCase();
+     $(".dataset-section").click(function () {
+         // Update the selection
+         $(".dataset-section").not(this).attr("data-selected", "False");
+         $(this).attr("data-selected", "True");
 
-        // hide/show variables
-        $.each($modal.find('.variable-section'), function(idx, section) {
-            var $section = $(section);
+         var $datasetInfoDiv = $('#dataset_info_div');
+         // Empty the previous info
+         $datasetInfoDiv.find("#dataset_basic_info_div").empty();
+         $datasetInfoDiv.find("#dataset-variables-div").empty();
+         $datasetInfoDiv.find("#dataset-dimensions-div").empty();
+         // Append the new dataset info
+         // console.log($(this).find('.dataset-info'));
+         // console.log($(this).find($datasetInfoDiv));
+         $(this).find('.dataset-info .dataset-metadata').clone().appendTo($datasetInfoDiv.find("#dataset_basic_info_div"));
+         $(this).find('.dataset-info .dataset-variables-div').clone().appendTo($datasetInfoDiv.find("#dataset-variables-div"));
+         $(this).find('.dataset-info .dataset-dimensions-div').clone().appendTo($datasetInfoDiv.find("#dataset-dimensions-div"));
 
-            if ($section.text().toLowerCase().indexOf(term) >= 0) {
-                $section.removeClass('hidden')
-            } else {
-                $section.addClass('hidden')
-            }
-        });
-
-        // hide-show datasets
-        $.each($modal.find('.dataset-section'), function(idx, section) {
-            var $section = $(section);
-
-            if ($section.find('.variable-section').length === $section.find('.variable-section.hidden').length) {
-                $section.addClass('hidden')
-            } else {
-                $section.removeClass('hidden')
-            }
-        });
-
-        // hide-show no results
-        if ($modal.find('.variable-section:not(.hidden)').length === 0) {
-            $modal.find('.no-results').removeClass('hidden')
-        } else {
-            $modal.find('.no-results').addClass('hidden')
-        }
-    });
-
-    /* select variable */
-    window.getDataSelection = function() {
-        var dims = [];
-        $('#group-by-select option').each(function () {
-            dims.push({
-                value: $(this).val(),
-                title: $(this).text().split(',')[0]
-            })
-        });
-
-        var datasetInfoDivElem = $('.dataset1_info_div');
-        return {
-            value: datasetInfoDivElem.find('.variable-section.selected').find('.variable-name').text(),
-            title: datasetInfoDivElem.find('.variable-section.selected').find('.variable-title').text(),
-            id: datasetInfoDivElem.find('.variable-section.selected').find('.variable-id').text(),
-            unit: datasetInfoDivElem.find('.variable-section.selected').find('.variable-unit').text(),
-            aggregate: $('#selection-aggregate').val(),
-            groupBy: $('#group-by-select').val(),
-            dimensions: dims
-        }
-    };
-
-    $(".dataset-metadata-btn").click(function () {
-        $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
-    });
-
-
-     $(".dataset-title").click(function () {
-         var $dataset1InfoDiv = $('.dataset1_info_div');
-         $dataset1InfoDiv.find(".dataset-info").remove();
-        // $(this).clone().appendTo('.dataset1_info_div');
-        $(this).parent().parent().clone().appendTo('.dataset1_info_div');
-        $dataset1InfoDiv.get(0).classList.remove('collapse');
-         $dataset1InfoDiv.find(".dataset-info").find(".variables1").show();
-         $dataset1InfoDiv.find(".dataset-info").find(".dataset-name").find(".dimensions").show();
+         $datasetInfoDiv.removeClass("hidden");
     });
 
    $('.dataset1_info_div').on('click', ".variable-title", function() {
 
-       $modal.find('.variable-section').removeClass('selected');
-       $(this).parent().parent().addClass('selected');
+       $modal.find('.variable-section').removeClass('hidden');
        /* Select variable */
        $modal.find('.variable-section').on('click', function () {
-           $modal.find('.variable-section').removeClass('selected');
+           $modal.find('.variable-section').removeClass('hidden');
            $(this).addClass('selected');
 
            var $selectionCol = $('.selection-confirm > div');
@@ -134,18 +82,5 @@ $(function() {
                 dimensions: dims
             }
         };
-
-       $(".dataset-metadata-btn").click(function () {
-           $(this).parent().parent().find('.dataset-metadata').collapse("toggle");
-       });
-       $(".dataset-title").click(function () {
-           $(this).closest(".dataset-section").find('.dataset_collapse_div').collapse("toggle");
-       });
    })
-
-
-
-    // $("#dataset-filter-section select").change(function () {
-    //     jplist.refresh();
-    // });
 });
