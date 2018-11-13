@@ -144,31 +144,60 @@
                                     </div>
                                     <div class="dataset-info hidden">
                                         <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
-                                            <div class="dataset-title">
-                                                {{ dataset.title }}
-                                            </div>
-                                            <div class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">
-                                                {{ dataset.organization.title }}
-                                            </div>
-                                            <span class="is-private hidden" data-dataset-private='{{ dataset.private }}'></span>
-                                            <span class="has-time hidden" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'></span>
-                                            <span class="has-depth hidden" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'></span>
-                                        </div>
-                                        <div class="dataset-variables-div" >
-                                            {% for variable in dataset.variables.all %}
-                                                <div class="variable-section" data-variable-name="{{ variable.safe_name }}">
-                                                    <span class="variable-id " hidden>{{ variable.id }}</span>
-                                                    <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}</span>
-                                                    (<span class="variable-unit">{{ variable.unit }}</span>)
-                                                </div>
-                                            {% endfor %}
+                                            <table class="table table-condensed table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="col-sm-4">Property</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="dataset-title">
+                                                        <td>Title</td>
+                                                        <td>{{ dataset.title }}</td>
+                                                    </tr>
+                                                    <tr class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">
+                                                        <td>Organization</td>
+                                                        <td>{{ dataset.organization.title }}</td>
+                                                    </tr>
+                                                    <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
+                                                        <td>Private</td>
+                                                        <td>{{ dataset.private }}</td>
+                                                    </tr>
+                                                    <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
+
+                                                    </tr>
+                                                    <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                         <div class="dataset-dimensions-div">
-                                            {% for dimension in dataset.variables.first.dimensions.all %}
-                                                <div class="dimension-section" data-dimension-name="{{ dimension.name }}">
-                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
-                                                </div>
-                                            {% endfor %}
+                                            <ul class="list-group">
+                                                {% for dimension in dataset.variables.first.dimensions.all %}
+                                                    <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
+                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        <div class="dataset-variables-div">
+                                            <ul class="list-group">
+                                                {% for variable in dataset.variables.all %}
+                                                    <li class="variable-section list-group-item"
+                                                        data-variable-name="{{ variable.safe_name }}"
+                                                        data-variable-unit="{{ variable.unit }}"
+                                                        data-variable-id="{{ variable.id }}"
+                                                        data-variable-title="{{ variable.title }}"
+                                                        data-selected="False">
+                                                        <span class="variable-id " hidden>{{ variable.id }}</span>
+                                                        <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}
+                                                            (<span class="variable-unit">{{ variable.unit }}</span>)
+                                                            <span class="variable-check-icon pull-right"><i class="fas fa-check"></i></span>
+                                                        </span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
@@ -179,59 +208,79 @@
                             <div class="jplist-no-results">No Results Found</div>
                     </div>
                     <div id="dataset-info-section" class="col-sm-4">
-                        <h3>Dataset info</h3>
+                        <h3>Dataset Info</h3>
                         <div id="dataset_info_div" class="hidden">
                             <div id="dataset_basic_info_div">
 
                             </div>
                             <div id="pills_div">
                                 <ul class="nav nav-pills nav-justified">
-                                  <li class="active"><a href="#dataset-variables-div" data-toggle="pill" >Variables</a></li>
-                                  <li><a href="#dataset-dimensions-div" data-toggle="pill" >Dimensions</a></li>
+                                  <li class="active"><a href="#dataset_var_dim_div" data-toggle="pill" >Columns</a></li>
+                                  <li><a href="#dataset_metadata_div" data-toggle="pill" >Info</a></li>
                                 </ul>
                             </div>
-                            <div id="dataset_var_dim_div">
-                                <div class="tab-content">
-                                    <div id="dataset-variables-div" class="tab-pane fade in active">
-
+                            <div class="tab-content">
+                                <div id="dataset_var_dim_div" class="tab-pane fade in active">
+                                    <div class="panel-group">
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading" data-toggle="collapse" data-target="#dataset-dimensions-div">
+                                          <h4 class="panel-title">
+                                            <p>Dimensions</p>
+                                          </h4>
+                                        </div>
+                                        <div id="dataset-dimensions-div"  class="panel-collapse collapse">
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div id="dataset-dimensions-div" class="tab-pane fade">
-
+                                    <div class="panel-group">
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading" data-toggle="collapse" data-target="#dataset-variables-div">
+                                          <h4 class="panel-title">
+                                            <p>Variables</p>
+                                          </h4>
+                                        </div>
+                                        <div id="dataset-variables-div"  class="panel-collapse collapse in">
+                                        </div>
+                                      </div>
                                     </div>
                                 </div>
-                             </div>
-                        </div>
-                        <div class="selection-confirm">
-                            <div class="col-xs-12 hidden">
-                                <div class="row">
-                                    <div class="col-xs-8">
-                                        <label for="selection-aggregate">Aggregate</label>
-                                        <select id="selection-aggregate">
-                                            {% for aggregate in AGGREGATES %}
-                                                <option value="{{ aggregate.0 }}"
-                                                        {% if aggregate.0 == 'AVG' %} {# selected="selected"#}{% endif %}>
-                                                    {{ aggregate.1 }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
+                                <div id="dataset_metadata_div" class="tab-pane fade">
 
-                                        <div class="selection-group-by">
-                                            <label for="selection-aggregate">Group by</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-4">
-                                        <button id="selection-confirm-btn" class="btn btn-sm btn-primary">Add</button>
-                                        <button id="selection-close-btn" class="btn btn-sm btn-default">Close</button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
+{#                        <div class="selection-confirm">#}
+{#                            <div class="col-xs-12 hidden">#}
+{#                                <div class="row">#}
+{#                                    <div class="col-xs-8">#}
+{#                                        <label for="selection-aggregate">Aggregate</label>#}
+{#                                        <select id="selection-aggregate">#}
+{#                                            {% for aggregate in AGGREGATES %}#}
+{#                                                <option value="{{ aggregate.0 }}"#}
+{#                                                        {% if aggregate.0 == 'AVG' %} {% endif %}>#}
+{#                                                    {{ aggregate.1 }}#}
+{#                                                </option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{##}
+{#                                        <div class="selection-group-by">#}
+{#                                            <label for="selection-aggregate">Group by</label>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                    <div class="col-xs-4">#}
+{#                                        <button id="selection-confirm-btn" class="btn btn-sm btn-primary">Add</button>#}
+{#                                        <button id="selection-close-btn" class="btn btn-sm btn-default">Close</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
                     </div>
                 </div>
             </div>
 
             <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <span class="selection-confirm" hidden><button id="selection-confirm-btn" type="button" class="btn btn-primary" data-dismiss="modal">Add</button></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>

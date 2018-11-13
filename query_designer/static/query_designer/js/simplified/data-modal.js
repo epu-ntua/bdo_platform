@@ -11,76 +11,73 @@ $(function() {
          $datasetInfoDiv.find("#dataset_basic_info_div").empty();
          $datasetInfoDiv.find("#dataset-variables-div").empty();
          $datasetInfoDiv.find("#dataset-dimensions-div").empty();
+         $datasetInfoDiv.find("#dataset_metadata_div").empty();
          // Append the new dataset info
-         // console.log($(this).find('.dataset-info'));
-         // console.log($(this).find($datasetInfoDiv));
-         $(this).find('.dataset-info .dataset-metadata').clone().appendTo($datasetInfoDiv.find("#dataset_basic_info_div"));
+         $(this).find('.dataset-info .dataset-metadata').clone().appendTo($datasetInfoDiv.find("#dataset_metadata_div"));
          $(this).find('.dataset-info .dataset-variables-div').clone().appendTo($datasetInfoDiv.find("#dataset-variables-div"));
          $(this).find('.dataset-info .dataset-dimensions-div').clone().appendTo($datasetInfoDiv.find("#dataset-dimensions-div"));
+         $(this).find('.dataset-name').clone().appendTo($datasetInfoDiv.find("#dataset_basic_info_div"));
 
          $datasetInfoDiv.removeClass("hidden");
+
+         // Mark as selected the variables that are already added to the Query Designer
+         var included_vars = [];
+         $.each(QueryToolbox.variables, function (_, variable) {
+             included_vars.push(parseInt(variable.id));
+         });
+         $("#dataset-variables-div .variable-section").each(function (_, variable) {
+             if(included_vars.indexOf($(variable).data('variable-id')) >= 0){
+                 $(variable).attr({'data-selected': 'True'});
+                 $(variable).attr({'data-disabled': 'True'});
+             }
+             else{
+                 $(variable).attr({'data-selected': 'False'});
+                 $(variable).attr({'data-disabled': 'False'});
+             }
+        });
     });
 
-   $('.dataset1_info_div').on('click', ".variable-title", function() {
+   $('#dataset_info_div').on('click', ".variable-section[data-disabled='False']", function() {
+       /* Select/Unselect variable */
+       if($(this).attr('data-selected') === "False") {
+           $(this).attr({'data-selected': 'True'});
+       }
+       else{
+           $(this).attr({'data-selected': 'False'});
+       }
+       $(this).attr({'data-disabled': 'False'});
 
-       $modal.find('.variable-section').removeClass('hidden');
-       /* Select variable */
-       $modal.find('.variable-section').on('click', function () {
-           $modal.find('.variable-section').removeClass('hidden');
-           $(this).addClass('selected');
-
-           var $selectionCol = $('.selection-confirm > div');
-           $selectionCol.removeClass('hidden');
-           // $selectionCol.find('#selection-aggregate').val('AVG').trigger('change');
-           $selectionCol.find('#selection-aggregate').val(null).trigger('change');
-
-
-           // remove old group by
-           $('#group-by-select').remove();
-
-           // add group by options
-           var $gSelect = $('<select />')
-               .attr('id', 'group-by-select')
-               .attr('multiple', 'multiple');
-
-           $.each($(this).parent().parent().find('.dimensions > span'), function (idx, dimension) {
-               var $dimension = $(dimension);
-
-               var $opt = $('<option />')
-                   .attr('value', $dimension.data('type'))
-                   .text($dimension.text());
-
-               if ($dimension.text().toLowerCase().indexOf('time') >= 0) {
-                   $opt.attr('selected', 'selected');
-               }
-
-               $gSelect.append($opt);
-           });
-
-           // add & config plugin
-           $('.selection-group-by').append($gSelect);
-           $("#group-by-select").val(null).trigger('change');
-           $gSelect.select2();
-       });
+       if($("#dataset-variables-div .variable-section[data-selected='True']").length > 0 ) {
+           $('.selection-confirm').show();
+       }
+       else{
+           $('.selection-confirm').hide();
+       }
 
        window.getDataSelection = function() {
-            // Gather the dimensions of the selected variable
-            var dims = [];
-            $modal.find('.variable-section.selected').find('.dimensions span').each(function () {
-                dims.push({
-                    id: $(this).data('type'),
+           // Gather the dimensions of the selected variable
+           var dims = [];
+           $("#dataset-dimensions-div .dimension-section span").each(function (_, dim) {
+               dims.push({
+                    id: $(dim).data('type'),
                     title: $(this).data('name')
                 })
-            });
-            return {
-                id: $modal.find('.variable-section.selected').find('.variable-id').text(),
-                name: $modal.find('.variable-section.selected').find('.variable-name').text(),
-                title: $modal.find('.variable-section.selected').find('.variable-title').text(),
-                unit: $modal.find('.variable-section.selected').find('.variable-unit').text(),
-                aggregate: $modal.find('#selection-aggregate').val(),
-                groupBy: $modal.find('#group-by-select').val(),
-                dimensions: dims
-            }
-        };
+           });
+
+           var selection = [];
+           $("#dataset-variables-div .variable-section[data-selected='True']").each(function (_, variable) {
+               selection.push({
+                    id: $(variable).data('variable-id'),
+                    name: $(variable).data('variable-name'),
+                    title: $(variable).data('variable-title'),
+                    unit: $(variable).data('variable-unit'),
+                    aggregate: null,
+                    groupBy: null,
+                    dimensions: dims
+                })
+           });
+           // console.log(selection);
+           return selection;
+       };
    })
 });

@@ -10,8 +10,56 @@ $(function() {
     /* Add a variable from the data selection modal */
     $('#selection-confirm-btn').on('click', function() {
         // The new variable to be added for query
-        var newVariable = window.getDataSelection();
+        var selection = window.getDataSelection();
+        var included_vars = [];
+        $.each(QueryToolbox.variables, function (_, variable) {
+            included_vars.push(parseInt(variable.id));
+        });
+        $.each(selection, function (_, newVariable) {
+            if(included_vars.indexOf(newVariable.id) < 0){
+                // Get the area of the Query Desinger where the new variable field will be added
+                var $chartControls = $('#chart-control-list > .chart-control');
+                // Add the label
+                var label = 'Metric #<span class="metric-cnt">' + (QueryToolbox.variables.length + 1) + '</span>';
+                var obj = QueryToolbox.objects[0];
 
+                // The new variable field
+                var $fieldset = QueryToolbox.addVariableField({
+                    choices: obj.chartPolicy.variables,
+                    label: label,
+                    name: newVariable.name,
+                    title: newVariable.title,
+                    id: newVariable.id,
+                    unit: newVariable.unit,
+                    dimensions: newVariable.dimensions,
+                    canDelete: true
+                });
+
+                // Select2 for the aggregation function
+                $fieldset.find('select').select2();
+                // add the new variable field
+                $chartControls.append($fieldset);
+                // show other query controls if at least one variable is selected
+                if ($chartControls.find('> *').length > 0) {
+                    $('.after-data-selection').each(function () {
+                        $(this).show();
+                    });
+                }
+
+                QueryToolbox.variables.push({
+                    id: newVariable.id,
+                    name: newVariable.name,
+                    title: newVariable.title,
+                    unit: newVariable.unit,
+                    aggregate: newVariable.aggregate,
+                    dimensions: newVariable.dimensions
+                });
+            }
+        });
+        // console.log(QueryToolbox.variables);
+
+        // Update all the Query Designer fields (groupby, orderby, resolutions, filters according to the new set of selected variables
+        updateQDfields();
 
         /**
          * creates a hashmap with the dimension name as key and its frequency as value
@@ -54,80 +102,45 @@ $(function() {
                    $(this).remove();
            });
         }
-
-
-
-        // Get the area of the Query Desinger where the new variable field will be added
-        var $chartControls = $('#chart-control-list > .chart-control');
-        // Add the label
-        var label = 'Metric #<span class="metric-cnt">' + (QueryToolbox.variables.length+1) + '</span>';
-        var obj = QueryToolbox.objects[0];
-
-        // The new variable field
-        var $fieldset = QueryToolbox.addVariableField({
-            choices: obj.chartPolicy.variables,
-            label: label,
-            name: newVariable.name,
-            title: newVariable.title,
-            id: newVariable.id,
-            unit: newVariable.unit,
-            dimensions: newVariable.dimensions,
-            canDelete: true
-        });
-
-        QueryToolbox.variables.push({
-            id: newVariable.id,
-            name: newVariable.name,
-            title: newVariable.title,
-            unit: newVariable.unit,
-            aggregate: newVariable.aggregate,
-            dimensions: newVariable.dimensions
-        });
-        // console.log(QueryToolbox.variables);
-
-        // Update all the Query Designer fields (groupby, orderby, resolutions, filters according to the new set of selected variables
-        updateQDfields();
-
-
         //if dimension is not included in all datasets then it is not desired
         removeUndesiredOrderByOptions();
 
-
-        // add if any group by column was selected in the modal
-        // var v = $category.val();
-        // $.each(newVariable.groupBy, function (idx, f) {
-        //     v.push(f);
-        // });
-        // $category.val(v).trigger('change.select2');
-
-
-
-        // Select2 for the aggregation function
-        $fieldset.find('select').select2();
-        // add the new variable field
-        $chartControls.append($fieldset);
-        // show other query controls if at least one variable is selected
-        if($chartControls.find('> *').length>0) {
-            $('.after-data-selection').each(function () {
-                $(this).show();
-            });
-        }
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
-
-        // close popup
-        $(".variable-list .selected").removeClass("selected");
-        $("#selection-aggregate").val(null).trigger('change');
-        $("#group-by-select").val(null).trigger('change');
-
     });
 
     /* When the data selection modal closes, hide the confirmation panel at the bottom of the panel */
-    $('#select-data-modal').on('dialogclose', function(event) {
-        $('.selection-confirm .col-xs-12').addClass('hidden');
+    $('#select-data-modal').on('hidden.bs.modal', function() {
+        // Clear the modal selection
+        // $("#select-data-modal .dataset-section").attr("data-selected", "False");
+        // var $datasetInfoDiv = $('#dataset_info_div');
+        //  // Empty the previous info
+        //  $datasetInfoDiv.find("#dataset_basic_info_div").empty();
+        //  $datasetInfoDiv.find("#dataset-variables-div").empty();
+        //  $datasetInfoDiv.find("#dataset-dimensions-div").empty();
+        //  $datasetInfoDiv.find("#dataset_metadata_div").empty();
+        //  $datasetInfoDiv.addClass("hidden");
+        //  $(".selection-confirm").hide()
     });
 
 
+    $('#select-data-modal').on('show.bs.modal', function() {
+         // Mark as selected the variables that are already added to the Query Designer
+         var included_vars = [];
+         $.each(QueryToolbox.variables, function (_, variable) {
+             included_vars.push(parseInt(variable.id));
+         });
+         $("#dataset-variables-div .variable-section").each(function (_, variable) {
+             if(included_vars.indexOf($(variable).data('variable-id')) >= 0){
+                 $(variable).attr({'data-selected': 'True'});
+                 $(variable).attr({'data-disabled': 'True'});
+             }
+             else{
+                 $(variable).attr({'data-selected': 'False'});
+                 $(variable).attr({'data-disabled': 'False'});
+             }
+        });
+    });
 
 
     // *** OPEN - LOAD - SAVE - RENAME QUERY *** //

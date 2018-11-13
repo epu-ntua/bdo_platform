@@ -64,6 +64,7 @@
 #select-data-modal .modal-body #dataset-list-section {
     border-right: ridge #ffffffb5;
     height: 100%;
+    overflow-y: auto;
 }
 
 #select-data-modal .modal-body #dataset-filter-section {
@@ -155,6 +156,11 @@
     font-size: 80%;
 }
 
+#select-data-modal #dataset-info-section #dataset-variables-div tr:hover{
+    cursor: pointer;
+    background-color: #ececec;
+}
+
 .checkbox .checkbox-material:before {
      left: 0;
      top: 0;
@@ -183,30 +189,59 @@
     margin-bottom: 1px;
 }
 
-.variable-section, .dimension-section {
-    margin: 0 0 0 20px;
-    padding: 5px;
-    border: 1px solid #fff;
-    cursor: pointer;
-    height: 40px;
-    /* min-width: 100%; */
+#select-data-modal #dataset_info_div .dimension-section,
+#select-data-modal #dataset_info_div .variable-section{
+    border: none;
 }
 
-#dataset_info_div .dataset-title{
+#select-data-modal #dataset_info_div .variable-section{
+    cursor: pointer;
+}
+
+#select-data-modal #dataset_info_div .variable-section:hover {
+    background-color: #ececec;
+}
+
+#select-data-modal #dataset_info_div .variable-section[data-selected="False"]:hover  i.fa-check{
+    display: inline-block;
+}
+
+#select-data-modal #dataset_info_div .variable-section[data-selected="True"]{
+    background-color: #2a8898;
+    color: white;
+}
+
+#select-data-modal #dataset_info_div .variable-section[data-disabled="True"]{
+    background-color: #9fbabd;
+}
+
+#select-data-modal #dataset_info_div .variable-section[data-selected="False"] i{
+    display: none;
+}
+
+#select-data-modal #dataset_info_div .variable-section[data-selected="True"] i.fa-check{
+    display: inline-block;
+}
+
+#dataset_info_div #dataset_basic_info_div .dataset-title{
     text-align: center;
     font-size: 150%;
     font-weight: bold;
     margin-bottom: 2%;
 }
 
-#dataset_info_div .dataset-organization{
+#dataset_info_div #dataset_basic_info_div .dataset-organization{
     text-align: center;
     font-size: 100%;
     margin-bottom: 2%;
 }
 
 #dataset_info_div #pills_div{
-    margin-top: 3%;
+    margin: 3%;
+}
+
+#select-data-modal #dataset_info_div #dataset_var_dim_div .panel-heading:hover{
+    cursor: pointer;
 }
 
 .selection-body {
@@ -232,6 +267,10 @@
 
 
 #dataset_info_div {
-    height: 80%;
+    height: 92%;
     overflow-y: auto;
+}
+
+.dataset-metadata .table thead th{
+    font-weight: bold !important;
 }
