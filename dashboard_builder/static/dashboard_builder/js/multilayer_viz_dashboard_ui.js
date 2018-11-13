@@ -6,14 +6,19 @@ $("#select_data_popover").click(function () {
         var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
         // {#Function to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
+            var viz_success = null;
             var selected_val = null;
             var var_list = null;
             var var_select = null;
             var col_select = null;
             var flag = false;
 
-            $('#submit-modal-btn').show();
             $('#layers-list ul').empty();
+            $('#layers-list').dropdown();
+            $('#layers-list-title-button').click(function () {
+                $('#layers-list').trigger('click');
+            })
+
             $("#query_name_span").text(null);
             var layer_count = 0;
             var layer_json = [];
@@ -21,7 +26,12 @@ $("#select_data_popover").click(function () {
             var selected_visualization = null;
             var first_time = true ;
             var vis_created_flag = false;
-            $("#add_layer_btn").click(function () {
+
+            $("#new_widget_btn").click(function () {
+                $('#submit-modal-btn').hide();
+            })
+            $("#add_layer_btn").parent().click(function () {
+                $(this).hide();
                 if((new_query_id!=null)&&(selected_visualization!=null)) {
                     alert("Layer is now saved. Please add a new layer!");
                     $("#viz_config").find("ul").children().each(function (index) {
@@ -41,21 +51,22 @@ $("#select_data_popover").click(function () {
                             layer_json[i][key] = obj[key];
                         }
                     }
-                    $("#layers-list ul").append('<li class="layer_list_element" id='+String(layer_count)+' role=\"presentation\"><a class="col-10" style="display:inline;pointer-events:none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query ID: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</a><button id=btn'+String(layer_count)+' style="display: inline; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
-                    $(".layer_list_element #btn"+String(layer_count)).click(function () {
+                    $("#layers-list ul").append('<li class="layer_list_element item" id=layer_list_element'+String(layer_count)+' style="pointer-events: none" role=\"presentation\"><span  class="col-10 " style="display:inline; margin-right: 5px; pointer-events: none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query Name: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</span><button id=layer_list_element_btn'+String(layer_count)+' style="display: inline; pointer-events: auto!important; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
+                    $(".layer_list_element #layer_list_element_btn"+String(layer_count)).click(function () {
                          $("#viz_config .list-group").children().each(function () {
                                 $(this).find("#selected_viz_span").hide();
-                            })
-                        var del_id = String(parseInt($(this).closest('li').attr('id')));
+                         })
+                        var del_id = $(this).closest('li').attr('id');
                         for (var i = 0; i < layer_json.length; i++) {
                             var obj = layer_json[i];
-                            if (obj['layer_id']==del_id){
+                            alert(del_id.split('layer_list_element')[1]);
+                            if (obj['layer_id']==del_id.split('layer_list_element')[1]){
                                 layer_count = layer_count-1;
                                 layer_json.splice(i,1);
                                 $(this).closest('li').remove();
                                 for(var j = i ; j < layer_json.length; j++){
-                                    $(".layer_list_element #btn"+String(j+1)).closest('li').attr('id',String(j));
-                                    $(".layer_list_element #btn"+String(j+1)).attr('id','btn'+String(j));
+                                    $(".layer_list_element #layer_list_element_btn"+String(j+1)).closest('li').attr('id',String(j));
+                                    $(".layer_list_element #layer_list_element_btn"+String(j+1)).attr('id','btn'+String(j));
                                     obj = layer_json[j];
                                     layer_json[j]['layer_id'] = layer_json[j]['layer_id']-1;
                                 }
@@ -78,11 +89,13 @@ $("#select_data_popover").click(function () {
                 $('#submit-modal-btn').hide();
                 if(textEditor == null) {
                     textEditor = CKEDITOR.appendTo('viz_note');
-                    }
+                }
             });
             $("#myModal #modal-tab-data").click(function (e) {
                 $('#submit-note-btn').hide();
-                $('#submit-modal-btn').show();
+                if(vis_created_flag) {
+                    $('#submit-modal-btn').show();
+                }
             });
             $("#myModal #select_data_popover").popover({
                 html: true,
@@ -95,15 +108,12 @@ $("#select_data_popover").click(function () {
                 $(this).popover('toggle');
                 $('.popover-content .form-group #query-select').dropdown();
 
-                $('.popover-content #query-select').on('change', function () {
-                    new_query_id = $(this).children(":selected").attr("id");
-                    var new_query_doc = $('#new_query_doc').val();
-                    $('#myModal #selected_query').val(new_query_id);
-                    updateVariables(this);
-                });
                 $('.popover-content #select_data_ok').click(function (e) {
+                    new_query_id = $(".popover-content #query-select").dropdown('get value');
+                    var new_query_text = $(".popover-content #query-select").dropdown('get text');
+                    $('#myModal #selected_query').val(new_query_id);
                     $('#query_name_span').show();
-                    $('#query_name_span').text(new_query_id);
+                    $('#query_name_span').text(new_query_text);
                     $('#myModal #select_data_popover').popover("hide");
                     $('#viz_config').show();
                     $(".list-group").css('visibility','visible');
@@ -150,15 +160,7 @@ $("#select_data_popover").click(function () {
                         $(this).find("#selected_viz_span").hide();
                     })
                     $(component_selector).find("#selected_viz_span").show();
-                    if (component_type == 'map') {
-                        $('#add_layer_btn').show();
-                        $('#layers-list').show();
-                        $('#layers-list').css("display", "inline");
-                    }
-                    else {
-                        $('#add_layer_btn').hide();
-                        $('#layers-list').hide();
-                    }
+
                     submit_conf(component_selector, component_type);
                     $(component_selector).popover("hide");
                 });
@@ -184,18 +186,18 @@ $("#select_data_popover").click(function () {
             }
             function populate_selects(){
 
-                $('#use_existing_temp_res').parent().checkbox().first().checkbox({
+                $('.popover-content #use_existing_temp_res').parent().checkbox().first().checkbox({
                     onChecked: function(){
-                        $('#temporal_resolution').parent().addClass('disabled');
+                        $('.popover-content #temporal_resolution').parent().addClass('disabled');
                     },
                     onUnchecked: function () {
-                        $('#temporal_resolution').parent().removeClass('disabled');
+                        $('.popover-content #temporal_resolution').parent().removeClass('disabled');
                     }
                 });
 
-                $('.checkbox').parent().removeClass('form-group label-floating');
+                $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
 
-                $('#select_all_columns').parent().checkbox().first().checkbox({
+                $('.popover-content #select_all_columns').parent().checkbox().first().checkbox({
                     onChecked: function(){
                         const options = $('.popover-content .columns-select #column_choice> option').toArray().map(
                         (obj) => obj.value
@@ -320,6 +322,7 @@ $("#select_data_popover").click(function () {
                     viz_request += '?';
                     viz_request += myData;
                     viz_request += '&query=' + $('#myModal #selected_query').val();
+                    vis_created_flag = true;
                     show_viz(viz_request);
                 }
                 else{
@@ -383,10 +386,21 @@ $("#select_data_popover").click(function () {
                 $("#viz_container").html('<div class="loadingFrame"><img src="' + img_source_path + '"/></div><iframe class="iframe-class" id="viz-iframe" ' +
                     'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
                     '></iframe>');
+
+
                 $('#myModal #submit-modal-btn').show();
                 $("#myModal #viz_container .loadingFrame").css( "display", "block" );
                 $("#myModal #viz_container iframe").on( "load", function(){
                     $(this).siblings(".loadingFrame").css( "display", "none" );
+                    var execution_flag = $(this).contents().find('.visualisation_execution_input').val();
+                    if (execution_flag === 'success'){
+                        $('#add_layer_btn').parent().show();
+                        $('#layers-list').parent().show();
+                    }
+                    else{
+                        $('#add_layer_btn').parent().hide();
+                        $('#layers-list').parent().hide();
+                    }
                 });
             }
             $("#dismiss-modal-btn").click(function m(e) {
@@ -399,8 +413,8 @@ $("#select_data_popover").click(function () {
             });
 
             $("#myModal #submit-modal-btn").click(function () {
-                if (vis_created_flag!=false){
-                refresh_visualisation_modal();
+                if (vis_created_flag!==false){
+                    refresh_visualisation_modal();
                 }else{
                     alert('Please create a Visualisation first.')
                 }
@@ -417,8 +431,8 @@ $("#select_data_popover").click(function () {
                 selected_visualization = null;
                 first_time = true ;
                 vis_created_flag = false;
-                $('#add_layer_btn').hide();
-                $('#layers-list').hide();
+                $('#add_layer_btn').parent().hide();
+                $('#layers-list').parent().hide();
                 $("#viz_config .list-group").children().each(function () {
                     $(this).find("#selected_viz_span").hide();
                 });
@@ -446,14 +460,40 @@ $("#select_data_popover").click(function () {
 
                 // PLOTLINE VESSEL COURSE
                 var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
-                var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #m_limit');
-                plotline_vessel_course_input.val(0);
+                var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
+                plotline_vessel_course_input.val(1);
                 plotline_vessel_course_input.on('input',function () {
-                    if (plotline_vessel_course_input.val()>=100 || plotline_vessel_course_input.val()<0){
-                        alert('Please set the limit below 100 and above 0.');
-                        plotline_vessel_course_input.val(0);
+                    if (plotline_vessel_course_input.val()>=100 || plotline_vessel_course_input.val()<1){
+                        alert('Please set the limit of plotline points below 100 and above 0.');
+                        plotline_vessel_course_input.val(1);
                     }
                 });
+                // POLYGON LINE
+                var polygon_id = $('#viz_config ul li[data-viz-name="get_map_polygon"]').attr('data-viz-id');
+                var polygon_input = $('.popover-content #viz_'+polygon_id+' #points_limit');
+                polygon_input.val(1);
+                polygon_input.on('input',function () {
+                    if ( polygon_input.val()>=100000 ||  polygon_input.val()<1){
+                        alert('Please set the limit of polygon points below 100000 and above 0.');
+                         polygon_input.val(1);
+                    }
+                });
+                //HEATMAP
+                var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
+                var heatmap_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
+                heatmap_input.val(1);
+                heatmap_input.on('input',function () {
+                    if ( heatmap_input.val()>=1000 || heatmap_input.val()<1){
+                        alert('Please set the limit of heatmap points below 1000 and above 0.');
+                        heatmap_input.val(1);
+                    }
+                });
+                var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
+                heatmap_col_select.append('<option value="heatmap_frequency">Frequency</option>');
+                heatmap_col_select.dropdown('refresh');
+                heatmap_col_select.parent().dropdown('clear');
+
+
             }
         });
 

@@ -6,6 +6,7 @@ from django.db import connection, connections
 from rest_framework.views import APIView
 from forms import MapForm
 import time
+from django.db import ProgrammingError
 
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -71,13 +72,36 @@ def create_map():
         force_separate_button=True).add_to(m)
     return m
 
+def get_contour_parameters(request, count):
+    cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
+    n_contours = str(request.GET.get('n_contours' + str(count), 20))
+    try:
+        n_contours = int(n_contours)
+    except ValueError:
+        raise ValueError('Number of contours is not valid.')
+    step = str(request.GET.get('step' + str(count), 0.1))
+    try:
+        step = float(step)
+    except ValueError:
+        raise ValueError('Step is not valid.')
+    variable = str(request.GET.get('contour_var' + str(count), ''))
+    if variable == '':
+        raise ValueError('A variable has to be selected for the contours to be created on the map.')
+
+    agg_function = str(request.GET.get('agg_func', 'avg'))
+    if not agg_function.lower() in AGGREGATE_VIZ:
+        raise ValueError('The given aggregate function is not valid.')
+
+    return cached_file, n_contours, step, variable, agg_function
+
+
 def get_plotline_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
     platform_id = int(request.GET.get("platform_id" + str(count), 0))
     color = str(request.GET.get('plotline_color' + str(count), 'blue'))
     if color not in FOLIUM_COLORS:
         raise ValueError('The chosen color is not supported.')
-    marker_limit = str(request.GET.get("m_limit" + str(count), '1'))
+    marker_limit = str(request.GET.get("points_limit" + str(count), '1'))
     try:
         marker_limit = int(marker_limit)
     except ValueError:
@@ -93,7 +117,16 @@ def get_heatmap_parameters(request, count):
     lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
     lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
     heat_col = str(request.GET.get('heat_col' + str(count), ''))
-    return cached_file, heat_col, lat_col,lon_col
+    if heat_col == '':
+        raise ValueError('The heatmap variable has to be selected.')
+    heat_points_limit = str(request.GET.get("points_limit" + str(count), '1'))
+    try:
+        heat_points_limit = int(heat_points_limit)
+    except ValueError:
+        raise ValueError('Number of heatmap points is not valid.')
+    if heat_points_limit <= 0:
+        raise ValueError('Number of heatmap points has to be a positive number.')
+    return cached_file, heat_col, heat_points_limit, lat_col,lon_col
 
 def map_visualizer(request):
     m = create_map()
@@ -111,27 +144,40 @@ def map_visualizer(request):
                 layer_id = int(request.GET.get("viz_id" + str(count)))
             except ValueError:
                 raise ValueError('Visualisation ID of layer ' + str(count) + 'is not valid.')
+
+            query_pk, df, notebook_id = get_data_parameters(request, str(count))
             # Plotline VesselCourse
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_plotline_vessel_course').id):
-                    query_pk, df, notebook_id = get_data_parameters(request, str(count))
                     cached_file, marker_limit, platform_id, color, lat_col, lon_col = get_plotline_parameters(request, count)
                     m, extra_js = get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col,
                                                lon_col, m, request, cached_file)
             except ObjectDoesNotExist:
                 pass
+            # Map Polygon - Line
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_polygon').id):
+                    cached_file, marker_limit, null_var1, color, lat_col, lon_col = get_plotline_parameters(
+                        request, count)
+                    m, extra_js = get_map_polygon(marker_limit, color, query_pk, df,
+                                                                 notebook_id, lat_col,
+                                                                 lon_col, m, request, cached_file)
+            except ObjectDoesNotExist:
+                pass
+            # Heatmap
+            try:
+                if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id:
+                    cached_file, heat_col, heat_points_limit, lat_col, lon_col = get_heatmap_parameters(request,
+                                                                                                        count)
+                    m, extra_js = get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col,
+                                                  heat_points_limit, m, cached_file, request)
+            except ObjectDoesNotExist:
+                pass
             # Contours
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
-                    print ('Contours')
-                    # Gather the arguments
-                    cached_file = str(request.GET.get('cached_file_id' + str(count), ''))
-                    n_contours = int(request.GET.get('n_contours' + str(count), 20))
-                    step = float(request.GET.get('step' + str(count), 0.1))
-                    variable = str(request.GET.get('feat_1' + str(count), ''))
-                    query = str(request.GET.get('query' + str(count), ''))
-                    agg_function = str(request.GET.get('agg_func' + str(count), 'avg'))
-                    m, extra_js, old_map_id = map_viz_folium_contour(n_contours, step, variable, query, agg_function, m,
+                    cached_file, n_contours, step, variable, agg_function = get_contour_parameters(request, count)
+                    m, extra_js, old_map_id = get_map_contour(n_contours, step, variable, query_pk, agg_function, m,
                                                                      cached_file)
                     old_map_id_list.append(old_map_id)
             except ObjectDoesNotExist:
@@ -164,14 +210,6 @@ def map_visualizer(request):
                     m, extra_js = map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_function,
                                              lat_col, lon_col, color_col, m, request, cached_file)
             except ObjectDoesNotExist:
-                pass
-            # Heatmap
-            try:
-                if (layer_id == Visualization.objects.get(view_name='map_heatmap').id):
-                    query_pk, df, notebook_id = get_data_parameters(request, str(count))
-                    cached_file, heat_col, lat_col, lon_col = get_heatmap_parameters(request, count)
-                    m, extra_js = map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, cached_file, request)
-            except:
                 pass
 
             if (extra_js != ""):
@@ -225,13 +263,13 @@ def map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_fu
                 for s in f['select']:
                     if s['name'] == variable:
                         s['exclude'] = False
-                    elif str(s['name']) == order_var:
+                    elif s['name'] == order_var:
                         s['exclude'] = False
-                    elif str(s['name']) == color_col:
+                    elif s['name'] == color_col:
                         s['exclude'] = False
-                    elif str(s['name']).find(lat_col) >= 0:
+                    elif s['name'] == lat_col:
                         s['exclude'] = False
-                    elif str(s['name']).find(lon_col) >= 0:
+                    elif s['name'] == lon_col:
                         s['exclude'] = False
                     else:
                         s['exclude'] = True
@@ -247,13 +285,13 @@ def map_course(marker_limit, query, df, notebook_id, order_var, variable, agg_fu
             for idx, caa in enumerate(result_headers['columns']):
                 if caa['name'] == variable:
                     var_index = idx
-                elif str(caa['name']) == order_var:
+                elif caa['name'] == order_var:
                     order_var_index = idx
-                elif str(caa['name']).find(lat_col) >= 0:
+                elif caa['name'] == lat_col:
                     lat_index = idx
-                elif str(caa['name']).find(lon_col) >= 0:
+                elif caa['name'] == lon_col:
                     lon_index = idx
-                elif str(caa['name']) == color_col:
+                elif caa['name'] == color_col:
                     color_index = idx
 
             list_data = []
@@ -674,49 +712,85 @@ def map_course_mt(request):
 
 
 def get_plotline_query_data(query):
-    query_data = execute_query_method(query)
+    try:
+        query_data = execute_query_method(query)
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
 
     lat_index = lon_index = -1
     for idx, c in enumerate(result_headers['columns']):
-        if str(c['name']).find('lat') >= 0:
+        if c['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
-        elif str(c['name']).find('lon') >= 0:
+        elif c['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
     return data, lat_index, lon_index
 
 def get_map_plotline_vessel_query_data(query):
-    query_data = execute_query_method(query)
+    try:
+        query_data = execute_query_method(query)
+    except:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
 
     time_index = lat_index = lon_index = -1
     for idx, c in enumerate(result_headers['columns']):
-        if str(c['name']).find('latitude') >= 0:
+        print c['name']
+        if c['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
-        elif str(c['name']).find('longitude') >= 0:
+        elif c['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
-        elif str(c['name']).find('time') >= 0:
+        elif c['name'].split('_', 1)[1] == 'time':
             time_index = idx
     return data, lat_index, lon_index, time_index
 
+def get_heatmap_query_data(query, heat_variable):
+    try:
+        query_data = execute_query_method(query)
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+
+    heat_var_index = lat_index = lon_index = -1
+    heat_col_flag = False
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'].split('_', 1)[1] == 'latitude':
+            lat_index = idx
+        elif c['name'].split('_', 1)[1] == 'longitude':
+            lon_index = idx
+        elif c['name'] == heat_variable:
+            heat_var_index = idx
+            heat_col_flag = True
+    if not heat_col_flag:
+        if heat_variable != 'heatmap_frequency':
+            raise ValueError('The heatmap variable must be either a variable from the selected query or "Frequency".')
+    return data, lat_index, lon_index, heat_var_index
+
+
+
+
 def get_map_query_data(query, variable, order_var, color_col):
-    query_data = execute_query_method(query)
+    try:
+        query_data = execute_query_method(query)
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
 
     var_index = order_var_index = color_index = lat_index = lon_index = -1
     for idx, c in enumerate(result_headers['columns']):
-        if str(c['name']).find('latitude') >= 0:
+        if c['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
-        elif str(c['name']).find('longitude') >= 0:
+        elif c['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
         elif c['name'] == variable:
             var_index = idx
-        elif str(c['name']) == order_var:
+        elif c['name'] == order_var:
             order_var_index = idx
-        elif str(c['name']) == color_col:
+        elif c['name'] == color_col:
             color_index = idx
     return data, lat_index, lon_index, var_index, order_var_index, color_index
 
@@ -729,21 +803,21 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
 
     for f in doc['from']:
         for s in f['select']:
-            if (str(s['name']).find('time') >= 0) and (s['exclude'] is not True):
+            if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name']
                 s['groupBy'] = True
                 s['aggregate'] = 'date_trunc_minute'
                 time_flag = True
-            elif (str(s['name']).find('platform_id') >= 0) and (s['exclude'] is not True):
+            elif (s['name'].split('_', 1)[1] == 'platform_id') and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
                 s['exclude'] = True
                 platform_flag = True
-            elif (str(s['name']).find('latitude') >= 0) and (s['exclude'] is not True):
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['groupBy'] = True
                 s['aggregate'] = 'round2'
                 lat_flag = True
-            elif (str(s['name']).find('longitude') >= 0) and (s['exclude'] is not True):
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['aggregate'] = 'round2'
                 s['groupBy'] = True
@@ -773,6 +847,31 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
     query.document = doc
     return query
 
+def load_modify_query_polygon(query_pk, marker_limit):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    lat_flag = lon_flag = False
+
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                lon_flag = True
+            else:
+                s['exclude'] = True
+
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
 
 def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color_col, marker_limit, auto_order=False):
     query = AbstractQuery.objects.get(pk=query_pk)
@@ -783,7 +882,7 @@ def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color
     if auto_order == True:
         for f in doc['from']:
             for s in f['select']:
-                if (str(s['name']).find('time') >= 0) and (s['exclude'] is not True):
+                if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                     order_var = s['name']
                     time_flag = True
 
@@ -794,13 +893,13 @@ def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color
         for s in f['select']:
             if s['name'] == variable:
                 s['exclude'] = False
-            elif str(s['name']) == order_var:
+            elif s['name'] == order_var:
                 s['exclude'] = False
-            elif str(s['name']) == color_col:
+            elif s['name'] == color_col:
                 s['exclude'] = False
-            elif str(s['name']).find(lat_col) >= 0:
+            elif s['name'] == lat_col:
                 s['exclude'] = False
-            elif str(s['name']).find(lon_col) >= 0:
+            elif s['name'] == lon_col:
                 s['exclude'] = False
             else:
                 s['exclude'] = True
@@ -813,6 +912,32 @@ def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color
     query.document = doc
     return query
 
+
+def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    lat_flag = lon_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'] == heat_col) and (s['exclude'] is not True):
+                s['exclude'] = False
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                lon_flag = True
+            else:
+                s['exclude'] = True
+
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
 
 def create_plotline_points(data, lat_index, lon_index):
     points = []
@@ -876,7 +1001,7 @@ def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, d
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(''), overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(platform_id), overlay=True,
                                               control=True).add_to(m)
     folium.PolyLine(points, color=color, weight=2.5, opacity=0.8,
                     ).add_to(pol_group_layer)
@@ -885,6 +1010,48 @@ def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, d
     ret_html = ""
     return m, ret_html
 
+
+def get_map_polygon(marker_limit, color, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
+    dict = {}
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query_pk != 0:
+            query = load_modify_query_polygon(query_pk, marker_limit)
+            data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+            points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
+
+        elif df != '':
+            data, y_m_unit, y_title_list = get_chart_dataframe_data(request, notebook_id, df, '', [], False)
+            points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_col, lon_col)
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+
+        dict['min_lat'] = min_lat
+        dict['max_lat'] = max_lat
+        dict['min_lon'] = min_lon
+        dict['max_lon'] = max_lon
+        dict['points'] = points
+        # create cached file with necessary data and info
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dict, f)
+    else:
+        print('Plotline Data is Cached!')
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        min_lat = cached_data['min_lat']
+        max_lat = cached_data['max_lat']
+        min_lon = cached_data['min_lon']
+        max_lon = cached_data['max_lon']
+
+        points = cached_data['points']
+
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+
+    pol_group_layer = folium.map.FeatureGroup(name='Polygon- Layer:' + str(time.time()).replace(".","_") , overlay=True,
+                                              control=True).add_to(m)
+    folium.PolyLine(points, color=color, weight=2.0, opacity=0.8,
+                    ).add_to(pol_group_layer)
+    ret_html = ""
+    return m, ret_html
 
 
 def map_markers_in_time(request):
@@ -938,9 +1105,9 @@ def map_markers_in_time(request):
             for s in f['select']:
                 if s['name'] == order_var:
                     s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0:
+                elif s['name'].split('_', 1)[1] == 'latitude':
                     s['exclude'] = False
-                elif str(s['name']).find('longitude') >= 0:
+                elif s['name'].split('_', 1)[1] == 'longitude':
                     s['exclude'] = False
                 # elif s['name'] == var:
                 #     s['exclude'] = False
@@ -961,9 +1128,9 @@ def map_markers_in_time(request):
         for idx, c in enumerate(result_headers['columns']):
             # if c['name'] == var:
             #     var_index = idx
-            if str(c['name']).find('latitude') >= 0:
+            if c['name'].split('_', 1)[1] == 'latitude':
                 lat_index = idx
-            elif str(c['name']).find('longitude') >= 0:
+            elif c['name'].split('_', 1)[1] == 'longitude':
                 lon_index = idx
             elif c['name'] == order_var:
                 order_index = idx
@@ -1055,104 +1222,96 @@ def map_markers_in_time(request):
 
 
 
-def get_heatmap_query_data(query):
-    pass
+def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+    heatmap_result_data = []
+    if (heat_col == 'heatmap_frequency'):
+        for d in data:
+            heatmap_result_data.append(
+                (np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
+            if d[lat_index] > max_lat:
+                max_lat = d[lat_index]
+            if d[lat_index] < min_lat:
+                min_lat = d[lat_index]
+            if d[lon_index] > max_lon:
+                max_lon = d[lon_index]
+            if d[lon_index] < min_lon:
+                min_lon = d[lon_index]
+    else:
+        maximum = -1000000
+        for d in data:
+            if d[heat_var_index] > maximum:
+                maximum = float(d[heat_var_index])
+        for d in data:
+            if d[heat_var_index] is not None:
+                heatmap_result_data.append((np.array([float(d[lat_index]), float(d[lon_index]), float(d[heat_var_index]) / maximum])).tolist())
+                if d[lat_index] > max_lat:
+                    max_lat = d[lat_index]
+                if d[lat_index] < min_lat:
+                    min_lat = d[lat_index]
+                if d[lon_index] > max_lon:
+                    max_lon = d[lon_index]
+                if d[lon_index] < min_lon:
+                    min_lon = d[lon_index]
+    max_lat = float(max_lat)
+    min_lat = float(min_lat)
+    max_lon = float(max_lon)
+    min_lon = float(min_lon)
+
+    return heatmap_result_data, min_lat, min_lon, max_lat, max_lon
 
 
 
-def map_heatmap(query_pk, df, notebook_id, lat_col, lon_col,heat_col, m, cached_file, request):
+def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_points_limit, m, cached_file, request):
     dict = {}
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
-            query = load_modify_query_map(query_pk, heat_col, '', 'lat', 'lon', '', '', False)
-            data, lat_index, lon_index, var_index, nu1, nu2 = get_map_query_data(query, heat_col, '', '')
+            query = load_modify_query_heatmap(query_pk, heat_col, heat_points_limit)
+            data, lat_index, lon_index, heat_var_index = get_heatmap_query_data(query, heat_col)
         else:
             data, headers = load_execute_dataframe_data(request, df, notebook_id)
             heatmap_data = []
             lat_index = 0
             lon_index = 1
-            var_index = 2
-
+            heat_var_index = 2
             for s in data:
                 row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
                 heatmap_data.append(row)
 
-        min_lat = 90
-        max_lat = -90
-        min_lon = 180
-        max_lon = -180
-        heat = []
-
-        if (heat_col == 'frequency'):
-            for d in data:
-                heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
-                if d[lat_index] > max_lat:
-                    max_lat = d[lat_index]
-                if d[lat_index] < min_lat:
-                    min_lat = d[lat_index]
-                if d[lon_index] > max_lon:
-                    max_lon = d[lon_index]
-                if d[lon_index] < min_lon:
-                    min_lon = d[lon_index]
-        else:
-            maximum = -1000000
-            for d in data:
-                if d[var_index] > maximum:
-                    maximum = d[var_index]
-            for d in data:
-                heat.append((np.array([float(d[lat_index]), float(d[lon_index]),float(d[var_index])/maximum])).tolist())
-                if d[lat_index] > max_lat:
-                    max_lat = d[lat_index]
-                if d[lat_index] < min_lat:
-                    min_lat = d[lat_index]
-                if d[lon_index] > max_lon:
-                    max_lon = d[lon_index]
-                if d[lon_index] < min_lon:
-                    min_lon = d[lon_index]
-        max_lat = float(max_lat)
-        min_lat = float(min_lat)
-        max_lon = float(max_lon)
-        min_lon = float(min_lon)
-
+        heatmap_result_data, min_lat, min_lon, max_lat, max_lon = create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index)
+        print heatmap_result_data
         dict['min_lat'] = min_lat
         dict['max_lat'] = max_lat
         dict['min_lon'] = min_lon
         dict['max_lon'] = max_lon
-        dict['heat'] = heat
+        dict['heatmap_result_data'] = heatmap_result_data
 
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dict, f)
-
-
     else:
-        print ('HEATMAP DATA IS CACHED')
+        print ('Heatmap Data is Cached!')
         with open('visualizer/static/visualizer/temp/' + cached_file) as f:
             cached_data = json.load(f)
         min_lat = cached_data['min_lat']
         max_lat = cached_data['max_lat']
         min_lon = cached_data['min_lon']
         max_lon = cached_data['max_lon']
+        heatmap_result_data = cached_data['heatmap_result_data']
 
-        heat = cached_data['heat']
-        # heat = [[j.encode('ascii') for j in i] for i in heat]
-
-    # check out
-    HeatMap(heat, name="Heat Map - Layer / Query ID: "+str(query)).add_to(m)
-
-
-    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
-
+    HeatMap(heatmap_result_data, name="Heat Map - Layer / Query ID: "+str(query)).add_to(m)
+    # m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     ret_html = ""
-    return m , ret_html
+    return m, ret_html
 
 
 
 
 
-
-def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, cached_file):
+def get_map_contour(n_contours, step, variable, query, agg_function, m, cached_file):
     try:
-        print('ENTERING CONTOURS')
 
         # Gather the arguments
         round_num = 0
@@ -1185,12 +1344,12 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, c
                     if s['name'] == variable:
                         s['aggregate'] = agg_function
                         s['exclude'] = False
-                    elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                    elif s['name'].split('_', 1)[1] == 'latitude' and str(s['name']).find(var_query_id) >= 0:
                         s['groupBy'] = True
                         s['aggregate'] = 'round' + str(round_num)
                         s['exclude'] = False
                         doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                    elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
+                    elif s['name'].split('_', 1)[1] == 'longitude' and str(s['name']).find(var_query_id) >= 0:
                         s['groupBy'] = True
                         s['aggregate'] = 'round' + str(round_num)
                         s['exclude'] = False
@@ -1201,7 +1360,10 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, c
 
 
             var_index = lat_index = lon_index = -1
-            result = execute_query_method(q)[0]
+            try:
+                result = execute_query_method(q)[0]
+            except ProgrammingError:
+                raise ValueError('The requested visualisation cannot be executed for the chosen query.')
             result_data = result['results']
             result_headers = result['headers']
 
@@ -1209,9 +1371,9 @@ def map_viz_folium_contour(n_contours, step, variable, query, agg_function, m, c
             for idx, c in enumerate(result_headers['columns']):
                 if c['name'] == variable:
                     var_index = idx
-                elif str(c['name']).find('lat') >= 0:
+                elif c['name'].split('_', 1)[1] == 'latitude':
                     lat_index = idx
-                elif str(c['name']).find('lon') >= 0:
+                elif c['name'].split('_', 1)[1] == 'longitude':
                     lon_index = idx
 
             data = result_data
@@ -1443,9 +1605,9 @@ def map_viz_folium_heatmap_time(request):
             for s in f['select']:
                 if s['name'] == order_var:
                     s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0:
+                elif s['name'].split('_', 1)[1] == 'latitude':
                     s['exclude'] = False
-                elif str(s['name']).find('longitude') >= 0:
+                elif s['name'].split('_', 1)[1] == 'longitude':
                     s['exclude'] = False
                 elif s['name'] == heat_col:
                     s['exclude'] = False
@@ -1461,9 +1623,9 @@ def map_viz_folium_heatmap_time(request):
 
         print result_headers
         for idx, c in enumerate(result_headers['columns']):
-            if str(c['name']).find('lat') >= 0:
+            if c['name'].split('_', 1)[1] == 'latitude':
                 lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
+            elif c['name'].split('_', 1)[1] == 'longitude':
                 lon_index = idx
             elif c['name'] == heat_col:
                 var_index = idx
@@ -1622,6 +1784,7 @@ def get_histogram_chart_am(request):
                     "from histogram; ".format(table_col, from_table, bins, where_clause)
         # print raw_query
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
+
         result = execute_query_method(query)[0]
 
         cursor.execute(raw_query)
@@ -1875,10 +2038,10 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
     x_flag = False
     for f in doc['from']:
         for s in f['select']:
-            if s['name'] in y_var_list:
+            if (s['name'] in y_var_list) and (s['exclude'] is not True):
                 s['aggregate'] = agg_function
                 s['exclude'] = False
-            elif s['name'] == x_var:
+            elif (s['name'] == x_var) and (s['exclude'] is not True):
                 s['groupBy'] = True
                 s['exclude'] = False
                 x_flag = True
@@ -1900,10 +2063,10 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
     x_flag = False
     for f in doc['from']:
         for s in f['select']:
-            if s['name'] in y_var_list:
+            if (s['name'] in y_var_list) and (s['exclude'] is not True):
                 s['aggregate'] = agg_function
                 s['exclude'] = False
-            elif (str(s['name']).find('time') >= 0) and (s['exclude'] is not True):
+            elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name'].encode('ascii')
                 if not existing_temp_res:
                     s['groupBy'] = True
@@ -1925,7 +2088,10 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
 
 
 def get_chart_query_data(query, x_var, y_var_list):
-    query_data = execute_query_method(query)
+    try:
+        query_data = execute_query_method(query)
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
 
@@ -2114,14 +2280,17 @@ def load_execute_query_data_table(query_pk, offset, limit, column_choice):
     doc = q.document
     for f in doc['from']:
         for s in f['select']:
-            if s['name'] in column_choice:
+            if (s['name'] in column_choice) and (s['exclude'] is not True):
                 s['exclude'] = False
             else:
                 s['exclude'] = True
     doc['limit'] = limit
     doc['offset'] = offset
     q.document = doc
-    result = execute_query_method(q)[0]
+    try:
+        result = execute_query_method(q)[0]
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = result['results']
     headers = result['headers']['columns']
     return data, headers
@@ -2253,7 +2422,10 @@ def get_bearing(p1, p2):
     return bearing
 
 def get_aggregate_query_data(query, variable):
-    query_data = execute_query_method(query)
+    try:
+        query_data = execute_query_method(query)
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
 
@@ -2445,7 +2617,7 @@ class MapAPI(APIView):
         if tiles == "marker clusters":
             return map_viz_folium(request)
         else:
-            return map_heatmap(request)
+            return get_map_heatmap(request)
 
 def map_viz(request):
     return render(request, 'visualizer/map_viz.html', {})

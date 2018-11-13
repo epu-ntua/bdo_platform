@@ -76,7 +76,7 @@
 
 #viz_container {
     background-color: #d8d8d8;
-    height: 500px;
+    height:560px;
     width: 80%;
     padding: 0;
     position: relative;
@@ -199,4 +199,13 @@ ul {
 .disabled {
     pointer-events:none;
     opacity:0.6;
+}
+
+.unclickable{
+    text-decoration: none;
+    pointer-events:none;
+}
+
+.unclickable:hover{
+    cursor: not-allowed;
 }

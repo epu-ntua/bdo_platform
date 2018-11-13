@@ -86,7 +86,7 @@
         <select id="query-select" class="ui search selection form-control " name="query" style="width: 300px !important;">
 
             {% for query in saved_queries %}
-                <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
+                <option value="{{ query.id }}">{{ query.title }}</option>
             {% endfor %}
         </select>
         <div><a href="/queries/simplified/" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
@@ -136,17 +136,9 @@
                                     >Select data
                                     </button>
                                 </div>
-                                <div  class="dropdown row" id="layers-list" style="display: none;position: absolute;right:250px;">
-                                    <button class="btn btn-primary dropdown-toggle btn-md" id="menu1" type="button" data-toggle="dropdown" style="display: inline;">Layers
-                                        <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
 
-                                    </ul>
-                                </div>
-
-                                <div style="display: inline; margin-left: 20px;">
-                                    <span><strong>Selected Query ID: </strong></span><span id="query_name_span" style="display: none;"></span>
+                                <div style="display: inline; margin-left: 80px;">
+                                    <span><strong>Selected Query: </strong></span><span id="query_name_span" style="display: none;"></span>
                                 </div>
 
 
@@ -164,18 +156,31 @@
                                 <ul class="list-group collapse in col-sm-2" style="width: 15%">
                                     {% for viz in available_viz %}
                                         <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}">
-                                            <i class="{{ viz.icon }}"  style="margin-right:5px"></i>{{ viz.title }}
+                                            <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
                                             <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
                                         </li>
                                     {% endfor %}
 
                                 </ul>
-                                <div id="viz_container" class="col-sm-8" style="width: 85%">
-                                    <div class="loadingFrame">
-                                        <img src="{% static 'img/loading_gif.gif' %}"/>
+                                <div id="visualisation_frame">
+                                    <div style="right: 25px; top:80px; z-index: 2; position: absolute; display: none;">
+                                        <button type="button" id="add_layer_btn" class="btn btn-primary btn-md" >SAVE LAYER  <i class="glyphicon glyphicon-plus "></i></button>
+                                    </div>
+                                    <div class="ui buttons" style="display: none; top:80px; position: absolute; z-index: 1; right: 190px; ">
+                                        <div id='layers-list' class="ui floating dropdown btn btn-secondary btn-md " tabindex="0">LAYERS
+                                          <i class="dropdown icon"></i>
+                                          <ul class="menu transition hidden unclickable" tabindex="-1"></ul>
+                                        </div>
                                     </div>
 
+                                    <div id="viz_container" class="col-sm-8" style="width: 85%">
+                                        <div class="loadingFrame">
+                                            <img src="{% static 'img/loading_gif.gif' %}"/>
+                                        </div>
+
+                                    </div>
                                 </div>
+
                             </div>
 
 {#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
@@ -234,9 +239,6 @@
 
                 </div>
                 <div class="modal-footer" >
-                     <div>
-                         <button type="button" id="add_layer_btn" class="btn btn-primary btn-sm" style=" position: absolute; display: none;left:250px;">SAVE LAYER  <i class="glyphicon glyphicon-plus "></i></button>
-                     </div>
                     <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
                     </button>
                     <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn" style="display: none">Add
