@@ -6,3 +6,119 @@
     width: 50%;
     padding: 20px 0;
 }
+
+
+#select-data-modal #dataset-list-section .dataset-title{
+    font-size: 120%;
+    color: white;
+    font-weight: normal;
+    margin: 0;
+}
+
+#select-data-modal #dataset-list-section .dataset-organization{
+    font-size: 80%;
+    /*color: white;*/
+    margin: 0;
+}
+
+#select-data-modal #dataset-list-section .dataset-name {
+    box-shadow: 0 1px 0px #d5d5d5;
+    padding: 10px 10px;
+    cursor: pointer;
+}
+
+#select-data-modal #dataset-list-section .dataset-section {
+    margin-bottom: 1px;
+}
+
+.checkbox .checkbox-material:before {
+     left: 0;
+     top: 0;
+}
+
+#data-filter-search {
+    width: 100%;
+}
+
+.variable-title{
+    word-wrap:break-word;
+}
+
+#select-data-modal  #dataset-list-section {
+    height: 100%;
+    overflow-y: auto;
+}
+
+#select-data-modal  #dataset-filter-section {
+    height: 100%;
+    background-color: #1c567e;
+    box-shadow: 2px 2px 14px 2px #b9b9b9;
+}
+
+#select-data-modal  #dataset-filter-section h3{
+    color: white;
+}
+
+#select-data-modal  #dataset-filter-section label{
+    color: white;
+}
+
+#select-data-modal  #dataset-filter-section input{
+    color: white;
+}
+
+#select-data-modal .form-group.is-focused .form-control {
+    outline: none;
+    background-image: linear-gradient(#fffcfe, #fef7ff), linear-gradient(rgba(210, 210, 210, 0.61), rgba(210, 210, 210, 0.6));
+    background-size: 100% 2px, 100% 1px;
+    box-shadow: none;
+    transition-duration: 0.3s;
+}
+
+#select-data-modal .form-group {
+    margin: 10px 0 0 0;
+}
+
+#select-data-modal .form-group label {
+    font-size: 14px;
+}
+
+#select-data-modal .checkbox label {
+    font-size: 14px;
+}
+
+#select-data-modal .checkbox .checkbox-material {
+    padding-left: 0;
+}
+
+#select-data-modal .checkbox input[type=checkbox]:not(:checked) + .checkbox-material .check {
+    background: white;
+}
+
+
+#select-data-modal  #dataset-filter-section .form-control {
+    color: white;
+}
+
+#dataset-all-section{
+    min-height: 65vh;
+    height: 65vh;
+}
+
+#select-data-modal .card .card-header {
+    box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.42), 0 4px 25px 0px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.2);
+    margin: -20px 15px 0;
+    border-radius: 3px;
+    padding: 10px;
+    background-color: #18505d;
+}
+
+#select-data-modal .card .card-body{
+    height: 60px;
+    min-height: 60px;
+    padding: 10px 0px;
+}
+
+#select-data-modal  .card .card-footer{
+    margin: 0;
+}

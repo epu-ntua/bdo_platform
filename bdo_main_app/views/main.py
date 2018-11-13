@@ -5,12 +5,26 @@ from datetime import timedelta
 from django.shortcuts import render
 from django.utils.timezone import now
 
+from aggregator.models import Dataset, Organization, Variable, Dimension
 from bdo_main_app.models import Service
 
 def home(request):
     return render(request, 'bdoindex.html')
 def exploretools(request):
     return render(request, 'explore.html')
+
+def dataset_search(request):
+    storage_target = 'UBITECH_POSTGRES'
+    dataset_list = Dataset.objects.filter(stored_at=storage_target).exclude(variables=None)
+    organization_list = Organization.objects.all()
+    variable_list = Variable.objects.all()
+
+    return render(request, 'dataset_search.html', {
+        'organizations': organization_list,
+        'variables': variable_list,
+        'datasets': dataset_list,
+        'dimensions': Dimension.objects.all()
+    })
 
 def bdohome(request):
     return render(request, 'index.html', {
