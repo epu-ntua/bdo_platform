@@ -223,3 +223,13 @@
     float: none;
     cursor: default;
 }
+
+.jplist-reset-btn{
+    float: left;
+    margin: -22px 0px -3px 0px;
+    border-radius: 15px;
+    border: none;
+}
+.jplist-reset-btn i {
+    color: #9f9f9f;
+}

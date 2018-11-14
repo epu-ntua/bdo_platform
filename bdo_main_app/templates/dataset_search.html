@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'css/jplist.textbox-filter.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/jplist.filter-toggle-bundle.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/jplist.pagination-bundle.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.history-bundle.min.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -60,9 +61,18 @@
                     </button>
                 </div>
             </div>
-
         </div>
         <div id="dataset-all-section" class="row">
+            <span class="filter-section">
+                <button
+                    type="button"
+                    class="jplist-reset-btn"
+                    data-control-type="reset"
+                    data-control-name="reset"
+                    data-control-action="reset">
+                    Reset  <i class="fa fa-undo"></i>
+                </button>
+            </span>
             <form id="dataset-filter-section" class="col-sm-2 filter-section">
                 <h3>Filters</h3>
                 <!-- text filter control -->
@@ -76,7 +86,7 @@
                         class="form-control full-width"
                         id="variable-filter"
                     >
-                        <option value="0" data-path="default" selected>All</option>
+                        <option value="0" data-path="default" data-default="true" selected>All</option>
                         {% for var in variables %}
                             <option value="{{ var.safe_name }}" data-path="[data-variable-name='{{ var.safe_name }}']">{{ var.title }}</option>
                         {% endfor %}
@@ -278,6 +288,7 @@
     <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}"></script>
     <script src="{% static "/js/jplist.ext-animation.min.js" %}"></script>
     <script src="{% static "/js/jplist.pagination-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.history-bundle.min.js" %}"></script>
 
     <script>
         $('document').ready(function(){
@@ -300,6 +311,11 @@
         $("#title-filter").keyup(function(){
             $("#main-section").attr({"data-on-top": "true"});
         });
+
+        $(".jplist-reset-btn").click(function(){
+            setTimeout(function(){$('#dataset-filter-section select').trigger("change");}, 100);
+        });
+
     </script>
 
 
