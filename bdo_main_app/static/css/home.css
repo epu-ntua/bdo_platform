@@ -2,40 +2,76 @@
     margin-top: 70px;
 }
 
-h1 {
+#main-section[data-on-top='true'] h1 {
     margin: 0;
     padding: 0;
     font-size: 20pt;
+    -webkit-transition:0.5s;
 }
 
-h5 {
+#main-section[data-on-top='true'] h5 {
     margin: 0;
     padding: 0;
     font-size: 10pt;
     line-height: 1.2em;
+    -webkit-transition:0.5s;
 }
 
-.home-search-form {
+#main-section[data-on-top='true'] .home-search-form {
     font-size: 15px;
     height: 40px;
+    -webkit-transition:0.5s;
 }
 
-.home-search-form .btn{
+#main-section[data-on-top='true'] .home-search-form .btn{
     margin: 0;
     padding: 0;
+    -webkit-transition:0.5s;
 }
 
-.home-search-form .form-group .form-control {
+#main-section[data-on-top='true'] .home-search-form .form-group .form-control {
     width: 50%;
     padding: 0;
     margin: 0;
     height: 30px;
+    transition:0.5s;
+        -o-transition:0.5s;
+        -ms-transition:0.5s;
+        -moz-transition:0.5s;
+        -webkit-transition:0.5s;
+}
+#main-section[data-on-top='false'] .home-search-form .form-group .form-control {
+    width: 50%;
 }
 
-
-.home-search-form .form-group {
+#main-section[data-on-top='true'] .home-search-form .form-group {
     padding: 0;
     margin: 0;
+    transition:0.5s;
+        -o-transition:0.5s;
+        -ms-transition:0.5s;
+        -moz-transition:0.5s;
+        -webkit-transition:0.5s;
+}
+
+#main-section[data-on-top='true'] #select-data-modal{
+    opacity: 1;
+    visibility: visible;
+    /* First we need to help some browsers along for this to work.
+     Just because a vendor prefix is there, doesn't mean it will
+     work in a browser made by that vendor either, it's just for
+     future-proofing purposes I guess. */
+    -o-transition:opacity 0.7s ease-in;
+    -ms-transition:opacity 0.7s ease-in;
+    -moz-transition:opacity 0.7s ease-in;
+    -webkit-transition:opacity 0.7s ease-in;
+    /* ...and now for the proper property */
+    transition:opacity 0.7s ease-in;
+}
+
+#main-section[data-on-top='false'] #select-data-modal{
+    opacity: 0;
+    visibility: hidden;
 }
 
 #main-section .jplist-group{
@@ -96,10 +132,10 @@ h5 {
     word-wrap:break-word;
 }
 
-#select-data-modal  #dataset-list-section {
-    height: 100%;
-    overflow-y: auto;
-}
+/*#select-data-modal  #dataset-list-section {*/
+    /*height: 100%;*/
+    /*overflow-y: auto;*/
+/*}*/
 
 #select-data-modal  #dataset-filter-section {
     height: 100%;
@@ -148,9 +184,9 @@ h5 {
 }
 
 
-/*#select-data-modal  #dataset-filter-section .form-control {*/
-    /*color: white;*/
-/*}*/
+#select-data-modal  #dataset-filter-section .form-control {
+    width: 100%;
+}
 
 #dataset-all-section{
     min-height: 65vh;
