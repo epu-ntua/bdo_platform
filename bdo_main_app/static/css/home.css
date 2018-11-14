@@ -226,10 +226,20 @@
 
 .jplist-reset-btn{
     float: left;
-    margin: -22px 0px -3px 0px;
+    margin: 0 -30px;
     border-radius: 15px;
     border: none;
 }
 .jplist-reset-btn i {
     color: #9f9f9f;
+}
+
+#select-data-modal button.dropdown-toggle {
+    margin: 0;
+    padding: 4px 10px;
+    text-transform: none;
+}
+
+#select-data-modal  ul.dropdown-menu{
+    right: 0;
 }
