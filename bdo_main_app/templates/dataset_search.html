@@ -9,20 +9,22 @@
     <link rel="stylesheet" href="{% static 'css/jplist.core.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/jplist.textbox-filter.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/jplist.filter-toggle-bundle.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.pagination-bundle.min.css' %}" />
 {% endblock %}
 
 {% block content %}
-
+  <div id="main-section">
     <div class="row">
         <div class="text-center">
             <h1 class="o-blue">BIG DATA OCEAN</h1>
             <h5>Welcome to the greatest marketplace for maritime data and insights</h5>
-            <form class="home-search-form" method="GET" action="{% url 'search' %}">
+            <form class="home-search-form filter-section" {# method="GET" action="{% url 'search' %}"#} >
                 <div class="form-group  is-empty">
                     <input
                         data-control-type="textbox"
                         data-control-action="filter"
                         data-control-name="title-filter"
+                        data-control-animate-to-top="true"
                         data-path=".dataset-name"
                         type="text"
                         class="form-control"
@@ -31,7 +33,7 @@
                         id="title-filter"
                     />
                     <span class="material-input"></span>
-                    <button type="submit" class="btn btn-white btn-round btn-just-icon">
+                    <button class="btn btn-white btn-round btn-just-icon">
                         <i class="material-icons">search</i><div class="ripple-container"></div>
                     </button>
                 </div>
@@ -40,8 +42,29 @@
     </div>
 
     <div id="select-data-modal">
+        <div class="category-filter-section filter-section pull-left col-sm-10 col-sm-offset-2">
+            <div>
+                <div class="jplist-group"
+                     data-control-type="button-filter-group"
+                     data-control-action="filter"
+                     data-control-name="category-filter-group"
+                     data-mode="single"
+                >
+                    <button id="all-btn" data-path=".dataset-category" data-button="true" data-selected="true" class="jplist-selected ">
+                        All
+                    </button>
+                    <button id="oceanography-btn" data-path="[data-category='oceanography']" data-button="true" class="">
+                        Oceanography
+                    </button>
+                    <button id="ais-btn" data-path="[data-category='ais']" data-button="true" class="">
+                        AIS
+                    </button>
+                </div>
+            </div>
+
+        </div>
         <div id="dataset-all-section" class="row">
-            <form id="dataset-filter-section" class="col-sm-2">
+            <form id="dataset-filter-section" class="col-sm-2 filter-section">
                 <h3>Filters</h3>
                 <!-- text filter control -->
                 <div class="form-group ">
@@ -182,6 +205,8 @@
                                             </tr>
                                             <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
                                             </tr>
+                                            <tr class="dataset-category" data-category='oceanography'>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -225,16 +250,53 @@
                     <!-- no results control -->
                 <div class="jplist-no-results">No Results Found</div>
             </div>
+            <!-- panel -->
+            <div class="jplist-panel filter-section col-sm-offset-2 col-sm-10 text-center">
+                <!-- pagination control -->
+                <div
+                     class="jplist-pagination"
+                     data-control-type="pagination"
+                     data-control-name="paging"
+                     data-control-action="paging"
+                     data-items-per-page="10">
+                </div>
+            </div>
         </div>
     </div>
-
+  </div>
 {% endblock %}
 
 {% block js %}
+    <script>
+        $('document').ready(function(){
+           $('#dataset-filter-section select').select2();
+        });
+    </script>
 
     <script src="{% static "/js/jplist.core.min.js" %}"></script>
     <script src="{% static "/js/jplist.textbox-filter.min.js" %}"></script>
     <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}"></script>
     <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.ext-animation.min.js" %}"></script>
+    <script src="{% static "/js/jplist.pagination-bundle.min.js" %}"></script>
+
+    <script>
+        $('document').ready(function(){
+
+           //check all jPList javascript options here
+           $('#main-section').jplist({
+              itemsBox: '.selection-body',
+              itemPath: '.dataset-section',
+              panelPath: '.filter-section',
+              noResults: '.jplist-no-results',
+{#              effect: 'fade',#}
+{#              duration: 300,	//animation duration#}
+{#              fps: 24 //frames per second value#}
+           });
+
+        });
+    </script>
+
+
 
 {% endblock %}
