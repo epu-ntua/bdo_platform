@@ -78,7 +78,7 @@
                                     </div>
                                 </div>s
                            {% elif argument.type == 'INT' %}
-                                <input id="{{ argument.name }}" type="number" step="1" class="form-control full-width" name="{{ argument.name }}" >
+                                <input id="{{ argument.name }}" type="number" step="1" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}">
                             {% elif argument.type == 'FLOAT' %}
                                 <input id="{{ argument.name }}" type="number" step="0.001" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}">
                             {% elif argument.type == 'BOOLEAN' %}

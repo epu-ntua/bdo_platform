@@ -59,14 +59,14 @@ $("#select_data_popover").click(function () {
                         var del_id = $(this).closest('li').attr('id');
                         for (var i = 0; i < layer_json.length; i++) {
                             var obj = layer_json[i];
-                            alert(del_id.split('layer_list_element')[1]);
+                            // alert(del_id.split('layer_list_element')[1]);
                             if (obj['layer_id']==del_id.split('layer_list_element')[1]){
                                 layer_count = layer_count-1;
                                 layer_json.splice(i,1);
                                 $(this).closest('li').remove();
                                 for(var j = i ; j < layer_json.length; j++){
-                                    $(".layer_list_element #layer_list_element_btn"+String(j+1)).closest('li').attr('id',String(j));
-                                    $(".layer_list_element #layer_list_element_btn"+String(j+1)).attr('id','btn'+String(j));
+                                    $(".layer_list_element #layer_list_element_btn"+String(j+1)).closest('li').attr('id','layer_list_element'+String(j));
+                                    $(".layer_list_element #layer_list_element_btn"+String(j+1)).attr('id','layer_list_element_btn'+String(j));
                                     obj = layer_json[j];
                                     layer_json[j]['layer_id'] = layer_json[j]['layer_id']-1;
                                 }
@@ -80,6 +80,7 @@ $("#select_data_popover").click(function () {
                 else{
                     alert("Please select data and add visualization!")
                 }
+                $('#layers-list li').removeClass('disabled');
                 selected_visualization = null;
                 new_query_id = null;
                 $("#query_name_span").text(null);
@@ -129,7 +130,7 @@ $("#select_data_popover").click(function () {
                 var component_selector = 'li[data-viz-id="' + component_id + '"]';
                 $(component_selector).popover({
                     html: true,
-                    title: 'Configure visualisation',
+                    title: $(this).text()+' Configuration',
                     trigger:'manual',
                     content: function () {
                         return $('.all_viz_forms  #viz_' + String(component_id)).clone();
@@ -194,8 +195,17 @@ $("#select_data_popover").click(function () {
                         $('.popover-content #temporal_resolution').parent().removeClass('disabled');
                     }
                 });
-
                 $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
+
+                $('.popover-content #use_color_column').parent().checkbox().first().checkbox({
+                    onChecked: function(){
+                        $('.popover-content #color_var').parent().removeClass('disabled');
+                    },
+                    onUnchecked: function () {
+                        $('.popover-content #color_var').parent().addClass('disabled');
+                    }
+                });
+                // $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
 
                 $('.popover-content #select_all_columns').parent().checkbox().first().checkbox({
                     onChecked: function(){
@@ -463,7 +473,7 @@ $("#select_data_popover").click(function () {
                 var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
                 plotline_vessel_course_input.val(1);
                 plotline_vessel_course_input.on('input',function () {
-                    if (plotline_vessel_course_input.val()>=100 || plotline_vessel_course_input.val()<1){
+                    if (plotline_vessel_course_input.val()>=100 || plotline_vessel_course_input.val()<0){
                         alert('Please set the limit of plotline points below 100 and above 0.');
                         plotline_vessel_course_input.val(1);
                     }
@@ -473,7 +483,7 @@ $("#select_data_popover").click(function () {
                 var polygon_input = $('.popover-content #viz_'+polygon_id+' #points_limit');
                 polygon_input.val(1);
                 polygon_input.on('input',function () {
-                    if ( polygon_input.val()>=100000 ||  polygon_input.val()<1){
+                    if ( polygon_input.val()>=100000 ||  polygon_input.val()<0){
                         alert('Please set the limit of polygon points below 100000 and above 0.');
                          polygon_input.val(1);
                     }
@@ -483,8 +493,8 @@ $("#select_data_popover").click(function () {
                 var heatmap_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
                 heatmap_input.val(1);
                 heatmap_input.on('input',function () {
-                    if ( heatmap_input.val()>=1000 || heatmap_input.val()<1){
-                        alert('Please set the limit of heatmap points below 1000 and above 0.');
+                    if ( heatmap_input.val()>=10000 || heatmap_input.val()<0){
+                        alert('Please set the limit of heatmap points below 10000 and above 0.');
                         heatmap_input.val(1);
                     }
                 });
@@ -492,6 +502,22 @@ $("#select_data_popover").click(function () {
                 heatmap_col_select.append('<option value="heatmap_frequency">Frequency</option>');
                 heatmap_col_select.dropdown('refresh');
                 heatmap_col_select.parent().dropdown('clear');
+
+                 //MAP MARKERS VESSEL COURSE
+                var markers_vessel_id = $('#viz_config ul li[data-viz-name="get_map_markers_vessel_course"]').attr('data-viz-id');
+
+                var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
+                markers_vessel_input.val(1);
+                markers_vessel_input.on('input',function () {
+                    if ( markers_vessel_input.val()>=1000 || markers_vessel_input.val()<0){
+                        alert('Please set the limit of heatmap points below 1000 and above 0.');
+                        markers_vessel_input.val(1);
+                    }
+                });
+                var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var').parent();
+                markers_vessel_color_var.find('option[value= "i0_platform_id"]').remove();
+                markers_vessel_color_var.dropdown('clear');
+                $('.popover-content #color_var').parent().addClass('disabled');
 
 
             }
