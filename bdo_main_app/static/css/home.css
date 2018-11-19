@@ -201,6 +201,7 @@
     height: 0;
     margin: 0;
     padding: 0;
+    display: none;
 }
 
 #main-section[data-on-top='true'] h1 {
@@ -458,4 +459,8 @@
 
 .category-filter-section .jplist-group{
     height: 100%;
+}
+
+.modal-backdrop {
+    z-index: 0;
 }
