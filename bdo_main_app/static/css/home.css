@@ -151,7 +151,7 @@
 #carousel_container #services_showcase_container .card-text,
 #carousel_container #tools_showcase_container .card-text{
     text-align: center;
-    padding-top: 8%;
+    padding: 4% 0%;
     font-size: 125%;
 }
 
@@ -162,6 +162,12 @@
     width: 12%;
     padding: 0;
     opacity: 0;
+
+}
+
+#carousel_container #tools_showcase_container .card{
+    background-color: #1c567e;
+    color: white;
 }
 
 .carousel-inner {
