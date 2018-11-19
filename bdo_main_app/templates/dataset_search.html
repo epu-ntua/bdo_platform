@@ -15,9 +15,10 @@
 
 {% block content %}
   <div id="main-section" data-on-top='false'>
-    <div class="row">
+    <div id="main-row" class="row">
         <div class="text-center">
-            <h1 class="o-blue">BIG DATA OCEAN</h1>
+{#            <h1 class="o-blue">BIG DATA OCEAN</h1>#}
+            <img src="{% static 'img/logo.png' %}">
             <h5>Welcome to the greatest marketplace for maritime data and insights</h5>
             <form class="home-search-form filter-section" {# method="GET" action="{% url 'search' %}"#} >
                 <div class="form-group">
@@ -40,6 +41,78 @@
             </form>
         </div>
     </div>
+
+  <div id="carousel_container" class="carousel slide" data-ride="carousel">
+      <!-- Indicators -->
+      <ol class="carousel-indicators">
+        <li data-target="#carousel_container" data-slide-to="0" class="active"></li>
+        <li data-target="#carousel_container" data-slide-to="1"></li>
+        <li data-target="#carousel_container" data-slide-to="2"></li>
+      </ol>
+        <!-- Wrapper for slides -->
+      <div class="carousel-inner">
+        <div id="tools_showcase_container"class="item active">
+            <div id="tools">Big Data Analytics Toolbox</div>
+            <div class="card">
+              <img class="card-img-top" src="{% static 'img/front-slider/analytics.PNG' %}" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Explore Maritime <br/>Big Data Assets</h4>
+              </div>
+            </div>            <div class="card">
+              <img class="card-img-top" src="{% static 'img/front-slider/visualisations.PNG' %}" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Create Custom <br/>Visualisations</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="{% static 'img/front-slider/dashboards.PNG' %}" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Build Dynamic <br/>Dashboards</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="{% static 'img/front-slider/analytics.PNG' %}" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Create Analytical <br/> Services</h4>
+              </div>
+            </div>
+        </div>
+
+        <div id="services_showcase_container" class="item">
+            <div id="pilots">4 Pilot Services Using Big Data Analytics</div>
+            <div class="card">
+              <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot1.jpg" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Primary Wave Energy Assessment</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot4.jpg" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Anomaly Detection of Vessels</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot1b.jpg" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Fuel Consumption Reduction Service</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot2.jpg" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Oil Spill <br/>Simulation Service</h4>
+              </div>
+            </div>
+        </div>
+
+        <div id="datasets_showcase_container"  class="item">
+            <img src="{% static 'img/front-slider/DataBDO.PNG' %}">
+            <div id="sources">100 Data Sources</div>
+            <div id="data_size">150 TBs of Data</div>
+        </div>
+      </div>
+  </div>
 
     <div id="select-data-modal">
         <div class="category-filter-section filter-section pull-left col-sm-12">
@@ -72,13 +145,13 @@
 
             <div
                  class="dropdown  col-sm-2"
-                 style="text-align: right"
+                 style="text-align: right; height: 100%;"
                  data-control-type="boot-sort-drop-down"
                  data-control-name="bootstrap-sort-dropdown"
                  data-control-action="sort"
                  data-datetime-format="{month}/{day}/{year}"> <!-- {year}, {month}, {day}, {hour}, {min}, {sec} -->
 {#                <span id="sort-by-span">#}
-                    <span>Sort by:</span>
+                    <span style="font-size: 115%;">Sort by:</span>
                     <button
                          class="btn btn-sm btn-default dropdown-toggle"
                          type="button"
