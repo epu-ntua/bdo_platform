@@ -14,13 +14,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='dashboard',
-            name='dashboard_user',
-        ),
-        migrations.AlterField(
-            model_name='dashboard',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dashboard_owner', to=settings.AUTH_USER_MODEL),
-        ),
+        # migrations.RemoveField(
+        #     model_name='dashboard',
+        #     name='dashboard_user',
+        # ),
+        # migrations.AlterField(
+        #     model_name='dashboard',
+        #     name='user',
+        #     field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dashboard_owner', to=settings.AUTH_USER_MODEL),
+        # ),
     ]

@@ -14,13 +14,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='service',
-            name='service_user',
-        ),
-        migrations.AlterField(
-            model_name='service',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_owner', to=settings.AUTH_USER_MODEL),
-        ),
+        # migrations.RemoveField(
+        #     model_name='service',
+        #     name='service_user',
+        # ),
+        # migrations.AlterField(
+        #     model_name='service',
+        #     name='user',
+        #     field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_owner', to=settings.AUTH_USER_MODEL),
+        # ),
     ]
