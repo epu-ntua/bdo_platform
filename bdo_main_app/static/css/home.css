@@ -462,5 +462,21 @@
 }
 
 .modal-backdrop {
-    z-index: 0;
+    /*z-index: 0;*/
+}
+
+.modal {
+    position: fixed;
+    top: 10% !important;
+    /*z-index: 2;*/
+    /*display: block;*/
+    left: 20% !important;
+    margin-left: 0 !important;
+    width: 60% !important;
+    overflow: visible !important;
+    margin-top: 0 !important;
+}
+
+.close-modal {
+    opacity: 0;
 }
