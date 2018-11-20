@@ -18,7 +18,7 @@ from django.db.models import *
 from aggregator.models import *
 
 from query_designer.formula_functions import *
-from query_designer.query_processors.utils import SolrResultEncoder, PostgresResultEncoder
+from query_designer.query_processors.utils import SolrResultEncoder, PostgresResultEncoder, PrestoResultEncoder
 
 from django.http import HttpResponseForbidden
 from django.http import JsonResponse
@@ -267,8 +267,13 @@ class AbstractQuery(Model):
 
     def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
         is_postgres = True
+        is_presto = True
         try:
             is_postgres = 'POSTGRES' in Variable.objects.get(pk=self.document['from'][0]['type']).dataset.stored_at
+        except IndexError:
+            pass
+        try:
+            is_presto = 'PRESTO' in Variable.objects.get(pk=self.document['from'][0]['type']).dataset.stored_at
         except IndexError:
             pass
 
@@ -276,8 +281,12 @@ class AbstractQuery(Model):
             from query_designer.query_processors.postgres import process as q_process
             encoder = PostgresResultEncoder
         else:
-            from query_designer.query_processors.solr import process as q_process
-            encoder = SolrResultEncoder
+            if is_presto:
+                from query_designer.query_processors.presto import process as q_process
+                encoder = PrestoResultEncoder
+            else:
+                from query_designer.query_processors.solr import process as q_process
+                encoder = SolrResultEncoder
 
         data = q_process(self, dimension_values=dimension_values, variable=variable,
                          only_headers=only_headers, commit=commit,

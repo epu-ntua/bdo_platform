@@ -15,6 +15,7 @@ from netCDF4._netCDF4 import num2date
 DATASET_STORAGES = (
     ('LOCAL_POSTGRES', 'Local PostgreSQL instance'),
     ('UBITECH_POSTGRES', 'UBITECH\'s PostgreSQL instance at http://212.101.173.21'),
+    ('UBITECH_PRESTO', 'UBITECH\'s PRESTO instance'),
     ('UBITECH_SOLR', 'Solr instance at http://212.101.173.50:8983'),
 )
 
@@ -119,6 +120,8 @@ class Dimension(BaseVariable):
     @property
     def data_column_name(self):
         if self.variable.dataset.stored_at == 'UBITECH_POSTGRES':
+            return self.name
+        elif self.variable.dataset.stored_at == 'UBITECH_PRESTO':
             return self.name
         else:
             return slugify(self.name, allow_unicode=False).replace('-', '_') + ('_%d' % self.pk)
@@ -244,6 +247,8 @@ class Variable(BaseVariable):
     def data_table_name(self):
         if self.dataset.stored_at == 'UBITECH_POSTGRES':
             return self.dataset.table_name
+        elif self.dataset.stored_at == 'UBITECH_PRESTO':
+                return self.dataset.table_name
         else:
             return self.safe_name + ('_%d' % self.pk)
 
