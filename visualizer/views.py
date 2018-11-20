@@ -219,11 +219,11 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['groupBy'] = True
-                s['aggregate'] = 'round2'
+                s['aggregate'] = 'round0'
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = 'round2'
+                s['aggregate'] = 'round0'
                 s['groupBy'] = True
                 lon_flag = True
             else:
@@ -527,7 +527,7 @@ def map_visualizer(request):
                         request, count)
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
                                                                 variable, agg_function,
-                                                                lat_col, lon_col, color_col, use_color_column, m,
+                                                                lat_col, lon_col, m,
                                                                 request, cached_file)
             except ObjectDoesNotExist:
                 pass
@@ -991,7 +991,7 @@ def get_contour_step_rounded(step):
     return round_num
 
 
-def get_marker_vessel_query_data(query, variable, color_col):
+def get_marker_query_data(query, variable, color_col):
     try:
         query_data = execute_query_method(query)
     except:
@@ -1017,14 +1017,14 @@ def get_marker_vessel_query_data(query, variable, color_col):
 
 
 
-def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, color_col, use_color_col, m, request,cached_file):
+def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request,cached_file):
     dic = {}
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
-            data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_vessel_query_data(query, variable, color_col)
+            data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '')
         elif df != '':
-            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, notebook_id, request, variable)
+            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(df, lat_col, lon_col, notebook_id, request, variable)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
 
@@ -1057,7 +1057,7 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, platf
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_id, color_col, agg_function, use_color_col)
-            data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_vessel_query_data(query, variable, color_col)
+            data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_query_data(query, variable, color_col)
         elif df != '':
             data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, notebook_id, request, variable)
         else:
@@ -1141,14 +1141,15 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
 
 
 def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit):
-    pol_group_layer = folium.map.FeatureGroup(name='Markers - Grid Layer : ' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(platform_id),
+    pol_group_layer = folium.map.FeatureGroup(name='Markers - Grid Layer : ' + str(time.time()).replace(".","_") ,
                                               overlay=True,
                                               control=True).add_to(m)
     min_lat = 90
     max_lat = -90
     min_lon = 180
     max_lon = -180
-    marker_color = 'blue'
+    marker_color = 'orange'
+    marker_cluster = MarkerCluster().add_to(pol_group_layer)
     for d in data:
         if d[lat_index] > max_lat:
             max_lat = d[lat_index]
@@ -1160,7 +1161,7 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
             min_lon = d[lon_index]
         folium.Marker(
             location=[d[lat_index], d[lon_index]],
-            popup=str(var_title) + ": " + str(d[var_index]) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(pol_group_layer)
+            popup=str(var_title) + ": " + str(d[var_index]) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)

@@ -13,7 +13,7 @@
                     <div class="col-xs-12">
                         <div class="form-group label-floating is-empty">
                             {% if argument.type != 'QUERY' and argument.type != 'CHECKBOX' %}
-                                <label class="control-label">{{ argument.title }}</label>
+                                <label class="control-label form_field_info"  title="{{ argument.description }}"  data-toggle="tooltip"> {{ argument.title }}</label>
                             {% endif %}
                             {% if argument.type == 'QUERY' %}
                             {% elif argument.type == 'COLUMN' %}
@@ -97,7 +97,7 @@
                             {% elif argument.type == 'CHECKBOX' %}
                                 <div class="ui checkbox">
                                   <input id="{{ argument.name }}" type="checkbox" name="{{ argument.name }}" >
-                                  <label>{{ argument.title }}</label>
+                                  <label >{{ argument.title }}</label >
                                 </div>
                             {% else %}
                                 <input id="{{ argument.name }}" type="text" class="form-control full-width " name="{{ argument.name }}"  value="{{ argument.default }}">

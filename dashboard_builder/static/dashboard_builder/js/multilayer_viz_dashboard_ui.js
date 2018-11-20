@@ -12,6 +12,7 @@ $("#select_data_popover").click(function () {
             var var_select = null;
             var col_select = null;
             var flag = false;
+            $('[data-toggle="tooltip"]').tooltip();
 
             $('#layers-list ul').empty();
             $('#layers-list').dropdown();
@@ -73,7 +74,7 @@ $("#select_data_popover").click(function () {
                                 i=j;
                             }
                         }
-                        mapVizUrlCreator(layer_json,layer_count);
+                        mapVizUrlCreator(layer_json,layer_count,'map');
                     })
                     layer_count = layer_count+1;
                 }
@@ -123,6 +124,7 @@ $("#select_data_popover").click(function () {
                     $('#myModal #select_data_popover').popover("hide");
                 })
             });
+
             $(".viz_item").click(function (element) {
                 $('.popover').hide();
                 var component_id = $(this).attr('data-viz-id');
@@ -130,16 +132,24 @@ $("#select_data_popover").click(function () {
                 var component_selector = 'li[data-viz-id="' + component_id + '"]';
                 $(component_selector).popover({
                     html: true,
-                    title: $(this).text()+' Configuration',
+                    title: $(this).text()+' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="'+$(this).attr('data-description') +'"></i>',
                     trigger:'manual',
                     content: function () {
                         return $('.all_viz_forms  #viz_' + String(component_id)).clone();
                     }
                 });
 
+
                 updateVariables($('#query-select'));
 
                 $(component_selector).popover('show');
+                var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
+                var viz_info_text = "";
+                $(popover_component).find('label.form_field_info').each(function () {
+                    viz_info_text = viz_info_text + "\n-"+$(this).text()+": " + $(this).attr('title');
+                });
+                $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
+                
                 $(component_selector).on("hidden.bs.popover", function(e) {
                     selected_val = null;
                     var_list = null;
@@ -153,6 +163,7 @@ $("#select_data_popover").click(function () {
                 });
                 populate_selects();
                 specific_viz_form_configuration();
+
 
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id + ' #select_conf_ok').click(function (e) {
@@ -315,6 +326,8 @@ $("#select_data_popover").click(function () {
                 var submitted_args;
                 var selects;
                 var myData;
+                $('#add_layer_btn').parent().hide();
+                $('#layers-list').parent().hide();
                 if(component_type!='map') {
                     var viz_request = "/visualizations/";
                     viz_request += $('#myModal').find('.modal-body').find('#action').val();
@@ -333,7 +346,7 @@ $("#select_data_popover").click(function () {
                     viz_request += myData;
                     viz_request += '&query=' + $('#myModal #selected_query').val();
                     vis_created_flag = true;
-                    show_viz(viz_request);
+                    show_viz(viz_request, component_type);
                 }
                 else{
                     conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
@@ -357,17 +370,17 @@ $("#select_data_popover").click(function () {
                     }
                     json.push(myData);
                     if (first_time){
-                        mapVizUrlCreator(json, layer_count + 1);
+                        mapVizUrlCreator(json, layer_count + 1, component_type);
                     }
                     else{
                         first_time = false;
-                        mapVizUrlCreator(json, layer_count);
+                        mapVizUrlCreator(json, layer_count, component_type);
                     }
                 };
                 vis_created_flag = true;
 
             };
-            function mapVizUrlCreator(json,my_layer_count){
+            function mapVizUrlCreator(json,my_layer_count, comp_type){
                 var viz_request = "/visualizations/get_map_visualization/?";
                 viz_request += "layer_count="+String(my_layer_count)+"&";
                 var url="";
@@ -379,7 +392,7 @@ $("#select_data_popover").click(function () {
                 }
                 url = url.replace("&","");
                 viz_request += url;
-                show_viz(viz_request);
+                show_viz(viz_request, comp_type);
             }
             function getFormData(form,count,query){
                 var unindexed_array = form.serializeArray();
@@ -392,7 +405,7 @@ $("#select_data_popover").click(function () {
                 indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000))+'layer'+String(count) ;
                 return indexed_array;
             }
-            function show_viz(viz_request) {
+            function show_viz(viz_request, comp_type) {
                 $("#viz_container").html('<div class="loadingFrame"><img src="' + img_source_path + '"/></div><iframe class="iframe-class" id="viz-iframe" ' +
                     'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
                     '></iframe>');
@@ -403,7 +416,7 @@ $("#select_data_popover").click(function () {
                 $("#myModal #viz_container iframe").on( "load", function(){
                     $(this).siblings(".loadingFrame").css( "display", "none" );
                     var execution_flag = $(this).contents().find('.visualisation_execution_input').val();
-                    if (execution_flag === 'success'){
+                    if ((execution_flag === 'success')&&(comp_type === 'map')){
                         $('#add_layer_btn').parent().show();
                         $('#layers-list').parent().show();
                     }
@@ -518,6 +531,18 @@ $("#select_data_popover").click(function () {
                 markers_vessel_color_var.find('option[value= "i0_platform_id"]').remove();
                 markers_vessel_color_var.dropdown('clear');
                 $('.popover-content #color_var').parent().addClass('disabled');
+
+                 //MAP MARKERS GRID
+                var markers_grid_id = $('#viz_config ul li[data-viz-name="get_map_markers_grid"]').attr('data-viz-id');
+
+                var markers_grid_input = $('.popover-content #viz_'+ markers_grid_id+' #marker_limit');
+                markers_grid_input.val(1);
+                markers_grid_input.on('input',function () {
+                    if ( markers_grid_input.val()>=1000 || markers_grid_input.val()<0){
+                        alert('Please set the limit of heatmap points below 1000 and above 0.');
+                        markers_grid_input.val(1);
+                    }
+                });
 
 
             }
