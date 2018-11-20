@@ -1993,7 +1993,7 @@ label.control-label {
   line-height: 1.42857;
 }
 .form-group.label-static label.control-label, .form-group.label-floating.is-focused label.control-label, .form-group.label-floating:not(.is-empty) label.control-label {
-  top: -28px;
+  top: -31px;
   left: 0;
   font-size: 11px;
   line-height: 1.07143;
@@ -3384,7 +3384,7 @@ fieldset[disabled] .form-group.is-focused .togglebutton label {
   background-color: #FFFFFF;
   border: none;
   padding: 15px 15px 5px;
-  font-size: 1.3em;
+  font-size: 1.2em;
 }
 
 .popover-content {

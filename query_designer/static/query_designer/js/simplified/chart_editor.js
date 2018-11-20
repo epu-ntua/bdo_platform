@@ -12,15 +12,17 @@ function updateVariables() {
     for (var i=0; i<json_query_document["from"].length; i++){
         for (var j=0; j<json_query_document["from"][i]["select"].length; j++){
             record = json_query_document["from"][i]["select"][j];
-            var flag = false;
-            for (var element in list_of_options) {
-                if (String(record["title"]) === String(element)) {
-                    flag = true;
+            if((record['exclude'] === false)||(record['exclude']==='')){
+                var flag = false;
+                for (var element in list_of_options) {
+                    if (String(record["title"]) === String(element)) {
+                        flag = true;
+                    }
                 }
-            }
-            if (flag === false) {
-                $('.current_query_select_options').append('<option value=' + String(record["name"]) + '>' + String(record["title"]) + '</option>');
-                list_of_options.push(String(record["title"]));
+                if (flag === false) {
+                    $('.current_query_select_options').append('<option value=' + String(record["name"]) + '>' + String(record["title"]) + '</option>');
+                    list_of_options.push(String(record["title"]));
+                }
             }
         }
     }

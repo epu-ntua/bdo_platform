@@ -1,0 +1,143 @@
+{% load static %}
+{% load leaflet_tags %}
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}" />
+        <link rel="icon" type="image/png" href="{% static 'img/favicon.ico' %}" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+        <title>Big Data Ocean | {% block title %}Online Platform{% endblock %}</title>
+
+        <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
+        <meta name="viewport" content="width=device-width" />
+
+        <!-- Bootstrap core CSS     -->
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" />
+
+        <!--  Material Dashboard CSS    -->
+        <link href="{% static 'css/material-dashboard.css' %}" rel="stylesheet"/>
+        <link href="{% static 'css/colors.css' %}" rel="stylesheet" />
+
+        <link href="{% static 'css/jquery.contextMenu.css' %}" rel="stylesheet" />
+        <link href="{% static 'css/jquery.modal.css' %}" rel="stylesheet" />
+        <link href="{% static 'css/jquery-ui.min.css' %}" rel="stylesheet" />
+
+        <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+
+
+        <style>
+
+            .logo {
+                width: 100px;
+                height: 43px;
+                margin-top: -5px;
+            }
+            .navbar.navbar-transparent {
+                background-color: #1d567e;
+                box-shadow: none;
+                border-bottom: 0;
+                color: white;
+            }
+            nav .btn, .navbar .navbar-nav  li  a.btn{
+                border: none;
+                border-radius: 0px;
+                position: relative;
+                padding: 12px 30px;
+                margin: 10px 1px;
+                font-size: 12px;
+                font-weight: 400;
+                text-transform: none;
+                letter-spacing: 0;
+                will-change: box-shadow, transform;
+                transition: box-shadow 0.2s cubic-bezier(0.4, 0, 1, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            body nav .navbar-header .dropdown a{
+                margin: 6px 0px;
+                background: #30526a00 !important;
+                box-shadow: 0px 1px 0px 0px rgba(153, 153, 153, 0.14), 0px 0px 0px 0px rgba(153, 153, 153, 0.2), 0px 0px 0px 0 rgba(153, 153, 153, 0.12);
+                font-size: 12pt;
+            }
+
+            body nav .navbar-header .dropdown a:hover {
+                box-shadow: 0px 1px 0px 0px rgba(230, 230, 230, 0.97), 0px 0px 0px 0px rgba(153, 153, 153, 0.2), 0px 0px 0px 0 rgba(153, 153, 153, 0.12)
+            }
+
+            nav .btn:not(.btn-just-icon):not(.btn-fab) .fa, .navbar .navbar-nav > li > a.btn:not(.btn-just-icon):not(.btn-fab) .fa {
+                margin-top: 0;
+                top: 0px;
+            }
+
+            .navbar .btn {
+                margin-bottom: 0;
+            }
+
+            .navbar-right .dropdown-menu{
+                color: #30526a;
+            }
+
+            .navbar .form-group.is-focused .form-control {
+              outline: none;
+              background-image: linear-gradient(#D2D2D2, #D2D2D2), linear-gradient(rgba(210, 210, 210, 0.61), rgba(210, 210, 210, 0.6));
+              background-size: 100% 2px, 100% 1px;
+              box-shadow: none;
+              transition-duration: 0.3s;
+            }
+
+            .nav .btn.btn-just-icon, .navbar .navbar-nav > li > a.btn.btn-just-icon {
+                padding: 8px 8px;
+            }
+            .inactiveLink {
+               pointer-events: none;
+               cursor: default;
+            }
+
+
+        </style>
+
+        {% block css %}
+        {% endblock %}
+
+        <!--     Fonts and icons     -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet"> <!-- keeping it for compatibility for now, should delete it-->
+        <link href='https://fonts.googleapis.com/css?family=Roboto:400,700,300|Material+Icons' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
+
+    </head>
+
+    <body>
+        <input class="visualisation_execution_input" value= "fail" type="hidden">
+
+        <div class="wrapper">
+
+            <div class="main-panel">
+                <nav class="navbar navbar-transparent navbar-absolute">
+                    <div class="container-fluid">
+                        <div class="navbar-header">
+                            <a class="navbar-brand js-scroll-trigger inactiveLink" href="#">
+                                <img id="logowhite" class="logo" src="{% static "img/logow.png" %}" alt="BigData Ocean">
+                                <img id="logoblack" style="display:none" class="logo" src="{% static "img/logo.png" %}" alt="BigData Ocean">
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+                <div class="content">
+                    <div class="container-fluid">
+                        {% block content %}
+                            <h2>Error!</h2>
+                            <h4>{{ message|linebreaksbr }} </h4>
+                        {% endblock %}
+                    </div>
+			    </div>
+            </div>
+        </div>
+
+
+
+    </body>
+
+
+</html>

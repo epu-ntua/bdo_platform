@@ -145,8 +145,22 @@ var chart = AmCharts.makeChart("chartdiv", {
         "limitToGraph": "g0",
         "valueLineAlpha": 0.2,
         "valueZoomable": true,
-        "categoryBalloonDateFormat": "DD MMM YYYY, JJ:NN",
+        {% if min_period == 'YYYY' %}
+           "categoryBalloonDateFormat":"YYYY",
+        {% elif min_period == 'MM' %}
+           "categoryBalloonDateFormat":"MMM YYYY",
+        {% elif min_period == 'DD' %}
+           "categoryBalloonDateFormat":"DD MMM YYYY",
+        {% elif min_period == 'hh' %}
+           "categoryBalloonDateFormat":"JJ:NN DD MMM YYYY",
+        {% elif min_period == 'mm' %}
+           "categoryBalloonDateFormat":"JJ:NN DD MMM YYYY",
+        {% else %}
+            "categoryBalloonDateFormat":"DD MMM YYYY JJ:NN:SS",
+        {% endif %}
+
     },
+
     "valueScrollbar": {
         "oppositeAxis": false,
         "offset": 50,
@@ -155,7 +169,7 @@ var chart = AmCharts.makeChart("chartdiv", {
     "categoryField": "{{ category_col }}",
     "categoryAxis": {
         "parseDates": {{ isDate }},
-        {% if isDate %}"minPeriod": "ss",{% endif %}
+        {% if isDate %}"minPeriod": "{{ min_period }}",{% endif %}
         "dashLength": 1,
         "minorGridEnabled": true,
         "boldPeriodBeginning": false,

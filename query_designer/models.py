@@ -47,8 +47,8 @@ class AbstractQuery(Model):
     count = IntegerField(blank=True, null=True, default=None)
     headers = JSONField(blank=True, null=True, default=None)
 
-    def __unicode__(self):
-        return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
+    # def __unicode__(self):
+        # return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
 
     @staticmethod
     def operator_to_str(op, mode='postgres'):
