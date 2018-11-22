@@ -92,15 +92,6 @@
             {% trans 'Query name' %}: <input type="text" name="chart-name" />
         </div>
         <div class="chart-file-control pull-right formula-editor-open" title="Define custom metrics"><i class="fa fa-cog"></i> {% trans 'Define custom metrics' %}</div>
-        <div class="pull-right" id="limit_container">
-            {% trans 'Limit results' %}:
-            <select  style="border: 2px solid grey; border-radius: 1em;" id="limit" name="limit">
-                <option value="none" >- None -</option>
-                <option value="100" selected>100</option>
-                <option value="500">500</option>
-                <option value="1000">1000</option>
-            </select>
-        </div>
         <input type="number" class="hidden" id="offset_input" value="0" />
     </div>
 
@@ -162,7 +153,7 @@
                                         <tbody></tbody>
                                     </table>
                                 </div>
-                                <div id="paginationDiv" style="display: none;">
+                                <div id="paginationDiv" page="0" style="display: none;">
                                     <button id="dataPrevBtn" class="btn btn-default btn-sm">Previous</button>
                                     <button id="dataNextBtn" class="btn btn-default btn-sm">Next</button>
                                 </div>

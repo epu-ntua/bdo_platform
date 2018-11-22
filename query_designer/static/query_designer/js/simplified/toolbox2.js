@@ -306,16 +306,7 @@ $(function () {
             if (doc.from.length === 0) {
                 return
             }
-            if($('#limit_container select').val() !== 'none') {
-                if (parseInt($('#limit_container select').val()) > 50) {
-                    doc['limit'] = 50;
-                    doc['offset'] = parseInt($('#offset_input').val());
-                }
-            }
-            else{
-                doc['limit'] = 50;
-                doc['offset'] = parseInt($('#offset_input').val());
-            }
+            doc['limit'] = 500;
             // get category, values info & filters
             var filterStr = this.constructFiltersParam();
 
@@ -356,14 +347,17 @@ $(function () {
                                 $header.append($('<td />').text(col.title))
                             });
                             $table.find('thead').append($header);
-
+                            var limit = 50;
+                            var lastPage = 0;
                             $.each(response.results, function (idx, res) {
-                                var $row = $('<tr />');
+                                lastPage = Math.floor(idx/limit);
+                                var $row = $('<tr '+(lastPage === 0 ? '' : 'hidden')+ ' page="'+ lastPage+'"/>');
                                 $.each(res, function (jdx, resItem) {
                                     $row.append($('<td />').text(resItem));
                                 });
                                 $table.find('tbody').append($row);
                             });
+                            $("#paginationDiv").attr("lastPage",lastPage);
                             updatePaginationButtons();
                             $("#chart-content-tabs li").eq(1).find('a').click();
                             $("#chart-content-tabs li").eq(0).find('a').click();

@@ -410,22 +410,42 @@ $(function() {
         $(".outputLoadImg").hide();
         $(".outputLoadImg").delay(100).show();
     // $("#run-query-btn").click(function () {
-        $('#offset_input').val(0);
         QueryToolbox.fetchQueryData();
     });
 
     /* On next page btn click, increase the offset and execute the query to fetch results */
     $('body').on('click', '#dataNextBtn', function () {
-        $(".outputLoadImg").show();
-        $('#offset_input').val(parseInt($('#offset_input').val())+50);
-        QueryToolbox.fetchQueryData();
+        var page = parseInt($('#paginationDiv').attr("page"));
+        if (page >= 0){
+            $('#dataPrevBtn').prop('disabled', false);
+        }
+
+        $('#graph-data-table > tbody > tr[page="'+ page +'"]').hide();
+        page++;
+        $('#graph-data-table > tbody > tr[page="' + page + '"]').show();
+        $('#paginationDiv').attr("page",page);
+        lastPage = parseInt($('#paginationDiv').attr("lastpage"));
+        if (page >= lastPage) {
+            $(this).prop('disabled', true);
+        }
     });
 
     /* On prev page btn click, decrease the offset and execute the query to fetch results */
     $('body').on('click', '#dataPrevBtn', function () {
-        $(".outputLoadImg").show();
-        $('#offset_input').val(parseInt($('#offset_input').val())-50);
-        QueryToolbox.fetchQueryData();
+        var page = parseInt($('#paginationDiv').attr("page"));
+        lastPage = parseInt($('#paginationDiv').attr("lastpage"));
+
+        if (page <= lastPage){
+            $('#dataNextBtn').prop('disabled', false);
+        }
+
+        $('#graph-data-table > tbody > tr[page="'+ page +'"]').hide();
+        page--;
+        $('#graph-data-table > tbody > tr[page="'+page+'"]').show();
+        $('#paginationDiv').attr("page",page)
+        if (page <= 0) {
+            $(this).prop('disabled', true);
+        }
     });
 
 
