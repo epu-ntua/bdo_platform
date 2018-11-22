@@ -32,10 +32,10 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         prejoin_name = extract_prejoin_name(self.document['from'])
 
     if is_query_for_average(self.document['from']) and prejoin_name is not None:
-        limit, offset, query, subquery_cnt = build_prejoin_query(prejoin_name, columns,
+        limit, query, subquery_cnt = build_prejoin_query(prejoin_name, columns,
                                                                  prejoin_groups, self)
     else:
-        limit, offset, query, subquery_cnt = build_query(c_name, columns, groups, selects, self)
+        limit, query, subquery_cnt = build_query(c_name, columns, groups, selects, self)
 
     cursor = choose_db_cursor(v_obj)
 
@@ -43,17 +43,11 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         # execute query & return results
         t1 = time.time()
 
-        # count pages
-        if limit is not None:
-            pages = {
-                'current': (offset / limit) + 1,
-                'total': 1
-            }
-        else:
-            pages = {
-                'current': 1,
-                'total': 1
-            }
+
+        pages = {
+            'current': 1,
+            'total': 1
+        }
 
         def _count():
             cursor.execute(subquery_cnt)
@@ -219,17 +213,16 @@ def build_prejoin_query(prejoin_name, columns, prejoin_groups, self):
     where_clause = build_prejoin_where_clause(self, prejoin_name)
     group_clause = build_group_by_clause(prejoin_groups)
     order_by_clause = build_order_by_clause(self)
-    offset, offset_clause = build_offset_clause(self)
     limit, limit_clause = build_limit_clause(self)
 
     subquery = 'SELECT * FROM (' + select_clause + from_clause + where_clause + group_clause + order_by_clause + ') AS SQ1\n'
-    q = subquery + offset_clause + limit_clause
+    q = subquery + limit_clause
     subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
     print 'Initial Query:'
     print subquery
     q, subquery, subquery_cnt = fix_round(q, subquery, subquery_cnt)
     q = fix_date_trunc(q, subquery, subquery_cnt)
-    return limit, offset, q, subquery_cnt
+    return limit, q, subquery_cnt
 
 
 def build_query(c_name, columns, groups, selects, self):
@@ -241,17 +234,16 @@ def build_query(c_name, columns, groups, selects, self):
     where_clause = build_where_clause(self)
     group_clause = build_group_by_clause(groups)
     order_by_clause = build_order_by_clause(self)
-    offset, offset_clause = build_offset_clause(self)
     limit, limit_clause = build_limit_clause(self)
     # organize into subquery
     subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + order_by_clause + ') AS SQ1\n'
-    q = subquery + offset_clause + limit_clause
+    q = subquery + limit_clause
     subquery_cnt = 'SELECT COUNT(*) FROM (' + q + ') AS SQ1\n'
     print 'Initial Query:'
     print subquery
     q, subquery, subquery_cnt = fix_round(q, subquery, subquery_cnt)
     q = fix_date_trunc(q, subquery, subquery_cnt)
-    return limit, offset, q, subquery_cnt
+    return limit, q, subquery_cnt
 
 
 def choose_db_cursor(v_obj):
@@ -470,15 +462,6 @@ def build_limit_clause(self):
         limit = int(self.document['limit'])
         limit_clause = 'LIMIT %d\n' % limit
     return limit, limit_clause
-
-
-def build_offset_clause(self):
-    offset_clause = ''
-    offset = 0
-    if 'offset' in self.document and self.document['offset']:
-        offset = int(self.document['offset'])
-        offset_clause = 'OFFSET %d\n' % offset
-    return offset, offset_clause
 
 
 def fix_date_trunc(q, subquery, subquery_cnt):
