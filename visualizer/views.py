@@ -84,7 +84,10 @@ def get_contour_parameters(request, count):
 def get_markers_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
     marker_limit = str(request.GET.get("marker_limit" + str(count), '1'))
-    platform_id = int(request.GET.get("platform_id" + str(count), 0))
+    try:
+        platform_id = int(request.GET.get("platform_id" + str(count), 0))
+    except ValueError:
+        raise ValueError('Platform ID has a numeric value.(cannot be empty)')
     try:
         marker_limit = int(marker_limit)
     except ValueError:
@@ -106,7 +109,10 @@ def get_markers_parameters(request, count):
 
 def get_plotline_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
-    platform_id = int(request.GET.get("platform_id" + str(count), 0))
+    try:
+        platform_id = int(request.GET.get("platform_id" + str(count), 0))
+    except ValueError:
+        raise ValueError('Platform ID has a numeric value.(cannot be empty)')
     color = str(request.GET.get('plotline_color' + str(count), 'blue'))
     if color not in FOLIUM_COLORS:
         raise ValueError('The chosen color is not supported.')
@@ -164,13 +170,13 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
                 platform_flag = True
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['groupBy'] = True
-                s['aggregate'] = 'round2'
+                # s['groupBy'] = True
+                s['aggregate'] = 'avg'
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = 'round2'
-                s['groupBy'] = True
+                s['aggregate'] = 'avg'
+                # s['groupBy'] = True
                 lon_flag = True
             else:
                 s['exclude'] = True
@@ -178,7 +184,8 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
     if not time_flag:
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
-        doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+        # doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
 
     if not platform_flag:
         raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
@@ -187,8 +194,8 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
             doc['filters'] = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
         else:
             alpha_argument = doc["filters"]
-            beta_argument = '{"a":"' + str(platform_id_filtername) + '", "b": '+ str(platform_id) + ', "op": "eq"}'
-            doc['filters'] = json.loads('{"a":"' + str(alpha_argument) + '", "b": ' + str(beta_argument) + ', "op": "AND"}')
+            beta_argument = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": '+ str(platform_id) + ', "op": "eq"}')
+            doc['filters'] = json.loads('{"a":' + json.dumps(alpha_argument) + ', "b": ' + json.dumps(beta_argument) + ', "op": "AND"}')
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
@@ -245,7 +252,6 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
     query = TempQuery(document=query.document)
     doc = query.document
     time_flag = platform_flag = lat_flag = lon_flag = False
-
     for f in doc['from']:
         for s in f['select']:
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
@@ -259,13 +265,11 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
                 platform_flag = True
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['groupBy'] = True
-                s['aggregate'] = 'round2'
+                s['aggregate'] = 'avg'
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = 'round2'
-                s['groupBy'] = True
+                s['aggregate'] = 'avg'
                 lon_flag = True
             else:
                 s['exclude'] = True
@@ -273,8 +277,8 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
     if not time_flag:
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
-        doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
-
+        # doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
     if not platform_flag:
         raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
@@ -282,8 +286,8 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
             doc['filters'] = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
         else:
             alpha_argument = doc["filters"]
-            beta_argument = '{"a":"' + str(platform_id_filtername) + '", "b": '+ str(platform_id) + ', "op": "eq"}'
-            doc['filters'] = json.loads('{"a":"' + str(alpha_argument) + '", "b": ' + str(beta_argument) + ', "op": "AND"}')
+            beta_argument = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
+            doc['filters'] = json.loads('{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "AND"}')
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
@@ -625,8 +629,8 @@ def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, d
                                               control=True).add_to(m)
     folium.PolyLine(points, color=color, weight=2.5, opacity=0.8,
                     ).add_to(pol_group_layer)
-
-    create_plotline_arrows(points, m, pol_group_layer, color)
+    if points.__len__() != 0:
+        create_plotline_arrows(points, m, pol_group_layer, color)
     ret_html = ""
     return m, ret_html
 
