@@ -861,7 +861,7 @@ def get_zep_getDict_paragraph_response(notebook_id, paragraph_id):
 def create_livy_session(notebook_id):
     print 'looking for livy session'
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = { 'kind': 'pyspark',
              'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
