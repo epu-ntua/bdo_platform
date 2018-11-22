@@ -25,7 +25,6 @@ def convert_unicode_json(data):
     else:
         return data
 
-
 def fig2data(fig):
     """
     @brief Convert a Matplotlib figure to a 4D numpy array with RGBA channels and return it
@@ -304,7 +303,7 @@ def delete_zep_notebook(notebook_id):
 
 def execute_code_on_livy(code, session_id, kind):
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = dict()
     data['code'] = code
@@ -912,7 +911,7 @@ def create_livy_session(notebook_id):
 
 def create_livy_query_statement(session_id, raw_query):
     host = 'http://bdo-dev.epu.ntua.gr:8998'
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
     raw_query = '(SELECT * FROM (SELECT * from wind_speed_11) AS SQ1 LIMIT 1000000) AS tmp'
     data = dict()
     data['code'] = 'df = spark.read.format("jdbc")' \
@@ -940,7 +939,7 @@ def create_livy_query_statement(session_id, raw_query):
 
 def create_livy_toJSON_paragraph(session_id, df_name, order_by='', order_type='ASC'):
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = dict()
     if order_by != '':
@@ -970,7 +969,7 @@ def create_livy_toJSON_paragraph(session_id, df_name, order_by='', order_type='A
 
 def create_livy_scala_toJSON_paragraph(session_id, df_name):
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = dict()
     data['code'] = '{0}_scala.orderBy("startValues").toJSON.collect'.format(df_name)
@@ -994,7 +993,7 @@ def create_livy_scala_toJSON_paragraph(session_id, df_name):
 
 def get_result_dict_from_livy(session_id, dict_name):
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = dict()
     data['code'] = '\nprint {0}'.format(dict_name)
