@@ -12,9 +12,12 @@ def dataset(request, dataset_id):
     rows_to_render = []
     variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
     variable_list_titles = [v.title for v in Variable.objects.filter(dataset=dataset)]
+    variable_list_units = [v.unit for v in Variable.objects.filter(dataset=dataset)]
     dimension_list_canonical = [d.name for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
     dimension_list_titles = [d.title for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
+    dimension_list_units = [d.unit for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
     column_list_titles = variable_list_canonical+dimension_list_canonical
+    column_list_units = variable_list_units+dimension_list_units
     column_list_string = ""
     for column in column_list_titles:
         column_list_string += ", " + column
@@ -44,7 +47,7 @@ def dataset(request, dataset_id):
         'rows_to_render': rows_to_render,
         'variable_list_titles': variable_list_titles,
         'dimension_list_titles': dimension_list_titles,
-        'column_list_titles': column_list_titles
+        'column_list': zip(column_list_titles, column_list_units)
     })
 
 

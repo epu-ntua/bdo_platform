@@ -85,8 +85,8 @@
                                     <table id="sample_table" class="table table-hover">
 	                                    <thead class="text-info">
 	                                        <tr>
-                                                {% for col in column_list_titles%}
-                                                    <th>{{ col }}</th>
+                                                {% for title, unit in column_list%}
+                                                    <th>{{ title }}<br/>{% if unit == '' %}(-){% else %}({{ unit }}){% endif %}</th>
                                                 {% endfor %}
 	                                        </tr>
                                         </thead>

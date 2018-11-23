@@ -18,6 +18,7 @@ h1.dataset-title {
 
 th{
     font-weight: bold !important;
+    white-space: nowrap;
 }
 
 .btn.btn-info{
