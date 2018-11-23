@@ -316,6 +316,7 @@
     box-shadow: 0 1px 0px #d5d5d5;
     padding: 10px 10px;
     cursor: pointer;
+    margin: 15px 0 25px 0;
 }
 
 #select-data-modal #dataset-list-section .dataset-section {
@@ -416,11 +417,24 @@
     height: 10vh;
     min-height: 60px;
     padding: 10px 0px;
+    font-size: 90%;
 }
 
 #select-data-modal  .card .card-footer{
     margin: 0;
     height: 4vh;
+    font-size: 90%;
+}
+
+#select-data-modal  .card .card-footer span{
+    padding: 0;
+}
+
+#select-data-modal  .card .card-footer .btn{
+    margin: 0;
+    padding: 0% 10%;
+    text-transform: none;
+    float: right;
 }
 
 #main-section .jplist-panel .jplist-pagination .jplist-pagingprev,
@@ -476,7 +490,7 @@
 
 .modal {
     position: fixed;
-    top: 10% !important;
+    top: 10vh !important;
     /*z-index: 2;*/
     /*display: block;*/
     left: 20% !important;
@@ -484,6 +498,26 @@
     width: 60% !important;
     overflow: visible !important;
     margin-top: 0 !important;
+}
+
+.modal-body{
+    margin-top: 0;
+    overflow-y: auto;
+    min-height: 20vh;
+    max-height: 50vh;
+}
+
+.modal-dialog{
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.modal-header{
+    box-shadow: 1px 1px #cbcbcb !important;
+}
+
+.modal-footer{
+    box-shadow: 0 -1px #cbcbcb !important;
 }
 
 .close-modal {

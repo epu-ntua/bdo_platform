@@ -132,6 +132,7 @@
                  data-control-name="category-filter-group"
                  data-mode="single"
             >
+                Category:
                 <button id="all-btn" data-path=".dataset-category" data-button="true" data-selected="true" class="jplist-selected ">
                     All
                 </button>
@@ -315,7 +316,8 @@
                               <div class="card-body">
 {#                                <span class="dataset-organization">{{ dataset.organization.title }}</span>#}
 {#                                <span class="dataset-id">{{ dataset.id }}</span>#}
-{#                                <span class="dataset-publisher">{{ dataset.publisher }}</span>#}
+                                <div class="dataset-publisher" title="{{ dataset.publisher}}">{{ dataset.publisher }}</div>
+                                <div class="dataset-description" title="{{ dataset.description}}">{{ dataset.description|truncatechars:150 }}</div>
                                 <div class="dataset-info hidden">
                                     <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
                                         <table class="table table-condensed table-striped">
@@ -378,7 +380,14 @@
                                 </div>
                               </div>
                               <div class="card-footer text-muted">
-                                2 days ago
+                                  <span class="col-sm-10">last updated: 2 day ago</span>
+                                  <span class="col-sm-2">
+                                      {% if dataset.private %}
+                                          <button class="btn btn-danger btn-sm">Private</button>
+                                      {%  else %}
+                                          <button class="btn btn-success btn-sm">Open</button>
+                                      {% endif %}
+                                  </span>
                               </div>
                             </div>
                         </div>
@@ -415,13 +424,23 @@
                         </h4>
                     </div>
                     <div class="modal-body">
-                        <p>{{ dataset.id }}</p>
-                        <p>{{ dataset.organization }}</p>
-                        <p>{{ dataset.private }}</p>
+                        <p><strong>Published by: </strong>{{ dataset.publisher }}</p>
+                        <p>
+                            <strong>Access type: </strong>
+                            {% if dataset.private %}
+                                <button class="btn btn-danger btn-sm">Private</button>
+                            {%  else %}
+                                <button class="btn btn-success btn-sm">Open</button>
+                            {% endif %}
+                        </p>
+                        <p><strong>Category: </strong>Oceanography</p>
+                        <p><strong>Description: </strong>{{ dataset.description }}</p>
+                        <p><strong>License: </strong>{{ dataset.license }}</p>
+                        <p><strong>Observation type: </strong>{{ dataset.observation }}</p>
                     </div>
                     <div class="modal-footer">
-                        <a type="button" class="btn btn-success" href="/datasets/{{ dataset.id }}/">View More</a>
-                        <button class="btn btn-default close-modal-btn" data-dismiss="modal">Close</button>
+                        <a type="button" class="btn btn-success btn-sm" href="/datasets/{{ dataset.id }}/">View More</a>
+                        <button class="btn btn-default close-modal-btn btn-sm" data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -432,7 +451,7 @@
 {% block js %}
     <script>
         $('document').ready(function(){
-           $('#dataset-filter-section select').select2({ width: '100%' });
+           $('#dataset-filter-section select').select2({ width: '100%', dropdownAutoWidth : true });
         });
     </script>
 
