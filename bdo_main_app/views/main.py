@@ -8,12 +8,20 @@ from django.utils.timezone import now
 from aggregator.models import Dataset, Organization, Variable, Dimension
 from bdo_main_app.models import Service
 
+
 def home(request):
     return render(request, 'bdoindex.html')
+
+
 def exploretools(request):
     return render(request, 'explore.html')
 
+
 def dataset_search(request):
+    data_on_top = 'false'
+    if 'data-on-top' in request.GET.keys():
+        data_on_top = request.GET.get('data-on-top')
+
     storage_target = 'UBITECH_PRESTO'
     dataset_list = Dataset.objects.filter(stored_at=storage_target).exclude(variables=None)
     organization_list = Organization.objects.all()
@@ -23,7 +31,8 @@ def dataset_search(request):
         'organizations': organization_list,
         'variables': variable_list,
         'datasets': dataset_list,
-        'dimensions': Dimension.objects.all()
+        'dimensions': Dimension.objects.all(),
+        'data_on_top': data_on_top
     })
 
 def bdohome(request):
