@@ -14,7 +14,7 @@ def exploretools(request):
     return render(request, 'explore.html')
 
 def dataset_search(request):
-    storage_target = 'UBITECH_POSTGRES'
+    storage_target = 'UBITECH_PRESTO'
     dataset_list = Dataset.objects.filter(stored_at=storage_target).exclude(variables=None)
     organization_list = Organization.objects.all()
     variable_list = Variable.objects.all()

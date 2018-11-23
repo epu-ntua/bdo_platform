@@ -309,12 +309,13 @@
                         <div class="dataset_collapse_div dataset-section col-sm-6">
                             <div class="dataset-name card " data-dataset-id="{{ dataset.id }}" data-selected data-toggle="modal" data-target="#metadataModal{{ dataset.id }}">
                               <div class="card-header card-header-text">
-                                <h4 class="card-title dataset-title">{{ dataset.title }}</h4>
+                                <h4 class="card-title dataset-title" title="{{ dataset.title }}">{{ dataset.title }}</h4>
 {#                                <h6 class="card-subtitle mb-2 text-muted dataset-organization">{{ dataset.organization.title }}</h6>#}
                               </div>
                               <div class="card-body">
-                                <span class="dataset-organization">{{ dataset.organization.title }}</span>
-                                <span class="dataset-id">{{ dataset.id }}</span>
+{#                                <span class="dataset-organization">{{ dataset.organization.title }}</span>#}
+{#                                <span class="dataset-id">{{ dataset.id }}</span>#}
+{#                                <span class="dataset-publisher">{{ dataset.publisher }}</span>#}
                                 <div class="dataset-info hidden">
                                     <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
                                         <table class="table table-condensed table-striped">
