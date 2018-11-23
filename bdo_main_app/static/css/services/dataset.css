@@ -6,3 +6,20 @@ h1.dataset-title {
     margin-top: 40px;
     font-size: 3em;
 }
+
+#sample_table{
+    width: 100%;
+    overflow-x: auto;
+}
+
+.text-info{
+    color: #32879c;
+}
+
+th{
+    font-weight: bold !important;
+}
+
+.btn.btn-info{
+    background-color: #32879c;
+}
