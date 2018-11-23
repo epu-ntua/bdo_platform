@@ -35,7 +35,17 @@ class Dataset(Model):
     stored_at = CharField(max_length=32, choices=DATASET_STORAGES, default='LOCAL_POSTGRES')
     table_name = CharField(max_length=200)
     private = BooleanField(default=False)
+    spatialEast = CharField(max_length=200, null=True)
+    spatialSouth = CharField(max_length=200, null=True)
+    spatiaNorth = CharField(max_length=200, null=True)
+    spatialWest = CharField(max_length=200, null=True)
+    temporalCoverageBegin = DateTimeField(null=True)
+    temporalCoverageEnd = DateTimeField(null=True)
+    license = CharField(max_length=200, null=True)
+    observation = CharField(max_length=200, null=True)
+    publisher = TextField()
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
+    metadata = JSONField(default={})
     arguments = JSONField(default={})
     joined_with_dataset = models.ManyToManyField("self",through = 'JoinOfDatasets',
                                                          symmetrical=False,
@@ -90,7 +100,7 @@ class BaseVariable(Model):
 
 
 class Dimension(BaseVariable):
-    variable = ForeignKey('Variable', related_name='dimensions')
+    variable = ForeignKey('Variable', related_name='dimensions', on_delete=CASCADE)
 
     data_column_name = CharField(max_length=255)
     min = DecimalField(blank=True, null=True, default=None, max_digits=100, decimal_places=50)
@@ -214,11 +224,11 @@ class Dimension(BaseVariable):
 
 
 class Variable(BaseVariable):
-    dataset = ForeignKey('Dataset', related_name='variables')
+    dataset = ForeignKey('Dataset', related_name='variables', on_delete=CASCADE)
 
     scale_factor = FloatField(default=1)
     add_offset = FloatField(default=0)
-    cell_methods = ArrayField(TextField())
+    cell_methods = ArrayField(TextField(), null=True)
     type_of_analysis = TextField(blank=True, null=True, default=None)
 
     # {min, 10%, 25%, 50%, 75%, 90%, max}
