@@ -61,7 +61,7 @@ def simplified(request, pk=None):
 
 
 def clean(request, pk=None):
-    storage_target = 'LOCAL_POSTGRES'
+    storage_target = 'UBITECH_PRESTO'
     public_datasets = Dataset.objects.filter(stored_at=storage_target, private=False).exclude(variables=None)
     user_datasets = Dataset.objects.filter(stored_at=storage_target, owner=request.user, private=True).exclude(variables=None)
 

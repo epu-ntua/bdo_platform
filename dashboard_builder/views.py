@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 from query_designer.models import Query
 from visualizer.models import Visualization
 from dashboard_builder.models import Dashboard
+from aggregator.models import *
 
 from . import forms
 
@@ -20,6 +21,28 @@ def build_dynamic_dashboard(request):
             # saved_queries = []
         else:
             saved_queries = []
+
+        datasets = dict()
+        for q in saved_queries:
+            datasets[q.id] = []
+            for var in q.document['from']:
+                var_id = var['type']
+                dataset_id = Variable.objects.get(id=var_id).dataset_id
+                dataset = Dataset.objects.get(id=dataset_id)
+                if dataset not in datasets[q.id]:
+                    datasets[q.id].append(dataset)
+        print datasets
+        variables_list = []
+        dimensions_list = []
+        var_list = Variable.objects.all()
+        dim_list = Dimension.objects.all()
+        for el in var_list:
+            if not (el.name in variables_list):
+                variables_list.append(el.name.encode('ascii'))
+        for el in dim_list:
+            if not (el.name in dimensions_list):
+                dimensions_list.append(el.name.encode('ascii'))
+
         num_of_dashboards = Dashboard.objects.count()
         toCreate = request.GET.get('toCreate', 'None')
         form_class = forms.CkEditorForm
@@ -27,11 +50,14 @@ def build_dynamic_dashboard(request):
             'dashboard_title': num_of_dashboards+1,
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
-            'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
+            'available_viz': Visualization.objects.filter(hidden=False).order_by('-type','-title'),
             'form_class': form_class,
             'components': Visualization.objects.all().order_by('id'),
             'form': form_class,
             'toCreate': toCreate,
+            'variables_list': variables_list,
+            'dimensions_list': dimensions_list,
+            'datasets_of_queries_lists': datasets,
         })
     return None
 
