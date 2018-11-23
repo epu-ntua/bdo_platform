@@ -16,7 +16,6 @@ def build_create_view_query(dataset1, dataset2):
     common_columns = find_common_columns(dataset1_columns, dataset2_columns)
     dataset1_private_cols = get_list_minus_sublist(dataset1_columns, common_columns)
     dataset2_private_cols = get_list_minus_sublist(dataset2_columns, common_columns)
-    print(dataset1_private_cols)
     dataset1_vars = [c[0] for c in dataset1_private_cols if is_variable(c[0])]
     dataset2_vars = [c[0] for c in dataset2_private_cols if is_variable(c[0])]
 

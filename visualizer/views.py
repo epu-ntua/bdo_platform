@@ -1883,10 +1883,10 @@ def get_histogram_chart_am(request):
                             from_table = f['name'][:-2] + '_' + f['type']
                             table_col = d_obj.name + '_' + s['type']
                             cursor = connections['default'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES': # DONE
+                        elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
                             from_table = str(v_obj.dataset.table_name)
                             table_col = str(d_obj.name)
-                            cursor = connections['UBITECH_POSTGRES'].cursor() #DONE
+                            cursor = connections['UBITECH_POSTGRES'].cursor()
                         elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
                             from_table = str(v_obj.dataset.table_name)
                             table_col = str(d_obj.name)
@@ -1903,15 +1903,6 @@ def get_histogram_chart_am(request):
             where_clause = ''
         bins -= 1
 
-        # raw_query = "with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}), " \
-        #             "histogram as (select width_bucket({0}, min, max, {2}) as bucket, " \
-        #             "numrange (min({0}::NUMERIC), max({0}::NUMERIC), '[]') as range, " \
-        #             "count(*) as freq from {1}, drb_stats {3} " \
-        #             "group by bucket " \
-        #             "order by bucket) " \
-        #             "select range, freq " \
-        #             "from histogram; ".format(table_col, from_table, bins, where_clause)
-
         raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
                     histogram as (select width_bucket({0}, min, max, {2}) ,
                      (min({0}), max({0})) as range,
@@ -1921,7 +1912,6 @@ def get_histogram_chart_am(request):
                     select range, freq
                     from histogram""".format(table_col, from_table, bins, where_clause)
 
-        print raw_query
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
 
         result = execute_query_method(query)[0]
