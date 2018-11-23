@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 # THIS MAY RETURN MORE THAN ONE DATASETS BECAUSE 1 DATASET CAN BE RELATED TO MANY PROFILES
                 dataset = Dataset.objects.get(stored_at="UBITECH_PRESTO", table_name=profile["storageTable"])
                 self.stdout.write('modifying dataset ' + str(dataset.title))
-            basic_info = ['title', 'source', 'storageTable', 'publisher', 'description', 'spatialEast', 'spatialSouth', 'spatiaNorth', 'spatialWest',
+            basic_info = ['title', 'source', 'storageTable', 'publisher', 'description', 'spatialEast', 'spatialSouth', 'spatialNorth', 'spatialWest',
                           'temporalCoverageBegin', 'temporalCoverageEnd', 'license', 'observation']
             for field in basic_info:
                 try:
