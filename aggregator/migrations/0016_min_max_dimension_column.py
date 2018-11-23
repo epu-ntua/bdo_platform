@@ -5,17 +5,20 @@ from __future__ import unicode_literals
 from datetime import datetime
 import time
 
+import prestodb
 from django.db import migrations
 from django.db.utils import ProgrammingError
 from aggregator.models import Dimension
 from django.db import connections
+from django.conf import settings
+
 
 
 def forwards(_, __):
     min_dimension_map = {}
     max_dimension_map = {}
     for d in Dimension.objects.all():
-        if d.variable.dataset.stored_at == 'UBITECH_POSTGRES':
+        if d.variable.dataset.stored_at == 'UBITECH_PRESTO':
             min_dimension_map, max_dimension_map = update_min_max_dimension_values(d, min_dimension_map,
                                                                                    max_dimension_map)
 
@@ -92,10 +95,22 @@ def build_query_string(dim_dataset_name, dim_name):
 
 
 def init_variables(dimension):
-    cursor = connections['UBITECH_POSTGRES'].cursor()
+    cursor = get_presto_cursor()
     dim_name = dimension.name
     dim_dataset_name = dimension.variable.data_table_name
     return cursor, dim_dataset_name, dim_name
+
+def get_presto_cursor():
+    presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+    conn = prestodb.dbapi.connect(
+        host=presto_credentials['HOST'],
+        port=presto_credentials['PORT'],
+        user=presto_credentials['USER'],
+        catalog=presto_credentials['CATALOG'],
+        schema=presto_credentials['SCHEMA'],
+    )
+    cursor = conn.cursor()
+    return cursor
 
 
 class Migration(migrations.Migration):
