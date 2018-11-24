@@ -221,7 +221,7 @@
                     </select>
                 </div>
                 <div class="form-group ">
-                    <label for="organization-filter" class="control-label">Organization: </label>
+                    <label for="organization-filter" class="control-label">Publisher: </label>
                     <select
                         title="select organization"
                         data-control-type="filter-select"
@@ -233,7 +233,7 @@
                         <option value="0" data-path="default" selected>All</option>
                         {% for org in organizations %}
                             {% if org.id != 1 %}
-                                <option value="{{ org.id }}" data-path="[data-organization-id='{{ org.id }}']">{{ org.title }}</option>
+                                <option value="{{ org.id }}" data-path="[data-publisher-id='{{ org }}']">{{ org }}</option>
                             {% endif %}
                         {% endfor %}
                     </select>
@@ -247,7 +247,7 @@
 
                     <label class="form-check-label">
                         <input
-                            data-path="[data-dataset-private='True']"
+                            data-path="[data-dataset-private='False']"
                             id="private-filter"
                             class="form-check-input"
                             type="checkbox"
@@ -256,7 +256,7 @@
                         <span class="form-check-sign">
                             <span class="check"></span>
                         </span>
-                        Is private dataset
+                        Open
                     </label>
                 </div>
 
@@ -332,9 +332,13 @@
                                                     <td>Title</td>
                                                     <td>{{ dataset.title }}</td>
                                                 </tr>
-                                                <tr class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">
-                                                    <td>Organization</td>
-                                                    <td>{{ dataset.organization.title }}</td>
+{#                                                <tr class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">#}
+{#                                                    <td>Organization</td>#}
+{#                                                    <td>{{ dataset.organization.title }}</td>#}
+{#                                                </tr>#}
+                                                <tr class="dataset-organization" data-publisher-id="{{ dataset.publisher }}">
+                                                    <td>Publisher</td>
+                                                    <td>{{ dataset.publisher }}</td>
                                                 </tr>
                                                 <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
                                                     <td>Private</td>
