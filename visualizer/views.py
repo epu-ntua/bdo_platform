@@ -1,5 +1,7 @@
 from __future__ import unicode_literals, division
 # -*- coding: utf-8 -*-
+import prestodb
+from django.conf import settings
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.db import connection, connections
@@ -1874,6 +1876,10 @@ def get_histogram_chart_am(request):
                             from_table = str(v_obj.dataset.table_name)
                             table_col = str(v_obj.name)
                             cursor = connections['UBITECH_POSTGRES'].cursor()
+                        elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+                            from_table = str(v_obj.dataset.table_name)
+                            table_col = str(v_obj.name)
+                            cursor = get_presto_cursor()
                     else:
                         d_obj = Dimension.objects.get(pk=int(s['type']))
                         v_obj = d_obj.variable
@@ -1885,6 +1891,10 @@ def get_histogram_chart_am(request):
                             from_table = str(v_obj.dataset.table_name)
                             table_col = str(d_obj.name)
                             cursor = connections['UBITECH_POSTGRES'].cursor()
+                        elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+                            from_table = str(v_obj.dataset.table_name)
+                            table_col = str(d_obj.name)
+                            cursor = get_presto_cursor()
                 else:
                     s['exclude'] = True
         # print doc
@@ -1897,15 +1907,15 @@ def get_histogram_chart_am(request):
             where_clause = ''
         bins -= 1
 
-        raw_query = "with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}), " \
-                    "histogram as (select width_bucket({0}, min, max, {2}) as bucket, " \
-                    "numrange (min({0}::NUMERIC), max({0}::NUMERIC), '[]') as range, " \
-                    "count(*) as freq from {1}, drb_stats {3} " \
-                    "group by bucket " \
-                    "order by bucket) " \
-                    "select range, freq " \
-                    "from histogram; ".format(table_col, from_table, bins, where_clause)
-        # print raw_query
+        raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
+                    histogram as (select width_bucket({0}, min, max, {2}) ,
+                     (min({0}), max({0})) as range,
+                     count(*) as freq from {1}, drb_stats {3}
+                     group by 1
+                     order by 1)
+                    select range, freq
+                    from histogram""".format(table_col, from_table, bins, where_clause)
+
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
 
         result = execute_query_method(query)[0]
@@ -1914,7 +1924,15 @@ def get_histogram_chart_am(request):
         data = cursor.fetchall()
         json_data = []
         for d in data:
-            json_data.append({"startValues": '['+str(float(d[0].lower)) + ',' + str(float(d[0].upper)) + ']', "counts": str(d[1])})
+            if d[0][0] is not None :
+                start_value = str(float(d[0][0]))
+            else :
+                start_value = 'None'
+            if d[0][1] is not None :
+                end_value = str(float(d[0][1]))
+            else :
+                end_value = 'None'
+            json_data.append({"startValues": '['+ start_value + ',' + end_value + ']', "counts": str(d[1])})
         y_var = 'counts'
         x_var = 'startValues'
         # print data
@@ -3145,6 +3163,20 @@ def test_request_zep(request):
 
     # response = requests.delete("http://localhost:8080/api/notebook/"+str(notebook_id))
     return render(request, 'visualizer/table_zep.html', {'notebook_id': notebook_id, 'paragraph_id': viz_paragraph_id})
+
+
+def get_presto_cursor():
+    presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+    conn = prestodb.dbapi.connect(
+        host=presto_credentials['HOST'],
+        port=presto_credentials['PORT'],
+        user=presto_credentials['USER'],
+        catalog=presto_credentials['CATALOG'],
+        schema=presto_credentials['SCHEMA'],
+    )
+    cursor = conn.cursor()
+    return cursor
+
 
 def map_viz_folium_heatmap(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
