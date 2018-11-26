@@ -64,11 +64,12 @@
 #select-data-modal .modal-body #dataset-list-section {
     border-right: ridge #ffffffb5;
     height: 100%;
+    overflow-y: auto;
 }
 
 #select-data-modal .modal-body #dataset-filter-section {
     height: 100%;
-    background-color: #206290;
+    background-color: #1c567e;
     box-shadow: 2px 2px 14px 2px #b9b9b9;
 }
 
@@ -80,9 +81,56 @@
     color: white;
 }
 
+#select-data-modal .modal-body #dataset-filter-section input{
+    color: white;
+}
+
+#select-data-modal .form-group.is-focused .form-control {
+    outline: none;
+    background-image: linear-gradient(#fffcfe, #fef7ff), linear-gradient(rgba(210, 210, 210, 0.61), rgba(210, 210, 210, 0.6));
+    background-size: 100% 2px, 100% 1px;
+    box-shadow: none;
+    transition-duration: 0.3s;
+}
+
+#select-data-modal .form-group {
+    margin: 10px 0 0 0;
+}
+
+#select-data-modal .form-group label {
+    font-size: 14px;
+}
+
+#select-data-modal .checkbox label {
+    font-size: 14px;
+}
+
+#select-data-modal .checkbox .checkbox-material {
+    padding-left: 0;
+}
+
+#select-data-modal .checkbox input[type=checkbox]:not(:checked) + .checkbox-material .check {
+    background: white;
+}
+
+.dataset-section:hover{
+    cursor: pointer;
+    background-color: #ececec;
+}
+
+#select-data-modal #dataset-list-section .dataset-section[data-selected="True"]{
+    background-color: #2a8898;
+    color: white;
+    font-weight: normal;
+}
+
+#select-data-modal #dataset-list-section .dataset-section[data-selected="True"] .dataset-title{
+    color: white;
+}
+
 #select-data-modal .modal-body #dataset-info-section {
     height: 100%;
-    background-color: #ececec;
+    /*background-color: #ececec;*/
 }
 
 #select-data-modal .modal-body .row{
@@ -98,18 +146,28 @@
     word-wrap:break-word;
 }
 
-.dataset-title{
-    cursor: pointer;
+#select-data-modal #dataset-list-section .dataset-title{
+    font-size: 120%;
+    color: #3e4b5b;
+    font-weight: bold;
 }
 
+#select-data-modal #dataset-list-section .dataset-organization{
+    font-size: 80%;
+}
 
+#select-data-modal #dataset-info-section #dataset-variables-div tr:hover{
+    cursor: pointer;
+    background-color: #ececec;
+}
+
+.checkbox .checkbox-material:before {
+     left: 0;
+     top: 0;
+}
 
 #data-filter-search {
     width: 100%;
-}
-
-.dataset-info {
-    font-weight: 600;
 }
 
 .dataset-metadata {
@@ -121,58 +179,75 @@
     cursor: pointer;
 }
 
-.dataset-name {
-    color: #6f6f6f;
-    box-shadow: 0 1px 0px #223b61;
-    font-weight: bold;
-    font-family: sans-serif;
+#select-data-modal #dataset-list-section .dataset-name {
+    box-shadow: 0 1px 0px #d5d5d5;
     padding: 10px 10px;
-}
-
-.dataset-section {
-    margin-bottom: 10px;
-}
-
-.variable-section {
-    margin: 0 0 0 20px;
-    padding: 5px;
-    border: 1px solid #fff;
     cursor: pointer;
-    height: 40px;
-    /* min-width: 100%; */
 }
 
-.variable-section:not(:last-of-type) {
-    border-bottom: 1px solid #eee;
+#select-data-modal #dataset-list-section .dataset-section {
+    margin-bottom: 1px;
 }
 
-.variable-section:hover,
-.variable-section.selected {
-    background: #e9f0ff;
+#select-data-modal #dataset_info_div .dimension-section,
+#select-data-modal #dataset_info_div .variable-section{
+    border: none;
 }
 
-.variable-section.selected {
-    border-left: 1px solid #eee;
-    border-right: 1px solid #eee;
+#select-data-modal #dataset_info_div .variable-section{
+    cursor: pointer;
 }
 
-.variable-section.selected:first-of-type {
-    border-top: 1px solid #eee;
+#select-data-modal #dataset_info_div .variable-section:hover {
+    background-color: #ececec;
 }
 
-.variable-section.selected:last-of-type {
-    border-bottom: 1px solid #eee;
+#select-data-modal #dataset_info_div .variable-section[data-selected="False"]:hover  i.fa-check{
+    display: inline-block;
 }
 
-.variable-section .variable-title {
-    color: #999;
-    /* width: 210px; */
-    width: 35%;
+#select-data-modal #dataset_info_div .variable-section[data-selected="True"]{
+    background-color: #2a8898;
+    color: white;
+}
+
+#select-data-modal #dataset_info_div .variable-section[data-disabled="True"]{
+    background-color: #9fbabd;
+}
+
+#select-data-modal #dataset_info_div .variable-section[data-selected="False"] i{
+    display: none;
+}
+
+#select-data-modal #dataset_info_div .variable-section[data-selected="True"] i.fa-check{
+    display: inline-block;
+}
+
+#dataset_info_div #dataset_basic_info_div .dataset-title{
+    text-align: center;
+    font-size: 150%;
+    font-weight: bold;
+    margin-bottom: 2%;
+}
+
+#dataset_info_div #dataset_basic_info_div .dataset-organization{
+    text-align: center;
+    font-size: 100%;
+    margin-bottom: 2%;
+}
+
+#dataset_info_div #pills_div{
+    margin: 3%;
+}
+
+#select-data-modal #dataset_info_div #dataset_var_dim_div .panel-heading:hover{
+    cursor: pointer;
 }
 
 .selection-body {
-    /*height: 100%;*/
     overflow-y: auto;
+    overflow-x: hidden;
+    overflow-wrap: break-word;
 }
 
 .selection-confirm {
@@ -191,7 +266,11 @@
 
 
 
-.dataset1_info_div {
-    /*height: 100%;*/
+#dataset_info_div {
+    height: 92%;
     overflow-y: auto;
+}
+
+.dataset-metadata .table thead th{
+    font-weight: bold !important;
 }

@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load static %}
 
 <div id="select-data-modal" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -10,172 +11,277 @@
 
             <div class="modal-body">
 
-                <div class="row">
-                    <div id="dataset-filter-section" class="col-sm-2">
+                <div id="dataset-all-section" class="row">
+                    <form id="dataset-filter-section" class="col-sm-2">
                         <h3>Filters</h3>
-                        <input id="searchDatasetInput" type="text" placeholder="Search Dataset..">
-                        <br/><br/>
-                        <label>Search by variable: </label>
-                        <br/>
-                        <select id="var-select" title="select variable">
-                            <option value=""></option>
-                            {% for var in variables %}
-                                <option value="{{ var.safe_name }}">{{ var.safe_name }}</option>
-                            {% endfor %}
-                        </select>
-                        <br/><br/>
-                        <label>Organization: </label>
-                        <br/>
-                        <select id="org-select" title="select organization">
-                            {% for org in organizations %}
-                                <option value="{{ org.title }}">{{ org.title }}</option>
-                            {% endfor %}
-                        </select>
-                        <br/><br/>
-                        <label>Private dataset: </label>
-                        <input type="checkbox" value="private" id="filter-private-dataset"
-                               title="select only private datasets"/>
-                        <br/><br/>
-                        <label>Time information: </label>
-                        <input type="checkbox" value="time" id="filter-by-time" title="Only dataset with time"/>
-                        <br/><br/>
-                        <label>Depth information: </label>
-                        <input type="checkbox" value="depth" id="filter-by-depth" title="Only datasets with depth info"/>
-                    </div>
+                        <!-- text filter control -->
+                        <div class="form-group label-floating is-empty">
+                            <label for="title-filter" class="control-label">Search in title: </label>
+                            <input
+                                data-control-type="textbox"
+                                data-control-action="filter"
+                                data-control-name="title-filter"
+                                data-path=".dataset-name"
+                                type="text"
+                                value=""
+                                class="form-control full-width border-input"
+                                id="title-filter"
+                            />
+                        </div>
+                        <div class="form-group ">
+                            <label for="variable-filter" class="control-label">Search for variable: </label>
+                            <select
+                                title="select variable"
+                                data-control-type="filter-select"
+                                data-control-action="filter"
+                                data-control-name="variable-filter"
+                                class="form-control full-width"
+                                id="variable-filter"
+                            >
+                                <option value="0" data-path="default" selected>All</option>
+                                {% for var in variables %}
+                                    <option value="{{ var.safe_name }}" data-path="[data-variable-name='{{ var.safe_name }}']">{{ var.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group ">
+                            <label for="organization-filter" class="control-label">Organization: </label>
+                            <select
+                                title="select organization"
+                                data-control-type="filter-select"
+                                data-control-action="filter"
+                                data-control-name="organization-filter"
+                                class="form-control full-width"
+                                id="organization-filter"
+                            >
+                                <option value="0" data-path="default" selected>All</option>
+                                {% for org in organizations %}
+                                    {% if org.id != 1 %}
+                                        <option value="{{ org.id }}" data-path="[data-organization-id='{{ org.id }}']">{{ org.title }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div
+                            class="jplist-group checkbox"
+                            data-control-type="checkbox-group-filter"
+                            data-control-action="filter"
+                            data-control-name="private-filter">
+
+                            <label class="form-check-label">
+                                <input
+                                    data-path="[data-dataset-private='True']"
+                                    id="private-filter"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    value=""
+                                />
+                                <span class="form-check-sign">
+                                    <span class="check"></span>
+                                </span>
+                                Is private dataset
+                            </label>
+                        </div>
+
+                        <div
+                            class="jplist-group checkbox"
+                            data-control-type="checkbox-group-filter"
+                            data-control-action="filter"
+                            data-control-name="has-time-filter">
+
+                            <label class="form-check-label">
+                                <input
+                                    data-path="[data-has-time='True']"
+                                    id="has-time-filter"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    value=""
+                                />
+                                <span class="form-check-sign">
+                                    <span class="check"></span>
+                                </span>
+                                Has time information
+                            </label>
+                        </div>
+
+                        <div
+                            class="jplist-group checkbox"
+                            data-control-type="checkbox-group-filter"
+                            data-control-action="filter"
+                            data-control-name="has-depth-filter">
+
+                            <label class="form-check-label">
+                                <input
+                                    data-path="[data-has-depth='True']"
+                                    id="has-depth-filter"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    value=""
+                                />
+                                <span class="form-check-sign">
+                                    <span class="check"></span>
+                                </span>
+                                Has depth information
+                            </label>
+                        </div>
+
+                    </form>
                     <div id="dataset-list-section" class="col-sm-6">
                         <h3>BDO Datasets</h3>
+
                         <div class="selection-body">
-                            <div class="no-results {% if datasets %}hidden{% endif %}">No results found</div>
                             {% for dataset in datasets.all %}
                                 <div class="dataset_collapse_div dataset-section">
-                                    <div class="dataset-info">
-                                        <div class="dataset-name" id={{ dataset.id }}>
-                                            {#                                {{ dataset.organization.title }}#}
-                                            <i class="fa fa-database"></i>
-                                            <span class="dataset-title"
-                                                  title="show/hide variables">{{ dataset.title }}</span>
-                                            <div class="dimensions" hidden>
-                                                dimensions : {% for dim in dataset.variables.first.dimensions.all %}
-                                                <span data-type="{{ dim.pk }}">{{ dim.name }}, </span>
-                                            {% endfor %}
-                                            </div>
-                                            <div class="is-private" hidden> {% if dataset.private %}private{% endif %}
-                                            </div>
-                                            <div class="dataset-source" hidden>{{ dataset.source }} </div>
+                                    <div class="dataset-name" data-dataset-id="{{ dataset.id }}" data-selected>
+{#                                            <i class="fa fa-database"></i>#}
+                                        <div class="dataset-title">
+                                            {{ dataset.title }}
                                         </div>
-                                        <div class="variables1" hidden>
-                                            {% for variable in dataset.variables.all %}
-                                                <div class="variable-section">
-                                                    <div class="variable-name "
-                                                         hidden>{{ variable.safe_name }}</div>
-                                                    <div>
-                                                        <span class="variable-id " hidden>{{ variable.id }}</span>
-                                                        <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}</span>
-                                                        (<span class="variable-unit">{{ variable.unit }}</span>)
-                                                    </div>
-
-                                                    <div class="dimensions" hidden>
-                                                        {% for dimension in variable.dimensions.all %}
-                                                            <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}, </span>
-                                                        {% endfor %}
-                                                    </div>
-                                                </div>
-
-                                            {% endfor %}
-
+                                        <div class="dataset-organization">
+                                            {{ dataset.organization.title }}
                                         </div>
-
                                     </div>
+                                    <div class="dataset-info hidden">
+                                        <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
+                                            <table class="table table-condensed table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="col-sm-4">Property</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="dataset-title">
+                                                        <td>Title</td>
+                                                        <td>{{ dataset.title }}</td>
+                                                    </tr>
+                                                    <tr class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">
+                                                        <td>Organization</td>
+                                                        <td>{{ dataset.organization.title }}</td>
+                                                    </tr>
+                                                    <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
+                                                        <td>Private</td>
+                                                        <td>{{ dataset.private }}</td>
+                                                    </tr>
+                                                    <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
 
+                                                    </tr>
+                                                    <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="dataset-dimensions-div">
+                                            <ul class="list-group">
+                                                {% for dimension in dataset.variables.first.dimensions.all %}
+                                                    <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
+                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        <div class="dataset-variables-div">
+                                            <ul class="list-group">
+                                                {% for variable in dataset.variables.all %}
+                                                    <li class="variable-section list-group-item"
+                                                        data-variable-name="{{ variable.safe_name }}"
+                                                        data-variable-unit="{{ variable.unit }}"
+                                                        data-variable-id="{{ variable.id }}"
+                                                        data-variable-title="{{ variable.title }}"
+                                                        data-selected="False">
+                                                        <span class="variable-id " hidden>{{ variable.id }}</span>
+                                                        <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}
+                                                            (<span class="variable-unit">{{ variable.unit }}</span>)
+                                                            <span class="variable-check-icon pull-right"><i class="fas fa-check"></i></span>
+                                                        </span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                             {% endfor %}
 
-                            <br/>
                         </div>
+                            <!-- no results control -->
+                            <div class="jplist-no-results">No Results Found</div>
                     </div>
                     <div id="dataset-info-section" class="col-sm-4">
-                        <h3>Dataset info</h3>
-                        <div class="collapse dataset1_info_div"></div>
-                        <div class="selection-confirm">
-                            <div class="col-xs-12 hidden">
-                                <div class="row">
-                                    <div class="col-xs-8">
-                                        <label for="selection-aggregate">Aggregate</label>
-                                        <select id="selection-aggregate">
-                                            {% for aggregate in AGGREGATES %}
-                                                <option value="{{ aggregate.0 }}"
-                                                        {% if aggregate.0 == 'AVG' %} {# selected="selected"#}{% endif %}>
-                                                    {{ aggregate.1 }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
+                        <h3>Dataset Info</h3>
+                        <div id="dataset_info_div" class="hidden">
+                            <div id="dataset_basic_info_div">
 
-                                        <div class="selection-group-by">
-                                            <label for="selection-aggregate">Group by</label>
+                            </div>
+                            <div id="pills_div">
+                                <ul class="nav nav-pills nav-justified">
+                                  <li class="active"><a href="#dataset_var_dim_div" data-toggle="pill" >Columns</a></li>
+                                  <li><a href="#dataset_metadata_div" data-toggle="pill" >Info</a></li>
+                                </ul>
+                            </div>
+                            <div class="tab-content">
+                                <div id="dataset_var_dim_div" class="tab-pane fade in active">
+                                    <div class="panel-group">
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading" data-toggle="collapse" data-target="#dataset-dimensions-div">
+                                          <h4 class="panel-title">
+                                            <p>Dimensions</p>
+                                          </h4>
                                         </div>
+                                        <div id="dataset-dimensions-div"  class="panel-collapse collapse">
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div class="col-xs-4">
-                                        <button id="selection-confirm-btn" class="btn btn-sm btn-primary">Add</button>
-                                        <button id="selection-close-btn" class="btn btn-sm btn-default">Close</button>
+                                    <div class="panel-group">
+                                      <div class="panel panel-default">
+                                        <div class="panel-heading" data-toggle="collapse" data-target="#dataset-variables-div">
+                                          <h4 class="panel-title">
+                                            <p>Variables</p>
+                                          </h4>
+                                        </div>
+                                        <div id="dataset-variables-div"  class="panel-collapse collapse in">
+                                        </div>
+                                      </div>
                                     </div>
+                                </div>
+                                <div id="dataset_metadata_div" class="tab-pane fade">
+
                                 </div>
                             </div>
                         </div>
+{#                        <div class="selection-confirm">#}
+{#                            <div class="col-xs-12 hidden">#}
+{#                                <div class="row">#}
+{#                                    <div class="col-xs-8">#}
+{#                                        <label for="selection-aggregate">Aggregate</label>#}
+{#                                        <select id="selection-aggregate">#}
+{#                                            {% for aggregate in AGGREGATES %}#}
+{#                                                <option value="{{ aggregate.0 }}"#}
+{#                                                        {% if aggregate.0 == 'AVG' %} {% endif %}>#}
+{#                                                    {{ aggregate.1 }}#}
+{#                                                </option>#}
+{#                                            {% endfor %}#}
+{#                                        </select>#}
+{##}
+{#                                        <div class="selection-group-by">#}
+{#                                            <label for="selection-aggregate">Group by</label>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                    <div class="col-xs-4">#}
+{#                                        <button id="selection-confirm-btn" class="btn btn-sm btn-primary">Add</button>#}
+{#                                        <button id="selection-close-btn" class="btn btn-sm btn-default">Close</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
                     </div>
                 </div>
             </div>
 
             <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <span class="selection-confirm" hidden><button id="selection-confirm-btn" type="button" class="btn btn-primary" data-dismiss="modal">Add</button></span>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
 </div>
-
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script>
-
-    $(document).ready(function () {
-
-        function applyFilters() {
-            let datasetVal = $("#searchDatasetInput").val().toLowerCase();
-            let timeCheckbox = $("#filter-by-time:checkbox:checked").val();
-            let timeVal = (typeof timeCheckbox === 'undefined') ? '' : timeCheckbox.toLowerCase();
-            let depthCheckbox = $("#filter-by-depth:checkbox:checked").val();
-            let depthVal = (typeof depthCheckbox === 'undefined') ? '' : depthCheckbox.toLowerCase();
-            let isPrivateCheckbox = $("#filter-private-dataset:checkbox:checked").val();
-            let isPrivateVal = (typeof isPrivateCheckbox === 'undefined') ? '' : isPrivateCheckbox.toLowerCase();
-            let organizationVal = $("#org-select").val().toLowerCase();
-            let variableVal = $("#var-select").val().toLowerCase();
-
-            $(".dataset-info").filter(function () {
-                let textToSearch = $(this).text().toLowerCase();
-                let textToSearchDataset = $(this).find(".dataset-title").text().toLowerCase();
-                let shouldBeToggled = textToSearchDataset.indexOf(datasetVal) > -1 &&
-                    textToSearch.indexOf(timeVal) > -1 &&
-                    textToSearch.indexOf(depthVal) > -1 &&
-                    textToSearch.indexOf(isPrivateVal) > -1 &&
-                    textToSearch.indexOf(organizationVal) > -1 &&
-                    textToSearch.indexOf(variableVal) > -1;
-
-                $(this).parent().toggle(shouldBeToggled);
-            });
-        }
-
-        $("#searchDatasetInput").on("keyup", applyFilters);
-        $("#filter-by-time").on("change", applyFilters);
-        $("#filter-by-depth").on("change", applyFilters);
-        $("#filter-private-dataset").on("change", applyFilters);
-        $("#org-select").on("change", applyFilters);
-        $("#var-select").on("change", applyFilters);
-    });
-    $(".org-title").click(function () {
-        $(this).closest(".org-section").find('.dataset_collapse_div').collapse("toggle");
-    });
-
-
-
-
-
-</script>
