@@ -13,6 +13,7 @@
 
     {% leaflet_css %}
     <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
 
     <link href="{% static "query_designer/css/toolbox.css" %}" rel="stylesheet">
     <link href="{% static "query_designer/css/data-modal.css" %}" rel="stylesheet">
@@ -24,6 +25,7 @@
 
 
     <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+    <link href="{% static "query_designer/css/icon_tooltip_css.css" %}" rel="stylesheet">
 
 
     <style>
@@ -216,36 +218,11 @@
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-body">
-                    <div class="row" id="viz_config" style="display: none">
-                        <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                            {% for viz in available_viz %}
-                                <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}"
-                                    data-viz-id="{{ viz.id }}">
-                                    <i class="{{ viz.icon }}" style="margin-right:5px"></i>{{ viz.title }}
-                                    <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left"
-                                          style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
-                                </li>
-                            {% endfor %}
-
-                        </ul>
-                        <div id="viz_container" class="col-sm-8" style="width: 85%">
-                            <div class="loadingFrame">
-                            </div>
-                        </div>
-                    </div>
 
                     {# LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN #}
                     {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
-                    <div id="query-variables-select-container" style="display: none;">
-                        <div id={{ query.id }}>
-                            <option></option>
-                            {% for el in query.document.from %}
-                                {% for var in el.select %}
-                                    <option value="{{ var.name }}">{{ var.title }}</option>
-                                {% endfor %}
-                            {% endfor %}
-                        </div>
-                    </div>
+                    <div id="query-variables-select-container" hidden></div>
+                    <div id="query-dimensions-select-container" hidden ></div>
                 </div>
             </div>
         </div>
@@ -277,6 +254,7 @@
 
     <script src="{% static "query_designer/js/simplified/spatio_temporal_filters.js" %}"></script>
     <script src="{% static "query_designer/js/simplified/chart_editor.js" %}"></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
 
 
     <script>

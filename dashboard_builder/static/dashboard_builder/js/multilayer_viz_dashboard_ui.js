@@ -140,7 +140,7 @@ $("#select_data_popover").click(function () {
                 });
 
 
-                updateVariables($('#query-select'));
+                updateVariables();
 
                 $(component_selector).popover('show');
                 var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
@@ -181,7 +181,7 @@ $("#select_data_popover").click(function () {
                 });
             });
 
-            function updateVariables(element){
+            function updateVariables(){
                 $('#myModal .variable-select').find('option').remove();
                 $('#myModal .variables-select ').find('option').remove();
                 $('#myModal .column-select ').find('option').remove();
@@ -189,12 +189,12 @@ $("#select_data_popover").click(function () {
                 $('#myModal .ais-select ').find('option').remove();
                 var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
                 var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
-                var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
+                // var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
                 $('#myModal .variable-select ').html(variables_content);
                 $('#myModal .variables-select ').html(variables_content);
                 $('#myModal .column-select ').html(variables_content + dimensions_content);
                 $('#myModal .columns-select ').html(variables_content + dimensions_content);
-                $("#myModal .dataset-argument-select").html(dataset_arguments_content);
+                // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
             }
             function populate_selects(){
 

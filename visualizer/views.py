@@ -2462,8 +2462,8 @@ def get_data_table(request):
 
 def create_plotline_arrows(points, m, pol_group_layer, color):
     last_arrow = folium.RegularPolygonMarker(location=[points[len(points) - 1][0], points[len(points) - 1][1]],
-                                             fill_color=color, number_of_sides=6,
-                                             radius=8).add_to(m)
+                                             fill_color='white', number_of_sides=6,
+                                             radius=9).add_to(m)
     last_arrow.add_to(pol_group_layer)
     first_arrow = True
     for i in range(1, len(points)):
@@ -2498,8 +2498,8 @@ def get_arrows(m, n_arrows, first_arrow, locations, color='#68A7EE', size=5):
     arrows = []
     if first_arrow:
         arrows.append(folium.RegularPolygonMarker(location=[locations[0][0], locations[0][1]],
-                                                  fill_color=color, number_of_sides=6,
-                                                  radius=8, rotation=rotation).add_to(m))
+                                                  fill_color='white', number_of_sides=6,
+                                                  radius=9, rotation=rotation).add_to(m))
     else:
         arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
                                                     fill_color=color, number_of_sides=3,
