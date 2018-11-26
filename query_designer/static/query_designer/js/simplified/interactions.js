@@ -195,6 +195,9 @@ $(function() {
             $("select[name='field_aggregate']").find('option[value=""]').each(function () {
                 $(this).attr('disabled', 'disabled');
             });
+            // remove latitude and longitude from group by options
+            $("#id_category > option[data-title='longitude']").remove();
+            $("#id_category > option[data-title='latitude']").remove()
         }
         // if spatial resolution is NOT defined
         else{
@@ -231,6 +234,8 @@ $(function() {
             $("select[name='field_aggregate']").find('option[value=""]').each(function () {
                 $(this).attr('disabled', 'disabled');
             });
+            // remove time from group by options
+            $("#id_category > option[data-title='time']").remove()
         }
         else{
             // check if spatial resolution is defined
