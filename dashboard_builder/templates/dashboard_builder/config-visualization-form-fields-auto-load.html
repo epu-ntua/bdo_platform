@@ -84,10 +84,10 @@
                             {% elif argument.type == 'BOOLEAN' %}
                                 <input id="{{ argument.name }}" type="checkbox" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}"
                                     {% if argument.default ==  "TRUE" %}checked {% endif %}><br>
-                            {% elif argument.type == 'DATASET_ARGUMENT_SELECT' %}
-                                <select id="{{ argument.name }}" class="ui dropdown form-control search full-width dataset-argument-select" name="{{ argument.name }}" >
-
-                                </select>
+{#                            {% elif argument.type == 'DATASET_ARGUMENT_SELECT' %}#}
+{#                                <select id="{{ argument.name }}" class="ui dropdown form-control search full-width dataset-argument-select" name="{{ argument.name }}" >#}
+{##}
+{#                                </select>#}
                             {% elif argument.type == 'SELECT' %}
                                 <select id="{{ argument.name }}" class="ui dropdown form-control full-width select-select" name="{{ argument.name }}" >
                                     {% for option in argument.options %}

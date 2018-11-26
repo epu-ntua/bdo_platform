@@ -412,6 +412,9 @@ $(function() {
     // *** RUN QUERY / EXPLORE RESULTS *** //
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
+        $("#viz_config .list-group").children().each(function () {
+                $(this).find("#selected_viz_span").hide();
+            });
         $(".outputLoadImg").hide();
         $(".outputLoadImg").delay(100).show();
     // $("#run-query-btn").click(function () {

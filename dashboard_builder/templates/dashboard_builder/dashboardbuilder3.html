@@ -5,7 +5,7 @@
 {% block css %}
 
     <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
     {% for viz in available_viz %}
         <style>
             #{{ viz.view_name}}_tip{
@@ -217,17 +217,17 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div id = "query-datasets-extra-arguments" hidden>
-                             {% for key,values in datasets_of_queries_lists.items %}
-                                    <div id={{ key }}>
-                                        {% for el in values %}
-                                            {% for argument in el.arguments.platform_id %}
-                                                <option value="{{ argument }}">{{ argument }}</option>
-                                            {% endfor %}
-                                        {% endfor %}
-                                    </div>
-                            {% endfor %}
-                        </div>
+{#                        <div id = "query-datasets-extra-arguments" hidden>#}
+{#                             {% for key,values in datasets_of_queries_lists.items %}#}
+{#                                    <div id={{ key }}>#}
+{#                                        {% for el in values %}#}
+{#                                            {% for argument in el.arguments.platform_id %}#}
+{#                                                <option value="{{ argument }}">{{ argument }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        {% endfor %}#}
+{#                                    </div>#}
+{#                            {% endfor %}#}
+{#                        </div>#}
 
 
                         <div class="row tab-pane fade" id="viz_note"></div>
@@ -257,7 +257,7 @@
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
     <script src="https://cdn.ckeditor.com/4.9.2/standard/ckeditor.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.js"></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
     <script type="text/javascript">
         var img_source_path =  "{% static "img/loading_gif.gif" %}";
         var to_create_ = "{{ toCreate }}";

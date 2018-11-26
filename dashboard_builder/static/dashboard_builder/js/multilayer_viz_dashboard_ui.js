@@ -140,7 +140,7 @@ $("#select_data_popover").click(function () {
                 });
 
 
-                updateVariables($('#query-select'));
+                updateVariables();
 
                 $(component_selector).popover('show');
                 var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
@@ -181,7 +181,7 @@ $("#select_data_popover").click(function () {
                 });
             });
 
-            function updateVariables(element){
+            function updateVariables(){
                 $('#myModal .variable-select').find('option').remove();
                 $('#myModal .variables-select ').find('option').remove();
                 $('#myModal .column-select ').find('option').remove();
@@ -189,12 +189,12 @@ $("#select_data_popover").click(function () {
                 $('#myModal .ais-select ').find('option').remove();
                 var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
                 var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
-                var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
+                // var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
                 $('#myModal .variable-select ').html(variables_content);
                 $('#myModal .variables-select ').html(variables_content);
                 $('#myModal .column-select ').html(variables_content + dimensions_content);
                 $('#myModal .columns-select ').html(variables_content + dimensions_content);
-                $("#myModal .dataset-argument-select").html(dataset_arguments_content);
+                // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
             }
             function populate_selects(){
 
@@ -484,11 +484,13 @@ $("#select_data_popover").click(function () {
                 // PLOTLINE VESSEL COURSE
                 var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
                 var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
-                plotline_vessel_course_input.val(1);
+                var plotline_platform_id_input = $('.popover-content #viz_'+ plotline_vessel_course_id+' #platform_id');
+                plotline_platform_id_input.val(' ');
+                plotline_vessel_course_input.val(20);
                 plotline_vessel_course_input.on('input',function () {
-                    if (plotline_vessel_course_input.val()>=100 || plotline_vessel_course_input.val()<0){
-                        alert('Please set the limit of plotline points below 100 and above 0.');
-                        plotline_vessel_course_input.val(1);
+                    if (plotline_vessel_course_input.val()>=10000 || plotline_vessel_course_input.val()<0){
+                        alert('Please set the limit of plotline points below 10000 and above 0.');
+                        plotline_vessel_course_input.val(20);
                     }
                 });
                 // POLYGON LINE
@@ -504,11 +506,11 @@ $("#select_data_popover").click(function () {
                 //HEATMAP
                 var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
                 var heatmap_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
-                heatmap_input.val(1);
+                heatmap_input.val(30);
                 heatmap_input.on('input',function () {
                     if ( heatmap_input.val()>=10000 || heatmap_input.val()<0){
                         alert('Please set the limit of heatmap points below 10000 and above 0.');
-                        heatmap_input.val(1);
+                        heatmap_input.val(30);
                     }
                 });
                 var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
@@ -520,11 +522,13 @@ $("#select_data_popover").click(function () {
                 var markers_vessel_id = $('#viz_config ul li[data-viz-name="get_map_markers_vessel_course"]').attr('data-viz-id');
 
                 var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
-                markers_vessel_input.val(1);
+                var markers_platform_id_input = $('.popover-content #viz_'+ markers_vessel_id+' #platform_id');
+                markers_platform_id_input.val(' ');
+                markers_vessel_input.val(20);
                 markers_vessel_input.on('input',function () {
                     if ( markers_vessel_input.val()>=1000 || markers_vessel_input.val()<0){
                         alert('Please set the limit of heatmap points below 1000 and above 0.');
-                        markers_vessel_input.val(1);
+                        markers_vessel_input.val(20);
                     }
                 });
                 var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var').parent();
@@ -536,11 +540,11 @@ $("#select_data_popover").click(function () {
                 var markers_grid_id = $('#viz_config ul li[data-viz-name="get_map_markers_grid"]').attr('data-viz-id');
 
                 var markers_grid_input = $('.popover-content #viz_'+ markers_grid_id+' #marker_limit');
-                markers_grid_input.val(1);
+                markers_grid_input.val(30);
                 markers_grid_input.on('input',function () {
                     if ( markers_grid_input.val()>=1000 || markers_grid_input.val()<0){
                         alert('Please set the limit of heatmap points below 1000 and above 0.');
-                        markers_grid_input.val(1);
+                        markers_grid_input.val(30);
                     }
                 });
 

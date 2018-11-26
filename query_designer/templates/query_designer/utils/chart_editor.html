@@ -10,10 +10,10 @@
 
         <ul class="list-group">
             {% for viz in available_viz %}
-                <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}" data-viz-id="{{ viz.id }}">
-                    <i class="{{ viz.icon }}" style="margin-right:5px"></i>{{ viz.title }}
+                <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}">
+                    <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
+                    <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
                 </li>
-
             {% endfor %}
         </ul>
 

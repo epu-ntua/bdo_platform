@@ -22,16 +22,15 @@ def build_dynamic_dashboard(request):
         else:
             saved_queries = []
 
-        datasets = dict()
-        for q in saved_queries:
-            datasets[q.id] = []
-            for var in q.document['from']:
-                var_id = var['type']
-                dataset_id = Variable.objects.get(id=var_id).dataset_id
-                dataset = Dataset.objects.get(id=dataset_id)
-                if dataset not in datasets[q.id]:
-                    datasets[q.id].append(dataset)
-        print datasets
+        # datasets = dict()
+        # for q in saved_queries:
+        #     datasets[q.id] = []
+        #     for var in q.document['from']:
+        #         var_id = var['type']
+        #         dataset_id = Variable.objects.get(id=var_id).dataset_id
+        #         dataset = Dataset.objects.get(id=dataset_id)
+        #         if dataset not in datasets[q.id]:
+        #             datasets[q.id].append(dataset)
         variables_list = []
         dimensions_list = []
         var_list = Variable.objects.all()
@@ -57,7 +56,7 @@ def build_dynamic_dashboard(request):
             'toCreate': toCreate,
             'variables_list': variables_list,
             'dimensions_list': dimensions_list,
-            'datasets_of_queries_lists': datasets,
+            # 'datasets_of_queries_lists': datasets,
         })
     return None
 
