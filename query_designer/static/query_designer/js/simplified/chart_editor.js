@@ -329,7 +329,7 @@ $(document).ready(function () {
         $('#config-viz-form').append(submitted_args);
 
         if (component_type !== 'map') {
-            var viz_request = "/visualizations/" + $('#myModal').find('.modal-body').find('#action').val();
+            var viz_request = "/visualizations/" + $(component_selector).data('viz-name');
             var chartData = $("#config-viz-form").serialize();
             viz_request += '?' + chartData + '&query=' + $('#selected_query').attr('value');
             show_viz(viz_request);
