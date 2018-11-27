@@ -45,7 +45,7 @@ class Command(BaseCommand):
                 self.stdout.write('adding dataset '+str(dataset.title))
             else:
                 # THIS MAY RETURN MORE THAN ONE DATASETS BECAUSE 1 DATASET CAN BE RELATED TO MANY PROFILES
-                dataset = Dataset.objects.get(stored_at="UBITECH_PRESTO", table_name=profile["storageTable"])
+                dataset = Dataset.objects.filter(stored_at="UBITECH_PRESTO", table_name=profile["storageTable"]).first()
                 self.stdout.write('modifying dataset ' + str(dataset.title))
             basic_info = ['title', 'source', 'storageTable', 'publisher', 'description', 'spatialEast', 'spatialSouth', 'spatialNorth', 'spatialWest',
                           'temporalCoverageBegin', 'temporalCoverageEnd', 'license', 'observation']
@@ -94,4 +94,69 @@ class Command(BaseCommand):
                         dimension = Dimension(name=dim["canonicalName"], title=dim["name"], unit=dim["unit"], variable=variable)
                         dimension.save()
 
+            rows_to_render = []
+            variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
+            variable_list_units = [v.unit for v in Variable.objects.filter(dataset=dataset)]
+            dimension_list_canonical = [d.name for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
+            dimension_list_units = [d.unit for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
+            column_list_titles = variable_list_canonical + dimension_list_canonical
+            column_list_units = variable_list_units + dimension_list_units
+            column_list_string = ""
+            for column in column_list_titles:
+                column_list_string += ", " + column
+            column_list_string = column_list_string[1:]
+            try:
+                presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+                conn_presto = prestodb.dbapi.connect(
+                    host=presto_credentials['HOST'],
+                    port=presto_credentials['PORT'],
+                    user=presto_credentials['USER'],
+                    catalog=presto_credentials['CATALOG'],
+                    schema=presto_credentials['SCHEMA'],
+                )
+                cursor_presto = conn_presto.cursor()
+                query = "SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " LIMIT 5"
+                print query
+                cursor_presto.execute(query)
+                rows_to_render = cursor_presto.fetchall()
+                sample_rows = []
+                for row in rows_to_render:
+                    sample_row = []
+                    for x in row:
+                        if isinstance(x, unicode):
+                            y = x.encode('ascii', 'backslashreplace')
+                        else:
+                            y = x
+                        sample_row.append(y)
+                    sample_rows.append(sample_row)
+                print rows_to_render
+                dataset.sample_rows = {"column_titles": column_list_titles,
+                                       "column_units": column_list_units,
+                                       "data": sample_rows}
+                dataset.save()
+
+            except Exception, e:
+                print 'error'
+                print str(e)
+
+            try:
+                presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+                conn_presto = prestodb.dbapi.connect(
+                    host=presto_credentials['HOST'],
+                    port=presto_credentials['PORT'],
+                    user=presto_credentials['USER'],
+                    catalog=presto_credentials['CATALOG'],
+                    schema=presto_credentials['SCHEMA'],
+                )
+                cursor_presto = conn_presto.cursor()
+                query = "SELECT COUNT(*) FROM " + str(dataset.table_name)
+                print query
+                cursor_presto.execute(query)
+                number_of_rows = cursor_presto.fetchall()[0][0]
+                print number_of_rows
+                dataset.number_of_rows = number_of_rows
+                dataset.save()
+            except Exception, e:
+                print 'error'
+                print str(e)
         self.stdout.write(self.style.SUCCESS('Successfully collected and updated datasets and metadata'))
