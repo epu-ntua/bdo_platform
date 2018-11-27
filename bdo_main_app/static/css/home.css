@@ -304,6 +304,7 @@
     color: white;
     font-weight: normal;
     margin: 0;
+    line-height: 4vh;
 }
 
 #select-data-modal #dataset-list-section .dataset-organization{
@@ -401,7 +402,7 @@
     box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.42), 0 4px 25px 0px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.2);
     margin: -20px 35px 0 0px;
     border-radius: 3px;
-    padding: 10px;
+    padding: 1.1vh;
     background-color: #18505d;
     height: 6vh;
     overflow: hidden;
