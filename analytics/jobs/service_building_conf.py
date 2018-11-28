@@ -19,7 +19,10 @@ def get_job_arguments_and_info(job_id):
         conn = psycopg2.connect("dbname='bdo_platform' user='postgres' host='localhost' password='bdo!'")
     except:
         print "I am unable to connect to the database"
+<<<<<<< Updated upstream
     # conn = connections['default']
+=======
+>>>>>>> Stashed changes
     cur = conn.cursor()
     cur.execute("""SELECT analysis_flow, arguments FROM analytics_jobinstance WHERE id = %d""" % job_id)
     row = cur.fetchone()
@@ -59,7 +62,10 @@ def get_spark_query(args, info, query):
         conn = psycopg2.connect("dbname='bigdataocean' user='bdo' host='212.101.173.21' password='df195715HBdhahfP'")
     except:
         print "I am unable to connect to the database"
+<<<<<<< Updated upstream
     # conn = connections['default']
+=======
+>>>>>>> Stashed changes
     cur = conn.cursor()
 
     col_args = Set()

@@ -55,4 +55,6 @@ urlpatterns = [
 
     # s3direct
     url(r'^s3direct/', include('s3direct.urls')),
+
+    url(r'^feedback/', include('feedback_form.urls')),
 ]

@@ -59,6 +59,7 @@ def create_new_service(request):
 def run_initial_zep_paragraph(request):
     service_id = request.POST.get('service_id')
     service = Service.objects.get(pk=service_id)
+    run_zep_paragraph(service.notebook_id, paragraph_id=settings.BASE_NOTE_LOADER_PARAGRAPH, livy_session_id=0, mode='zeppelin')
     run_zep_paragraph(service.notebook_id, paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH, livy_session_id=0, mode='zeppelin')
     return HttpResponse("OK")
 
@@ -122,8 +123,9 @@ def load_query(request):
         doc['filters'] = update_filter(filters, arg)
 
     raw_query = Query(document=doc).raw_query
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, 'query paragraph', raw_query, index=0, df_name="df_" + query_name)
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, 'query paragraph', raw_query, index=2, df_name="df_" + query_name)
     run_zep_paragraph(notebook_id, query_paragraph_id, livy_session_id=0, mode='zeppelin')
+
 
     result = {query_name: {"dataframe": "df_" + query_name, "paragraph": query_paragraph_id}}
     return HttpResponse(json.dumps(result), content_type="application/json")
@@ -375,7 +377,7 @@ def submit_service_args(request, service_id):
         for name, info in queries.iteritems():
             for original_paragraph_id in info['paragraphs']:
                 raw_query = TempQuery.objects.get(pk=int(info['temp_q'])).raw_query
-                new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=0, df_name="df_"+name)
+                new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=2, df_name="df_"+name)
                 if settings.TEST_SERVICES:
                     excluded_paragraphs.append(original_paragraph_id)
                     new_created_paragraphs.append(new_query_paragraph_id)

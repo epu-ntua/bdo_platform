@@ -12,6 +12,7 @@ import requests
 import collections
 from django.db import connections
 from django.conf import settings
+from service_builder.models import ServiceInstance
 
 
 def convert_unicode_json(data):
@@ -23,7 +24,6 @@ def convert_unicode_json(data):
         return type(data)(map(convert_unicode_json, data))
     else:
         return data
-
 
 def fig2data(fig):
     """
@@ -185,7 +185,7 @@ def clone_zep_note(notebook_id, name):
 
 def run_zep_note(notebook_id, exclude=[], mode='zeppelin'):
     if mode == 'livy':
-        session_id = create_livy_session()
+        session_id = create_livy_session(notebook_id)
     response_status = 500
     # number of tries
     counter = 1
@@ -199,11 +199,23 @@ def run_zep_note(notebook_id, exclude=[], mode='zeppelin'):
             print 'excluded paragraph: {0}'.format(str(p['id']))
     if mode == 'livy':
         for p in paragraphs:
-            run_zep_paragraph(notebook_id, p, session_id, mode)
+            run_result = run_zep_paragraph(notebook_id, p, session_id, mode)
         return session_id
     else:
         for p in paragraphs:
-            run_zep_paragraph(notebook_id, p, 0, mode)
+            run_result = run_zep_paragraph(notebook_id, p, 0, mode, 1)
+            if run_result == 1:
+                paragraphs = []
+                response = requests.get(settings.ZEPPELIN_URL + "/api/notebook/" + str(notebook_id))
+                response_json = response.json()
+                for p in response_json['body']['paragraphs']:
+                    if str(p['id']) not in exclude:
+                        paragraphs.append(p['id'])
+                    else:
+                        print 'excluded paragraph: {0}'.format(str(p['id']))
+                for p in paragraphs:
+                    run_result = run_zep_paragraph(notebook_id, p, 0, mode, 2)
+                break
         return 0
 
 def create_zep_test_query_paragraph(notebook_id, title, raw_query):
@@ -254,14 +266,9 @@ def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name
     data['title'] = title
     conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
     data['text'] = '%spark.pyspark' \
-                   '\n'+df_name+'= spark.read.format("jdbc")' \
-                   '.option("url", "jdbc:postgresql://'+conn_dict["HOST"]+':'+conn_dict["PORT"]+'/'+conn_dict["NAME"]+'?user='+conn_dict["USER"]+'&password='+conn_dict["PASSWORD"]+'")' \
-                   '.option("driver", "org.postgresql.Driver")' \
-                   '.option("database", "'+conn_dict["NAME"]+'")' \
-                   '.option("dbtable", "(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
-                   '.load()' \
+                   '\n'+df_name+'= load_df("(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
                    '\n'+df_name+'.printSchema()'
-
+    data['editorHide'] = True
     # data['text'] =  '%spark.pyspark' \
     #                 '\n' + df_name + '= spark.read.format("jdbc")' \
     #                 '.option("url", "jdbc:postgresql://localhost:5432/bdo_platform?user=postgres&password=1234")' \
@@ -296,7 +303,7 @@ def delete_zep_notebook(notebook_id):
 
 def execute_code_on_livy(code, session_id, kind):
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = dict()
     data['code'] = code
@@ -318,7 +325,7 @@ def execute_code_on_livy(code, session_id, kind):
     return statement_id
 
 
-def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
+def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode, attempt=2):
     if mode == 'livy':
         data = dict()
         str_data = json.dumps(data)
@@ -333,6 +340,7 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
 
         if code is not None or code != '':
             execute_code_on_livy(code=code, session_id=livy_session_id, kind=kind)
+        return 0 #end
     else:
         response_status = 500
         counter = 3
@@ -342,10 +350,19 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode):
             response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/run/" + str(notebook_id) + "/" + str(paragraph_id), data=str_data)
             print response
             counter -= 1
-            if counter < 0:
-                return HttpResponse(status=500)
             response_status = response.status_code
-            # TODO: CHANGE THE ABOVE CODE BECAUSE EVERY TIME STATUS 500 IS RETURNED
+            if response_status != 200 and counter == 1:
+                if attempt == 1:
+                    import time
+                    time.sleep(7)
+                    restart_zep_interpreter(settings.ZEPPELIN_SPARK_INTERPRETER)
+                    return 1
+                else:
+                    # return 2
+                    return HttpResponse(status=500)
+            if counter == 0:
+                # return 2
+                return HttpResponse(status=500)
 
 
 def create_zep_viz_paragraph(notebook_id, title):
@@ -692,7 +709,8 @@ def set_zep_paragraph_pie_chart(notebook_id, paragraph_id, query_doc, value_vars
 
 
 def restart_zep_interpreter(interpreter_id):
-    interpreter_id = '2D6CA11G8'
+    print "RESTARTING INTERPRETER!!!"
+    interpreter_id = 'settings.ZEPPELIN_SPARK_INTERPRETER'
     response = requests.put(settings.ZEPPELIN_URL+"/api/interpreter/setting/restart/"+interpreter_id)
     print response
 
@@ -800,11 +818,14 @@ def get_zep_scala_toJSON_paragraph_response(notebook_id, paragraph_id):
 def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
     print "request: "+settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id)
     response = requests.get(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph/"+str(paragraph_id))
+    print "get_zep_toJSON_paragraph_response:"
     print response
+    # import pdb
+    # pdb.set_trace()
     response_json = convert_unicode_json(response.json())
     json_data = json.loads(str(response_json['body']['results']['msg'][0]['data']).strip().replace("u'{", "{").replace("}'", "}").replace("'", '"'))
     print json_data[:3]
-    # print type(json_data)
+    print type(json_data)
     json_data = convert_unicode_json(json_data)
     print json_data[:3]
     # print type(json_data)
@@ -836,22 +857,48 @@ def get_zep_getDict_paragraph_response(notebook_id, paragraph_id):
     return json_data
 
 
-def create_livy_session():
+def create_livy_session(notebook_id):
+    print 'looking for livy session'
     host = settings.LIVY_URL
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
+
     data = { 'kind': 'pyspark',
              'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
-             'driverMemory': '7g',
+             'driverMemory': '2g',
              'driverCores': 2,
-             'numExecutors': 2,
-             'executorMemory': '5g',
+             'numExecutors': 1,
+             'executorMemory': '2g',
              'executorCores': 2,
-             'heartbeatTimeoutInSecond': 60,
+             'heartbeatTimeoutInSecond': 120,
              'conf': {'spark.driver.maxResultSize': '2g'}}
-    headers = {'Content-Type': 'application/json'}
     response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
-    print response
+    # print response
+
+    sessions = requests.get(host + '/sessions', headers=headers).json()['sessions']
+    ids_states = [(int(s['id']),s['state'] ) for s in sessions]
+    print 'session ids'
+    print ids_states
+    cnt=0
+    session_id = -1
+    print 'looking for session in list'
+    for (id, state) in ids_states:
+        cnt += 1
+        if len(ServiceInstance.objects.filter(livy_session=id)) == 0:
+            if state == 'starting' or state == 'idle':
+                serviceInstance = ServiceInstance.objects.get(notebook_id=notebook_id)
+                serviceInstance.livy_session = id
+                serviceInstance.save()
+                session_id = id
+                break
+    print 'found session?'
+    print session_id
+    response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
+    if session_id == -1:
+        try:
+            session_id = response['id']
+        except Exception:
+            raise Exception('Failed')
     try:
-        session_id = response['id']
         state = ''
         while state != 'idle':
             state = requests.get(host + '/sessions/' + str(session_id) + '/state', headers=headers).json()['state']
@@ -864,7 +911,7 @@ def create_livy_session():
 
 def create_livy_query_statement(session_id, raw_query):
     host = 'http://bdo-dev.epu.ntua.gr:8998'
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
     raw_query = '(SELECT * FROM (SELECT * from wind_speed_11) AS SQ1 LIMIT 1000000) AS tmp'
     data = dict()
     data['code'] = 'df = spark.read.format("jdbc")' \
@@ -892,7 +939,7 @@ def create_livy_query_statement(session_id, raw_query):
 
 def create_livy_toJSON_paragraph(session_id, df_name, order_by='', order_type='ASC'):
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = dict()
     if order_by != '':
@@ -917,12 +964,12 @@ def create_livy_toJSON_paragraph(session_id, df_name, order_by='', order_type='A
     except Exception:
         raise Exception('Failed')
 
-    return convert_unicode_json(response['output']['data']['text/plain'].replace("u'{", "{").replace("}',", "},").replace("}']", "}]").replace("'", '"'))
+    return json.loads(response['output']['data']['text/plain'].replace("\'","'").replace("u'{", "{").replace("}',", "},").replace("}']", "}]").replace("'", '"'))
 
 
 def create_livy_scala_toJSON_paragraph(session_id, df_name):
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = dict()
     data['code'] = '{0}_scala.orderBy("startValues").toJSON.collect'.format(df_name)
@@ -946,7 +993,7 @@ def create_livy_scala_toJSON_paragraph(session_id, df_name):
 
 def get_result_dict_from_livy(session_id, dict_name):
     host = settings.LIVY_URL
-    headers = {'Content-Type': 'application/json'}
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = dict()
     data['code'] = '\nprint {0}'.format(dict_name)
