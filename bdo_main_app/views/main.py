@@ -5,12 +5,40 @@ from datetime import timedelta
 from django.shortcuts import render
 from django.utils.timezone import now
 
+from aggregator.models import Dataset, Organization, Variable, Dimension
 from bdo_main_app.models import Service
+
 
 def home(request):
     return render(request, 'bdoindex.html')
+
+
 def exploretools(request):
     return render(request, 'explore.html')
+
+
+def dataset_search(request):
+    data_on_top = 'false'
+    if 'data-on-top' in request.GET.keys():
+        data_on_top = request.GET.get('data-on-top')
+
+    storage_target = 'UBITECH_PRESTO'
+    dataset_list = Dataset.objects.filter(stored_at=storage_target).exclude(variables=None)
+    organization_list = Organization.objects.all()
+    organization_list = set([d.publisher for d in dataset_list])
+    observation_list = set([d.observation for d in dataset_list])
+    license_list = set([d.license for d in dataset_list])
+    variable_list = Variable.objects.all()
+
+    return render(request, 'dataset_search.html', {
+        'organizations': organization_list,
+        'observations': observation_list,
+        'licenses': license_list,
+        'variables': variable_list,
+        'datasets': dataset_list,
+        'dimensions': Dimension.objects.all(),
+        'data_on_top': data_on_top
+    })
 
 def bdohome(request):
     return render(request, 'index.html', {

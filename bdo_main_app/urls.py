@@ -6,7 +6,7 @@ import service_builder.views as sb_views
 urlpatterns = [
     # home & signup
     url('^$', views.home, name='home'),
-    url('^bdo/$', views.bdohome, name='bdo'),
+    url('^bdo/$', views.dataset_search, name='bdo'),
     url('^search/$', views.search, name='search'),
     url('^exploretools/$', views.exploretools, name='exploretools'),
 
