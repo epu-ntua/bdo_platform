@@ -260,6 +260,22 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div class="form-group ">
+                    <label for="license-filter" class="control-label">License: </label>
+                    <select
+                        title="select license type"
+                        data-control-type="filter-select"
+                        data-control-action="filter"
+                        data-control-name="license-filter"
+                        class="form-control full-width"
+                        id="license-filter"
+                    >
+                        <option value="0" data-path="default" selected>All</option>
+                        {% for license in licenses %}
+                            <option value="{{ license }}" data-path="[data-license='{{ license }}']">{{ license }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
                 <div
                     class="jplist-group checkbox"
@@ -278,7 +294,7 @@
                         <span class="form-check-sign">
                             <span class="check"></span>
                         </span>
-                        Open
+                        Is open dataset
                     </label>
                 </div>
 
@@ -371,6 +387,10 @@
                                                     <tr class="dataset-observation" data-observation="{{ dataset.observation }}">
                                                         <td>Observation Type</td>
                                                         <td>{{ dataset.observation }}</td>
+                                                    </tr>
+                                                    <tr class="dataset-license" data-license="{{ dataset.license }}">
+                                                        <td>License</td>
+                                                        <td>{{ dataset.license }}</td>
                                                     </tr>
                                                     <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
                                                         <td>Private</td>

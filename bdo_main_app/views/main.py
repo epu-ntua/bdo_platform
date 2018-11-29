@@ -27,11 +27,13 @@ def dataset_search(request):
     organization_list = Organization.objects.all()
     organization_list = set([d.publisher for d in dataset_list])
     observation_list = set([d.observation for d in dataset_list])
+    license_list = set([d.license for d in dataset_list])
     variable_list = Variable.objects.all()
 
     return render(request, 'dataset_search.html', {
         'organizations': organization_list,
         'observations': observation_list,
+        'licenses': license_list,
         'variables': variable_list,
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
