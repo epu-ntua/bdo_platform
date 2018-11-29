@@ -244,6 +244,22 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div class="form-group ">
+                    <label for="observation-filter" class="control-label">Observation Type: </label>
+                    <select
+                        title="select observation type"
+                        data-control-type="filter-select"
+                        data-control-action="filter"
+                        data-control-name="observation-filter"
+                        class="form-control full-width"
+                        id="observation-filter"
+                    >
+                        <option value="0" data-path="default" selected>All</option>
+                        {% for observation in observations %}
+                            <option value="{{ observation }}" data-path="[data-observation='{{ observation }}']">{{ observation }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
                 <div
                     class="jplist-group checkbox"
@@ -351,6 +367,10 @@
                                                     <tr class="dataset-organization" data-publisher-id="{{ dataset.publisher }}">
                                                         <td>Publisher</td>
                                                         <td>{{ dataset.publisher }}</td>
+                                                    </tr>
+                                                    <tr class="dataset-observation" data-observation="{{ dataset.observation }}">
+                                                        <td>Observation Type</td>
+                                                        <td>{{ dataset.observation }}</td>
                                                     </tr>
                                                     <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
                                                         <td>Private</td>

@@ -26,10 +26,12 @@ def dataset_search(request):
     dataset_list = Dataset.objects.filter(stored_at=storage_target).exclude(variables=None)
     organization_list = Organization.objects.all()
     organization_list = set([d.publisher for d in dataset_list])
+    observation_list = set([d.observation for d in dataset_list])
     variable_list = Variable.objects.all()
 
     return render(request, 'dataset_search.html', {
         'organizations': organization_list,
+        'observations': observation_list,
         'variables': variable_list,
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
