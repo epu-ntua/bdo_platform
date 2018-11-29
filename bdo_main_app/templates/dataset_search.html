@@ -322,72 +322,78 @@
                               <div class="card-body">
 {#                                <span class="dataset-organization">{{ dataset.organization.title }}</span>#}
 {#                                <span class="dataset-id">{{ dataset.id }}</span>#}
-                                <div class="dataset-publisher" title="{{ dataset.publisher}}">{{ dataset.publisher }}</div>
-                                <div class="dataset-description" title="{{ dataset.description}}">{{ dataset.description|truncatechars:150 }}</div>
-                                <div class="dataset-info hidden">
-                                    <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
-                                        <table class="table table-condensed table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th class="col-sm-4">Property</th>
-                                                    <th>Value</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr class="dataset-title">
-                                                    <td>Title</td>
-                                                    <td>{{ dataset.title }}</td>
-                                                </tr>
-{#                                                <tr class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">#}
-{#                                                    <td>Organization</td>#}
-{#                                                    <td>{{ dataset.organization.title }}</td>#}
-{#                                                </tr>#}
-                                                <tr class="dataset-organization" data-publisher-id="{{ dataset.publisher }}">
-                                                    <td>Publisher</td>
-                                                    <td>{{ dataset.publisher }}</td>
-                                                </tr>
-                                                <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
-                                                    <td>Private</td>
-                                                    <td>{{ dataset.private }}</td>
-                                                </tr>
-                                                <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
+                                  <div class="col-sm-2">
+                                      <span class="helper" style="display: inline-block"></span>
+                                      <img src="{{ dataset.image_uri}}" style="display: inline-block"/>
+                                  </div>
+                                  <div class="col-sm-10">
+                                      <div class="dataset-publisher" title="{{ dataset.publisher}}">{{ dataset.publisher }}</div>
+                                      <div class="dataset-description" title="{{ dataset.description}}">{{ dataset.description|truncatechars:150 }}</div>
+                                      <div class="dataset-info hidden">
+                                        <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
+                                            <table class="table table-condensed table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="col-sm-4">Property</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="dataset-title">
+                                                        <td>Title</td>
+                                                        <td>{{ dataset.title }}</td>
+                                                    </tr>
+    {#                                                <tr class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">#}
+    {#                                                    <td>Organization</td>#}
+    {#                                                    <td>{{ dataset.organization.title }}</td>#}
+    {#                                                </tr>#}
+                                                    <tr class="dataset-organization" data-publisher-id="{{ dataset.publisher }}">
+                                                        <td>Publisher</td>
+                                                        <td>{{ dataset.publisher }}</td>
+                                                    </tr>
+                                                    <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
+                                                        <td>Private</td>
+                                                        <td>{{ dataset.private }}</td>
+                                                    </tr>
+                                                    <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
 
-                                                </tr>
-                                                <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
-                                                </tr>
-                                                <tr class="dataset-category" data-category='{{ dataset.category }}'>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                                    </tr>
+                                                    <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
+                                                    </tr>
+                                                    <tr class="dataset-category" data-category='{{ dataset.category }}'>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="dataset-dimensions-div">
+                                            <ul class="list-group">
+                                                {% for dimension in dataset.variables.first.dimensions.all %}
+                                                    <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
+                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        <div class="dataset-variables-div">
+                                            <ul class="list-group">
+                                                {% for variable in dataset.variables.all %}
+                                                    <li class="variable-section list-group-item"
+                                                        data-variable-name="{{ variable.safe_name }}"
+                                                        data-variable-unit="{{ variable.unit }}"
+                                                        data-variable-id="{{ variable.id }}"
+                                                        data-variable-title="{{ variable.title }}"
+                                                        data-selected="False">
+                                                        <span class="variable-id " hidden>{{ variable.id }}</span>
+                                                        <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}
+                                                            (<span class="variable-unit">{{ variable.unit }}</span>)
+                                                            <span class="variable-check-icon pull-right"><i class="fas fa-check"></i></span>
+                                                        </span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
                                     </div>
-                                    <div class="dataset-dimensions-div">
-                                        <ul class="list-group">
-                                            {% for dimension in dataset.variables.first.dimensions.all %}
-                                                <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
-                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                    <div class="dataset-variables-div">
-                                        <ul class="list-group">
-                                            {% for variable in dataset.variables.all %}
-                                                <li class="variable-section list-group-item"
-                                                    data-variable-name="{{ variable.safe_name }}"
-                                                    data-variable-unit="{{ variable.unit }}"
-                                                    data-variable-id="{{ variable.id }}"
-                                                    data-variable-title="{{ variable.title }}"
-                                                    data-selected="False">
-                                                    <span class="variable-id " hidden>{{ variable.id }}</span>
-                                                    <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}
-                                                        (<span class="variable-unit">{{ variable.unit }}</span>)
-                                                        <span class="variable-check-icon pull-right"><i class="fas fa-check"></i></span>
-                                                    </span>
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </div>
+                                  </div>
                               </div>
                               <div class="card-footer text-muted">
                                   <span class="col-sm-10">last updated: 2 day ago</span>
