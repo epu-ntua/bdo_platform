@@ -564,8 +564,8 @@ def map_visualizer(request):
     css_all = soup.findAll('link')
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
-    html1 = render_to_string('visualizer/map_wjs.html',
-                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
+    html1 = render_to_string('visualizer/final_map_folium_template.html',
+                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
     # print(html1)
     return HttpResponse(html1)
 
@@ -813,7 +813,7 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
             data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
 
         create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
-                                max_lon, min_lat, min_lon)
+                                max_lon, min_lat, min_lon, legpath)
         map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
                                                   step)
         return m, ret_html, map_id
@@ -834,6 +834,8 @@ def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, m
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
     f.close()
+    # import pdb
+    # pdb.set_trace()
     temp_html = render_to_string('visualizer/map_viz_folium.html',
                                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step,
                                   'data_grid': data_grid, 'min_lat': min_lat,
@@ -848,7 +850,7 @@ def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, m
 
 
 def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat, max_lon,
-                            min_lat, min_lon):
+                            min_lat, min_lon, legpath):
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     # read in png file to numpy array
     data_img = Image.open(mappath)
@@ -859,7 +861,13 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
     contour_layer.layer_name = 'Contours On Map - Layer:' + str(time.time()).replace(".","_")
     m.add_child(contour_layer)
-    # Overlay an extra coastline field (to be removed
+    # legend_img = Image.open(legpath)
+    # legend = trim(legend_img)
+    # legend_img.close()
+    # contour_legend_layer = plugins.ImageOverlay(legend, zindex=2, opacity=1,bounds=[[-60, -173], [-55, -90]])
+    # contour_legend_layer.layer_name = 'Contours Legend - Layer:' + str(time.time()).replace(".", "_")
+    # m.add_child(contour_legend_layer)
+    # Overlay an extra coastline field (to be removed)
     folium.GeoJson(open('ne_50m_land.geojson').read(),
                    style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
         .add_to(m) \
@@ -875,11 +883,11 @@ def get_contour_legend(max_val, min_val):
     pl.gca().set_visible(False)
     cax = pl.axes([0.1, 0.2, 0.8, 0.6])
     cbar = pl.colorbar(orientation="horizontal", cax=cax)
-    cbar.ax.tick_params(labelsize=11, colors="#ffffff")
+    cbar.ax.tick_params(labelsize=9, colors="#ffffff")
     ts = str(time.time()).replace(".", "")
     legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
     pl.savefig(legpath, transparent=True, bbox_inches='tight')
-    legpath = legpath.split("static/", 1)[1]
+    # legpath = legpath.split("static/", 1)[1]
     pl.clf()
     pl.close()
     return legpath
@@ -917,14 +925,17 @@ def get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat
         pop_row = list()
         for lat in lats_bins:
             row.append(None)
-            pop_row.append('None')
+            pop_row.append(('None').encode('ascii'))
         final_data.append(row)
         data_grid.append(pop_row)
     for d in data:
         lon_pos = int((d[lon_index] - min_lon) / step)
         lat_pos = int((d[lat_index] - min_lat) / step)
         final_data[lon_pos][lat_pos] = d[var_index]
-        data_grid[lon_pos][lat_pos] = str(d[var_index])
+        if d[var_index] != 'None':
+            data_grid[lon_pos][lat_pos] = str(d[var_index])
+        else:
+            data_grid[lon_pos][lat_pos] = str(-9999999)
 
     return final_data, data_grid
 
