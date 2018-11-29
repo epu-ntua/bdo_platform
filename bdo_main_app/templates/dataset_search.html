@@ -142,6 +142,12 @@
                 <button id="ais-btn" data-path="[data-category='ais']" data-button="true" class="">
                     AIS
                 </button>
+                <button id="weather-btn" data-path="[data-category='weather']" data-button="true" class="">
+                    Weather
+                </button>
+                <button id="weather-btn" data-path="[data-category='vessel']" data-button="true" class="">
+                    Vessel
+                </button>
             </div>
 
             <div
@@ -349,7 +355,7 @@
                                                 </tr>
                                                 <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
                                                 </tr>
-                                                <tr class="dataset-category" data-category='oceanography'>
+                                                <tr class="dataset-category" data-category='{{ dataset.category }}'>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -437,7 +443,7 @@
                                 <button class="btn btn-success btn-sm">Open</button>
                             {% endif %}
                         </p>
-                        <p><strong>Category: </strong>Oceanography</p>
+                        <p><strong>Category: </strong>{{ dataset.category }}</p>
                         <p><strong>Description: </strong>{{ dataset.description }}</p>
                         <p><strong>License: </strong>{{ dataset.license }}</p>
                         <p><strong>Observation type: </strong>{{ dataset.observation }}</p>
