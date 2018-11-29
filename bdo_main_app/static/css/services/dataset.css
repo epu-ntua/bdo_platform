@@ -19,6 +19,10 @@ h1.dataset-title {
     margin: 0;
 }
 
+.btn-danger{
+    background-color: #cc2215 !important;
+}
+
 .card h4{
     margin-top: 0;
 }

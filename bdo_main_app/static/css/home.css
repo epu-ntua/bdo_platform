@@ -330,6 +330,10 @@
     color: black;
 }
 
+.btn-danger{
+    background-color: #cc2215 !important;
+}
+
 .checkbox .checkbox-material:before {
      left: 0;
      top: 0;
