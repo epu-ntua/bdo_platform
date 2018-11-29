@@ -12,6 +12,8 @@
 {% block css %}
 
     {% leaflet_css %}
+{#    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css">#}
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
     <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
 
     <link href="{% static "query_designer/css/toolbox.css" %}" rel="stylesheet">
@@ -40,12 +42,21 @@
             cursor: pointer;
             box-shadow: 1px 1px 10px grey;
         }
+
+        .btn-change:hover{
+            background-color:#30526a ;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
     <!-- begin PAGE TITLE AREA -->
     <!-- Use this section for each page's title and breadcrumb layout. In this example a date range picker is included within the breadcrumb. -->
+
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form"></form>
+    </div>
+
     <div class="row">
         <div class="col-lg-12">
             <div class="row">
@@ -81,15 +92,6 @@
             {% trans 'Query name' %}: <input type="text" name="chart-name" />
         </div>
         <div class="chart-file-control pull-right formula-editor-open" title="Define custom metrics"><i class="fa fa-cog"></i> {% trans 'Define custom metrics' %}</div>
-        <div class="pull-right" id="limit_container">
-            {% trans 'Limit results' %}:
-            <select  style="border: 2px solid grey; border-radius: 1em;" id="limit" name="limit">
-                <option value="none" >- None -</option>
-                <option value="100" selected>100</option>
-                <option value="500">500</option>
-                <option value="1000">1000</option>
-            </select>
-        </div>
         <input type="number" class="hidden" id="offset_input" value="0" />
     </div>
 
@@ -151,7 +153,7 @@
                                         <tbody></tbody>
                                     </table>
                                 </div>
-                                <div id="paginationDiv" style="display: none;">
+                                <div id="paginationDiv" page="0" style="display: none;">
                                     <button id="dataPrevBtn" class="btn btn-default btn-sm">Previous</button>
                                     <button id="dataNextBtn" class="btn btn-default btn-sm">Next</button>
                                 </div>
@@ -177,6 +179,52 @@
     {% endwith  %}
 {% endblock %}
 
+{% block modal %}
+
+    <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="row" id="viz_config" style="display: none">
+                        <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                            {% for viz in available_viz %}
+                                <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}"
+                                    data-viz-id="{{ viz.id }}">
+                                    <i class="{{ viz.icon }}" style="margin-right:5px"></i>{{ viz.title }}
+                                    <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left"
+                                          style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+                                </li>
+                            {% endfor %}
+
+                        </ul>
+                        <div id="viz_container" class="col-sm-8" style="width: 85%">
+                            <div class="loadingFrame">
+                            </div>
+                        </div>
+                    </div>
+                    {#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
+                    {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
+
+                    <div id="query-variables-select-container" style="display: none;">
+                        <div class='current_query_select_options' id={{ temp_queries_count }}>
+{#                            <option></option>#}
+{#                            {% for el in query.document.from %}#}
+{#                                {% for var in el.select %}#}
+{#                                    <option value="{{ var.name }}">{{ var.title }}</option>#}
+{#                                {% endfor %}#}
+{#                            {% endfor %}#}
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
 {% block js %}
 
     {% leaflet_js %}
@@ -197,10 +245,15 @@
 
     <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
 
-    <script src="{% static "js/leaflet-areaselect.js" %}"></script>
+{#    <script src="{% static "js/leaflet-areaselect.js" %}"></script>#}
+    <script src="{% static "query_designer/js/simplified/area-select/simple-shape.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/area-select/rectangle.js" %}"></script>
+
 
     <script src="{% static "query_designer/js/simplified/selbound.js" %}"></script>
     <script src="{% static "query_designer/js/simplified/chart_editor.js" %}"></script>
+{#    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.js"></script>#}
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
 
     {% if auto_open %}
         <script>

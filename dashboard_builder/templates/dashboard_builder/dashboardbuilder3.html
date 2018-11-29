@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+
+    <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    {% for viz in available_viz %}
+        <style>
+            #{{ viz.view_name}}_tip{
+                opacity: .3;
+                position: relative;
+                bottom:1px;
+            }
+            li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
+                opacity: inherit;
+                margin:auto;
+                cursor:help;
+            }
+        </style>
+        <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}"/>
+    {% endfor %}
+
+{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form"></form>
+    </div>
+
+    <input type="hidden" value="" id="dashboard_pk">
+
+    <div class="row">
+        <div class="text-center">
+            <h5 style="display: inline-block; margin: 0;">Create a new dashboard by selecting data and using the
+                provided visualizations.</h5>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <input class="form-control text-center" type="text" id="dashboard_title"
+               value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
+        <span class="pull-left"><input type="checkbox" name="private" value="False"/> Private<br></span>
+    </div>
+    <div class="row text-left">
+        <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
+                data-target="#myModal">
+            <i class="fa fa-plus-circle o-white"></i> New widget
+        </button>
+
+        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" style="display: none">
+            Save Dashboard
+        </button>
+
+    </div>
+
+
+
+    <div ng-app="myApp" ng-controller="MainCtrl">
+        <div id="dynamic_dashboard" gridster="gridsterOpts">
+            <ul id="widgetParent">
+                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
+                    <div class='wrap1'></div>
+                    <header class="iframeHeader">
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
+                        {% load  static %}
+                        <input type='button' value='X' class='deletebtn'
+{#                               style="background-image: url({% static "images/exitBtn.png" %})"#}
+                               ng-click="removeWidget(item);">
+                    </header>
+
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div id="scroll_down_area">
+
+    </div>
+
+    <div id="query-container" style="display: none;">
+        <select id="query-select" class="ui search selection form-control " name="query" style="width: 300px !important;">
+
+            {% for query in saved_queries %}
+                <option value="{{ query.id }}">{{ query.title }}</option>
+            {% endfor %}
+        </select>
+        <div><a href="/queries/simplified/" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+        <input id="new_query_doc" type="hidden" value=""/>
+        <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+        <button type="button" id="select_data_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>
+    </div>
+
+    <div id="viz-container" hidden>
+
+        <button type="button" id="select_viz_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+    </div>
+
+    <div id="conf-container" hidden>
+
+    </div>
+
+
+{% endblock %}
+
+
+{% block modal %}
+
+
+    <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+
+                </div>
+                <div class="modal-body">
+                    <div class="tab-content">
+                        <div class="text-center">
+                            <h4 class="modal-title">Add a new widget to the dashboard</h4>
+
+                            <ul class="nav nav-pills">
+                              <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
+                              <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
+                            </ul>
+                        </div>
+                        <div class="tab-pane fade in active" id="viz_widget">
+                            <div class="row">
+                                <div class="text-left" id="model-button-row" style="display: inline">
+                                    <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
+                                            data-toggle="popover" title="Select your data" data-placement="right"
+                                    >Select data
+                                    </button>
+                                </div>
+
+                                <div style="display: inline; margin-left: 80px;">
+                                    <span><strong>Selected Query: </strong></span><span id="query_name_span" style="display: none;"></span>
+                                </div>
+
+
+                                <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select visualization type" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">2. Select visualisation
+                                </button>
+                                <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select your data" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">3. Configure
+                                </button>
+                            </div>
+
+                            <div class="row" id="viz_config" style="display: none">
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                                    {% for viz in available_viz %}
+                                        <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
+                                            <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
+                                            <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+                                        </li>
+                                    {% endfor %}
+
+                                </ul>
+                                <div id="visualisation_frame">
+                                    <div style="right: 25px; top:80px; z-index: 2; position: absolute; display: none;">
+                                        <button type="button" id="add_layer_btn" class="btn btn-primary btn-md" >SAVE LAYER  <i class="glyphicon glyphicon-plus "></i></button>
+                                    </div>
+                                    <div class="ui buttons" style="display: none; top:80px; position: absolute; z-index: 1; right: 190px; ">
+                                        <div id='layers-list' class="ui floating dropdown btn btn-secondary btn-md " tabindex="0">LAYERS
+                                          <i class="dropdown icon"></i>
+                                          <ul class="menu transition hidden unclickable" tabindex="-1"></ul>
+                                        </div>
+                                    </div>
+
+                                    <div id="viz_container" class="col-sm-8" style="width: 85%">
+                                        <div class="loadingFrame">
+                                            <img src="{% static 'img/loading_gif.gif' %}"/>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+{#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
+                            {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
+
+                            <div id="query-variables-select-container" hidden>
+                                {% for query in saved_queries %}
+                                    <div id={{ query.id }}>
+                                        {% for el in query.document.from %}
+                                            {% for var in el.select %}
+                                                {% if var.exclude == False or var.exclude == ''%}
+                                                     {% if var.type == 'VALUE' %}
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
+                                                     {% endif %}
+
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div id="query-dimensions-select-container" hidden >
+                                {% for query in saved_queries %}
+                                    <div id={{ query.id }}>
+                                        {% for el in query.document.from %}
+                                            {% for var in el.select %}
+                                                {% if var.exclude == False or var.exclude == ''%}
+                                                    {% if var.type != 'VALUE' %}
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
+                                                     {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+{#                        <div id = "query-datasets-extra-arguments" hidden>#}
+{#                             {% for key,values in datasets_of_queries_lists.items %}#}
+{#                                    <div id={{ key }}>#}
+{#                                        {% for el in values %}#}
+{#                                            {% for argument in el.arguments.platform_id %}#}
+{#                                                <option value="{{ argument }}">{{ argument }}</option>#}
+{#                                            {% endfor %}#}
+{#                                        {% endfor %}#}
+{#                                    </div>#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+
+
+                        <div class="row tab-pane fade" id="viz_note"></div>
+
+                        <input type="hidden" id="selected_query" value="">
+                    </div>
+
+
+                </div>
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
+                    </button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn" style="display: none">Add
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+        <input id="prebuilt_viz" hidden>
+    </div>
+{% endblock %}
+
+{% block js %}
+
+    <script type="text/javascript" src={% static '/js/angular.js' %}></script>
+    <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
+    <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
+    <script src="https://cdn.ckeditor.com/4.9.2/standard/ckeditor.js"></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script type="text/javascript">
+        var img_source_path =  "{% static "img/loading_gif.gif" %}";
+        var to_create_ = "{{ toCreate }}";
+        $('#prebuilt_viz').val(to_create_);
+    </script>
+    <script type="text/javascript" src="{% static 'dashboard_builder/js/angular_dashboard_layout.js' %}"></script>
+    <script type="text/javascript" src="{% static 'dashboard_builder/js/multilayer_viz_dashboard_ui.js' %}"></script>
+
+
+{% endblock %}

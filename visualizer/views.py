@@ -1,11 +1,14 @@
 from __future__ import unicode_literals, division
 # -*- coding: utf-8 -*-
-import pdb
+import prestodb
+from django.conf import settings
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, redirect
 from django.db import connection, connections
 from rest_framework.views import APIView
 from forms import MapForm
+import time
+from django.db import ProgrammingError
 
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -16,6 +19,8 @@ import psycopg2
 
 from matplotlib import use
 
+from django.template.loader import render_to_string
+
 from service_builder.models import ServiceInstance
 from service_builder.views import updateServiceInstanceVisualizations
 
@@ -25,6 +30,7 @@ from matplotlib.cm import get_cmap
 from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 import pylab as pl
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 from query_designer.models import TempQuery
@@ -40,7 +46,398 @@ from folium.plugins import HeatMap, MarkerCluster
 FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
                  'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
 
-def map_course_time(request):
+AGGREGATE_VIZ = ['max', 'min', 'avg', 'sum', 'count']
+
+
+def get_data_parameters(request, layer_count):
+    query_pk = str(request.GET.get('query'+layer_count, '0'))
+    try:
+        query_pk = int(query_pk)
+    except ValueError:
+        raise ValueError('The given Query ID not valid.')
+    df = str(request.GET.get('df'+layer_count, ''))
+    notebook_id = str(request.GET.get('notebook_id'+layer_count, ''))
+    return query_pk, df, notebook_id
+
+
+def get_contour_parameters(request, count):
+    cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
+    n_contours = str(request.GET.get('n_contours' + str(count), 20))
+    try:
+        n_contours = int(n_contours)
+    except ValueError:
+        raise ValueError('Number of contours is not valid.')
+    step = str(request.GET.get('step' + str(count), 0.1))
+    try:
+        step = float(step)
+    except ValueError:
+        raise ValueError('Step is not valid.')
+    variable = str(request.GET.get('contour_var' + str(count), ''))
+    if variable == '':
+        raise ValueError('A variable has to be selected for the contours to be created on the map.')
+
+    agg_function = str(request.GET.get('agg_func', 'avg'))
+    if not agg_function.lower() in AGGREGATE_VIZ:
+        raise ValueError('The given aggregate function is not valid.')
+
+    return cached_file, n_contours, step, variable, agg_function
+
+
+def get_markers_parameters(request, count):
+    cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
+    marker_limit = str(request.GET.get("marker_limit" + str(count), '1'))
+    try:
+        platform_id = int(request.GET.get("platform_id" + str(count), 0))
+    except ValueError:
+        raise ValueError('Platform ID has a numeric value.(cannot be empty)')
+    try:
+        marker_limit = int(marker_limit)
+    except ValueError:
+        raise ValueError('Number of positions is not valid.')
+    if marker_limit <= 0:
+        raise ValueError('Number of positions has to be a positive number.')
+    variable = str(request.GET.get('variable' + str(count), ''))
+    if variable == '':
+        raise ValueError('A variable has to be selected for each marker to show its value in a specific location.')
+    agg_function = str(request.GET.get('agg_func', 'avg'))
+    if not agg_function.lower() in AGGREGATE_VIZ:
+        raise ValueError('The given aggregate function is not valid.')
+    use_color_col = request.GET.get('use_existing_temp_res'+str(count), '') == 'on'
+    color_col = str(request.GET.get('color_var'+str(count), ''))
+    lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
+    lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
+    return cached_file, variable, platform_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col
+
+
+def get_plotline_parameters(request, count):
+    cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
+    try:
+        platform_id = int(request.GET.get("platform_id" + str(count), 0))
+    except ValueError:
+        raise ValueError('Platform ID has a numeric value.(cannot be empty)')
+    color = str(request.GET.get('plotline_color' + str(count), 'blue'))
+    if color not in FOLIUM_COLORS:
+        raise ValueError('The chosen color is not supported.')
+    marker_limit = str(request.GET.get("points_limit" + str(count), '1'))
+    try:
+        marker_limit = int(marker_limit)
+    except ValueError:
+        raise ValueError('Number of positions is not valid.')
+    if marker_limit <= 0:
+        raise ValueError('Number of positions has to be a positive number.')
+    lat_col = str(request.GET.get('lat_col' + str(count), 'lat'))
+    lon_col = str(request.GET.get('lon_col' + str(count), 'lon'))
+    return cached_file, marker_limit, platform_id, color, lat_col, lon_col
+
+def get_heatmap_parameters(request, count):
+    cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
+    lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
+    lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
+    heat_col = str(request.GET.get('heat_col' + str(count), ''))
+    if heat_col == '':
+        raise ValueError('The heatmap variable has to be selected.')
+    heat_points_limit = str(request.GET.get("points_limit" + str(count), '1'))
+    try:
+        heat_points_limit = int(heat_points_limit)
+    except ValueError:
+        raise ValueError('Number of heatmap points is not valid.')
+    if heat_points_limit <= 0:
+        raise ValueError('Number of heatmap points has to be a positive number.')
+    return cached_file, heat_col, heat_points_limit, lat_col,lon_col
+
+
+def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_id, color_col, agg_function, use_color_col):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    time_flag = platform_flag = lat_flag = lon_flag = var_flag = color_flag = False
+
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
+                order_var = s['name']
+                s['groupBy'] = True
+                s['aggregate'] = 'date_trunc_minute'
+                time_flag = True
+            elif s['name'] == color_col and (s['exclude'] is not True):
+                s['exclude'] = False
+                color_flag = True
+            elif(s['name'] == variable) and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = agg_function
+                var_flag = True
+            elif (s['name'].split('_', 1)[1] == 'platform_id') and (s['exclude'] is not True):
+                platform_id_filtername = str(s['name'])
+                s['exclude'] = True
+                platform_flag = True
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                # s['groupBy'] = True
+                s['aggregate'] = 'avg'
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = 'avg'
+                # s['groupBy'] = True
+                lon_flag = True
+            else:
+                s['exclude'] = True
+
+    if not time_flag:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        # doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+
+    if not platform_flag:
+        raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        if doc['filters'].__len__() == 0:
+            doc['filters'] = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
+        else:
+            alpha_argument = doc["filters"]
+            beta_argument = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": '+ str(platform_id) + ', "op": "eq"}')
+            doc['filters'] = json.loads('{"a":' + json.dumps(alpha_argument) + ', "b": ' + json.dumps(beta_argument) + ', "op": "AND"}')
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    if not var_flag:
+        raise ValueError('The variable is missing from the selected query. The requested visualisation cannot be executed.')
+    doc['limit'] = marker_limit
+
+    if use_color_col:
+        if not color_flag:
+            raise ValueError('A variable or dimension has to be selected, if color separation is enabled.')
+
+    query.document = doc
+    return query
+
+
+def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    lat_flag = lon_flag = var_flag = False
+
+    for f in doc['from']:
+        for s in f['select']:
+            if(s['name'] == variable) and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = agg_function
+                var_flag = True
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['groupBy'] = True
+                s['aggregate'] = 'round0'
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = 'round0'
+                s['groupBy'] = True
+                lon_flag = True
+            else:
+                s['exclude'] = True
+
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    if not var_flag:
+        raise ValueError('The variable is missing from the selected query. The requested visualisation cannot be executed.')
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
+def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    time_flag = platform_flag = lat_flag = lon_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
+                order_var = s['name']
+                s['groupBy'] = True
+                s['aggregate'] = 'date_trunc_minute'
+                time_flag = True
+            elif (s['name'].split('_', 1)[1] == 'platform_id') and (s['exclude'] is not True):
+                platform_id_filtername = str(s['name'])
+                s['exclude'] = True
+                platform_flag = True
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = 'avg'
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = 'avg'
+                lon_flag = True
+            else:
+                s['exclude'] = True
+
+    if not time_flag:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        # doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+    if not platform_flag:
+        raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        if doc['filters'].__len__() == 0:
+            doc['filters'] = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
+        else:
+            alpha_argument = doc["filters"]
+            beta_argument = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
+            doc['filters'] = json.loads('{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "AND"}')
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+def load_modify_query_polygon(query_pk, marker_limit):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    lat_flag = lon_flag = False
+
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                lon_flag = True
+            else:
+                s['exclude'] = True
+
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
+def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color_col, marker_limit, auto_order=False):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+
+    time_flag = False
+    if auto_order == True:
+        for f in doc['from']:
+            for s in f['select']:
+                if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
+                    order_var = s['name']
+                    time_flag = True
+
+    if auto_order == True and time_flag == False:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+
+    for f in doc['from']:
+        for s in f['select']:
+            if s['name'] == variable:
+                s['exclude'] = False
+            elif s['name'] == order_var:
+                s['exclude'] = False
+            elif s['name'] == color_col:
+                s['exclude'] = False
+            elif s['name'] == lat_col:
+                s['exclude'] = False
+            elif s['name'] == lon_col:
+                s['exclude'] = False
+            else:
+                s['exclude'] = True
+
+    if order_var != '':
+        doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+    if marker_limit != '':
+        doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
+def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    lat_flag = lon_flag = heat_col_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'] == heat_col) and (s['exclude'] is not True):
+                s['exclude'] = False
+                heat_col_flag = True
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                lon_flag = True
+            else:
+                s['exclude'] = True
+
+    if not heat_col_flag:
+        if heat_col != 'heatmap_frequency':
+            raise ValueError(
+                'The heatmap variable must be either a variable from the selected query or "Frequency".')
+
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
+def load_modify_query_contours(agg_function, query_pk, round_num, variable):
+    query = AbstractQuery.objects.get(pk=int(query_pk))
+    query = TempQuery(document=query.document)
+    doc = query.document
+
+    doc['orderings'] = []
+    doc['limit'] = []
+    var_query_id = variable[:variable.find('_')]
+    lat_flag = lon_flag = cont_var_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if s['name'] == variable and (s['exclude'] is not True):
+                s['aggregate'] = agg_function
+                s['exclude'] = False
+                cont_var_flag = True
+            elif s['name'].split('_', 1)[1] == 'latitude' and str(s['name']).find(var_query_id) >= 0 and s['exclude'] is not True:
+                s['groupBy'] = True
+                s['aggregate'] = 'round' + str(round_num)
+                s['exclude'] = False
+                doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
+                lat_flag = True
+            elif s['name'].split('_', 1)[1] == 'longitude' and str(s['name']).find(var_query_id) >= 0 and s['exclude'] is not True:
+                s['groupBy'] = True
+                s['aggregate'] = 'round' + str(round_num)
+                s['exclude'] = False
+                doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
+                lon_flag = True
+            else:
+                s['exclude'] = True
+                s['groupBy'] = False
+
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+    if not cont_var_flag:
+        raise ValueError('The feature variable is missing from the selected query. The requested visualisation cannot be executed.')
+
+    return query
+
+
+
+def create_map():
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
@@ -64,300 +461,766 @@ def map_course_time(request):
         title='Expand me',
         title_cancel='Exit me',
         force_separate_button=True).add_to(m)
-
-    if request.method == "GET":
-        markersum = int(request.GET.get("markers", 50))
-        ship = request.GET.get("ship", "all")
-        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
-        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
-
-        query_pk = int(str(request.GET.get('query', '')))
+    return m
 
 
-    data = get_data(query_pk, markersum, ship, mindate, maxdate)
+def map_visualizer(request):
+    m = create_map()
+    js_list = []
+    old_map_id_list = []
+    extra_js = ""
+    try:
+        try:
+            layer_count = int(request.GET.get("layer_count", 0))
+        except ValueError:
+            raise ValueError('Layer counter is not valid.')
 
-    var_index = data['var']
-    ship_index = data['ship']
-    time_index = data['time']
-    lat_index = data['lat']
-    lon_index = data['lon']
-    data = data['data']
+        for count in range(0, layer_count):
+            try:
+                layer_id = int(request.GET.get("viz_id" + str(count)))
+            except ValueError:
+                raise ValueError('Visualisation ID of layer ' + str(count) + 'is not valid.')
 
-    course = []
-    times = []
-    dates = []
-    speeds = []
-    colours = []
-    currboat = int(data[0][ship_index])
-    datas = []
+            query_pk, df, notebook_id = get_data_parameters(request, str(count))
+            # Plotline VesselCourse
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_plotline_vessel_course').id):
+                    cached_file, marker_limit, platform_id, color, lat_col, lon_col = get_plotline_parameters(request, count)
+                    m, extra_js = get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col,
+                                               lon_col, m, request, cached_file)
+            except ObjectDoesNotExist:
+                pass
+            # Map Polygon - Line
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_polygon').id):
+                    cached_file, marker_limit, null_var1, color, lat_col, lon_col = get_plotline_parameters(
+                        request, count)
+                    m, extra_js = get_map_polygon(marker_limit, color, query_pk, df,
+                                                                 notebook_id, lat_col,
+                                                                 lon_col, m, request, cached_file)
+            except ObjectDoesNotExist:
+                pass
+            # Heatmap
+            try:
+                if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id:
+                    cached_file, heat_col, heat_points_limit, lat_col, lon_col = get_heatmap_parameters(request,
+                                                                                                        count)
+                    m, extra_js = get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col,
+                                                  heat_points_limit, m, cached_file, request)
+            except ObjectDoesNotExist:
+                pass
+            # Contours
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
+                    cached_file, n_contours, step, variable, agg_function = get_contour_parameters(request, count)
+                    m, extra_js, old_map_id = get_map_contour(n_contours, step, variable, query_pk, agg_function, m,
+                                                                     cached_file)
+                    old_map_id_list.append(old_map_id)
+            except ObjectDoesNotExist:
+                pass
+                # Map Markers Course Vessel
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_markers_vessel_course').id):
+                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
+                    m, extra_js = get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, platform_id, variable, agg_function,
+                                             lat_col, lon_col, color_col, use_color_column, m, request, cached_file)
+            except ObjectDoesNotExist:
+                pass
+                # Map Markers Grid
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid').id):
+                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(
+                        request, count)
+                    m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
+                                                                variable, agg_function,
+                                                                lat_col, lon_col, m,
+                                                                request, cached_file)
+            except ObjectDoesNotExist:
+                pass
 
-    for index in range(0, len(data) - 1):
-        d = data[index]
+            if (extra_js != ""):
+                js_list.append(extra_js)
+    except (ValueError, Exception) as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
-        lat = float(d[lat_index])
-        lon = float(d[lon_index])
-        date = str(d[time_index])
-        cship = int(d[ship_index])
-        speed = float(d[var_index])
-        colour = 'blue'
-        if speed > 75.0:
-            colour = 'red'
-
-        if cship != currboat:
-            geo = createjson(course, times, dates, currboat, speeds, colours)
-            datas.append(geo)
-            currboat = cship
-            colours = []
-            course = []
-            times = []
-            dates = []
-            speeds = []
-
-        colours.append(colour)
-        course.append([lon, lat])
-        times.append(transpose(date))
-        dates.append(date)
-        speeds.append(speed)
-
-    geo = createjson(course, times, dates, currboat, speeds, colours)
-    datas.append(geo)
-    datas = json.dumps(datas)
-
-    #import pdb;pdb.set_trace()
-
-    m.save('templates/map.html')
-    map_html = open('templates/map.html', 'r').read()
+    folium.LayerControl().add_to(m)
+    m.save('templates/map1.html')
+    map_html = open('templates/map1.html', 'r').read()
     soup = BeautifulSoup(map_html, 'html.parser')
     map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    # print map_id
     js_all = soup.findAll('script')
+
+    # changes the wrong map_id's for all the extra scripts used
+    for mid in old_map_id_list:
+        for js in js_list:
+            js.replace(mid, map_id)
+
     # print(js_all)
     if len(js_all) > 5:
         js_all = [js.prettify() for js in js_all[5:]]
     # print(js_all)
+    if js_list:
+        js_all.extend(js_list)
     css_all = soup.findAll('link')
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
-    # print js
-    # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_time.html',
-                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': datas})
+    html1 = render_to_string('visualizer/final_map_folium_template.html',
+                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+    # print(html1)
+    return HttpResponse(html1)
 
 
-def map_course(request):
-    query = int(str(request.GET.get('query', '0')))
 
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
-    order_var = str(request.GET.get('order_var', ''))
-    variable = str(request.GET.get('col_var', ''))
-
-    lat_col = str(request.GET.get('lat_col', 'latitude'))
-    lon_col = str(request.GET.get('lon_col', 'longitude'))
-    color_col = str(request.GET.get('color_col', ''))
+def get_map_plotline_vessel_query_data(query):
     try:
-        marker_limit = int(request.GET.get('m_limit', '200'))
+        query_data = execute_query_method(query)
     except:
-        marker_limit = 200
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
 
-    if query != 0:
-        q = AbstractQuery.objects.get(pk=int(query))
-        q = TempQuery(document=q.document)
-        doc = q.document
-
-        var_query_id = variable[:variable.find('_')]
-        if order_var != '':
-            if len(doc['orderings']) == 0:
-                doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
-            else:
-                doc['orderings'].append({'name': order_var, 'type': 'ASC'})
-        # doc['orderings']=[]
-        if marker_limit > 0:
-            doc['limit'] = marker_limit
-
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == variable:
-                    # s['aggregate'] = agg_function
-                    s['exclude'] = False
-                # elif str(s['name']).find(order_var) >= 0 and str(s['name']).find(var_query_id) >= 0:
-                elif str(s['name']) == order_var:
-                    # s['groupBy'] = True
-                    s['exclude'] = False
-                elif str(s['name']) == color_col:
-                    # s['groupBy'] = True
-                    s['exclude'] = False
-                # elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                elif str(s['name']).find(lat_col) >= 0:
-                    # s['groupBy'] = True
-                    # s['aggregate'] = 'round'
-                    s['exclude'] = False
-                    # doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                # elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                elif str(s['name']).find(lon_col) >= 0:
-                    # s['groupBy'] = True
-                    # s['aggregate'] = 'round'
-                    s['exclude'] = False
-                    # doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-                # else:
-                #     s['exclude'] = True
-
-        q.document = doc
-        query_data = q.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
+    time_index = lat_index = lon_index = -1
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'].split('_', 1)[1] == 'latitude':
+            lat_index = idx
+        elif c['name'].split('_', 1)[1] == 'longitude':
+            lon_index = idx
+        elif c['name'].split('_', 1)[1] == 'time':
+            time_index = idx
+    return data, lat_index, lon_index, time_index
 
 
-        lat_index = lon_index = order_var_index = var_index = color_index = -1
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == variable:
-                var_index = idx
-            elif str(c['name']) == order_var:
-                order_var_index = idx
-            elif str(c['name']).find(lat_col) >= 0:
-                lat_index = idx
-            elif str(c['name']).find(lon_col) >= 0:
-                lon_index = idx
-            elif str(c['name']) == color_col:
-                color_index = idx
-    else:
-        print ("json-case")
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0] #GET LAST
-        livy = service_exec.service.through_livy
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        if order_var != "":
-            if not livy:
-                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            else:
-                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
 
+
+def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
+    dict = {}
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query_pk != 0:
+            query = load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id)
+            data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+            points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
+
+        elif df != '':
+            data, y_m_unit, y_title_list = get_chart_dataframe_data(request, notebook_id, df, '', [], False)
+            points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_col, lon_col)
         else:
-            if not livy:
-                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var)
-            else:
-                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var)
+            raise ValueError('Either query ID or dataframe name has to be specified.')
 
-        if not livy:
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            # print json_data
-
-        data = []
-        lat_index = 0
-        lon_index = 1
-        order_var_index = 2
-        var_index = 3
-        color_index = 4
-        for s in json_data:
-            row = [float(s[lat_col]), float(s[lon_col])]
-            if order_var != '':
-                row.append(str(s[order_var]))
-            else:
-                row.append('')
-            if variable != '':
-                row.append(str(s[variable]))
-            else:
-                row.append('')
-            if color_col != '':
-                row.append(s[color_col])
-            else:
-                row.append('')
-            data.append(row)
-
-        print data[:4]
-
-
-    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    if len(data) > 0:
-        min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
-        max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
-        min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
-        max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
+        dict['min_lat'] = min_lat
+        dict['max_lat'] = max_lat
+        dict['min_lon'] = min_lon
+        dict['max_lon'] = max_lon
+        dict['points'] = points
+        # create cached file with necessary data and info
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dict, f)
     else:
-        min_lat = -90
-        max_lat = 90
-        min_lon = -180
-        max_lon = 180
-    zoom_lat = (min_lat + max_lat) / 2
-    zoom_lon = (min_lon + max_lon) / 2
-    location = [zoom_lat, zoom_lon]
-    zoom_start = 4
-    max_zoom = 30
-    min_zoom = 2
+        print('Plotline Data is Cached!')
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        min_lat = cached_data['min_lat']
+        max_lat = cached_data['max_lat']
+        min_lon = cached_data['min_lon']
+        max_lon = cached_data['max_lon']
 
-    m = folium.Map(location=location,
-                   zoom_start=zoom_start,
-                   max_zoom=max_zoom,
-                   min_zoom=min_zoom,
-                   max_bounds=True,
-                   tiles=tiles_str + token_str,
-                   attr=attr_str,
-                   )
+        points = cached_data['points']
 
-    plugins.Fullscreen(
-        position='topright',
-        title='Expand me',
-        title_cancel='Exit me',
-        force_separate_button=True).add_to(m)
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    # marker_cluster = MarkerCluster(
-    #     name="Markers: "+ str(variable),
-    #     control=True
-    # ).add_to(m)
+    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + ' / Ship ID: ' + str(platform_id), overlay=True,
+                                              control=True).add_to(m)
+    folium.PolyLine(points, color=color, weight=2.5, opacity=0.8,
+                    ).add_to(pol_group_layer)
+    if points.__len__() != 0:
+        create_plotline_arrows(points, m, pol_group_layer, color)
+    ret_html = ""
+    return m, ret_html
 
+
+def get_map_polygon(marker_limit, color, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
+    dict = {}
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query_pk != 0:
+            query = load_modify_query_polygon(query_pk, marker_limit)
+            data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+            points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
+
+        elif df != '':
+            data, y_m_unit, y_title_list = get_chart_dataframe_data(request, notebook_id, df, '', [], False)
+            points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_col, lon_col)
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+
+        dict['min_lat'] = min_lat
+        dict['max_lat'] = max_lat
+        dict['min_lon'] = min_lon
+        dict['max_lon'] = max_lon
+        dict['points'] = points
+        # create cached file with necessary data and info
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dict, f)
+    else:
+        print('Plotline Data is Cached!')
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        min_lat = cached_data['min_lat']
+        max_lat = cached_data['max_lat']
+        min_lon = cached_data['min_lon']
+        max_lon = cached_data['max_lon']
+
+        points = cached_data['points']
+
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+
+    pol_group_layer = folium.map.FeatureGroup(name='Polygon - Layer:' + str(time.time()).replace(".","_") , overlay=True,
+                                              control=True).add_to(m)
+    folium.PolyLine(points, color=color, weight=2.0, opacity=0.8,
+                    ).add_to(pol_group_layer)
+    ret_html = ""
+    return m, ret_html
+
+
+
+def create_plotline_points(data, lat_index, lon_index):
+    points = []
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+
+
+    for s in data:
+        points.append([float(s[lat_index]), float(s[lon_index])])
+        if s[lat_index] > max_lat:
+            max_lat = s[lat_index]
+        if s[lat_index] < min_lat:
+            min_lat = s[lat_index]
+        if s[lon_index] > max_lon:
+            max_lon = s[lon_index]
+        if s[lon_index] < min_lon:
+            min_lon = s[lon_index]
+
+    max_lat = float(max_lat)
+    min_lat = float(min_lat)
+    max_lon = float(max_lon)
+    min_lon = float(min_lon)
+
+    return points, min_lat, max_lat, min_lon, max_lon
+
+
+
+def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_points_limit, m, cached_file, request):
+    dict = {}
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query_pk != 0:
+            query = load_modify_query_heatmap(query_pk, heat_col, heat_points_limit)
+            data, lat_index, lon_index, heat_var_index = get_heatmap_query_data(query, heat_col)
+        else:
+            data, headers = load_execute_dataframe_data(request, df, notebook_id)
+            heatmap_data = []
+            lat_index = 0
+            lon_index = 1
+            heat_var_index = 2
+            for s in data:
+                row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
+                heatmap_data.append(row)
+
+        heatmap_result_data, min_lat, min_lon, max_lat, max_lon = create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index)
+        dict['min_lat'] = min_lat
+        dict['max_lat'] = max_lat
+        dict['min_lon'] = min_lon
+        dict['max_lon'] = max_lon
+        dict['heatmap_result_data'] = heatmap_result_data
+
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dict, f)
+    else:
+        print ('Heatmap Data is Cached!')
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        min_lat = cached_data['min_lat']
+        max_lat = cached_data['max_lat']
+        min_lon = cached_data['min_lon']
+        max_lon = cached_data['max_lon']
+        heatmap_result_data = cached_data['heatmap_result_data']
+
+    HeatMap(heatmap_result_data, name="Heat Map - Layer: "+str(time.time()).replace(".","_")).add_to(m)
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+    ret_html = ""
+    return m, ret_html
+
+
+def get_heatmap_query_data(query, heat_variable):
+    try:
+        query_data = execute_query_method(query)
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+
+    heat_var_index = lat_index = lon_index = -1
+
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'].split('_', 1)[1] == 'latitude':
+            lat_index = idx
+        elif c['name'].split('_', 1)[1] == 'longitude':
+            lon_index = idx
+        elif c['name'] == heat_variable:
+            heat_var_index = idx
+    return data, lat_index, lon_index, heat_var_index
+
+
+def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cached_file):
+    try:
+        round_num = get_contour_step_rounded(step)
+        dict = {}
+        if not os.path.isfile('visualizer/static/visualizer/temp/'+cached_file):
+            query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
+            data, lat_index, lon_index, var_index = get_contours_query_data(query, variable)
+            Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val = get_contour_grid(data, lat_index, lon_index, step, var_index)
+            final_data, data_grid = get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index)
+            mappath = create_contour_image(Lats, Lons, final_data, max_val, min_val, n_contours)
+            legpath = get_contour_legend(max_val, min_val)
+
+            dict['min_lat'] = min_lat
+            dict['max_lat'] = max_lat
+            dict['min_lon'] = min_lon
+            dict['max_lon'] = max_lon
+            dict['lats_bins_min'] = lats_bins_min = lats_bins[0]
+            dict['lons_bins_min'] = lons_bins_min = lons_bins[0]
+            dict['lats_bins_max'] = lats_bins_max = lats_bins[-1]
+            dict['lons_bins_max'] = lons_bins_max = lons_bins[-1]
+            dict['image_path'] = mappath
+            dict['leg_path'] = legpath
+            dict['data_grid'] = data_grid
+            with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+                json.dump(dict, f)
+        else:
+            print ('Contours data is cached!')
+            with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+                cached_data = json.load(f)
+            min_lat = cached_data['min_lat']
+            max_lat = cached_data['max_lat']
+            min_lon = cached_data['min_lon']
+            max_lon = cached_data['max_lon']
+            lats_bins_min = cached_data['lats_bins_min']
+            lons_bins_min = cached_data['lons_bins_min']
+            lats_bins_max = cached_data['lats_bins_max']
+            lons_bins_max = cached_data['lons_bins_max']
+            mappath = cached_data['image_path'].encode('ascii')
+            legpath = cached_data['leg_path'].encode('ascii')
+            data_grid = cached_data['data_grid']
+            data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
+
+        create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
+                                max_lon, min_lat, min_lon, legpath)
+        map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
+                                                  step)
+        return m, ret_html, map_id
+
+    except Exception:
+        raise Exception('An error occurred while creating the contours on map.')
+
+
+def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step):
+    f = open('templates/map.html', 'r')
+    map_html = f.read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    f.close()
+    # import pdb
+    # pdb.set_trace()
+    temp_html = render_to_string('visualizer/map_viz_folium.html',
+                                 {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step,
+                                  'data_grid': data_grid, 'min_lat': min_lat,
+                                  'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon,
+                                  'agg_function': agg_function, 'legend_id': legpath})
+    if "var startsplitter = 42;" in temp_html:
+        ret_html = "<script> " + temp_html.split("var startsplitter = 42;")[1].split("var endsplitter = 42;")[
+            0] + " </script>"
+    else:
+        ret_html = ""
+    return map_id, ret_html
+
+
+def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat, max_lon,
+                            min_lat, min_lon, legpath):
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+    # read in png file to numpy array
+    data_img = Image.open(mappath)
+    data = trim(data_img)
+    data_img.close()
+    # Overlay the image
+    contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
+                                         bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
+    contour_layer.layer_name = 'Contours On Map - Layer:' + str(time.time()).replace(".","_")
+    m.add_child(contour_layer)
+    # legend_img = Image.open(legpath)
+    # legend = trim(legend_img)
+    # legend_img.close()
+    # contour_legend_layer = plugins.ImageOverlay(legend, zindex=2, opacity=1,bounds=[[-60, -173], [-55, -90]])
+    # contour_legend_layer.layer_name = 'Contours Legend - Layer:' + str(time.time()).replace(".", "_")
+    # m.add_child(contour_legend_layer)
+    # Overlay an extra coastline field (to be removed)
+    folium.GeoJson(open('ne_50m_land.geojson').read(),
+                   style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
+        .add_to(m) \
+        .layer_name = 'Coastline - Layer'
+    # Parse the HTML to pass to template through the render
+    m.save('templates/map.html')
+
+
+def get_contour_legend(max_val, min_val):
+    a = np.array([[min_val, max_val]])
+    pl.figure(figsize=(2.8, 0.4))
+    img = pl.imshow(a, cmap=plt.cm.coolwarm)
+    pl.gca().set_visible(False)
+    cax = pl.axes([0.1, 0.2, 0.8, 0.6])
+    cbar = pl.colorbar(orientation="horizontal", cax=cax)
+    cbar.ax.tick_params(labelsize=9, colors="#ffffff")
+    ts = str(time.time()).replace(".", "")
+    legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
+    pl.savefig(legpath, transparent=True, bbox_inches='tight')
+    # legpath = legpath.split("static/", 1)[1]
+    pl.clf()
+    pl.close()
+    return legpath
+
+
+def create_contour_image(Lats, Lons, final_data, max_val, min_val, n_contours):
+    levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+    print 'levels ok'
+    fig = Figure()
+    ax = fig.add_subplot(111)
+    plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
+    plt.axis('off')
+    extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    plt.draw()
+    ts = str(time.time()).replace(".", "")
+    mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
+    plt.savefig(mappath, bbox_inches=extent, transparent=True, frameon=False, pad_inches=0)
+    plt.clf()
+    plt.close()
+    fig = None
+    ax = None
+    return mappath
+
+
+def get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index):
+    final_data = []
+    data_grid = []
+    it = iter(data)
+    try:
+        val = map(float, next(it))
+    except:
+        val = [-300, -300, -300]
+    for lon in lons_bins:
+        row = list()
+        pop_row = list()
+        for lat in lats_bins:
+            row.append(None)
+            pop_row.append(('None').encode('ascii'))
+        final_data.append(row)
+        data_grid.append(pop_row)
+    for d in data:
+        lon_pos = int((d[lon_index] - min_lon) / step)
+        lat_pos = int((d[lat_index] - min_lat) / step)
+        final_data[lon_pos][lat_pos] = d[var_index]
+        if d[var_index] != 'None':
+            data_grid[lon_pos][lat_pos] = str(d[var_index])
+        else:
+            data_grid[lon_pos][lat_pos] = str(-9999999)
+
+    return final_data, data_grid
+
+
+def get_contour_grid(data, lat_index, lon_index, step, var_index):
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+    min_val = 9999999999
+    max_val = -9999999999
+    # print data[:3]
+    for row in data:
+        if row[lat_index] > max_lat:
+            max_lat = row[lat_index]
+        if row[lat_index] < min_lat:
+            min_lat = row[lat_index]
+        if row[lon_index] > max_lon:
+            max_lon = row[lon_index]
+        if row[lon_index] < min_lon:
+            min_lon = row[lon_index]
+        if row[var_index] > max_val:
+            max_val = row[var_index]
+        if row[var_index] < min_val:
+            min_val = row[var_index]
+    max_lat = float(max_lat)
+    min_lat = float(min_lat)
+    max_lon = float(max_lon)
+    min_lon = float(min_lon)
+    max_val = float(max_val)
+    min_val = float(min_val)
+    lats_bins = np.arange(min_lat, max_lat + 0.00001, step)
+    lons_bins = np.arange(min_lon, max_lon + 0.00001, step)
+    Lats, Lons = np.meshgrid(lats_bins, lons_bins)
+    return Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val
+
+
+def get_contours_query_data(query, variable):
+    try:
+        result = execute_query_method(query)[0]
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    result_data = result['results']
+    result_headers = result['headers']
+
+    var_index = lat_index = lon_index = -1
+    # print result_headers
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'] == variable:
+            var_index = idx
+        elif c['name'].split('_', 1)[1] == 'latitude':
+            lat_index = idx
+        elif c['name'].split('_', 1)[1] == 'longitude':
+            lon_index = idx
+    data = result_data
+    return data, lat_index, lon_index, var_index
+
+
+
+def get_contour_step_rounded(step):
+    round_num = 0
+    if step == 1:
+        round_num = 0
+    elif step == 0.1:
+        round_num = 1
+    elif step == 0.01:
+        round_num = 2
+    elif step == 0.001:
+        round_num = 3
+    return round_num
+
+
+def get_marker_query_data(query, variable, color_col):
+    try:
+        query_data = execute_query_method(query)
+    except:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+    var_title = var_unit = None
+    time_index = lat_index = lon_index = var_index = color_index = -1
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'].split('_', 1)[1] == 'latitude':
+            lat_index = idx
+        elif c['name'].split('_', 1)[1] == 'longitude':
+            lon_index = idx
+        elif c['name'].split('_', 1)[1] == 'time':
+            time_index = idx
+        elif c['name'] == variable:
+            var_index = idx
+            var_title = c['title'].encode('ascii')
+            var_unit = c['unit'].encode('ascii')
+        elif c['name'] == color_col:
+            color_index = idx
+    return data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit
+
+
+
+def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request,cached_file):
+    dic = {}
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query_pk != 0:
+            query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
+            data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '')
+        elif df != '':
+            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(df, lat_col, lon_col, notebook_id, request, variable)
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+
+        dic['data'] = data
+        dic['lat_index'] = lat_index
+        dic['lon_index'] = lon_index
+        dic['var_index'] = var_index
+        dic['var_title'] = var_title
+        dic['var_unit'] = var_unit
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dic, f, default=myconverter)
+    else:
+        print "Markers Grid data is cached!"
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        data = cached_data['data']
+        lat_index = cached_data['lat_index']
+        lon_index = cached_data['lon_index']
+        var_index = cached_data['var_index']
+        var_title = cached_data['var_title']
+        var_unit = cached_data['var_unit']
+
+    ret_html = create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit)
+    return m, ret_html
+
+
+
+def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, platform_id, variable, agg_function, lat_col, lon_col, color_col, use_color_col, m, request,cached_file):
+    dic = {}
+    if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
+        if query_pk != 0:
+            query = load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_id, color_col, agg_function, use_color_col)
+            data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_query_data(query, variable, color_col)
+        elif df != '':
+            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, notebook_id, request, variable)
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+
+        dic['data'] = data
+        dic['color_index'] = color_index
+        dic['lat_index'] = lat_index
+        dic['lon_index'] = lon_index
+        dic['time_index'] = time_index
+        dic['var_index'] = var_index
+        dic['var_title'] = var_title
+        dic['var_unit'] = var_unit
+        with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+            json.dump(dic, f, default=myconverter)
+    else:
+        print "Markers Course data is cached!"
+        with open('visualizer/static/visualizer/temp/' + cached_file) as f:
+            cached_data = json.load(f)
+        data = cached_data['data']
+        color_index = cached_data['color_index']
+        lat_index = cached_data['lat_index']
+        lon_index = cached_data['lon_index']
+        var_index = cached_data['var_index']
+        time_index = cached_data['time_index']
+        var_title = cached_data['var_title']
+        var_unit = cached_data['var_unit']
+
+    ret_html = create_marker_vessel_points(color_col, color_index, data, lat_index, lon_index, m, time_index,
+                                           var_index, var_title, var_unit, platform_id)
+    return m, ret_html
+
+
+def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_index, m, time_index, var_index,
+                                var_title, var_unit, platform_id):
+    pol_group_layer = folium.map.FeatureGroup(name='Markers - Vessel Course Layer : ' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(platform_id),
+                                              overlay=True,
+                                              control=True).add_to(m)
     color_dict = dict()
     color_cnt = 0
-
-    print "Map course top 10 points"
-    print data[:10]
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
     for d in data:
         if color_col != '':
             if d[color_index] not in color_dict.keys():
                 if color_cnt < len(FOLIUM_COLORS):
                     color_dict[d[color_index]] = FOLIUM_COLORS[color_cnt]
                 else:
-                    color_dict[d[color_index]] = FOLIUM_COLORS[len(FOLIUM_COLORS)-1]
+                    color_dict[d[color_index]] = FOLIUM_COLORS[len(FOLIUM_COLORS) - 1]
                 color_cnt += 1
             marker_color = color_dict[d[color_index]]
         else:
             marker_color = 'blue'
+
+        if d[lat_index] > max_lat:
+            max_lat = d[lat_index]
+        if d[lat_index] < min_lat:
+            min_lat = d[lat_index]
+        if d[lon_index] > max_lon:
+            max_lon = d[lon_index]
+        if d[lon_index] < min_lon:
+            min_lon = d[lon_index]
+
         folium.Marker(
-            location=[d[lat_index],d[lon_index]],
-            popup=str(variable)+": "+str(d[var_index])+"<br>Latitude: "+str(d[lat_index])+"<br>Longitude: "+str(d[lon_index]),
+            location=[d[lat_index], d[lon_index]],
+            popup=str(var_title) + ": " + str(d[var_index]) +" "+ str(var_unit)+"<br>Time: " + str(d[time_index]) + "<br>Latitude: " + str(
+                d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),
             icon=folium.Icon(color=marker_color),
             # radius=2,
 
-        ).add_to(m)
+        ).add_to(pol_group_layer)
+    max_lat = float(max_lat)
+    min_lat = float(min_lat)
+    max_lon = float(max_lon)
+    min_lon = float(min_lon)
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+    ret_html = ""
+    return ret_html
 
-    # Add layer contorl
-    folium.LayerControl().add_to(m)
 
-    m.save('templates/map.html')
+def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit):
+    pol_group_layer = folium.map.FeatureGroup(name='Markers - Grid Layer : ' + str(time.time()).replace(".","_") ,
+                                              overlay=True,
+                                              control=True).add_to(m)
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+    marker_color = 'orange'
+    marker_cluster = MarkerCluster().add_to(pol_group_layer)
+    for d in data:
+        if d[lat_index] > max_lat:
+            max_lat = d[lat_index]
+        if d[lat_index] < min_lat:
+            min_lat = d[lat_index]
+        if d[lon_index] > max_lon:
+            max_lon = d[lon_index]
+        if d[lon_index] < min_lon:
+            min_lon = d[lon_index]
+        folium.Marker(
+            location=[d[lat_index], d[lon_index]],
+            popup=str(var_title) + ": " + str(d[var_index]) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
+    max_lat = float(max_lat)
+    min_lat = float(min_lat)
+    max_lon = float(max_lon)
+    min_lon = float(min_lon)
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+    ret_html = ""
+    return ret_html
 
-    map_html = open('templates/map.html', 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    # print map_id
-    js_all = soup.findAll('script')
-    # print(js_all)
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-    # print(js_all)
-    css_all = soup.findAll('link')
-    if len(css_all) > 3:
-        css_all = [css.prettify() for css in css_all[3:]]
-    # print js
-    # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_wjs.html',
-                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
+
+def get_makers_dataframe_data(color_col, df, lat_col, lon_col, notebook_id, request, variable):
+    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0]  # GET LAST
+    livy = service_exec.service.through_livy
+    session_id = service_exec.livy_session
+    exec_id = service_exec.id
+    updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+    if not livy:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df,
+                                                          order_by='time')
+    else:
+        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by='time')
+    if not livy:
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    data = []
+    lat_index = 0
+    lon_index = 1
+    var_index = 2
+    color_index = 3
+    time_index = 4
+    for s in json_data:
+        row = [float(s[lat_col]), float(s[lon_col])]
+        if variable != '':
+            row.append(str(s[variable]))
+        else:
+            row.append('')
+        if color_col != '':
+            row.append(s[color_col])
+        else:
+            row.append('')
+        data.append(row)
+    return data, lat_index, lon_index, var_index, color_index, time_index
 
 
 def map_course_mt(request):
@@ -643,218 +1506,6 @@ def map_course_mt(request):
                   {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'markerType':'circle', 'centroids': convert_unicode_json(featureCollection1), 'data_points': convert_unicode_json(featureCollection2)})
 
 
-def map_plotline(request):
-    marker_limit = request.GET.get('m_limit')
-    if marker_limit is None or str(marker_limit).strip() == "":
-        print 'marker limit none'
-        marker_limit_list = request.GET.getlist('m_limit[]')
-        if marker_limit_list is None or len(marker_limit_list) == 0:
-            print 'marker_limit_list none'
-            marker_limit = 200
-            marker_limit_list = [marker_limit]
-        else:
-            print 'marker_limit_list not none'
-            marker_limit_list = [int(m) for m in marker_limit_list]
-    else:
-        print 'marker limit none'
-        marker_limit = int(marker_limit)
-        marker_limit_list = [marker_limit]
-    print marker_limit
-    print marker_limit_list
-
-    order_var = request.GET.get('order_var', '')
-    order_var_list = request.GET.getlist('order_var[]', '')
-    # if order_var is None or str(order_var).strip() == "":
-    #     order_var_list = request.GET.getlist('order_var[]', '')
-    #     if order_var_list is None or len(order_var_list) == 0:
-    #         print 'order_var_list none'
-    #         order_var = ''
-    #         order_var_list = []
-    #     else:
-    #         print 'order_var_list not none'
-    #         order_var_list = [int(m) for m in order_var_list]
-    # else:
-    #     order_var_list = [order_var]
-    print order_var
-    print order_var_list
-
-    query = int(str(request.GET.get('query', '0')))
-
-    df = request.GET.getlist('df[]', '')
-    df_list = df
-    print df
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
-    color = request.GET.getlist('color[]', 'green')
-    color_list = color
-    print color
-
-
-    ship_id = str(request.GET.get('ship_id', ''))
-    lat_col = request.GET.getlist('lat_col[]', '')
-    lat_col_list = lat_col
-    print lat_col
-    lon_col = request.GET.getlist('lon_col[]','')
-    lon_col_list = lon_col
-    print lon_col
-    map_id = str(request.GET.get('map_id',''))
-    # variable = str(request.GET.get('col_var', ''))
-    # agg_function = str(request.GET.get('agg_func', 'avg'))
-
-    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    # min_lat = float(min(data, key=lambda x: x[lat_index])[lat_index])
-    # max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
-    # zoom_lat= (min_lat + max_lat)/2
-    # min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
-    # max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
-    # zoom_lon = (min_lon + max_lon) / 2
-    location = [37.929411, 23.649708]
-    zoom_start = 4
-    max_zoom = 30
-    min_zoom = 2,
-
-    m = folium.Map(location=location,
-                   zoom_start=zoom_start,
-                   max_zoom=max_zoom,
-                   min_zoom=min_zoom,
-                   max_bounds=True,
-                   tiles=tiles_str + token_str,
-                   attr=attr_str)
-
-    plugins.Fullscreen(
-        position='topright',
-        title='Expand me',
-        title_cancel='Exit me',
-        force_separate_button=True).add_to(m)
-
-    if query != 0:
-        q = AbstractQuery.objects.get(pk=int(query))
-        # q = Query(document=q.document)
-        q = TempQuery(document=q.document)
-        doc = q.document
-
-        # var_query_id = variable[:variable.find('_')]
-        # if order_var != '':
-        #     if len(doc['orderings']) == 0:
-        #         doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
-        #     else:
-        #         doc['orderings'].append({'name': order_var, 'type': 'ASC'})
-
-        if doc['limit'] > marker_limit:
-            doc['limit'] > marker_limit
-        print(doc)
-
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == order_var:
-                    s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0:
-                    s['exclude'] = False
-                    # doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                elif str(s['name']).find('longitude') >= 0:
-                    s['exclude'] = False
-                    # doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-                # else:
-                #     s['exclude'] = True
-
-        q.document = doc
-
-        query_data = q.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-
-        lat_index = lon_index = -1
-        order_var_index = -1
-        var_index = -1
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == order_var:
-                order_var_index = idx
-            elif str(c['name']).find('latitude') >= 0:
-                lat_index = idx
-            elif str(c['name']).find('longitude') >= 0:
-                lon_index = idx
-
-        points = [[float(s[lat_index]), float(s[lon_index])] for s in data]
-        print(points[:5])
-
-        # pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
-        #                                           control=True).add_to(m)
-        #
-        # # print data[:5]
-        # folium.PolyLine(points,
-        #                 color=color,
-        #                 weight=3,
-        #                 opacity=0.9,
-        #                 ).add_to(pol_group_layer)
-
-        # Arrows are created
-        # for i in range(1, len(points) - 1):
-        #     arrows = get_arrows(m, 1, locations=[points[i - 1], points[i]])
-        #     for arrow in arrows:
-        #         arrow.add_to(pol_group_layer)
-    else:
-        print ("json-case")
-
-        for df, color, lat_col, lon_col, order_var, marker_limit in zip(df_list, color_list, lat_col_list, lon_col_list, order_var_list, marker_limit_list):
-            livy = False
-            service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-            if len(service_exec) > 0:
-                service_exec = service_exec[0]  # GET LAST
-                session_id = service_exec.livy_session
-                exec_id = service_exec.id
-                updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-                livy = service_exec.service.through_livy
-            if livy:
-                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
-            else:
-                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-                run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-                json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-                delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            # print json_data
-
-            points = [[float(s[lat_col]), float(s[lon_col])] for s in json_data]
-            print(points[:5])
-
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline: ' + str(ship_id), overlay=True,
-                                              control=True).add_to(m)
-    folium.PolyLine(points,
-                    color=color,
-                    weight=2.5,
-                    opacity=0.9,
-                    ).add_to(pol_group_layer)
-
-    # Arrows are created
-    for i in range (1,len(points)-1):
-        arrows = get_arrows(m, 1, locations=[points[i-1],points[i]])
-        for arrow in arrows:
-            arrow.add_to(pol_group_layer)
-
-
-    folium.LayerControl().add_to(m)
-
-    m.save('templates/map.html')
-    map_html = open('templates/map.html', 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    # print map_id
-    js_all = soup.findAll('script')
-    # print(js_all)
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-    # print(js_all)
-    css_all = soup.findAll('link')
-    if len(css_all) > 3:
-        css_all = [css.prettify() for css in css_all[3:]]
-    # print js
-    os.remove('templates/map.html')
-    return render(request, 'visualizer/map_plotline.html',
-                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': ''})
-
 
 def map_markers_in_time(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
@@ -907,9 +1558,9 @@ def map_markers_in_time(request):
             for s in f['select']:
                 if s['name'] == order_var:
                     s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0:
+                elif s['name'].split('_', 1)[1] == 'latitude':
                     s['exclude'] = False
-                elif str(s['name']).find('longitude') >= 0:
+                elif s['name'].split('_', 1)[1] == 'longitude':
                     s['exclude'] = False
                 # elif s['name'] == var:
                 #     s['exclude'] = False
@@ -920,7 +1571,7 @@ def map_markers_in_time(request):
         # print doc
         q.document = doc
 
-        query_data = q.execute()
+        query_data = execute_query_method(q)
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
         print(result_headers)
@@ -930,9 +1581,9 @@ def map_markers_in_time(request):
         for idx, c in enumerate(result_headers['columns']):
             # if c['name'] == var:
             #     var_index = idx
-            if str(c['name']).find('latitude') >= 0:
+            if c['name'].split('_', 1)[1] == 'latitude':
                 lat_index = idx
-            elif str(c['name']).find('longitude') >= 0:
+            elif c['name'].split('_', 1)[1] == 'longitude':
                 lon_index = idx
             elif c['name'] == order_var:
                 order_index = idx
@@ -1023,484 +1674,48 @@ def map_markers_in_time(request):
                       {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType})
 
 
-# def map_heatmap(request):
-#     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-#     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-#     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-#                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-#                'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-#     location = [0, 0]
-#     zoom_start = 2
-#     max_zoom = 15
-#     min_zoom = 2
-#
-#     m = folium.Map(location=location,
-#                    zoom_start=zoom_start,
-#                    max_zoom=max_zoom,
-#                    min_zoom=min_zoom,
-#                    max_bounds=True,
-#                    tiles=tiles_str + token_str,
-#                    attr=attr_str)
-#
-#     if request.method == "POST":
-#
-#         form = MapForm(request.POST)
-#         if form.is_valid():
-#             data = request.data
-#             markersum = data["markers"]
-#             ship = data["ship"]
-#             mindate = request.POST.get("min_date", 2000)
-#             maxdate = request.POST.get("max_date", 2017)
-#         else:
-#             markersum = 50
-#             ship = "all"
-#             mindate = 2000
-#             maxdate = 2017
-#
-#     else:
-#         markersum = int(request.GET.get("markers", 5000))
-#         ship = request.GET.get("ship", "all")
-#         mindate = int(request.POST.get("min_date", 2000))
-#         maxdate = int(request.POST.get("max_date", 2017))
-#
-#     query_pk = int(str(request.GET.get('query', '')))
-#     data = get_data(query_pk, markersum, ship, mindate, maxdate)
-#     heat = []
-#
-#     lat_index = data['lat']
-#     lon_index = data['lon']
-#     data = data['data']
-#
-#     for d in data:
-#         heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
-#
-#     HeatMap(heat, name="Heat Map").add_to(m)
-#
-#
-#     folium.LayerControl().add_to(m)
-#
-#
-#     m.save('templates/map.html')
-#     map_html = open('templates/map.html', 'r').read()
-#     soup = BeautifulSoup(map_html, 'html.parser')
-#     map_id = soup.find("div", {"class": "folium-map"}).get('id')
-#     # print map_id
-#     js_all = soup.findAll('script')
-#     # print(js_all)
-#     if len(js_all) > 5:
-#         js_all = [js.prettify() for js in js_all[5:]]
-#     # print(js_all)
-#     css_all = soup.findAll('link')
-#     if len(css_all) > 3:
-#         css_all = [css.prettify() for css in css_all[3:]]
-#     # print js
-#     # os.remove('templates/map.html')
-#     return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
 
-
-
-def map_heatmap(request):
-    # Gather the arguments
-
-    # variable = str(request.GET.get('feat_1', ''))
-    query = int(str(request.GET.get('query', '0')))
-    heat_col = str(request.GET.get('heat_col', 'frequency'))
-
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-    lat_col = str(request.GET.get('lat_col', 'latitude'))
-    lon_col = str(request.GET.get('lon_col', 'longitude'))
-
-    if query != 0:
-        q = AbstractQuery.objects.get(pk=int(query))
-        q = TempQuery(document=q.document)
-        doc = q.document
-
-        doc['orderings'] = []
-
-
-        for f in doc['from']:
-            for s in f['select']:
-                if str(s['name']).find('latitude') >= 0:
-                    s['exclude'] = False
-                elif str(s['name']).find('longitude') >= 0:
-                    s['exclude'] = False
-                elif s['name'] == heat_col:
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-
-        q.document = doc
-
-        lat_index = lon_index = var_index = 0
-        result = q.execute()[0]
-        result_data = result['results']
-        result_headers = result['headers']
-
-        print result_headers
-        for idx, c in enumerate(result_headers['columns']):
-            if str(c['name']).find('lat') >= 0:
-                lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
-                lon_index = idx
-            elif c['name'] == heat_col:
-                var_index = idx
-
-        data = result_data
+def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+    heatmap_result_data = []
+    if (heat_col == 'heatmap_frequency'):
+        for d in data:
+            heatmap_result_data.append(
+                (np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
+            if d[lat_index] > max_lat:
+                max_lat = d[lat_index]
+            if d[lat_index] < min_lat:
+                min_lat = d[lat_index]
+            if d[lon_index] > max_lon:
+                max_lon = d[lon_index]
+            if d[lon_index] < min_lon:
+                min_lon = d[lon_index]
     else:
-        print ("json-case")
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        # print json_data
-
-        data = []
-        lat_index = 0
-        lon_index = 1
-        var_index = 2
-
-        for s in json_data:
-            row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
-            data.append(row)
-
-
-
-    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
-    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
-               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
-    location = [0, 0]
-    zoom_start = 2
-    max_zoom = 15
-    min_zoom = 2
-
-    m = folium.Map(location=location,
-                   zoom_start=zoom_start,
-                   max_zoom=max_zoom,
-                   min_zoom=min_zoom,
-                   max_bounds=True,
-                   tiles=tiles_str + token_str,
-                   attr=attr_str)
-
-
-    heat = []
-    maximum = -1
-    for d in data:
-        if d[var_index]>maximum :
-            maximum = d[var_index]
-
-    if (heat_col=='frequency'):
+        maximum = -1000000
         for d in data:
-            heat.append((np.array([float(d[lat_index]), float(d[lon_index])]) * np.array([1, 1])).tolist())
-    else:
+            if d[heat_var_index] > maximum:
+                maximum = float(d[heat_var_index])
         for d in data:
-            heat.append((np.array([float(d[lat_index]), float(d[lon_index]),float(d[var_index])/maximum])).tolist())
+            if d[heat_var_index] is not None:
+                heatmap_result_data.append((np.array([float(d[lat_index]), float(d[lon_index]), float(d[heat_var_index]) / maximum])).tolist())
+                if d[lat_index] > max_lat:
+                    max_lat = d[lat_index]
+                if d[lat_index] < min_lat:
+                    min_lat = d[lat_index]
+                if d[lon_index] > max_lon:
+                    max_lon = d[lon_index]
+                if d[lon_index] < min_lon:
+                    min_lon = d[lon_index]
+    max_lat = float(max_lat)
+    min_lat = float(min_lat)
+    max_lon = float(max_lon)
+    min_lon = float(min_lon)
 
-    # check out
-    HeatMap(heat, name="Heat Map").add_to(m)
+    return heatmap_result_data, min_lat, min_lon, max_lat, max_lon
 
-
-    folium.LayerControl().add_to(m)
-
-
-    m.save('templates/map.html')
-    map_html = open('templates/map.html', 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    # print map_id
-    js_all = soup.findAll('script')
-    # print(js_all)
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-    # print(js_all)
-    css_all = soup.findAll('link')
-    if len(css_all) > 3:
-        css_all = [css.prettify() for css in css_all[3:]]
-    # print js
-    # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_wjs.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
-
-
-
-
-def map_viz_folium_contour(request):
-    try:
-        # Gather the arguments
-        n_contours = int(request.GET.get('n_contours', 20))
-        step = float(request.GET.get('step', 0.1))
-        round_num = 0
-        if step == 1:
-            round_num = 0
-        elif step == 0.1:
-            round_num = 1
-        elif step == 0.01:
-            round_num = 2
-        elif step == 0.001:
-            round_num = 3
-
-        variable = str(request.GET.get('feat_1', ''))
-        query = str(request.GET.get('query', ''))
-        agg_function = str(request.GET.get('agg_func', 'avg'))
-
-        q = AbstractQuery.objects.get(pk=int(query))
-        q = TempQuery(document=q.document)
-        doc = q.document
-        # if 'orderings' not in doc.keys():
-        #     doc['orderings'] = []
-        doc['orderings'] = []
-        doc['limit'] = []
-        var_query_id = variable[:variable.find('_')]
-        print doc
-        # print doc
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == variable:
-                    s['aggregate'] = agg_function
-                    s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                    s['groupBy'] = True
-                    s['aggregate'] = 'round' + str(round_num)
-                    s['exclude'] = False
-                    doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
-                elif str(s['name']).find('longitude') >= 0 and str(s['name']).find(var_query_id) >= 0:
-                    s['groupBy'] = True
-                    s['aggregate'] = 'round' + str(round_num)
-                    s['exclude'] = False
-                    doc['orderings'].insert(0, {'name': str(s['name']), 'type': 'ASC'})
-                else:
-                    s['exclude'] = True
-                    s['groupBy'] = False
-
-        # import pdb
-        # pdb.set_trace()
-        # print doc
-        q.document = doc
-        raw_query = q.raw_query
-        # print 'q ray query'
-        # print raw_query
-        # select_clause = re.findall(r"SELECT.*?\nFROM", raw_query)[0]
-        # names = re.findall(r"round\((.*?)\)", select_clause)
-
-        # THIS IS ADDED TO QUERY MODEL PROCESSOR
-        # names = re.findall(r"round\((.*?)\)", raw_query)
-        # for name in names:
-        #     raw_query = re.sub(r"round\((" + name + ")\)", "round(" + name + ", 1)", raw_query)
-        # print raw_query
-
-        # Create a leaflet map using folium
-        m = create_folium_map(location=[0, 0], zoom_start=3, max_zoom=10)
-
-        # cursor = connections["UBITECH_POSTGRES"].cursor()
-
-        # print 'Countour Query: '
-        # print str(raw_query)
-        # cursor.execute(raw_query)
-        # data = cursor.fetchall()
-        # print ("Data:")
-        # print data[:3]
-
-        var_index = lat_index = lon_index = 0
-        result = q.execute()[0]
-        result_data = result['results']
-        result_headers = result['headers']
-
-        print result_headers
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == variable:
-                var_index = idx
-            elif str(c['name']).find('lat') >= 0:
-                lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
-                lon_index = idx
-        # lat_index = 1
-        # lon_index = 2
-        data = result_data
-
-        # data = []
-        # for d in result_data:
-        #     data.append([d[var_index], d[lon_index], d[lat_index]])
-        #     # data = result_data
-        # lat_index = 2
-        # lon_index = 1
-
-        min_lat = 90
-        max_lat = -90
-        min_lon = 180
-        max_lon = -180
-        min_val = 9999999999
-        max_val = -9999999999
-        print data[:3]
-        for row in data:
-            if row[lat_index] > max_lat:
-                max_lat = row[lat_index]
-            if row[lat_index] < min_lat:
-                min_lat = row[lat_index]
-            if row[lon_index] > max_lon:
-                max_lon = row[lon_index]
-            if row[lon_index] < min_lon:
-                min_lon = row[lon_index]
-            if row[var_index] > max_val:
-                max_val = row[var_index]
-            if row[var_index] < min_val:
-                min_val = row[var_index]
-
-        # min_lat = min(data, key=lambda x: x[lat_index])
-        # max_lat = float(max(data, key=lambda x: x[lat_index])[lat_index])
-        # min_lon = float(min(data, key=lambda x: x[lon_index])[lon_index])
-        # max_lon = float(max(data, key=lambda x: x[lon_index])[lon_index])
-        # min_val = float(min(data, key=lambda x: x[var_index])[var_index])
-        # max_val = float(max(data, key=lambda x: x[var_index])[var_index])
-        print min_lat, max_lat, min_lon, max_lon, min_val, max_val
-
-        lats_bins = np.arange(min_lat, max_lat + 0.00001, step)
-        print lats_bins[:3]
-        lons_bins = np.arange(min_lon, max_lon + 0.00001, step)
-        print lons_bins[:3]
-        Lats, Lons = np.meshgrid(lats_bins, lons_bins)
-
-        print Lats[:3]
-        print Lons[:3]
-
-        # Create grid data needed for the contour plot
-        # final_data = create_grid_data(lats_bins, lons_bins, data)
-
-        final_data = []
-        it = iter(data)
-        try:
-            val = map(float, next(it))
-        except:
-            val = [-300, -300, -300]
-        # import pdb
-        # pdb.set_trace()
-        # if lat_index > lon_index:
-        for lon in lons_bins:
-            row = list()
-            for lat in lats_bins:
-                # if abs(lon - val[lon_index]) < 0.1 and abs(lat - val[lat_index]) < 0.1:
-                #     row.append(val[var_index])
-                #     try:
-                #         val = map(float, next(it))
-                #     except:
-                #         val = [-300, -300, -300]
-                # else:
-                    row.append(None)
-            final_data.append(row)
-        for d in data:
-            lon_pos = int((d[lon_index] - min_lon)/step)
-            lat_pos = int((d[lat_index] - min_lat) / step)
-            final_data[lon_pos][lat_pos] = d[var_index]
-        # else:
-        #     for lat in lats_bins:
-        #         row = list()
-        #         for lon in lons_bins:
-        #             # import pdb
-        #             # pdb.set_trace()
-        #             if abs(lon - val[lon_index]) < 0.1 and abs(lat - val[lat_index]) < 0.1:
-        #                 row.append(val[var_index])
-        #                 try:
-        #                     val = map(float, next(it))
-        #                 except:
-        #                     val = [-300, -300, -300]
-        #             else:
-        #                 row.append(None)
-        #         final_data.append(row)
-
-        # final_data = data
-        # for row in final_data:
-        #     print final_data
-        # print final_data[:3]
-
-
-        levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
-        print 'level ok'
-
-        # Create contour image to lay over the map
-        fig = Figure()
-        ax = fig.add_subplot(111)
-        plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
-        print 'contour made'
-        # plt.axis('off')
-        extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
-        plt.draw()
-        print 'contour draw'
-        # plt.show()
-        ts = str(time.time()).replace(".", "")
-        mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
-        print 'mappath'
-        plt.savefig(mappath, bbox_inches=extent, transparent=True, pad_inches=0)
-        print 'saved'
-        plt.clf()
-        plt.close()
-        fig = None
-        ax = None
-
-        # Create legend for the contour map
-        a = np.array([[min_val, max_val]])
-        pl.figure(figsize=(2.8, 0.4))
-        img = pl.imshow(a, cmap=plt.cm.coolwarm)
-        pl.gca().set_visible(False)
-        cax = pl.axes([0.1, 0.2, 0.8, 0.6])
-        cbar = pl.colorbar(orientation="horizontal", cax=cax)
-        cbar.ax.tick_params(labelsize=11, colors="#ffffff")
-        ts = str(time.time()).replace(".", "")
-        legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
-        pl.savefig(legpath, transparent=True, bbox_inches='tight')
-        legpath = legpath.split("static/", 1)[1]
-        pl.clf()
-        pl.close()
-
-        # read in png file to numpy array
-        data_img = Image.open(mappath)
-        data = trim(data_img)
-        data_img.close()
-
-        # Overlay the image
-        contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
-                                                          bounds=[[lats_bins.min(), lons_bins.min()], [lats_bins.max(), lons_bins.max()]])
-        contour_layer.layer_name = 'Contour'
-        m.add_child(contour_layer)
-
-        # Overlay an extra coastline field (to be removed
-        folium.GeoJson(open('ne_50m_land.geojson').read(),
-                       style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
-            .add_to(m) \
-            .layer_name = 'Coastline'
-
-        # Add layer contorl
-        folium.LayerControl().add_to(m)
-
-        # Parse the HTML to pass to template through the render
-        m.save('templates/map.html')
-        f = open('templates/map.html', 'r')
-        map_html = f.read()
-        soup = BeautifulSoup(map_html, 'html.parser')
-        map_id = soup.find("div", {"class": "folium-map"}).get('id')
-        js_all = soup.findAll('script')
-        if len(js_all) > 5:
-            js_all = [js.prettify() for js in js_all[5:]]
-        css_all = soup.findAll('link')
-        if len(css_all) > 3:
-            css_all = [css.prettify() for css in css_all[3:]]
-        f.close()
-        os.remove(mappath)
-        # os.remove('templates/map.html')
-
-        # Create data grid for javascript pop-up
-        data_grid = []
-        for nlist in final_data:
-            nlist = map(str, nlist)
-            data_grid.append(nlist)
-
-        return render(request, 'visualizer/map_viz_folium.html',
-                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step, 'data_grid': data_grid, 'min_lat': min_lat,
-                       'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon, 'agg_function': agg_function, 'legend_id': legpath})
-    except HttpResponseNotFound:
-        return HttpResponseNotFound
-    except Exception:
-        print Exception.message.capitalize()
-        return HttpResponseNotFound
 
 
 def map_viz_folium_heatmap_time(request):
@@ -1526,9 +1741,9 @@ def map_viz_folium_heatmap_time(request):
             for s in f['select']:
                 if s['name'] == order_var:
                     s['exclude'] = False
-                elif str(s['name']).find('latitude') >= 0:
+                elif s['name'].split('_', 1)[1] == 'latitude':
                     s['exclude'] = False
-                elif str(s['name']).find('longitude') >= 0:
+                elif s['name'].split('_', 1)[1] == 'longitude':
                     s['exclude'] = False
                 elif s['name'] == heat_col:
                     s['exclude'] = False
@@ -1538,15 +1753,15 @@ def map_viz_folium_heatmap_time(request):
         q.document = doc
 
         lat_index = lon_index = var_index = 0
-        result = q.execute()[0]
+        result = execute_query_method(q)[0]
         result_data = result['results']
         result_headers = result['headers']
 
         print result_headers
         for idx, c in enumerate(result_headers['columns']):
-            if str(c['name']).find('lat') >= 0:
+            if c['name'].split('_', 1)[1] == 'latitude':
                 lat_index = idx
-            elif str(c['name']).find('lon') >= 0:
+            elif c['name'].split('_', 1)[1] == 'longitude':
                 lon_index = idx
             elif c['name'] == heat_col:
                 var_index = idx
@@ -1598,7 +1813,7 @@ def map_viz_folium_heatmap_time(request):
     data_list = []
     time_list = []
     data_moment_list=[]
-    # pdb.set_trace()
+
     for d in data:
         if (d[order_index] == curr_time):
             data_moment_list.append([float(d[lat_index]),float(d[lon_index]),float(d[var_index])])
@@ -1611,23 +1826,6 @@ def map_viz_folium_heatmap_time(request):
     data_list.append(data_moment_list)
     time_list.append(curr_time.strftime("%Y-%m-%dT%H:%M:%S"))
 
-
-    print data_list
-    print time_list
-    # initial_data = (
-    #     np.random.normal(size=(100, 2)) * np.array([[1, 1]]) +
-    #     np.array([[48, 5]])
-    # )
-    # move_data = np.random.normal(size=(100, 2)) * 0.01
-    # data = [(initial_data + move_data * i).tolist() for i in range(100)]
-
-    # hm = plugins.HeatMapWithTime(data)
-    # hm.add_to(m)
-    #
-    # time_index = [
-    #     (datetime.now() + k * timedelta(1)).strftime('%Y-%m-%d') for
-    #     k in range(len(data))
-    # ]
     hm = plugins.HeatMapWithTime(
         data_list,
         index=time_list,
@@ -1635,8 +1833,6 @@ def map_viz_folium_heatmap_time(request):
         scale_radius=True,
         auto_play=True,
         max_opacity=0.9,
-
-
     )
 
     hm.add_to(m)
@@ -1691,6 +1887,10 @@ def get_histogram_chart_am(request):
                             from_table = str(v_obj.dataset.table_name)
                             table_col = str(v_obj.name)
                             cursor = connections['UBITECH_POSTGRES'].cursor()
+                        elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+                            from_table = str(v_obj.dataset.table_name)
+                            table_col = str(v_obj.name)
+                            cursor = get_presto_cursor()
                     else:
                         d_obj = Dimension.objects.get(pk=int(s['type']))
                         v_obj = d_obj.variable
@@ -1702,6 +1902,10 @@ def get_histogram_chart_am(request):
                             from_table = str(v_obj.dataset.table_name)
                             table_col = str(d_obj.name)
                             cursor = connections['UBITECH_POSTGRES'].cursor()
+                        elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+                            from_table = str(v_obj.dataset.table_name)
+                            table_col = str(d_obj.name)
+                            cursor = get_presto_cursor()
                 else:
                     s['exclude'] = True
         # print doc
@@ -1714,20 +1918,32 @@ def get_histogram_chart_am(request):
             where_clause = ''
         bins -= 1
 
-        raw_query = "with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}), " \
-                    "histogram as (select width_bucket({0}, min, max, {2}) as bucket, " \
-                    "numrange (min({0}::NUMERIC), max({0}::NUMERIC), '[]') as range, " \
-                    "count(*) as freq from {1}, drb_stats {3} " \
-                    "group by bucket " \
-                    "order by bucket) " \
-                    "select range, freq " \
-                    "from histogram; ".format(table_col, from_table, bins, where_clause)
-        # print raw_query
+        raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
+                    histogram as (select width_bucket({0}, min, max, {2}) ,
+                     (min({0}), max({0})) as range,
+                     count(*) as freq from {1}, drb_stats {3}
+                     group by 1
+                     order by 1)
+                    select range, freq
+                    from histogram""".format(table_col, from_table, bins, where_clause)
+
+        # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
+
+        result = execute_query_method(query)[0]
+
         cursor.execute(raw_query)
         data = cursor.fetchall()
         json_data = []
         for d in data:
-            json_data.append({"startValues": '['+str(float(d[0].lower)) + ',' + str(float(d[0].upper)) + ']', "counts": str(d[1])})
+            if d[0][0] is not None :
+                start_value = str(float(d[0][0]))
+            else :
+                start_value = 'None'
+            if d[0][1] is not None :
+                end_value = str(float(d[0][1]))
+            else :
+                end_value = 'None'
+            json_data.append({"startValues": '['+ start_value + ',' + end_value + ']', "counts": str(d[1])})
         y_var = 'counts'
         x_var = 'startValues'
         # print data
@@ -1804,12 +2020,8 @@ def get_histogram_2d_am(request):
         doc['limit'] = []
         doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
         query.document = doc
-        # raw_query = query.raw_query
-        # print doc
-        # print raw_query
 
-
-        query_data = query.execute()
+        query_data = execute_query_method(query)
 
         result_data = query_data[0]['results']
         result_headers = query_data[0]['headers']
@@ -1959,7 +2171,7 @@ def get_histogram_2d_am(request):
     cbar.ax.tick_params(labelsize=10, colors="#000000")
     pl.xlabel("'Percentage %'", labelpad=10)
     ts = str(time.time()).replace(".", "")
-    legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png'
+    legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
     pl.savefig(legpath, transparent=True, bbox_inches='tight')
     legpath = legpath.split("static/", 1)[1]
     pl.clf()
@@ -1970,133 +2182,152 @@ def get_histogram_2d_am(request):
                    'bin_x': bin_x_contr, 'bin_y': bin_y_contr, 'legend_id': legpath})
 
 
-def test_request_zep(request):
-    query = 6
-    raw_query = Query.objects.get(pk=query).raw_query
-    print raw_query
 
-    notebook_id = create_zep_note(name='bdo_test')
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
-    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
+def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering = True):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    x_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'] in y_var_list) and (s['exclude'] is not True):
+                s['aggregate'] = agg_function
+                s['exclude'] = False
+            elif (s['name'] == x_var) and (s['exclude'] is not True):
+                s['groupBy'] = True
+                s['exclude'] = False
+                x_flag = True
+            else:
+                s['exclude'] = True
+    if ordering == True:
+        if x_flag == True:
+            doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+        else:
+            raise ValueError('-Variable or Dimension for the X-Axis of Line-Charts and Column-Charts is needed.\n-Variable or Dimension for creating the sub-groups of the Pie-Chart is needed.')
+    query.document = doc
+    return query
 
-    # response = requests.delete("http://localhost:8080/api/notebook/"+str(notebook_id))
-    return render(request, 'visualizer/table_zep.html', {'notebook_id': notebook_id, 'paragraph_id': viz_paragraph_id})
+def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, ordering = True):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+
+    x_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'] in y_var_list) and (s['exclude'] is not True):
+                s['aggregate'] = agg_function
+                s['exclude'] = False
+            elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
+                order_var = s['name'].encode('ascii')
+                if not existing_temp_res:
+                    s['groupBy'] = True
+                    s['aggregate'] = temporal_resolution
+                    min_period = temporal_resolution
+                else:
+                    min_period = s['aggregate']
+                s['exclude'] = False
+                x_flag = True
+            else:
+                s['exclude'] = True
+    if ordering == True:
+        if x_flag == True:
+            doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+        else:
+            raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    query.document = doc
+    return query, order_var, min_period
+
+
+def get_chart_query_data(query, x_var, y_var_list):
+    try:
+        query_data = execute_query_method(query)
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+
+    x_var_index = 0
+    y_var_index = []
+    y_var_indlist = []
+    y_m_unit = []
+    y_title_list = []
+
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'] in y_var_list:
+            y_var_index.insert(len(y_var_index), idx)
+            y_var_indlist.insert(len(y_var_indlist), c['name'])
+            y_m_unit.insert(len(y_m_unit), c['unit'].encode('ascii'))
+            y_title_list.insert(len(y_title_list), c['title'].encode('ascii'))
+        elif c['name'] == x_var:
+            x_var_index = idx
+
+    json_data = []
+    for d in data:
+        count = 0
+        dict = {}
+        for y_index in y_var_index:
+            newvar = str(y_var_indlist[count]).encode('ascii')
+            dict.update({newvar: str(d[y_index]).encode('ascii')})
+            count = count + 1
+
+        dict.update({x_var: str(d[x_var_index])})
+        json_data.append(dict)
+    return json_data, y_m_unit, y_title_list
+
+
+def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, ordering = True):
+    y_m_unit = []
+    y_title_list = []
+    livy = False
+    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+    if len(service_exec) > 0:
+        service_exec = service_exec[0]  # GET LAST
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        livy = service_exec.service.through_livy
+    if livy:
+        if ordering:
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+        else:
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+    else:
+        if ordering:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var,
+                                                          order_type='ASC')
+        else:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+
+    for x in y_var_list:
+        # TODO: use proper names
+        y_title_list.insert(0, str(x))
+        y_m_unit.insert(0, str('unknown unit'))
+
+    return json_data, y_m_unit, y_title_list
+
 
 
 def get_line_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
-
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = request.GET.getlist('y_var[]')
-
-    y_var_list = y_var
-    agg_function = str(request.GET.get('agg_func', 'avg'))
-
-    if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-        doc = query.document
-
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] in y_var_list:
-                    s['aggregate'] = agg_function
-                    s['exclude'] = False
-                elif s['name'] == x_var:
-                    s['groupBy'] = True
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-        query.document = doc
-        # raw_query = query.raw_query
-        # print doc
-
-
-        query_data = query.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-
-        x_var_index = 0
-        y_var_index = []
-        y_var_indlist = []
-        y_m_unit=[]
-        y_title_list=[]
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] in y_var_list:
-                y_var_index.insert(len(y_var_index), idx)
-                y_var_indlist.insert(len(y_var_indlist), c['name'])
-                y_m_unit.insert(len(y_m_unit),c['unit'].encode('ascii'))
-                y_title_list.insert(len(y_title_list),c['title'].encode('ascii'))
-            elif c['name'] == x_var:
-                x_var_index = idx
-        # print y_m_unit
-        json_data = []
-        for d in data:
-            count = 0
-            dict = {}
-            for y_index in y_var_index:
-                newvar = str(y_var_indlist[count]).encode('ascii')
-                dict.update({newvar: str(d[y_index]).encode('ascii')})
-                count = count + 1
-
-            dict.update({x_var: str(d[x_var_index])})
-            json_data.append(dict)
-        print json_data[:3]
-
-    else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        x_var = str(request.GET.get('x_var', ''))
+        y_var_list = request.GET.getlist('y_var[]')
+        agg_function = str(request.GET.get('agg_func', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
+        elif df != '':
+            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
         else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print json_data[:3]
-        y_m_unit = []
-        y_title_list = []
-        for x in y_var_list:
-            # TODO: use proper names
-            y_title_list.insert(0, str(x))
-            y_m_unit.insert(0, str('unknown unit'))
-
-    #notebook_id = create_zep_note(name='bdo_test')
-    # query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
-    # # sort_paragraph_id = create_zep_sort_paragraph(notebook_id=notebook_id, title='sort_paragraph', sort_col=x_var)
-    # # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=sort_paragraph_id)
-    # # reg_table_paragraph_id = create_zep_reg_table_paragraph(notebook_id=notebook_id, title='sort_paragraph')
-    # # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=reg_table_paragraph_id)
-    # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='toJSON_paragraph')
-    # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    # json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    # # json_data = '{ "data":' + json_data + '}'
-
-    #session_id = create_livy_session(kind='pyspark')
-    #query_statement_id = create_livy_query_statement(session_id=session_id, raw_query=raw_query)
-    #json_data = create_livy_toJSON_paragraph(session_id=session_id)['text/plain']
-    #print json_data
-
-    #json_data = json_data.replace("u'{", "{")
-    #json_data = json_data.replace("}'", "}")
-    #json_data = json_data.replace("+03:00", "")
-    #
-    # print str(json_data)
-    # print json.loads(str(json_data))
-    #
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
         isDate = 'true'
@@ -2104,238 +2335,612 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_title_list, 'category_col': x_var, 'isDate': isDate})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
-def get_pie_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
 
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
-    key_var = str(request.GET.get('key_var', ''))
-    value_var = str(request.GET.get('value_var', ''))
-    agg_func = str(request.GET.get('agg_func', 'avg'))
-
-    if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-        doc = query.document
-        print doc
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == value_var:
-                    s['aggregate'] = agg_func
-                    s['exclude'] = False
-                elif s['name'] == key_var:
-                    s['groupBy'] = True
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-        print doc
-
-        doc['orderings'] = [{'name': key_var, 'type': 'ASC'}]
-        query.document = doc
-        # raw_query = query.raw_query
-        # print doc
-
-
-        query_data = query.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-
-        value_var_index = key_var_index = 0
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == value_var:
-                value_var_index = idx
-            elif c['name'] == key_var:
-                key_var_index = idx
-
-        json_data = []
-        for d in data:
-            json_data.append({value_var: d[0], key_var: str(d[1])})
-
-    else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=key_var, order_type='ASC')
+def get_time_series_am(request):
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        existing_temp_res = request.GET.get('use_existing_temp_res', '') == 'on'
+        temporal_resolution = str(request.GET.get('temporal_resolution', ''))
+        y_var_list = request.GET.getlist('y_var[]')
+        agg_function = str(request.GET.get('agg_func', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function)
+            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, order_var, y_var_list)
+            min_chart_period = chart_min_period_finder(min_period)
+        elif df != '':
+            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
+            order_var = 'time'.encode('ascii')
+            min_chart_period = 'ss'
         else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=key_var, order_type='ASC')
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print json_data
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
-    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
+    return render(request, 'visualizer/line_chart_am.html',
+                  {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
+
 
 
 def get_column_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
 
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
-
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = request.GET.getlist('y_var[]')
-    y_var_list = y_var
-    agg_function = str(request.GET.get('agg_func', 'avg'))
-
-    if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-
-        doc = query.document
-        print doc
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] in y_var_list:
-                    s['aggregate'] = agg_function
-                    s['exclude'] = False
-                elif s['name'] == x_var:
-                    s['groupBy'] = True
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-        print doc
-
-        doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
-        query.document = doc
-        # raw_query = query.raw_query
-        # print doc
-
-
-        query_data = query.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-
-        x_var_index = 0
-        y_var_index = []
-        y_var_indlist = []
-        y_m_unit = []
-        y_title_list = []
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] in y_var_list:
-                y_var_index.insert(len(y_var_index), idx)
-                y_var_indlist.insert(len(y_var_indlist), c['name'])
-                y_m_unit.insert(len(y_m_unit), c['unit'].encode('ascii'))
-                y_title_list.insert(len(y_title_list), c['title'].encode('ascii'))
-            elif c['name'] == x_var:
-                x_var_index = idx
-
-        json_data = []
-        for d in data:
-            count = 0
-            dict = {}
-            for y_index in y_var_index:
-                newvar = str(y_var_indlist[count]).encode('ascii')
-                dict.update({newvar: str(d[y_index]).encode('ascii')})
-                count = count + 1
-
-            dict.update({x_var: str(d[x_var_index])})
-            json_data.append(dict)
-        print (json_data)
-    else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+        x_var = str(request.GET.get('x_var', ''))
+        y_var_list = request.GET.getlist('y_var[]')
+        agg_function = str(request.GET.get('agg_func', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
+        elif df != '':
+            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
         else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var, order_type='ASC')
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print json_data
-        y_m_unit = []
-        y_title_list = []
-        for x in y_var_list:
-            # TODO: use proper names
-            y_title_list.insert(0, str(x))
-            y_m_unit.insert(0, str('unknown unit'))
-
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
         isDate = 'true'
     else:
         isDate = 'false'
+
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_title_list, 'category_col': x_var, 'isDate': isDate})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+
+
+def get_pie_chart_am(request):
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        key_var = str(request.GET.get('key_var', ''))
+        value_var = str(request.GET.get('value_var', ''))
+        agg_function = str(request.GET.get('agg_func', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function)
+            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, key_var, [value_var])
+        elif df !='':
+            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
+
+    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
+
+
+
+def load_execute_query_data_table(query_pk, offset, limit, column_choice):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    q = TempQuery(document=query.document)
+    doc = q.document
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'] in column_choice) and (s['exclude'] is not True):
+                s['exclude'] = False
+            else:
+                s['exclude'] = True
+    doc['limit'] = limit
+    doc['offset'] = offset
+    q.document = doc
+    try:
+        result = execute_query_method(q)[0]
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = result['results']
+    headers = result['headers']['columns']
+    return data, headers
+
+
+def load_execute_dataframe_data(request, df, notebook_id):
+    livy = False
+    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+    if len(service_exec) > 0:
+        service_exec = service_exec[0]  # GET LAST
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        livy = service_exec.service.through_livy
+    if livy:
+        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+    else:
+        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+    headers = [key for key in data[0].keys()]
+    return data, headers
+
 
 
 def get_data_table(request):
-    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-    limit = 50
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        column_choice = request.GET.getlist('column_choice[]')
+        limit = 50
+        offset = int(request.GET.get('offset', 0))
+        if not column_choice:
+            raise ValueError('At least one column of the given query has to be selected.')
+        if query_pk != 0:
+            if column_choice.__len__() != 0:
+                data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice)
+            else:
+                data = []
+                headers = []
+            isJSON = False
+        elif df != '':
+            data, headers = load_execute_dataframe_data(request, df, notebook_id)
+            isJSON = True
+        else:
+            raise ValueError('Either query ID or dataframe name has to be specified.')
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
 
-    query_pk = int(str(request.GET.get('query', '0')))
-    page = int(request.GET.get('page', 1))
+    if data.__len__() < limit:
+        has_next = False
+    else:
+        has_next = True
 
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
+    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
-    if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
+def create_plotline_arrows(points, m, pol_group_layer, color):
+    last_arrow = folium.RegularPolygonMarker(location=[points[len(points) - 1][0], points[len(points) - 1][1]],
+                                             fill_color='white', number_of_sides=6,
+                                             radius=9).add_to(m)
+    last_arrow.add_to(pol_group_layer)
+    first_arrow = True
+    for i in range(1, len(points)):
+        arrows = get_arrows(m, 1, first_arrow, locations=[points[i-1], points[i]], color=color, size=7)
+        first_arrow = False
+        for arrow in arrows:
+            arrow.add_to(pol_group_layer)
 
-        q = TempQuery(document=query.document)
-        # offset = page * limit
-        # if query.document['limit'] > offset:
-        #     query.document['offset'] = page * limit
-        #
-        # if query.document['limit'] > limit:
-        #     query.document['limit'] = limit
 
-        result = q.execute()[0]
-        data = result['results']
-        headers = result['headers']['columns']
-        isJSON = False
+
+
+def get_arrows(m, n_arrows, first_arrow, locations, color='#68A7EE', size=5):
+    '''
+    Get a list of correctly placed and rotated
+    arrows/markers to be plotted
+
+    Parameters
+    locations : list of lists of lat lons that represent the
+                start and end of the line.
+                eg [[41.1132, -96.1993],[41.3810, -95.8021]]
+    arrow_color : default is 'blue'
+    size : default is 6
+    n_arrows : number of arrows to create.  default is 3
+    Return
+    list of arrows/markers
+    '''
+
+    Point = namedtuple('Point', field_names=['lat', 'lon'])
+    p1 = Point(locations[0][0], locations[0][1])
+    p2 = Point(locations[1][0], locations[1][1])
+    rotation = get_bearing(p1, p2) - 90
+    arrows = []
+    if first_arrow:
+        arrows.append(folium.RegularPolygonMarker(location=[locations[0][0], locations[0][1]],
+                                                  fill_color='white', number_of_sides=6,
+                                                  radius=9, rotation=rotation).add_to(m))
+    else:
+        arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
+                                                    fill_color=color, number_of_sides=3,
+                                                    radius=size, rotation=rotation).add_to(m))
+    return arrows
+
+
+def get_bearing(p1, p2):
+    '''
+    Returns compass bearing from p1 to p2
+
+    Parameters
+    p1 : namedtuple with lat lon
+    p2 : namedtuple with lat lon
+
+    Return
+    compass bearing of type float
+
+    Notes
+    Based on https://gist.github.com/jeromer/2005586
+    '''
+
+    long_diff = np.radians(p2.lon - p1.lon)
+    lat1 = np.radians(p1.lat)
+    lat2 = np.radians(p2.lat)
+    x = np.sin(long_diff) * np.cos(lat2)
+    y = (np.cos(lat1) * np.sin(lat2)
+         - (np.sin(lat1) * np.cos(lat2)
+            * np.cos(long_diff)))
+    bearing = np.degrees(np.arctan2(x, y))
+    if bearing < 0:
+        return bearing + 360
+    return bearing
+
+def get_aggregate_query_data(query, variable):
+    try:
+        query_data = execute_query_method(query)
+    except ProgrammingError:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+
+    variable_index = 0
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'] == variable:
+            variable_index = idx
+
+    value = round(data[0][variable_index], 3)
+    unit = result_headers['columns'][variable_index]['unit']
+    return value, unit
+
+
+def get_aggregate_value(request):
+    try:
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+
+        variable = str(request.GET.get('variable', ''))
+        agg_function = str(request.GET.get('agg_function', 'avg'))
+        if not agg_function.lower() in AGGREGATE_VIZ:
+            raise ValueError('The given aggregate function is not valid.')
+        if query_pk != 0:
+            query = load_modify_query_chart(query_pk, '', [variable], agg_function, False)
+            value, unit = get_aggregate_query_data(query, variable)
+        else:
+            value, unit, var_list = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
+    except ValueError as e:
+        return render(request, 'error_page.html', {'message': e.message})
+
+    return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit})
+
+def myconverter(o):
+    if isinstance(o, datetime):
+        return o.__str__()
+
+def agg_func_selector(agg_func,data,bins,y_var_index,x_var_index):
+    final_data=[]
+    try:
+        if (agg_func=='avg'):
+            it1=iter(bins)
+            sum=0
+            bin = it1.next()
+            count=0
+            for d in data:
+                # print("data:"+str(d[x_var_index])+" is in "+ str(bin)+"?")
+                if(frange(bin,d[x_var_index])):
+                    # print("Yes")
+                    sum=sum+d[y_var_index]
+                    count=count+1
+                else:
+                    # print ("NEXT BUCKET!!!!!!!!!!!!")
+                    avg=sum/count
+                    final_data.append(avg)
+                    sum=0
+                    avg=0
+                    bin = it1.next()
+                    # print ("First Element Added.")
+                    sum = d[y_var_index]
+                    count = 1
+            # print ("Last bucket completed.")
+            avg = sum / count
+            final_data.append(avg)
+            return final_data
+
+        elif(agg_func=='sum'):
+            it1 = iter(bins)
+            sum = 0
+            bin = it1.next()
+            for d in data:
+                # print("data:" + str(d[x_var_index]) + " is in " + str(bin) + "?")
+                if (frange(bin, d[x_var_index])):
+                    # print("Yes")
+                    sum = sum + d[y_var_index]
+                else:
+                    # print ("NEXT BUCKET!!!!!!!!!!!!")
+                    final_data.append(sum)
+                    sum=d[y_var_index]
+                    # print ("First Element Added.")
+                    bin = it1.next()
+            # print ("Last bucket completed.")
+            final_data.append(sum)
+            return final_data
+
+        elif (agg_func=='min'):
+            it1 = iter(bins)
+            bin = it1.next()
+            mymin = float(max(data, key=lambda x: x[y_var_index])[y_var_index])
+            for d in data:
+                if (frange(bin, d[x_var_index])):
+                    if(d[y_var_index]<mymin):
+                        mymin=d[y_var_index]
+                else:
+                    final_data.append(mymin)
+                    mymin = float(max(data, key=lambda x: x[y_var_index])[y_var_index])
+                    if (d[y_var_index] < mymin):
+                        mymin = d[y_var_index]
+                    bin = it1.next()
+            final_data.append(mymin)
+            return final_data
+
+        elif (agg_func=='max'):
+            it1 = iter(bins)
+            bin = it1.next()
+            mymax = float(min(data, key=lambda x: x[y_var_index])[y_var_index])
+            for d in data:
+                if (frange(bin, d[x_var_index])):
+                    if (d[y_var_index] > mymax):
+                        mymax = d[y_var_index]
+                else:
+                    final_data.append(mymax)
+                    mymax = float(min(data, key=lambda x: x[y_var_index])[y_var_index])
+                    if (d[y_var_index] > mymax):
+                        mymax = d[y_var_index]
+                    bin = it1.next()
+            final_data.append(mymax)
+            return final_data
+
+    except:
+        return final_data
+
+
+def frange(dist,numb):
+    start=dist[0]
+    end=dist[1]
+    if ((numb<end) and (numb>=start)):
+        return True
+    else:
+        return False
+
+
+def convert_to_hex(rgba_color) :
+    red = int(rgba_color[0]*255)
+    green = int(rgba_color[1]*255)
+    blue = int(rgba_color[2]*255)
+    return '0x{r:02x}{g:02x}{b:02x}'.format(r=red,g=green,b=blue)
+
+
+def color_choice(value,map,value_level):
+    count=0
+    for el in value_level:
+        if (value<el[1] and value>=el[0]):
+            return map[count]
+        count=count+1
+    return map[len(map)-1]
+
+
+def map_script(htmlmappath):
+    map_html = open(htmlmappath, 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+
+    core_script = js_all[-1]
+    # core_script.replace(map_id, used_map_id)
+    useful_part = \
+    core_script.split("console.log('entered fullscreen');")[1].split("});", 1)[1].strip().split("</script>")[0]
+    js_all[-1] = "<script>" + useful_part + "</script>"
+
+
+# def test_request_include(request):
+#     return render(request, 'visualizer/test_request_include.html', {})
+#
+#
+# def test_request(request):
+#     return render(request, 'visualizer/test_request.html', {})
+#
+#
+# def get_map_simple(request):
+#     return render(request, 'visualizer/map_viz.html', {})
+
+
+# class MapIndex(APIView):
+#     def get(self, request):
+#         form = MapForm()
+#         return render(request, 'visualizer/map_index.html', {'form': form})
+#
+#     def post(self, request):
+#         form = MapForm(request.POST)
+#         if form.is_valid():
+#             tiles = request.data["tiles"]
+#             if tiles == "marker clusters":
+#                 return map_viz_folium(request)
+#             else:
+#                 return map_heatmap(request)
+#
+# class MapAPI(APIView):
+#     def get(self, request):
+#
+#         tiles = request.GET.get("tiles", "marker clusters")
+#         if tiles == "marker clusters":
+#             return map_viz_folium(request)
+#         else:
+#             return get_map_heatmap(request)
+#
+# def map_viz(request):
+#     return render(request, 'visualizer/map_viz.html', {})
+
+
+def map_viz_folium(request):
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+               '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
+               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    location = [0, 0]
+    zoom_start = 2
+    max_zoom = 30
+    min_zoom = 2,
+
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str+token_str,
+                   attr=attr_str)
+
+    plugins.Fullscreen(
+        position='topright',
+        title='Expand me',
+        title_cancel='Exit me',
+        force_separate_button=True).add_to(m)
+
+    marker_cluster = plugins.MarkerCluster(name="Markers", popups=False).add_to(m)
+
+    if request.method == "POST":
+
+        form = MapForm(request.POST)
+        if form.is_valid():
+            data = request.data
+            line = request.POST.get("line", 'no')
+            markersum = data["markers"]
+            ship = data["ship"]
+            mindate = str(request.POST.get("min_date", '2000-01-01 00:00:00'))
+            maxdate = str(request.POST.get("max_date", '2017-12-31 23:59:59'))
+        else:
+            markersum = 50
+            line = 'no'
+            ship = "all"
+            mindate = 2000
+            maxdate = 2017
 
     else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0] #GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        isJSON = True
-        print 'table data:'
-        print data[:3]
+        line = request.GET.get("line", 'no')
+        markersum = int(request.GET.get("markers", 50))
+        ship = request.GET.get("ship", "all")
+        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
+        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
 
-        headers = [key for key in data[0].keys()]
+    query_pk = int(str(request.GET.get('query', '')))
 
-    paginator = Paginator(data, limit)  # Show 25 contacts per page
+    data = get_data(query_pk, markersum, ship, mindate, maxdate)
+    # var_index = data['var']
+    ship_index = data['ship']
+    time_index = data['time']
+    lat_index = data['lat']
+    lon_index = data['lon']
+    data = data['data']
 
-    try:
-        page_data = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        page_data = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        page_data = paginator.page(paginator.num_pages)
+    course = []
+    currboat = data[0][ship_index]
+    # import pdb;
+    # pdb.set_trace()
+    for index in range(0, len(data)):
+        d = data[index]
+        lat = float(d[lat_index])
+        lon = float(d[lon_index])
+        ship = int(d[ship_index])
+        date = str(d[time_index])
 
-    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': page_data, 'query_pk': int(query_pk), 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
+        url = 'https://cdn4.iconfinder.com/data/icons/geo-points-1/154/{}'.format
+        icon_image = url('geo-location-gps-sea-location-boat-ship-512.png')
+        icon = CustomIcon(
+            icon_image,
+            icon_size=(40, 40),
+            icon_anchor=(20, 20),
+        )
+        message = '<b>Ship</b>: ' + ship.__str__() + "<br><b>At :</b> [" + lat.__str__() + " , " + lon.__str__() + "] <br><b>On :</b> " + date
+        folium.Marker(
+            location=[lat, lon],
+            icon=icon,
+            popup=message
+        ).add_to(marker_cluster)
 
+        if line != 'no':
+            if ship == currboat:
+                course.append((np.array([lat, lon]) * np.array([1, 1])).tolist())
+            if ship != currboat or index == len(data)-1:
+                boat_line = folium.PolyLine(
+                    locations=course,
+                    weight=1,
+                    color='blue'
+                ).add_to(m)
+                attr = "{'font-weight': 'normal', 'font-size': '18', 'fill': 'white', 'letter-spacing': '80'}"
+                plugins.PolyLineTextPath(
+                    boat_line,
+                    '\u21D2',
+                    repeat=True,
+                    offset=5,
+                    attributes=attr,
+                ).add_to(m)
+
+                if ship != currboat:
+                    course = (np.array([lat, lon]) * np.array([1, 1])).tolist()
+                    currboat = ship
+
+    m.save('templates/map.html')
+    map_html = open('templates/map.html', 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    # print map_id
+    js_all = soup.findAll('script')
+    # print(js_all)
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # print js
+    # os.remove('templates/map.html')
+    return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+
+
+def valid_entry(entry, ship, minyear, maxyear):
+    entryship = entry[2]
+    entrydate = entry[3]
+    year = entrydate.split('-')
+    year = int(year[0])
+
+    if ship != "all":
+        ship = int(ship)
+        if entryship != ship:
+            return False
+    if year < minyear or year > maxyear:
+        return False
+    return True
+
+
+def transpose(date):
+    date_time = date
+    pattern = '%Y-%m-%d %H:%M:%S'
+    epoch = int(time.mktime(time.strptime(date_time, pattern)))*1000
+    return epoch
+
+
+def createjson(lonlat,time,status,color):
+    geo = "{'type': 'Feature', 'geometry':{'type': 'Point','coordinates':" + str(lonlat) + ",}, 'properties': { 'times':" + str(time) + ",'status':'" + str(status) + "','style':{'icon':'circle','iconstyle':{'fillColor':'"+str(color)+"','radius':5},}}}"
+
+    return geo
+
+
+
+
+def execute_query_method(q):
+    result = q.execute()
+    return result
+
+def chart_min_period_finder(min_period):
+    if min_period == 'date_trunc_minute':
+        return 'mm'
+    elif min_period == 'date_trunc_hour':
+        return 'hh'
+    elif min_period == 'date_trunc_day':
+        return 'DD'
+    elif min_period == 'date_trunc_month':
+        return 'MM'
+    elif min_period == 'date_trunc_year':
+        return 'YYYY'
+    else:
+        return 'ss'
 
 def get_pie_chart(request):
     type = 'pieChart'
@@ -2556,298 +3161,35 @@ def get_pie_chart_zep(request):
 
     return redirect("http://localhost:8080/#/notebook/"+str(notebook_id)+"/paragraph/"+str(viz_paragraph_id)+"?asIframe")
 
+def test_request_zep(request):
+    query = 6
+    raw_query = Query.objects.get(pk=query).raw_query
+    print raw_query
 
-def get_arrows(m, n_arrows, locations, color='#68A7EE', size=7):
-    '''
-    Get a list of correctly placed and rotated
-    arrows/markers to be plotted
+    notebook_id = create_zep_note(name='bdo_test')
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, title='query_paragraph', raw_query=raw_query)
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=query_paragraph_id)
+    viz_paragraph_id = create_zep_viz_paragraph(notebook_id=notebook_id, title='viz_paragraph')
+    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=viz_paragraph_id)
 
-    Parameters
-    locations : list of lists of lat lons that represent the
-                start and end of the line.
-                eg [[41.1132, -96.1993],[41.3810, -95.8021]]
-    arrow_color : default is 'blue'
-    size : default is 6
-    n_arrows : number of arrows to create.  default is 3
-    Return
-    list of arrows/markers
-    '''
-
-    Point = namedtuple('Point', field_names=['lat', 'lon'])
-
-    # creating point from our Point named tuple
-    p1 = Point(locations[0][0], locations[0][1])
-    p2 = Point(locations[1][0], locations[1][1])
-
-    # getting the rotation needed for our marker.
-    # Subtracting 90 to account for the marker's orientation
-    # of due East(get_bearing returns North)
-    rotation = get_bearing(p1, p2) - 90
-
-    arrows = []
-
-    arrows.append(folium.RegularPolygonMarker(location=[locations[0][0],locations[0][1]],
-                                                fill_color=color, number_of_sides=3,
-                                                radius=size, rotation=rotation).add_to(m))
-    return arrows
+    # response = requests.delete("http://localhost:8080/api/notebook/"+str(notebook_id))
+    return render(request, 'visualizer/table_zep.html', {'notebook_id': notebook_id, 'paragraph_id': viz_paragraph_id})
 
 
-def get_bearing(p1, p2):
-    '''
-    Returns compass bearing from p1 to p2
-
-    Parameters
-    p1 : namedtuple with lat lon
-    p2 : namedtuple with lat lon
-
-    Return
-    compass bearing of type float
-
-    Notes
-    Based on https://gist.github.com/jeromer/2005586
-    '''
-
-    long_diff = np.radians(p2.lon - p1.lon)
-
-    lat1 = np.radians(p1.lat)
-    lat2 = np.radians(p2.lat)
-
-    x = np.sin(long_diff) * np.cos(lat2)
-    y = (np.cos(lat1) * np.sin(lat2)
-         - (np.sin(lat1) * np.cos(lat2)
-            * np.cos(long_diff)))
-    bearing = np.degrees(np.arctan2(x, y))
-
-    # adjusting for compass bearing
-    if bearing < 0:
-        return bearing + 360
-    return bearing
+def get_presto_cursor():
+    presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+    conn = prestodb.dbapi.connect(
+        host=presto_credentials['HOST'],
+        port=presto_credentials['PORT'],
+        user=presto_credentials['USER'],
+        catalog=presto_credentials['CATALOG'],
+        schema=presto_credentials['SCHEMA'],
+    )
+    cursor = conn.cursor()
+    return cursor
 
 
-def get_aggregate_value(request):
-    query_pk = int(str(request.GET.get('query', '0')))
-    variable = str(request.GET.get('variable', ''))
-    agg_function = str(request.GET.get('agg_function', ''))
-
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
-
-    if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-        doc = query.document
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == variable:
-                    s['aggregate'] = agg_function
-                    s['exclude'] = False
-                else:
-                    s['exclude'] = True
-        query.document = doc
-
-        query_data = query.execute()
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-
-        variable_index = 0
-        for idx, c in enumerate(result_headers['columns']):
-            if c['name'] == variable:
-                variable_index = idx
-
-        value = round(data[0][variable_index], 3)
-        unit = result_headers['columns'][variable_index]['unit']
-
-    else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        print data[:3]
-        value = data
-        unit = '?'
-
-        headers = [key for key in data[0].keys()]
-
-    return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit})
-
-
-def agg_func_selector(agg_func,data,bins,y_var_index,x_var_index):
-    final_data=[]
-    try:
-        if (agg_func=='avg'):
-            it1=iter(bins)
-            sum=0
-            bin = it1.next()
-            count=0
-            for d in data:
-                # print("data:"+str(d[x_var_index])+" is in "+ str(bin)+"?")
-                if(frange(bin,d[x_var_index])):
-                    # print("Yes")
-                    sum=sum+d[y_var_index]
-                    count=count+1
-                else:
-                    # print ("NEXT BUCKET!!!!!!!!!!!!")
-                    avg=sum/count
-                    final_data.append(avg)
-                    sum=0
-                    avg=0
-                    bin = it1.next()
-                    # print ("First Element Added.")
-                    sum = d[y_var_index]
-                    count = 1
-            # print ("Last bucket completed.")
-            avg = sum / count
-            final_data.append(avg)
-            return final_data
-
-        elif(agg_func=='sum'):
-            it1 = iter(bins)
-            sum = 0
-            bin = it1.next()
-            for d in data:
-                # print("data:" + str(d[x_var_index]) + " is in " + str(bin) + "?")
-                if (frange(bin, d[x_var_index])):
-                    # print("Yes")
-                    sum = sum + d[y_var_index]
-                else:
-                    # print ("NEXT BUCKET!!!!!!!!!!!!")
-                    final_data.append(sum)
-                    sum=d[y_var_index]
-                    # print ("First Element Added.")
-                    bin = it1.next()
-            # print ("Last bucket completed.")
-            final_data.append(sum)
-            return final_data
-
-        elif (agg_func=='min'):
-            it1 = iter(bins)
-            bin = it1.next()
-            mymin = float(max(data, key=lambda x: x[y_var_index])[y_var_index])
-            for d in data:
-                if (frange(bin, d[x_var_index])):
-                    if(d[y_var_index]<mymin):
-                        mymin=d[y_var_index]
-                else:
-                    final_data.append(mymin)
-                    mymin = float(max(data, key=lambda x: x[y_var_index])[y_var_index])
-                    if (d[y_var_index] < mymin):
-                        mymin = d[y_var_index]
-                    bin = it1.next()
-            final_data.append(mymin)
-            return final_data
-
-        elif (agg_func=='max'):
-            it1 = iter(bins)
-            bin = it1.next()
-            mymax = float(min(data, key=lambda x: x[y_var_index])[y_var_index])
-            for d in data:
-                if (frange(bin, d[x_var_index])):
-                    if (d[y_var_index] > mymax):
-                        mymax = d[y_var_index]
-                else:
-                    final_data.append(mymax)
-                    mymax = float(min(data, key=lambda x: x[y_var_index])[y_var_index])
-                    if (d[y_var_index] > mymax):
-                        mymax = d[y_var_index]
-                    bin = it1.next()
-            final_data.append(mymax)
-            return final_data
-
-    except:
-        return final_data
-
-
-def frange(dist,numb):
-    start=dist[0]
-    end=dist[1]
-    if ((numb<end) and (numb>=start)):
-        return True
-    else:
-        return False
-
-
-def convert_to_hex(rgba_color) :
-    red = int(rgba_color[0]*255)
-    green = int(rgba_color[1]*255)
-    blue = int(rgba_color[2]*255)
-    return '0x{r:02x}{g:02x}{b:02x}'.format(r=red,g=green,b=blue)
-
-
-def color_choice(value,map,value_level):
-    count=0
-    for el in value_level:
-        if (value<el[1] and value>=el[0]):
-            return map[count]
-        count=count+1
-    return map[len(map)-1]
-
-
-def map_script(htmlmappath):
-    map_html = open(htmlmappath, 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    js_all = soup.findAll('script')
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-
-    core_script = js_all[-1]
-    # core_script.replace(map_id, used_map_id)
-    useful_part = \
-    core_script.split("console.log('entered fullscreen');")[1].split("});", 1)[1].strip().split("</script>")[0]
-    js_all[-1] = "<script>" + useful_part + "</script>"
-
-
-def test_request_include(request):
-    return render(request, 'visualizer/test_request_include.html', {})
-
-
-def test_request(request):
-    return render(request, 'visualizer/test_request.html', {})
-
-
-def get_map_simple(request):
-    return render(request, 'visualizer/map_viz.html', {})
-
-
-class MapIndex(APIView):
-    def get(self, request):
-        form = MapForm()
-        return render(request, 'visualizer/map_index.html', {'form': form})
-
-    def post(self, request):
-        form = MapForm(request.POST)
-        if form.is_valid():
-            tiles = request.data["tiles"]
-            if tiles == "marker clusters":
-                return map_viz_folium(request)
-            else:
-                return map_heatmap(request)
-
-class MapAPI(APIView):
-    def get(self, request):
-
-        tiles = request.GET.get("tiles", "marker clusters")
-        if tiles == "marker clusters":
-            return map_viz_folium(request)
-        else:
-            return map_heatmap(request)
-
-def map_viz(request):
-    return render(request, 'visualizer/map_viz.html', {})
-
-
-def map_viz_folium(request):
+def map_viz_folium_heatmap(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
     attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
@@ -2855,105 +3197,42 @@ def map_viz_folium(request):
                'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
     location = [0, 0]
     zoom_start = 2
-    max_zoom = 30
-    min_zoom = 2,
+    max_zoom = 13
+    min_zoom = 2
 
     m = folium.Map(location=location,
                    zoom_start=zoom_start,
                    max_zoom=max_zoom,
                    min_zoom=min_zoom,
                    max_bounds=True,
-                   tiles=tiles_str+token_str,
+                   tiles=tiles_str + token_str,
                    attr=attr_str)
 
-    plugins.Fullscreen(
-        position='topright',
-        title='Expand me',
-        title_cancel='Exit me',
-        force_separate_button=True).add_to(m)
+    np.random.seed(3141592)
+    initial_data = (
+        np.random.normal(size=(100, 2)) * np.array([[1, 1]]) +
+        np.array([[48, 5]])
+    )
+    move_data = np.random.normal(size=(100, 2)) * 0.01
+    data = [(initial_data + move_data * i).tolist() for i in range(100)]
 
-    marker_cluster = plugins.MarkerCluster(name="Markers", popups=False).add_to(m)
+    # hm = plugins.HeatMapWithTime(data)
+    # hm.add_to(m)
 
-    if request.method == "POST":
+    time_index = [
+        (datetime.now() + k * timedelta(1)).strftime('%Y-%m-%d') for
+        k in range(len(data))
+    ]
+    hm = plugins.HeatMapWithTime(
+        data,
+        index=time_index,
+        radius=0.5,
+        scale_radius=True,
+        auto_play=True,
+        max_opacity=0.3
+    )
 
-        form = MapForm(request.POST)
-        if form.is_valid():
-            data = request.data
-            line = request.POST.get("line", 'no')
-            markersum = data["markers"]
-            ship = data["ship"]
-            mindate = str(request.POST.get("min_date", '2000-01-01 00:00:00'))
-            maxdate = str(request.POST.get("max_date", '2017-12-31 23:59:59'))
-        else:
-            markersum = 50
-            line = 'no'
-            ship = "all"
-            mindate = 2000
-            maxdate = 2017
-
-    else:
-        line = request.GET.get("line", 'no')
-        markersum = int(request.GET.get("markers", 50))
-        ship = request.GET.get("ship", "all")
-        mindate = str(request.GET.get("min_date", '2000-01-01 00:00:00'))
-        maxdate = str(request.GET.get("max_date", '2017-12-31 23:59:59'))
-
-    query_pk = int(str(request.GET.get('query', '')))
-
-    data = get_data(query_pk, markersum, ship, mindate, maxdate)
-    # var_index = data['var']
-    ship_index = data['ship']
-    time_index = data['time']
-    lat_index = data['lat']
-    lon_index = data['lon']
-    data = data['data']
-
-    course = []
-    currboat = data[0][ship_index]
-    # import pdb;
-    # pdb.set_trace()
-    for index in range(0, len(data)):
-        d = data[index]
-        lat = float(d[lat_index])
-        lon = float(d[lon_index])
-        ship = int(d[ship_index])
-        date = str(d[time_index])
-
-        url = 'https://cdn4.iconfinder.com/data/icons/geo-points-1/154/{}'.format
-        icon_image = url('geo-location-gps-sea-location-boat-ship-512.png')
-        icon = CustomIcon(
-            icon_image,
-            icon_size=(40, 40),
-            icon_anchor=(20, 20),
-        )
-        message = '<b>Ship</b>: ' + ship.__str__() + "<br><b>At :</b> [" + lat.__str__() + " , " + lon.__str__() + "] <br><b>On :</b> " + date
-        folium.Marker(
-            location=[lat, lon],
-            icon=icon,
-            popup=message
-        ).add_to(marker_cluster)
-
-        if line != 'no':
-            if ship == currboat:
-                course.append((np.array([lat, lon]) * np.array([1, 1])).tolist())
-            if ship != currboat or index == len(data)-1:
-                boat_line = folium.PolyLine(
-                    locations=course,
-                    weight=1,
-                    color='blue'
-                ).add_to(m)
-                attr = "{'font-weight': 'normal', 'font-size': '18', 'fill': 'white', 'letter-spacing': '80'}"
-                plugins.PolyLineTextPath(
-                    boat_line,
-                    '\u21D2',
-                    repeat=True,
-                    offset=5,
-                    attributes=attr,
-                ).add_to(m)
-
-                if ship != currboat:
-                    course = (np.array([lat, lon]) * np.array([1, 1])).tolist()
-                    currboat = ship
+    hm.add_to(m)
 
     m.save('templates/map.html')
     map_html = open('templates/map.html', 'r').read()
@@ -2970,39 +3249,14 @@ def map_viz_folium(request):
         css_all = [css.prettify() for css in css_all[3:]]
     # print js
     # os.remove('templates/map.html')
-    return render(request, 'visualizer/map_viz_folium.html', {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+    return render(request, 'visualizer/map_viz_folium.html',
+                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
 
 
-def valid_entry(entry, ship, minyear, maxyear):
-    entryship = entry[2]
-    entrydate = entry[3]
-    year = entrydate.split('-')
-    year = int(year[0])
-
-    if ship != "all":
-        ship = int(ship)
-        if entryship != ship:
-            return False
-    if year < minyear or year > maxyear:
-        return False
-    return True
 
 
-def transpose(date):
-    date_time = date
-    pattern = '%Y-%m-%d %H:%M:%S'
-    epoch = int(time.mktime(time.strptime(date_time, pattern)))*1000
-    return epoch
-
-
-def createjson(lonlat,time,status,color):
-    geo = "{'type': 'Feature', 'geometry':{'type': 'Point','coordinates':" + str(lonlat) + ",}, 'properties': { 'times':" + str(time) + ",'status':'" + str(status) + "','style':{'icon':'circle','iconstyle':{'fillColor':'"+str(color)+"','radius':5},}}}"
-
-    return geo
-
-
-def make_map(bbox):
-    fig, ax = plt.subplots(figsize=(8, 6))
-    # ax.set_extent(bbox)
-    ax.coastlines(resolution='50m')
-    return fig, ax
+        # def make_map(bbox):
+#     fig, ax = plt.subplots(figsize=(8, 6))
+#     # ax.set_extent(bbox)
+#     ax.coastlines(resolution='50m')
+#     return fig, ax

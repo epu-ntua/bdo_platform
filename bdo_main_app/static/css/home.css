@@ -1,8 +1,536 @@
-.home-search-form {
-    font-size: 22px;
+.main-panel > .content {
+    margin-top: 70px;
 }
 
-.home-search-form input {
+#main-section #main-row{
+    margin-top: 7vh;
+}
+
+#carousel_container{
+    margin-top: 10vh;
+    padding: 2vh;
+    height: 36vh;
+    position: relative;
+    width: 100%;
+    background-color: rgba(233, 233, 233, 0.53);
+
+    opacity: 1;
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+}
+
+#data_size, #sources, #pilots, #tools {
+    background-color: #1d567ebf;;
+    color: white;
+    padding: 15px;
+    width: 550px;
+    height: 50px;
+    border-radius: 15px;
+    text-align: center;
+    margin: 0;
+    font-size: 15pt;
+    position: absolute;
+    /*border-radius: 50%;*/
+    opacity: 0;
+}
+
+#datasets_showcase_container img {
+    height: 20vh;
+    position: absolute;
+    top: 4vh;
+    left: 41vw;
+}
+
+#datasets_showcase_container #db_icon1{
+    left: 0px;
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+    top: 9vh;
+    opacity: 0;
+    position: absolute;
+}
+#datasets_showcase_container #db_icon2{
+    left: 0px;
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+    top: 10vh;
+    opacity: 0;
+    position: absolute;
+}
+#datasets_showcase_container #stream_icon{
+    left: 0px;
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+    top: 7vh;
+    opacity: 0;
+    position: absolute;
+}
+
+#datasets_showcase_container #data_size{
+    left: 0px;
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+    top: 1vh;
+}
+
+#datasets_showcase_container #sources {
+    top: 21vh;
+    right: 0px;
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+}
+
+#pilots, #tools {
+    background-color: #1d567ebf;;
+    color: white;
+    padding: 15px;
+    width: 30vw;
+    border-radius: 15px;
+    left: 0px;
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+    top: 1vh;
+    z-index: 1;
+}
+
+#carousel_container #services_showcase_container,
+#carousel_container #tools_showcase_container{
+    height:100%;
+    text-align: center;
+    position: relative;
+    padding-top: 2vh;
+}
+
+#datasets_showcase_container.active #sources{
+    right: 25vw;
+    opacity: 1;
+}
+#datasets_showcase_container.active #data_size{
+    left: 25vw;
+    opacity: 1;
+}
+
+#datasets_showcase_container.active #db_icon1{
+    left: 40vw;
+    opacity: 1;
+    color: #1a4466;
+    font-size: 10vh;
+}
+#datasets_showcase_container.active #db_icon2{
+    left: 51vw;
+    opacity: 1;
+    color: #851e1e;
+    font-size: 10vh;
+}
+#datasets_showcase_container.active #stream_icon{
+    left: 45.5vw;
+    opacity: 1;
+    color: #2f620d;
+    font-size: 10vh;
+}
+
+#services_showcase_container.active #pilots,
+#tools_showcase_container.active #tools{
+    left: 25vw;
+    opacity: 1;
+}
+#carousel_container #services_showcase_container.active .card,
+#carousel_container #tools_showcase_container.active .card{
+    opacity: 0.9;
+    -webkit-transition: all 1s ease;
+    transition: all 1s ease;
+    z-index: 0;
+}
+
+/*#carousel_container #datasets_showcase_container{*/
+    /*height:100%;*/
+    /*text-align: center;*/
+    /*position: relative;*/
+/*}*/
+
+#carousel_container #services_showcase_container .card-text,
+#carousel_container #tools_showcase_container .card-text{
+    text-align: center;
+    padding: 4% 0%;
+    font-size: 125%;
+}
+
+#carousel_container #services_showcase_container .card,
+#carousel_container #tools_showcase_container .card{
+    margin: 1% 1%;
+    height: 90%;
+    width: 12%;
+    padding: 0;
+    opacity: 0;
+
+}
+
+#carousel_container #tools_showcase_container .card{
+    background-color: #1c567e;
+    color: white;
+}
+
+.carousel-inner {
+    overflow: visible;
+}
+
+#carousel_container #services_showcase_container .card-img-top,
+#carousel_container #tools_showcase_container .card-img-top{
+    height: 12vh;
+}
+
+#main-section[data-on-top='false'] #main-row img{
+    height: 15vh;
+    -webkit-transition:0.5s;
+}
+
+#main-section[data-on-top='true'] #main-row img{
+    height: 5vh;
+    margin-top: 1vh;
+}
+
+#main-section[data-on-top='true'] #main-row {
+    margin: 0;
+    padding: 0;
+    height: 13vh;
+    -webkit-transition:0.5s;
+}
+
+#main-section[data-on-top='true'] #carousel_container{
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    display: none;
+}
+
+#main-section[data-on-top='true'] h1 {
+    margin: 0;
+    padding: 0;
+    font-size: 20pt;
+    -webkit-transition:0.5s;
+}
+
+#main-section[data-on-top='true'] h5 {
+    margin: 0;
+    padding: 0;
+    font-size: 10pt;
+    line-height: 1.2em;
+    -webkit-transition:0.5s;
+}
+
+#main-section[data-on-top='true'] .home-search-form {
+    font-size: 15px;
+    height: 40px;
+    -webkit-transition:0.5s;
+}
+
+#main-section[data-on-top='true'] .home-search-form .btn{
+    margin: 0;
+    padding: 0;
+    -webkit-transition:0.5s;
+}
+
+#main-section[data-on-top='true'] .home-search-form .form-group .form-control {
     width: 50%;
-    padding: 20px 0;
+    padding: 0;
+    margin: 0;
+    height: 30px;
+    transition:0.5s;
+        -o-transition:0.5s;
+        -ms-transition:0.5s;
+        -moz-transition:0.5s;
+        -webkit-transition:0.5s;
+}
+#main-section[data-on-top='false'] .home-search-form .form-group .form-control {
+    width: 50%;
+}
+
+#main-section[data-on-top='true'] .home-search-form .form-group {
+    padding: 0;
+    margin: 0;
+    transition:0.5s;
+        -o-transition:0.5s;
+        -ms-transition:0.5s;
+        -moz-transition:0.5s;
+        -webkit-transition:0.5s;
+}
+
+#main-section[data-on-top='true'] #select-data-modal{
+    opacity: 1;
+    visibility: visible;
+    /* First we need to help some browsers along for this to work.
+     Just because a vendor prefix is there, doesn't mean it will
+     work in a browser made by that vendor either, it's just for
+     future-proofing purposes I guess. */
+    -o-transition:opacity 0.7s ease-in;
+    -ms-transition:opacity 0.7s ease-in;
+    -moz-transition:opacity 0.7s ease-in;
+    -webkit-transition:opacity 0.7s ease-in;
+    /* ...and now for the proper property */
+    transition:opacity 0.7s ease-in;
+}
+
+#main-section[data-on-top='false'] #select-data-modal{
+    opacity: 0;
+    visibility: hidden;
+}
+
+#main-section .jplist-group{
+    background-color: transparent;
+    border: none;
+}
+
+#main-section .jplist-group .jplist-selected{
+    background-color: #1d567e;
+    color: white;
+}
+
+#main-section .jplist-group button {
+    background: #ddd;
+    text-shadow: none;
+    border-radius: 15px;
+    border: none;
+    min-width: 50px;
+    height: 100%;
+}
+
+#main-section .jplist-group button:not(.jplist-selected):hover {
+    color: #1d567e;
+}
+
+#select-data-modal #dataset-list-section .dataset-title{
+    font-size: 100%;
+    color: white;
+    font-weight: normal;
+    margin: 0;
+    line-height: 4vh;
+}
+
+#select-data-modal #dataset-list-section .dataset-organization{
+    font-size: 80%;
+    /*color: white;*/
+    margin: 0;
+}
+
+#select-data-modal #dataset-list-section .dataset-name {
+    box-shadow: 0 1px 0px #d5d5d5;
+    padding: 10px 10px;
+    cursor: pointer;
+    margin: 15px 0 25px 0;
+}
+
+#select-data-modal #dataset-list-section .dataset-section {
+    margin-bottom: 1px;
+}
+
+#select-data-modal #dataset-list-section .dataset-section .badge{
+    font-weight: normal;
+    background-color: #18505d40;
+    color: black;
+}
+
+.btn-danger{
+    background-color: #cc2215 !important;
+}
+
+.checkbox .checkbox-material:before {
+     left: 0;
+     top: 0;
+}
+
+#data-filter-search {
+    width: 100%;
+}
+
+.variable-title{
+    word-wrap:break-word;
+}
+
+/*#select-data-modal  #dataset-list-section {*/
+    /*height: 100%;*/
+    /*overflow-y: auto;*/
+/*}*/
+
+#select-data-modal  #dataset-filter-section {
+    height: 100%;
+    background-color: #1c567e;
+    box-shadow: 2px 2px 14px 2px #b9b9b9;
+}
+
+#select-data-modal  #dataset-filter-section h3{
+    color: white;
+}
+
+#select-data-modal  #dataset-filter-section label{
+    color: white;
+}
+
+#select-data-modal  #dataset-filter-section input{
+    color: white;
+}
+
+#select-data-modal .form-group.is-focused .form-control {
+    outline: none;
+    background-image: linear-gradient(#fffcfe, #fef7ff), linear-gradient(rgba(210, 210, 210, 0.61), rgba(210, 210, 210, 0.6));
+    background-size: 100% 2px, 100% 1px;
+    box-shadow: none;
+    transition-duration: 0.3s;
+}
+
+#select-data-modal .form-group {
+    margin: 10px 0 0 0;
+}
+
+#select-data-modal .form-group label {
+    font-size: 14px;
+}
+
+#select-data-modal .checkbox label {
+    font-size: 14px;
+}
+
+#select-data-modal .checkbox .checkbox-material {
+    padding-left: 0;
+}
+
+#select-data-modal .checkbox input[type=checkbox]:not(:checked) + .checkbox-material .check {
+    background: white;
+}
+
+
+#select-data-modal  #dataset-filter-section .form-control {
+    width: 100%;
+}
+
+#dataset-all-section{
+    min-height: 65vh;
+    height: 65vh;
+}
+
+#select-data-modal .card .card-header {
+    box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.42), 0 4px 25px 0px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.2);
+    margin: -20px 35px 0 0px;
+    border-radius: 3px;
+    padding: 1.1vh;
+    background-color: #18505d;
+    height: 6vh;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#select-data-modal .card .card-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#select-data-modal .card .card-body{
+    height: 11vh;
+    min-height: 60px;
+    padding: 10px 0px;
+    font-size: 90%;
+}
+
+#select-data-modal  .card .card-footer{
+    margin: 0;
+    height: 4vh;
+    font-size: 90%;
+}
+
+#select-data-modal  .card .card-footer span{
+    padding: 0;
+}
+
+#select-data-modal  .card .card-footer .btn{
+    margin: 0;
+    padding: 0% 10%;
+    text-transform: none;
+    float: right;
+}
+
+#main-section .jplist-panel .jplist-pagination .jplist-pagingprev,
+#main-section .jplist-panel .jplist-pagination .jplist-pagingmid,
+#main-section .jplist-panel .jplist-pagination .jplist-pagingnext {
+    float: none;
+    display: inline-block;
+}
+
+#main-section  .jplist-pagination{
+    width: 100%;
+    float: none;
+    cursor: default;
+}
+
+.jplist-reset-btn{
+    float: left;
+    margin: 0 -30px;
+    border-radius: 15px;
+    border: none;
+    height: 100%;
+}
+.jplist-reset-btn i {
+    color: #9f9f9f;
+}
+
+#select-data-modal button.dropdown-toggle {
+    margin: 0;
+    padding: 4px 10px;
+    text-transform: none;
+    height: 100%;
+}
+
+#select-data-modal  ul.dropdown-menu{
+    right: 0;
+}
+
+.category-filter-section{
+    height: 4vh;
+}
+
+.category-filter-section .filter-section{
+    height: 100%;
+}
+
+.category-filter-section .jplist-group{
+    height: 100%;
+}
+
+.modal-backdrop {
+    /*z-index: 0;*/
+}
+
+.modal {
+    position: fixed;
+    top: 10vh !important;
+    /*z-index: 2;*/
+    /*display: block;*/
+    left: 20% !important;
+    margin-left: 0 !important;
+    width: 60% !important;
+    overflow: visible !important;
+    margin-top: 0 !important;
+}
+
+.modal-body{
+    margin-top: 0;
+    overflow-y: auto;
+    min-height: 20vh;
+    max-height: 50vh;
+}
+
+.modal-dialog{
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.modal-header{
+    box-shadow: 1px 1px #cbcbcb !important;
+}
+
+.modal-footer{
+    box-shadow: 0 -1px #cbcbcb !important;
+}
+
+.close-modal {
+    opacity: 0;
 }

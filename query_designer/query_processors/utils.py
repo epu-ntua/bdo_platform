@@ -35,3 +35,6 @@ class PostgresResultEncoder(ResultEncoder):
 
 class SolrResultEncoder(ResultEncoder):
     mode = 'solr'
+
+class PrestoResultEncoder(ResultEncoder):
+    mode = 'presto'

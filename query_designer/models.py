@@ -12,13 +12,14 @@ import sympy
 from threading import Thread
 
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
 from django.db.models import *
 
 from aggregator.models import *
 
 from query_designer.formula_functions import *
-from query_designer.query_processors.utils import SolrResultEncoder, PostgresResultEncoder
+from query_designer.query_processors.utils import SolrResultEncoder, PostgresResultEncoder, PrestoResultEncoder
+
+from django.http import JsonResponse
 
 
 class AbstractQuery(Model):
@@ -43,8 +44,8 @@ class AbstractQuery(Model):
     count = IntegerField(blank=True, null=True, default=None)
     headers = JSONField(blank=True, null=True, default=None)
 
-    def __unicode__(self):
-        return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
+    # def __unicode__(self):
+        # return '<#%d "%s"%s>' % (self.pk, self.title, ' (%d results)' % self.count if self.count is not None else '')
 
     @staticmethod
     def operator_to_str(op, mode='postgres'):
@@ -83,7 +84,8 @@ class AbstractQuery(Model):
                                 col_name = Dimension.objects.get(pk=x['type']).data_column_name
                             else:
                                 v_obj = Variable.objects.get(pk=int(self.document['from'][from_order]['type']))
-                                if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                                if v_obj.dataset.stored_at == 'UBITECH_POSTGRES' or \
+                                        v_obj.dataset.stored_at == 'UBITECH_PRESTO':
                                     col_name = v_obj.name
                                 else:
                                     col_name = 'value'
@@ -107,7 +109,8 @@ class AbstractQuery(Model):
                                     col_name = Dimension.objects.get(pk=x['type']).data_column_name
                                 else:
                                     v_obj = Variable.objects.get(pk=int(self.document['from'][from_order]['type']))
-                                    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                                    if v_obj.dataset.stored_at == 'UBITECH_POSTGRES' or \
+                                        v_obj.dataset.stored_at == 'UBITECH_PRESTO':
                                         col_name = v_obj.name
                                     else:
                                         col_name = 'value'
@@ -128,12 +131,13 @@ class AbstractQuery(Model):
             for x in _from['select']:
                 if x['name'] == filters['a']:
                     if x['type'] != 'VALUE':
-                        print 'type' + x['type']
+                        # print 'type' + x['type']
                         filters['a'] = '%s.%s' % \
                                        (_from['name'], Dimension.objects.get(pk=int(x['type'])).data_column_name)
                     else:
                         v_obj = Variable.objects.get(pk=int(_from['type']))
-                        if v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                        if v_obj.dataset.stored_at == 'UBITECH_POSTGRES' or \
+                                        v_obj.dataset.stored_at == 'UBITECH_PRESTO':
                             col_name = v_obj.name
                         else:
                             col_name = 'value'
@@ -144,22 +148,6 @@ class AbstractQuery(Model):
             print 'inside_rect'
             rect_start = filters['b'].split('<')[2].split('>,')[0].split(',')
             rect_end = filters['b'].split('>,<')[1].split('>')[0].split(',')
-
-            #lat = filters['a'] + '_latitude'
-            #lng = filters['a'] + '_longitude'
-
-            # lat_col_name = ''
-            # lon_col_name = ''
-            # from_order = int(filters['a'][1])
-            # table_name = self.document['from'][from_order]['name']
-            # for x in self.document['from'][from_order]['select']:
-            #     if x['name'] == (filters['a'] + '_lat'):
-            #         lat_col_name = Dimension.objects.get(pk=x['type']).data_column_name
-            #     if x['name'] == (filters['a'] + '_lon'):
-            #         lon_col_name = Dimension.objects.get(pk=x['type']).data_column_name
-            #
-            # lat = table_name+'.'+lat_col_name
-            # lng = table_name+'.'+lon_col_name
 
             lat_col_id = int(filters['a'].split('<')[1].split(',')[0].split('>')[0])
             lon_col_id = int(filters['a'].split('<')[1].split(',')[1].split('>')[0])
@@ -263,8 +251,13 @@ class AbstractQuery(Model):
 
     def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
         is_postgres = True
+        is_presto = True
         try:
             is_postgres = 'POSTGRES' in Variable.objects.get(pk=self.document['from'][0]['type']).dataset.stored_at
+        except IndexError:
+            pass
+        try:
+            is_presto = 'PRESTO' in Variable.objects.get(pk=self.document['from'][0]['type']).dataset.stored_at
         except IndexError:
             pass
 
@@ -272,20 +265,25 @@ class AbstractQuery(Model):
             from query_designer.query_processors.postgres import process as q_process
             encoder = PostgresResultEncoder
         else:
-            from query_designer.query_processors.solr import process as q_process
-            encoder = SolrResultEncoder
+            if is_presto:
+                from query_designer.query_processors.presto import process as q_process
+                encoder = PrestoResultEncoder
+            else:
+                from query_designer.query_processors.solr import process as q_process
+                encoder = SolrResultEncoder
 
-        try:
-            data = q_process(self, dimension_values=dimension_values, variable=variable,
+        data = q_process(self, dimension_values=dimension_values, variable=variable,
                          only_headers=only_headers, commit=commit,
                          execute=execute, raw_query=raw_query)
-        except ValueError as ve:
-            print "Invalid Join. Datasets have nothing in common"
-            return None
 
         return data, encoder
 
     def execute(self, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=True):
+        try:
+            doc = self.document
+        except ValueError:
+            return JsonResponse({'error_message': 'Invalid query document'}, status=400)
+
         result = self.process(dimension_values, variable, only_headers, commit, execute=True)
 
         if with_encoder:

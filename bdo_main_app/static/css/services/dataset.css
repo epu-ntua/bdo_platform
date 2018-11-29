@@ -3,6 +3,51 @@
 }
 
 h1.dataset-title {
-    margin-top: 40px;
     font-size: 3em;
+}
+
+#sample_table{
+    width: 100%;
+    overflow-x: auto;
+}
+
+.text-info{
+    color: #32879c;
+}
+
+.card h1{
+    margin: 0;
+}
+
+.btn-danger{
+    background-color: #cc2215 !important;
+}
+
+.card h4{
+    margin-top: 0;
+}
+
+th{
+    font-weight: bold !important;
+    white-space: nowrap;
+}
+
+#overview th{
+    text-align: center;
+}
+
+#overview td{
+    text-align: center;
+}
+
+.btn.btn-info{
+    background-color: #32879c;
+}
+
+.badge{
+    font-weight: normal;
+    background-color: #18505d40;
+    color: black;
+    margin-right: 1vw;
+    font-size: 100%;
 }

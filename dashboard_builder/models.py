@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db.models import *
 
 from bdo_main_app.lists import *
+from django.db import models
 
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField

@@ -146,12 +146,17 @@
 							<span class="icon-bar"></span>
 						</button>
 {#						<a class="navbar-brand" href="#">How BDO works</a>#}
-{#						<a class="navbar-brand" href="#">About us</a>#}
+						<span class="dropdown">
+                            <a href="/bdo/" class="btn bg-color--blue dropdown-toggle"
+                               style="padding: 9px 10px;">
+                                Home
+                            </a>
+                        </span>
                         <span class="dropdown">
                             <a href="/services/" class="btn bg-color--blue dropdown-toggle"
                                style="padding: 9px 10px;">
-                                <i class="fas fa-store o-white"></i>
-                                Services Marketplace
+                                <i class="fas fa-desktop o-white"></i>
+                                Applications & Dashboards
                             </a>
                         </span>
                         <span class="dropdown">
@@ -162,12 +167,12 @@
                                 Explore &amp; Create
                             </a>
                             <ul class="dropdown-menu" data-color="blue">
-                                <li><a href="/queries/simplified/" style="font-size: 1.1em;"><i class="far fa-eye margin-right-5"></i> <span>Create a query</span></a></li>
+                                <li><a href="/queries/" style="font-size: 1.1em;"><i class="far fa-eye margin-right-5"></i> <span>Create a query</span></a></li>
                                 <li><a href="/dashboards/create/" style="font-size: 1.1em;"><i class="fas fa-bar-chart margin-right-5"></i> <span>Create a dashboard</span></a></li>
-                                <li><a href="/analytics/create/" style="font-size: 1.1em;"><i class="fas fa-chart-line margin-right-5"></i> <span>Create an analysis</span></a></li>
+{#                                <li><a href="/analytics/create/" style="font-size: 1.1em;"><i class="fas fa-chart-line margin-right-5"></i> <span>Create an analysis</span></a></li>#}
                                 <li><a href="/service_builder/create/" style="font-size: 1.1em;"><i class="fas fa-cogs margin-right-5"></i><span>Create a service</span></a></li>
                                 <li><a href="/upload" style="font-size: 1.1em;"><i class="fas fa-cloud-upload-alt margin-right-4"></i> <span>Upload a dataset</span></a></li>
-								<li><a href="http://212.101.173.21:5000" style="font-size: 1.1em;"><i class="fa fa-code margin-right-4"></i> <span>Process metadata</span></a></li>
+{#								<li><a href="http://212.101.173.21:5000" style="font-size: 1.1em;"><i class="fa fa-code margin-right-4"></i> <span>Process metadata</span></a></li>#}
 {#								<li><a href="/parse" style="font-size: 1.1em;"><i class="fas fa-file-medical-alt margin-right-5"></i> <span>Parse a dataset</span></a></li>#}
 
                             </ul>
@@ -287,6 +292,7 @@
     {% leaflet_js %}
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+{#    <script src="{% static ''%}"></script>#}
 
 
     <script>
@@ -295,7 +301,7 @@
             $('.form-group select').each(function(){ $(this).closest('.form-group').removeClass('is-empty'); }  );
             $('.form-group .select2-selection--multiple').closest('.form-group').removeClass('is-empty');
 
-            $('.popover-content select').not('.select2-hidden-accessible').select2({width: 'style'});
+{#            $('.popover-content select').not('.select2-hidden-accessible').select2({width: 'style'});#}
 
 {#            $('.popover-content select:not([class^="select2"])').select2();#}
 {#            .each(function (i, obj) {#}
