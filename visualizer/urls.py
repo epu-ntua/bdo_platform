@@ -13,6 +13,8 @@ urlpatterns = [
     url('^map_folium/$', views.map_viz_folium, name='map-viz-folium'),
 
     url('^map_course_mt/$', views.map_course_mt, name='map_course_mt'),
+    url('^map_oil_spill_hcmr/$', views.map_oil_spill_hcmr, name='map_oil_spill_hcmr'),
+    url('^map_markers_in_time_hcmr/$', views.map_markers_in_time_hcmr, name='map_markers_in_time_hcmr'),
 
     url('^map_markers_in_time/$', views.map_markers_in_time, name='map_markers_in_time'),
     url('^map_folium_heat_time/$', views.map_viz_folium_heatmap_time, name='map-viz-folium-heat'),

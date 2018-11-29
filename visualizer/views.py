@@ -2478,6 +2478,208 @@ def get_data_table(request):
 
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
+def map_oil_spill_hcmr(map):
+    # map = create_map()
+    filepath = 'visualizer/static/visualizer/files/kml.json'
+    color = 'green'
+    map, min_lat, max_lat, min_lon, max_lon = hcmr_create_polygons_on_map(map, filepath,color)
+    map.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+    return map
+
+
+def hcmr_create_polygons_on_map(map, filepath, polygon_color):
+    with open(filepath) as f:
+        kml_data = json.load(f)
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+    pol_group_layer = folium.map.FeatureGroup(name='Protected Areas Layer:' + str(time.time()).replace(".", "_"),
+                                              overlay=True,
+                                              control=True).add_to(map)
+    count_polygons = 0
+    for placemark in kml_data['placemarks']:
+        for polygon in placemark['polygons']:
+                points_inner = []
+                points_outer = []
+                points = []
+                for coordinate in polygon['outer_boundary']['coordinates']:
+                    min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon,
+                                                                               coordinate['latitude'],
+                                                                               coordinate['longitude'])
+                    points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                points.append(points_outer)
+                for inner_polygon in polygon['inner_boundaries']:
+                    hole = []
+                    for coordinate in inner_polygon['coordinates']:
+                        min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon,
+                                                                               coordinate['latitude'],
+                                                                               coordinate['longitude'])
+                        hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                    points.append(hole)
+                    points_inner.append(hole)
+                # print (str(count_polygons)+')Polygon Holes:' + str(points_inner.__len__()))
+                count_polygons = count_polygons+1
+                folium.PolyLine(points, color=polygon_color, weight=2.0, opacity=0.8,
+                                fill=polygon_color
+                                ).add_to(pol_group_layer)
+
+    max_lat = float(max_lat)
+    min_lat = float(min_lat)
+    max_lon = float(max_lon)
+    min_lon = float(min_lon)
+
+    return map, min_lat, max_lat, min_lon, max_lon
+
+def map_markers_in_time_hcmr(request):
+    m = create_map()
+
+    marker_limit = int(request.GET.get('markers', 1000))
+    # var = str(request.GET.get('var'))
+    order_var = str(request.GET.get('order_var', 'time'))
+    query_pk = int(str(request.GET.get('query', 0)))
+
+    notebook_id = str(request.GET.get('notebook_id', ''))
+    df = str(request.GET.get('df', ''))
+
+    lat_col = str(request.GET.get('lat_col', 'latitude'))
+    lon_col = str(request.GET.get('lon_col', 'longitude'))
+
+    markerType = str(request.GET.get('markerType', ''))
+    FMT = '%Y-%m-%d %H:%M:%S'
+
+    if query_pk!=0:
+        q = AbstractQuery.objects.get(pk=int(query_pk))
+        q = Query(document=q.document)
+        doc = q.document
+
+        doc['limit'] =  marker_limit
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+
+        for f in doc['from']:
+            for s in f['select']:
+                if s['name'] == order_var:
+                    s['exclude'] = False
+                elif s['name'].split('_', 1)[1] == 'latitude':
+                    s['exclude'] = False
+                elif s['name'].split('_', 1)[1] == 'longitude':
+                    s['exclude'] = False
+                # elif s['name'] == var:
+                #     s['exclude'] = False
+                else:
+                    s['exclude'] = True
+
+
+        # print doc
+        q.document = doc
+
+        query_data = execute_query_method(q)
+        data = query_data[0]['results']
+        result_headers = query_data[0]['headers']
+        print(result_headers)
+
+        var_index = order_index = lon_index = lat_index = -1
+
+        for idx, c in enumerate(result_headers['columns']):
+            # if c['name'] == var:
+            #     var_index = idx
+            if c['name'].split('_', 1)[1] == 'latitude':
+                lat_index = idx
+            elif c['name'].split('_', 1)[1] == 'longitude':
+                lon_index = idx
+            elif c['name'] == order_var:
+                order_index = idx
+
+        features = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [float(d[lon_index]), float(d[lat_index])],
+                },
+                "properties": {
+                    "times": [str(d[order_index])],
+                    "style": {
+                        "color": "blue",
+                    }
+                }
+            }
+            for d in data
+        ]
+        tdelta = data[1][order_index] - data[0][order_index]
+        period = 'PT{0}S'.format(tdelta.seconds)
+    else:
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
+        if livy:
+            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
+        else:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+
+        features = [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [float(d[lon_col]), float(d[lat_col])],
+                },
+                "properties": {
+                    "times": [str(d[order_var])],
+                    "style": {
+                        "color": "blue",
+                    }
+                }
+            }
+            for d in data
+        ]
+        tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
+        period = 'PT2H'
+
+    features = convert_unicode_json(features)
+
+    duration='PT0H'
+    m = map_oil_spill_hcmr(m)
+    m.save('templates/map.html')
+    f = open('templates/map.html', 'r')
+    map_html = f.read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    f.close()
+
+    os.remove('templates/map.html')
+
+    return render(request, 'visualizer/map_markers_in_time.html',
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType})
+
+
+
+
+def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
+    if latitude > max_lat:
+        max_lat = latitude
+    if latitude < min_lat:
+        min_lat = latitude
+    if longitude > max_lon:
+        max_lon = longitude
+    if longitude < min_lon:
+        min_lon = longitude
+    return min_lat, max_lat, min_lon, max_lon
+
 def create_plotline_arrows(points, m, pol_group_layer, color):
     last_arrow = folium.RegularPolygonMarker(location=[points[len(points) - 1][0], points[len(points) - 1][1]],
                                              fill_color='white', number_of_sides=6,
