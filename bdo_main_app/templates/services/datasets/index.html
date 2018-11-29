@@ -80,8 +80,8 @@
                                 <div class="col-xs-12 padding-5" style="overflow-x: auto;">
                                     <p class="padding-horizontal-3">Showing entries
                                         <span class="o-blue">1</span> - <span class="o-blue">5</span>
-                                        , <span class="o-orange">36 GB</span> of data
-                                        , <span class="o-orange">12 milion</span> rows in total.</p>
+{#                                        , <span class="o-orange">36 GB</span> of data#}
+                                        , <span class="o-orange">{% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}</span>  rows in total.{% endif %}</p>
                                     <table id="sample_table" class="table table-hover">
 	                                    <thead class="text-info">
 	                                        <tr>
