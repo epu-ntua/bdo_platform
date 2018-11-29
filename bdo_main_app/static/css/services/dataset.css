@@ -19,6 +19,11 @@ h1.dataset-title {
 th{
     font-weight: bold !important;
     white-space: nowrap;
+    text-align: center;
+}
+
+td{
+    text-align: center;
 }
 
 .btn.btn-info{
