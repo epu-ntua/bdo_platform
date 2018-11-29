@@ -324,6 +324,12 @@
     margin-bottom: 1px;
 }
 
+#select-data-modal #dataset-list-section .dataset-section .badge{
+    font-weight: normal;
+    background-color: #18505d40;
+    color: black;
+}
+
 .checkbox .checkbox-material:before {
      left: 0;
      top: 0;
