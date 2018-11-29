@@ -28,7 +28,7 @@ def load_query(request, pk):
 
 
 def simplified(request, pk=None):
-    storage_target = 'UBITECH_PRESTO'
+    storage_target = settings.STORAGE_TARGET
     public_datasets = Dataset.objects.filter(stored_at=storage_target, private=False).exclude(variables=None)
     user_datasets = Dataset.objects.filter(stored_at=storage_target, owner=request.user, private=True).exclude(variables=None)
 
@@ -61,7 +61,7 @@ def simplified(request, pk=None):
 
 
 def clean(request, pk=None):
-    storage_target = 'UBITECH_POSTGRES'
+    storage_target = settings.STORAGE_TARGET
     public_datasets = Dataset.objects.filter(stored_at=storage_target, private=False).exclude(variables=None)
     user_datasets = Dataset.objects.filter(stored_at=storage_target, owner=request.user, private=True).exclude(variables=None)
 
