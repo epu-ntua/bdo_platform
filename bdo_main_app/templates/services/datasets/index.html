@@ -14,46 +14,61 @@
     <div class="row">
         <div class="col-xs-12">
             <div class="card">
-                <div class="card-block">
-                    <div class="row">
-                        <div class="col-xs-2 padding-3">
-                            <div class="padding-3">
+                <div class="card-block" style="padding: 3vh 1vw 3vh 1vw">
+                    <div class="row" style="min-height: 20vh;">
+                        <div class="col-xs-2">
+                            <div class="">
                                 <div class="img-bg-container contain dataset-preview"
                                     style="background-image: url('{{ dataset.image_uri }}');">
 
                                 </div>
                             </div>
                         </div>
-                        <div class="col-xs-9">
+                        <div class="col-xs-9 ">
                             <h1 class="dataset-title o-blue">{{ dataset.title }}</h1>
+                            <h4 class="dataset-publisher o-blue">By {{ dataset.publisher }}</h4>
                             <p>{{ dataset.description|default:"No description provided" }}</p>
                         </div>
                         <div class="col-xs-1">
-                            <a class="btn btn-danger btn-sm" href="/bdo/?data-on-top=true">Back</a>
+                            <div class="pull-right"><a class="btn btn-danger btn-sm" href="/bdo/?data-on-top=true">Back</a></div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-xs-12">
-                            <div class="btn-group pull-left margin-5">
+                        <div class="col-xs-12" style="padding: 0;">
+                            <div class="btn-group pull-left col-xs-2" style="margin-right: 0;">
                                 <a href="#" class="btn btn-sm btn-info">
                                     <i class="fa fa-search margin-right-2"></i> Explore data
                                 </a>
-                                <a href="#" class="btn btn-sm btn-info">
-                                    <i class="fa fa-industry margin-right-2"></i> Request access (unavailable)
-                                </a>
+{#                                <a href="#" class="btn btn-sm btn-info">#}
+{#                                    <i class="fa fa-industry margin-right-2"></i> Request access (unavailable)#}
+{#                                </a>#}
                             </div>
-                            <div class="pull-right margin-5">
+                            <div class="col-xs-7">
+                                <div class="dataset-license">Observation Type: {{ dataset.observation }}</div>
+                                <div class="dataset-license">License: {{ dataset.license }}</div>
+                            </div>
+                            <div class="col-xs-2 pull-right">
+                                <div class="pull-right ">
 {#                                <span class="margin-right-4 o-gray"><i class="fa fa-industry o-purple margin-right-1"></i> 7 services</span>#}
-                                  <span class="margin-right-4 o-gray"><i class="fa fa-download o-green margin-right-1"></i> added: 3 months ago</span>
-                                  <span class="margin-right-4 o-gray"><i class="fa fa-download o-green margin-right-1"></i> last updated: 2 days ago</span>
-{#                                <span class="margin-right-4 o-orange">#}
-{#                                    <i class="fa fa-star"></i>#}
-{#                                    <i class="fa fa-star"></i>#}
-{#                                    <i class="fa fa-star"></i>#}
-{#                                    <i class="fa fa-star-half-o"></i>#}
-{#                                    <i class="fa fa-star-o"></i>#}
-{#                                    3.7#}
-{#                                </span>#}
+{#                                  <span class="margin-right-4 o-gray"><i class="fa fa-download o-green margin-right-1"></i> added: 3 months ago</span>#}
+                                    <span class="dataset-category"><span class="badge">{{ dataset.category }}</span></span>
+    {#                                <span class="dataset-private"><span class="badge">{{ dataset.category }}</span></span>#}
+                                    {% if dataset.private %}
+                                        <button class="btn btn-danger btn-sm" style="margin: 0;">Private</button>
+                                    {%  else %}
+                                        <button class="btn btn-success btn-sm" style="margin: 0;">Open</button>
+                                    {% endif %}
+                                    <br/>
+                                    <span class="o-gray"><i class="fa fa-sync-alt o-green margin-right-1"></i> last updated: 2 days ago</span>
+    {#                                <span class="margin-right-4 o-orange">#}
+    {#                                    <i class="fa fa-star"></i>#}
+    {#                                    <i class="fa fa-star"></i>#}
+    {#                                    <i class="fa fa-star"></i>#}
+    {#                                    <i class="fa fa-star-half-o"></i>#}
+    {#                                    <i class="fa fa-star-o"></i>#}
+    {#                                    3.7#}
+    {#                                </span>#}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -81,12 +96,12 @@
                                     <p class="padding-horizontal-3">Showing entries
                                         <span class="o-blue">1</span> - <span class="o-blue">5</span>
 {#                                        , <span class="o-orange">36 GB</span> of data#}
-                                        , <span class="o-orange">{% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}</span>  rows in total.{% endif %}</p>
+                                        , <span class="o-green" style="font-weight: bold;">{% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}</span>  rows in total.{% endif %}</p>
                                     <table id="sample_table" class="table table-hover">
 	                                    <thead class="text-info">
 	                                        <tr>
                                                 {% for title, unit in column_list%}
-                                                    <th>{{ title }}<br/>{% if unit == '' %}(-){% else %}({{ unit }}){% endif %}</th>
+                                                    <th>{{ title }}<br/>{% if unit == '' %}(unknown unit){% else %}({{ unit }}){% endif %}</th>
                                                 {% endfor %}
 	                                        </tr>
                                         </thead>

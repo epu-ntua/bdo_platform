@@ -3,7 +3,6 @@
 }
 
 h1.dataset-title {
-    margin-top: 40px;
     font-size: 3em;
 }
 
@@ -16,16 +15,35 @@ h1.dataset-title {
     color: #32879c;
 }
 
+.card h1{
+    margin: 0;
+}
+
+.card h4{
+    margin-top: 0;
+}
+
 th{
     font-weight: bold !important;
     white-space: nowrap;
+}
+
+#overview th{
     text-align: center;
 }
 
-td{
+#overview td{
     text-align: center;
 }
 
 .btn.btn-info{
     background-color: #32879c;
+}
+
+.badge{
+    font-weight: normal;
+    background-color: #18505d40;
+    color: black;
+    margin-right: 1vw;
+    font-size: 100%;
 }
