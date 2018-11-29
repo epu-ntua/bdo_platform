@@ -3,6 +3,7 @@ import json
 from pykml import parser
 from os import path
 
+
 def parse(file_path):
     kml_file = path.join(file_path)
 
@@ -28,7 +29,6 @@ def build_polygon_map(p):
     polygon_list = build_polygon_list(polygons)
     polygon_map['polygons'] = polygon_list
     return polygon_map
-
 
 
 def extract_polygons(placemark_elem):
@@ -66,40 +66,42 @@ def extract_coordinates(boundaries):
 def build_polygon_list(polygons):
     polygon_list = []
     for p in polygons:
-        outer_boundary_map = build_outer_boundary_list(p)
-        inner_boundary_map = build_inner_boundary_map(p)
-        if (inner_boundary_map is not None):
-            polygon_list.append((outer_boundary_map, inner_boundary_map))
-        else:
-            polygon_list.append([outer_boundary_map])
+        polygon_map = {}
+        polygon_map['outer_boundary'] = build_outer_boundary_for_map(p)
+        polygon_map['inner_boundaries'] = build_inner_boundaries_for_map(p)
+        polygon_list.append(polygon_map)
+
     return polygon_list
 
 
-def build_inner_boundary_map(p):
-    inner_boundary = extract_inner_boundaries(p)
-    if inner_boundary is None:
-        return None
-    inner_boundary_map = {}
+def build_inner_boundaries_for_map(p):
+    inner_boundaries = extract_inner_boundaries(p)
+    inner_boundary_list = []
+    if inner_boundaries is None:
+        return []
 
-    coords = extract_coordinates(inner_boundary)
-    if coords != '':
-        coordinates = coords.split('\n')
-        coord_map = build_coord_map(coordinates)
-        inner_boundary_map['inner_boundary'] = coord_map
-    return inner_boundary_map
+    for i in inner_boundaries:
+        coords = extract_coordinates(i)
+        if coords != '':
+            coordinates = coords.split('\n')
+            coord_map = build_coord_map(coordinates)
+            inner_boundary_list.append(coord_map)
+
+    return inner_boundary_list
 
 
-def build_outer_boundary_list(p):
+def build_outer_boundary_for_map(p):
     outer_boundary = extract_outer_boundaries(p)
+    coords = extract_coordinates(outer_boundary)
+    coord_map = {}
     if outer_boundary is None:
         return None
-    outer_boundary_map = {}
-    coords = extract_coordinates(outer_boundary)
+
     if coords != '':
         coordinates = coords.split('\n')
         coord_map = build_coord_map(coordinates)
-        outer_boundary_map['outer_boundary'] = coord_map
-    return outer_boundary_map
+
+    return coord_map
 
 
 def build_coord_map(coordinates):
@@ -110,7 +112,7 @@ def build_coord_map(coordinates):
         longitude, latitude, altitude = c.strip().split(',')
         coor_map['longitude'] = float(longitude)
         coor_map['latitude'] = float(latitude)
-        coor_map['altitude'] = float(altitude)
+        # coor_map['altitude'] = float(altitude)
         coor_list.append(coor_map)
     coord_map['coordinates'] = coor_list
     return coord_map
