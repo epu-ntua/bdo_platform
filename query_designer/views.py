@@ -8,6 +8,7 @@ import json
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.conf import settings
 from visualizer.models import Visualization
 from datetime import datetime
 
