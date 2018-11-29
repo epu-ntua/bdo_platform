@@ -44,6 +44,12 @@ class Dataset(Model):
     license = CharField(max_length=200, null=True)
     observation = CharField(max_length=200, null=True)
     publisher = TextField()
+    category = CharField(max_length=200, null=True)
+    image_uri = TextField(default='/static/img/logo.png')
+    sample_rows = JSONField(null=True)
+    number_of_rows = CharField(max_length=200, null=True)
+    size_in_gb = FloatField(null=True)
+    update_frequency = CharField(max_length=200, default='static file')
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
     metadata = JSONField(default={})
     arguments = JSONField(default={})
@@ -93,7 +99,7 @@ class BaseVariable(Model):
     name = CharField(max_length=256)
     title = CharField(max_length=256)
     unit = CharField(max_length=256)
-    description = TextField(null=True)
+    # description = TextField(null=True)
 
     class Meta:
         abstract = True
