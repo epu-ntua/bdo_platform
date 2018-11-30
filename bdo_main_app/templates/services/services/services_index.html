@@ -58,7 +58,19 @@
                 <div class="card card-default-width card-default-margin-right">
                     <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
                     <div class="card-body card-padding-20">
-                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/service/{{item.pk}}">{{ item.title }}</a></h5>
+                        <h5 class="card-title o-blue card-title-default-height">
+                            <a class="o-blue"
+                                {% if item.title == 'Fuel Consumption Reduction Service (FNK)'%}
+                                    href="http://212.101.173.31:8062"
+                                {% elif item.title == 'Fuel Consumption Reduction Service (ANEK)'%}
+                                    href="http://212.101.173.31:8065"
+                                {% else %}
+                                    href="/services/service/{{item.pk}}"
+                                {% endif %}
+                            >
+                            {{item.title}}
+                            </a>
+                        </h5>
                         <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
                     </div>
 
@@ -68,7 +80,17 @@
                         <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
                     </ul>
                     <div class="card-body text-center">
-                        <a class="btn btn-primary blue" href="/services/service/{{item.pk}}" role="button">SHOW SERVICE</a>
+                        <a class="btn btn-primary blue"
+                            {% if item.title == 'Fuel Consumption Reduction Service (FNK)'%}
+                                href="http://212.101.173.31:8062"
+                            {% elif item.title == 'Fuel Consumption Reduction Service (ANEK)'%}
+                                href="http://212.101.173.31:8065"
+                            {% else %}
+                                href="/services/service/{{item.pk}}"
+                            {% endif %}
+                             role="button">
+                            SHOW SERVICE
+                        </a>
                     </div>
                 </div>
             {% empty %}
@@ -85,7 +107,19 @@
                 <div class="card card-default-width card-default-margin-right">
                     <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
                     <div class="card-body card-padding-20">
-                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/service/{{item.pk}}">{{ item.title }}</a></h5>
+                        <h5 class="card-title o-blue card-title-default-height">
+                            <a class="o-blue"
+                                {% if item.title == 'Fuel Consumption Reduction Service (FNK)'%}
+                                    href="http://212.101.173.31:8062"
+                                {% elif item.title == 'Fuel Consumption Reduction Service (ANEK)'%}
+                                    href="http://212.101.173.31:8065"
+                                {% else %}
+                                    href="/services/service/{{item.pk}}"
+                                {% endif %}
+                            >
+                            {{item.title}}
+                            </a>
+                        </h5>
                         <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
                     </div>
 
@@ -95,7 +129,17 @@
                         <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
                     </ul>
                     <div class="card-body text-center">
-                        <a class="btn btn-primary blue" href="/services/service/{{item.pk}}" role="button">SHOW SERVICE</a>
+                        <a class="btn btn-primary blue"
+                            {% if item.title == 'Fuel Consumption Reduction Service (FNK)'%}
+                                href="http://212.101.173.31:8062"
+                            {% elif item.title == 'Fuel Consumption Reduction Service (ANEK)'%}
+                                href="http://212.101.173.31:8065"
+                            {% else %}
+                                href="/services/service/{{item.pk}}"
+                            {% endif %}
+                             role="button">
+                            SHOW SERVICE
+                        </a>
                     </div>
                 </div>
             {% empty %}
