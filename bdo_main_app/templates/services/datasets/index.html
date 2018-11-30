@@ -101,7 +101,7 @@
 	                                    <thead class="text-info">
 	                                        <tr>
                                                 {% for title, unit in column_list%}
-                                                    <th>{{ title }}<br/>{% if unit == '' %}(unknown unit){% else %}({{ unit }}){% endif %}</th>
+                                                    <th>{{ title }}<br/>{% if unit == '' %}{% else %}({{ unit }}){% endif %}</th>
                                                 {% endfor %}
 	                                        </tr>
                                         </thead>
