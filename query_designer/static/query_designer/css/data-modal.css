@@ -3,9 +3,9 @@
 }
 
 #select-data-modal .modal-dialog{
-    margin: 5vh 2vw;
+    margin: 5vh 2vw !important;
     padding: 0;
-    width: 95vw;
+    width: 95vw !important;
     max-width: 96vw;
     height: 90vh;
     max-height: 90vh;
@@ -152,7 +152,7 @@
     font-weight: bold;
 }
 
-#select-data-modal #dataset-list-section .dataset-organization{
+#select-data-modal #dataset-list-section .dataset-publisher{
     font-size: 80%;
 }
 
@@ -230,7 +230,7 @@
     margin-bottom: 2%;
 }
 
-#dataset_info_div #dataset_basic_info_div .dataset-organization{
+#dataset_info_div #dataset_basic_info_div .dataset-publisher{
     text-align: center;
     font-size: 100%;
     margin-bottom: 2%;
