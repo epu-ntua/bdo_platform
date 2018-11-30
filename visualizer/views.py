@@ -2481,21 +2481,16 @@ def get_data_table(request):
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
 def map_oil_spill_hcmr(map):
-    # map = create_map()
     filepath = 'visualizer/static/visualizer/files/kml.json'
     color = 'green'
-    map, min_lat, max_lat, min_lon, max_lon, polygons = hcmr_create_polygons_on_map(map, filepath, color)
-    map.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+    map, polygons = hcmr_create_polygons_on_map(map, filepath, color)
     return map, polygons
 
 
 def hcmr_create_polygons_on_map(map, filepath, polygon_color):
     with open(filepath) as f:
         kml_data = json.load(f)
-    min_lat = 90
-    max_lat = -90
-    min_lon = 180
-    max_lon = -180
+
     shapely_polygons = []
     pol_group_layer = folium.map.FeatureGroup(name='Protected Areas Layer:' + str(time.time()).replace(".", "_"),
                                               overlay=True,
@@ -2509,9 +2504,6 @@ def hcmr_create_polygons_on_map(map, filepath, polygon_color):
                 external_shapely = []
                 internal_shapely = []
                 for coordinate in polygon['outer_boundary']['coordinates']:
-                    min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon,
-                                                                               coordinate['latitude'],
-                                                                               coordinate['longitude'])
                     points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
                     external_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
                 points.append(points_outer)
@@ -2519,9 +2511,6 @@ def hcmr_create_polygons_on_map(map, filepath, polygon_color):
                     hole = []
                     single_internal_shapely = []
                     for coordinate in inner_polygon['coordinates']:
-                        min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon,
-                                                                               coordinate['latitude'],
-                                                                               coordinate['longitude'])
                         hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
                         single_internal_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
                     points.append(hole)
@@ -2532,13 +2521,8 @@ def hcmr_create_polygons_on_map(map, filepath, polygon_color):
                                 fill=polygon_color
                                 ).add_to(pol_group_layer)
                 shapely_polygons.append(Polygon(external_shapely, internal_shapely))
+    return map, shapely_polygons
 
-    max_lat = float(max_lat)
-    min_lat = float(min_lat)
-    max_lon = float(max_lon)
-    min_lon = float(min_lon)
-
-    return map, min_lat, max_lat, min_lon, max_lon,shapely_polygons
 
 def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
     shapely_point = Point(point_lat, point_lon)
@@ -2548,8 +2532,37 @@ def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
             color = 'red'
     return color
 
+def map_routes(m):
+    routes_query = """SELECT centroids_ci_1.latitude, centroids_ci_1.longitude,centroids_ci_1.route FROM centroids_ci_1  ORDER BY centroids_ci_1.route,centroids_ci_1.latitude, centroids_ci_1.longitude """
+    cursor = connections['UBITECH_POSTGRES'].cursor()
+    cursor.execute(routes_query)
+    data = cursor.fetchall()
+    pol_group_layer = folium.map.FeatureGroup(
+        name='Vessel-Routes - Layer:' + str(time.time()).replace(".", "_") , overlay=True,
+        control=True).add_to(m)
+
+    curr_route = data[0][2]
+    route_points = []
+    for d in data:
+        if d[2] == curr_route:
+            route_points.append([float(d[0]), float(d[1])])
+        else:
+            folium.PolyLine(route_points, color='orange', weight=2.5, opacity=0.8,
+                            ).add_to(pol_group_layer)
+            route_points = []
+            route_points.append([float(d[0]), float(d[1])])
+            curr_route = d[2]
+
+    folium.PolyLine(route_points, color='orange', weight=2.5, opacity=0.8,
+                    ).add_to(pol_group_layer)
+
+    return m
+
+
 def map_markers_in_time_hcmr(request):
     m = create_map()
+    # comment out map_routes until you find a way to cleanup the route-data
+    # m = map_routes(m)
     m, shapely_polygons = map_oil_spill_hcmr(m)
 
     FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk = hcmr_service_parameters(
@@ -2629,7 +2642,21 @@ def map_markers_in_time_hcmr(request):
             run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
             data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
             delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-
+        min_lat = 90
+        max_lat = -90
+        min_lon = 180
+        max_lon = -180
+        for d in data:
+            min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
+        m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+        filtered_polygons = []
+        simulation_frame = Polygon([(min_lat, min_lon), (max_lat,min_lon), (max_lat,max_lon),(min_lat,max_lon)])
+        count_inters = 0
+        for pol in shapely_polygons:
+            if simulation_frame.intersects(pol):
+                filtered_polygons.append(pol)
+                count_inters = count_inters + 1
+        print 'intersects:' + str(count_inters)
         features = [
             {
                 "type": "Feature",
@@ -2640,7 +2667,7 @@ def map_markers_in_time_hcmr(request):
                 "properties": {
                     "times": [str(d[order_var])],
                     "style": {
-                        "color": color_point_oil_spill(shapely_polygons, float(d[lat_col]), float(d[lon_col])),
+                        "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
                         # "color": "red"
                     }
                 }
@@ -2687,13 +2714,13 @@ def hcmr_service_parameters(request):
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
     if latitude > max_lat:
-        max_lat = latitude
+        max_lat = float(latitude)
     if latitude < min_lat:
-        min_lat = latitude
+        min_lat = float(latitude)
     if longitude > max_lon:
-        max_lon = longitude
+        max_lon = float(longitude)
     if longitude < min_lon:
-        min_lon = longitude
+        min_lon = float(longitude)
     return min_lat, max_lat, min_lon, max_lon
 
 def create_plotline_arrows(points, m, pol_group_layer, color):
