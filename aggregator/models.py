@@ -83,7 +83,7 @@ class BaseVariable(Model):
     name = CharField(max_length=256)
     title = CharField(max_length=256)
     unit = CharField(max_length=256)
-    description = TextField(null=True)
+    # description = TextField(null=True)
 
     class Meta:
         abstract = True

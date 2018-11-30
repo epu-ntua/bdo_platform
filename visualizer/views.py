@@ -42,6 +42,8 @@ from tests import *
 
 from folium import CustomIcon
 from folium.plugins import HeatMap, MarkerCluster
+from shapely.geometry import Point
+from shapely.geometry.polygon import Polygon
 
 FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
                  'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
@@ -2482,9 +2484,9 @@ def map_oil_spill_hcmr(map):
     # map = create_map()
     filepath = 'visualizer/static/visualizer/files/kml.json'
     color = 'green'
-    map, min_lat, max_lat, min_lon, max_lon = hcmr_create_polygons_on_map(map, filepath,color)
+    map, min_lat, max_lat, min_lon, max_lon, polygons = hcmr_create_polygons_on_map(map, filepath, color)
     map.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
-    return map
+    return map, polygons
 
 
 def hcmr_create_polygons_on_map(map, filepath, polygon_color):
@@ -2494,6 +2496,7 @@ def hcmr_create_polygons_on_map(map, filepath, polygon_color):
     max_lat = -90
     min_lon = 180
     max_lon = -180
+    shapely_polygons = []
     pol_group_layer = folium.map.FeatureGroup(name='Protected Areas Layer:' + str(time.time()).replace(".", "_"),
                                               overlay=True,
                                               control=True).add_to(map)
@@ -2503,57 +2506,61 @@ def hcmr_create_polygons_on_map(map, filepath, polygon_color):
                 points_inner = []
                 points_outer = []
                 points = []
+                external_shapely = []
+                internal_shapely = []
                 for coordinate in polygon['outer_boundary']['coordinates']:
                     min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon,
                                                                                coordinate['latitude'],
                                                                                coordinate['longitude'])
                     points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                    external_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
                 points.append(points_outer)
                 for inner_polygon in polygon['inner_boundaries']:
                     hole = []
+                    single_internal_shapely = []
                     for coordinate in inner_polygon['coordinates']:
                         min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon,
                                                                                coordinate['latitude'],
                                                                                coordinate['longitude'])
                         hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                        single_internal_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
                     points.append(hole)
                     points_inner.append(hole)
-                # print (str(count_polygons)+')Polygon Holes:' + str(points_inner.__len__()))
+                    internal_shapely.append(single_internal_shapely)
                 count_polygons = count_polygons+1
                 folium.PolyLine(points, color=polygon_color, weight=2.0, opacity=0.8,
                                 fill=polygon_color
                                 ).add_to(pol_group_layer)
+                shapely_polygons.append(Polygon(external_shapely, internal_shapely))
 
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
     min_lon = float(min_lon)
 
-    return map, min_lat, max_lat, min_lon, max_lon
+    return map, min_lat, max_lat, min_lon, max_lon,shapely_polygons
+
+def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
+    shapely_point = Point(point_lat, point_lon)
+    color = 'lightblue'
+    for pol in shapely_polygons:
+        if pol.contains(shapely_point):
+            color = 'red'
+    return color
 
 def map_markers_in_time_hcmr(request):
     m = create_map()
+    m, shapely_polygons = map_oil_spill_hcmr(m)
 
-    marker_limit = int(request.GET.get('markers', 1000))
-    # var = str(request.GET.get('var'))
-    order_var = str(request.GET.get('order_var', 'time'))
-    query_pk = int(str(request.GET.get('query', 0)))
+    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk = hcmr_service_parameters(
+        request)
 
-    notebook_id = str(request.GET.get('notebook_id', ''))
-    df = str(request.GET.get('df', ''))
-
-    lat_col = str(request.GET.get('lat_col', 'latitude'))
-    lon_col = str(request.GET.get('lon_col', 'longitude'))
-
-    markerType = str(request.GET.get('markerType', ''))
-    FMT = '%Y-%m-%d %H:%M:%S'
-
-    if query_pk!=0:
+    if query_pk != 0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
         q = Query(document=q.document)
         doc = q.document
 
-        doc['limit'] =  marker_limit
+        doc['limit'] = marker_limit
         doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
 
         for f in doc['from']:
@@ -2569,8 +2576,6 @@ def map_markers_in_time_hcmr(request):
                 else:
                     s['exclude'] = True
 
-
-        # print doc
         q.document = doc
 
         query_data = execute_query_method(q)
@@ -2635,7 +2640,8 @@ def map_markers_in_time_hcmr(request):
                 "properties": {
                     "times": [str(d[order_var])],
                     "style": {
-                        "color": "blue",
+                        "color": color_point_oil_spill(shapely_polygons, float(d[lat_col]), float(d[lon_col])),
+                        # "color": "red"
                     }
                 }
             }
@@ -2646,8 +2652,6 @@ def map_markers_in_time_hcmr(request):
 
     features = convert_unicode_json(features)
 
-    duration='PT0H'
-    m = map_oil_spill_hcmr(m)
     m.save('templates/map.html')
     f = open('templates/map.html', 'r')
     map_html = f.read()
@@ -2667,6 +2671,18 @@ def map_markers_in_time_hcmr(request):
                       {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType})
 
 
+def hcmr_service_parameters(request):
+    marker_limit = int(request.GET.get('markers', 1000))
+    order_var = str(request.GET.get('order_var', 'time'))
+    query_pk = int(str(request.GET.get('query', 0)))
+    notebook_id = str(request.GET.get('notebook_id', ''))
+    df = str(request.GET.get('df', ''))
+    lat_col = str(request.GET.get('lat_col', 'latitude'))
+    lon_col = str(request.GET.get('lon_col', 'longitude'))
+    markerType = str(request.GET.get('markerType', ''))
+    FMT = '%Y-%m-%d %H:%M:%S'
+    duration = 'PT0H'
+    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
