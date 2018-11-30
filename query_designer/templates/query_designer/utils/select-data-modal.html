@@ -159,8 +159,25 @@
                                                         <td>{{ dataset.publisher }}</td>
                                                     </tr>
                                                     <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
-                                                        <td>Private</td>
-                                                        <td>{{ dataset.private }}</td>
+                                                        <td>Access type</td>
+                                                        <td>{% if dataset.private %}
+                                                                Private
+                                                            {%  else %}
+                                                                Open
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>License</td>
+                                                        <td>{{ dataset.license }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Observation type</td>
+                                                        <td>{{ dataset.observation }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Description</td>
+                                                        <td>{{ dataset.description }}</td>
                                                     </tr>
                                                     <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
 
