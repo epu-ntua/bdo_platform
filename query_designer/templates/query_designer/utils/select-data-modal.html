@@ -45,20 +45,18 @@
                             </select>
                         </div>
                         <div class="form-group ">
-                            <label for="organization-filter" class="control-label">Organization: </label>
+                            <label for="publisher-filter" class="control-label">Publisher: </label>
                             <select
-                                title="select organization"
+                                title="select publisher"
                                 data-control-type="filter-select"
                                 data-control-action="filter"
-                                data-control-name="organization-filter"
+                                data-control-name="publisher-filter"
                                 class="form-control full-width"
-                                id="organization-filter"
+                                id="publisher-filter"
                             >
                                 <option value="0" data-path="default" selected>All</option>
-                                {% for org in organizations %}
-                                    {% if org.id != 1 %}
-                                        <option value="{{ org.id }}" data-path="[data-organization-id='{{ org.id }}']">{{ org.title }}</option>
-                                    {% endif %}
+                                {% for publisher in publishers %}
+                                        <option value="{{ publisher }}" data-path="[data-publisher='{{ publisher }}']">{{ publisher }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -138,8 +136,8 @@
                                         <div class="dataset-title">
                                             {{ dataset.title }}
                                         </div>
-                                        <div class="dataset-organization">
-                                            {{ dataset.organization.title }}
+                                        <div class="dataset-publisher">
+                                            {{ dataset.publisher }}
                                         </div>
                                     </div>
                                     <div class="dataset-info hidden">
@@ -156,9 +154,9 @@
                                                         <td>Title</td>
                                                         <td>{{ dataset.title }}</td>
                                                     </tr>
-                                                    <tr class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">
-                                                        <td>Organization</td>
-                                                        <td>{{ dataset.organization.title }}</td>
+                                                    <tr class="dataset-publisher" data-publisher="{{ dataset.publisher }}">
+                                                        <td>Publisher</td>
+                                                        <td>{{ dataset.publisher }}</td>
                                                     </tr>
                                                     <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
                                                         <td>Private</td>
