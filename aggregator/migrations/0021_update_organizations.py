@@ -12,9 +12,9 @@ def forwards(_, __):
 
 def fill_organization_table():
     insert_default_query = build_insert_default_query()
-    query = build_insert_query()
+    #query = build_insert_query()
     execute_insert_query(insert_default_query)
-    execute_insert_query(query)
+    #execute_insert_query(query)
 
 
 def build_insert_query():
