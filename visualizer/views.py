@@ -157,7 +157,8 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name']
                 s['groupBy'] = True
-                s['aggregate'] = 'date_trunc_minute'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'date_trunc_minute'
                 time_flag = True
             elif s['name'] == color_col and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -173,12 +174,15 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 # s['groupBy'] = True
-                s['aggregate'] = 'avg'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'round1'
+                s['groupBy'] = True
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = 'avg'
-                # s['groupBy'] = True
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'round1'
+                s['groupBy'] = True
                 lon_flag = True
             else:
                 s['exclude'] = True
@@ -259,7 +263,8 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name']
                 s['groupBy'] = True
-                s['aggregate'] = 'date_trunc_minute'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'date_trunc_minute'
                 time_flag = True
             elif (s['name'].split('_', 1)[1] == 'platform_id') and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
@@ -267,11 +272,15 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
                 platform_flag = True
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = 'avg'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'round1'
+                s['groupBy'] = True
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = 'avg'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'round1'
+                s['groupBy'] = True
                 lon_flag = True
             else:
                 s['exclude'] = True
