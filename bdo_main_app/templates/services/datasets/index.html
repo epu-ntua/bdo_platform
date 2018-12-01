@@ -14,45 +14,61 @@
     <div class="row">
         <div class="col-xs-12">
             <div class="card">
-                <div class="card-block">
-                    <div class="row">
-                        <div class="col-xs-2 padding-3">
-                            <div class="padding-3">
+                <div class="card-block" style="padding: 3vh 1vw 3vh 1vw">
+                    <div class="row" style="min-height: 20vh;">
+                        <div class="col-xs-2">
+                            <div class="">
                                 <div class="img-bg-container contain dataset-preview"
-                                    style="background-image: url('{% static 'img/logo.png' %}');">
+                                    style="background-image: url('{{ dataset.image_uri }}');">
 
                                 </div>
                             </div>
                         </div>
-                        <div class="col-xs-10">
+                        <div class="col-xs-9 ">
                             <h1 class="dataset-title o-blue">{{ dataset.title }}</h1>
+                            <h4 class="dataset-publisher o-blue">By {{ dataset.publisher }}</h4>
                             <p>{{ dataset.description|default:"No description provided" }}</p>
+                        </div>
+                        <div class="col-xs-1">
+                            <div class="pull-right"><a class="btn btn-danger btn-sm" href="/bdo/?data-on-top=true">Back</a></div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-xs-12">
-                            <div class="btn-group pull-left margin-5">
-                                <a href="#" class="btn btn-sm btn-info">
-                                    <i class="fa fa-list margin-right-2"></i> More metadata
-                                </a>
-                                <a href="#" class="btn btn-sm btn-info">
+                        <div class="col-xs-12" style="padding: 0;">
+                            <div class="btn-group pull-left col-xs-2" style="margin-right: 0;">
+                                <a href="/queries/" class="btn btn-sm btn-info">
                                     <i class="fa fa-search margin-right-2"></i> Explore data
                                 </a>
-                                <a href="#" class="btn btn-sm btn-info">
-                                    <i class="fa fa-industry margin-right-2"></i> Create a service
-                                </a>
+{#                                <a href="#" class="btn btn-sm btn-info">#}
+{#                                    <i class="fa fa-industry margin-right-2"></i> Request access (unavailable)#}
+{#                                </a>#}
                             </div>
-                            <div class="pull-right margin-5">
-                                <span class="margin-right-4 o-gray"><i class="fa fa-industry o-purple margin-right-1"></i> 7 services</span>
-                                <span class="margin-right-4 o-gray"><i class="fa fa-download o-green margin-right-1"></i> 45 last month</span>
-                                <span class="margin-right-4 o-orange">
-                                    <i class="fa fa-star"></i>
-                                    <i class="fa fa-star"></i>
-                                    <i class="fa fa-star"></i>
-                                    <i class="fa fa-star-half-o"></i>
-                                    <i class="fa fa-star-o"></i>
-                                    3.7
-                                </span>
+                            <div class="col-xs-7">
+                                <div class="dataset-license">Observation Type: {{ dataset.observation }}</div>
+                                <div class="dataset-license">License: {{ dataset.license }}</div>
+                            </div>
+                            <div class="col-xs-2 pull-right">
+                                <div class="pull-right" style="text-align: right;">
+{#                                <span class="margin-right-4 o-gray"><i class="fa fa-industry o-purple margin-right-1"></i> 7 services</span>#}
+{#                                  <span class="margin-right-4 o-gray"><i class="fa fa-download o-green margin-right-1"></i> added: 3 months ago</span>#}
+                                    <span class="dataset-category"><span class="badge">{{ dataset.category }}</span></span>
+    {#                                <span class="dataset-private"><span class="badge">{{ dataset.category }}</span></span>#}
+                                    {% if dataset.private %}
+                                        <button class="btn btn-danger btn-sm" style="margin: 0;">Private</button>
+                                    {%  else %}
+                                        <button class="btn btn-success btn-sm" style="margin: 0;">Open</button>
+                                    {% endif %}
+                                    <br/>
+{#                                    <span class="o-gray"><i class="fa fa-sync-alt o-green margin-right-1"></i> last updated: 2 days ago</span>#}
+    {#                                <span class="margin-right-4 o-orange">#}
+    {#                                    <i class="fa fa-star"></i>#}
+    {#                                    <i class="fa fa-star"></i>#}
+    {#                                    <i class="fa fa-star"></i>#}
+    {#                                    <i class="fa fa-star-half-o"></i>#}
+    {#                                    <i class="fa fa-star-o"></i>#}
+    {#                                    3.7#}
+    {#                                </span>#}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -65,170 +81,122 @@
                         <li class="nav-item active">
                             <a class="nav-link active" data-toggle="tab" href="#overview" role="tab" aria-expanded="true">Overview</a>
                         </li>
+{#                        <li class="nav-item">#}
+{#                            <a class="nav-link" data-toggle="tab" href="#advanced-insights" role="tab" aria-expanded="false" onclick="setTimeout(initDatasetCharts, 500)">Insights</a>#}
+{#                        </li>#}
                         <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#advanced-insights" role="tab" aria-expanded="false" onclick="setTimeout(initDatasetCharts, 500)">Insights</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" data-toggle="tab" href="#access-and-download" role="tab">Access / Download</a>
+                            <a class="nav-link" data-toggle="tab" href="#metadata" role="tab">Metadata</a>
                         </li>
                     </ul>
                     <!-- Tab panes -->
                     <div class="tab-content">
                         <div class="tab-pane active" id="overview" role="tabpanel" aria-expanded="true">
                             <div class="row">
-                                <div class="col-xs-12 padding-5">
+                                <div class="col-xs-12 padding-5" style="overflow-x: auto;">
                                     <p class="padding-horizontal-3">Showing entries
                                         <span class="o-blue">1</span> - <span class="o-blue">5</span>
-                                        , <span class="o-orange">36 GB</span> of data in total.</p>
-                                    <table class="table table-hover">
+{#                                        , <span class="o-orange">36 GB</span> of data#}
+                                        , <span class="o-green" style="font-weight: bold;">{% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}</span>  rows in total.{% endif %}</p>
+                                    <table id="sample_table" class="table table-hover">
 	                                    <thead class="text-info">
 	                                        <tr>
-                                                <th>Vessel ID</th>
-                                                <th>Type</th>
-                                                <th>Time</th>
-                                                <th>Position</th>
-                                                <th>Speed</th>
-                                                <th>Course</th>
-                                                <th>Heading</th>
-                                                <th>Status</th>
-	                                    </tr></thead>
+                                                {% for title, unit in column_list%}
+                                                    <th>{{ title }}<br/>{% if unit == '' %}{% else %}({{ unit }}){% endif %}</th>
+                                                {% endfor %}
+	                                        </tr>
+                                        </thead>
 	                                    <tbody>
-	                                        <tr>
-	                                        	<td>443351</td>
-	                                        	<td>Tug</td>
-	                                        	<td>06-05-11 00:00</td>
-	                                        	<td>-58.34315, -34.62647</td>
-	                                        	<td>0</td>
-	                                        	<td>65</td>
-	                                        	<td>511</td>
-	                                        	<td>Default</td>
-	                                        </tr>
-                                            <tr>
-	                                        	<td>112529</td>
-	                                        	<td>OffShore Structure</td>
-	                                        	<td>06-05-11 00:00</td>
-	                                        	<td>-3.508397, 53.48074</td>
-	                                        	<td>0</td>
-	                                        	<td>0</td>
-	                                        	<td>0</td>
-	                                        	<td>Aid to Navigation</td>
-	                                        </tr>
-                                            <tr>
-	                                        	<td>9910</td>
-	                                        	<td>Cargo</td>
-	                                        	<td>06-05-11 00:00</td>
-	                                        	<td>15.69047, 48.38525</td>
-	                                        	<td>93</td>
-	                                        	<td>58</td>
-	                                        	<td>511</td>
-	                                        	<td>Underway using Engine</td>
-	                                        </tr>
-                                            <tr>
-	                                        	<td>10247</td>
-	                                        	<td>Cargo - Hazard D (Recognizable)</td>
-	                                        	<td>06-05-11 00:00</td>
-	                                        	<td>93,15.69047, 48.38525</td>
-	                                        	<td>47</td>
-	                                        	<td>278</td>
-	                                        	<td>511</td>
-	                                        	<td>Underway using Engine</td>
-	                                        </tr>
-                                            <tr>
-	                                        	<td>10247</td>
-	                                        	<td>Fishing</td>
-	                                        	<td>06-05-11 00:00</td>
-	                                        	<td>120.3334, 26.99601</td>
-	                                        	<td>57</td>
-	                                        	<td>46</td>
-	                                        	<td>511</td>
-	                                        	<td>Class B</td>
-	                                        </tr>
+                                            {% for row in rows_to_render%}
+                                                <tr>
+                                                    {% for cell in row%}
+                                                        <td>{{ cell }}</td>
+                                                    {% endfor %}
+                                                </tr>
+                                            {% endfor %}
 	                                    </tbody>
 	                                </table>
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane" id="advanced-insights" role="tabpanel" aria-expanded="false">
-                            <div class="col-xs-12 margin-vertical-3">
-                                <h4 class="o-blue" style="text-decoration: underline">What are insights?</h4>
-
-                                <p>The uploader of this dataset has prepared a <em class="o-blue">smart sneak peak</em>
-                                    to help you gain a better view of its potential!</p>
-                                <p>All visualizations have been created using BigDataOcean, ensuring the validity of the results.
-                                    Please note that textual elements, such as comments, are directly provided by the uploader.
-                                </p>
-
-                                <div class="slider-container">
-                                    <div class="slider">
-                                        <div>
-                                            <div id="chart1"></div>
-                                        </div>
-
-                                        <div>
-                                            <div id="chart2"></div>
-                                        </div>
-
-                                        <div>
-                                            <div id="chart3"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="access-and-download" role="tabpanel">
+{#                        <div class="tab-pane" id="advanced-insights" role="tabpanel" aria-expanded="false">#}
+{#                            <div class="col-xs-12 margin-vertical-3">#}
+{#                                <h4 class="o-blue" style="text-decoration: underline">What are insights?</h4>#}
+{##}
+{#                                <p>The uploader of this dataset has prepared a <em class="o-blue">smart sneak peak</em>#}
+{#                                    to help you gain a better view of its potential!</p>#}
+{#                                <p>All visualizations have been created using BigDataOcean, ensuring the validity of the results.#}
+{#                                    Please note that textual elements, such as comments, are directly provided by the uploader.#}
+{#                                </p>#}
+{##}
+{#                                <div class="slider-container">#}
+{#                                    <div class="slider">#}
+{#                                        <div>#}
+{#                                            <div id="chart1"></div>#}
+{#                                        </div>#}
+{##}
+{#                                        <div>#}
+{#                                            <div id="chart2"></div>#}
+{#                                        </div>#}
+{##}
+{#                                        <div>#}
+{#                                            <div id="chart3"></div>#}
+{#                                        </div>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+                        <div class="tab-pane" id="metadata" role="tabpanel">
                             <div class="col-xs-12 margin-vertical-3">
                                 <table class="table">
-                                    <thead>
+                                    <thead class="text-info">
                                         <tr>
-                                            <th></th>
-                                            <th class="text-center">Download</th>
-                                            <th class="text-center">Premium download</th>
-                                            <th class="text-center">1 week subscription</th>
-                                            <th class="text-center">1 month subscription</th>
-                                            <th class="text-center">Lifetime subscription</th>
+                                            <th>Property</th>
+                                            <th>Value(s)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Price</td>
-                                            <td class="text-center">€ 10</td>
-                                            <td class="text-center">€ 40</td>
-                                            <td class="text-center">€ 2</td>
-                                            <td class="text-center">€ 5</td>
-                                            <td class="text-center">€ 150</td>
+                                            <td>Publisher</td>
+                                            <td>{{ dataset.publisher }}</td>
                                         </tr>
                                         <tr>
-                                            <td>Updates</td>
-                                            <td class="text-center"><i class="o-red fa fa-times"></i></td>
-                                            <td class="text-center"><i class="o-green fa fa-check"></i></td>
-                                            <td class="text-center"><i class="o-green fa fa-check"></i></td>
-                                            <td class="text-center"><i class="o-green fa fa-check"></i></td>
-                                            <td class="text-center"><i class="o-green fa fa-check"></i></td>
+                                            <td>License</td>
+                                            <td>{{ dataset.license }}</td>
                                         </tr>
                                         <tr>
-                                            <td>Support</td>
-                                            <td class="text-center"><i class="o-red fa fa-times"></i></td>
-                                            <td class="text-center"><i class="o-green fa fa-check"></i></td>
-                                            <td class="text-center"><i class="o-green fa fa-check"></i></td>
-                                            <td class="text-center"><i class="o-green fa fa-check"></i></td>
-                                            <td class="text-center"><i class="o-green fa fa-check"></i></td>
+                                            <td>Observation</td>
+                                            <td>{{ dataset.observation }}</td>
                                         </tr>
                                         <tr>
-                                            <td>Terms</td>
-                                            <td class="text-center"><a href="#">Show</a></td>
-                                            <td class="text-center"><a href="#">Show</a></td>
-                                            <td class="text-center"><a href="#">Show</a></td>
-                                            <td class="text-center"><a href="#">Show</a></td>
-                                            <td class="text-center"><a href="#">Show</a></td>
+                                            <td>Spatial Coverage North </td>
+                                            <td>{{ dataset.spatialNorth }}</td>
                                         </tr>
                                         <tr>
-                                            <td></td>
-                                            <td class="text-center"><a href="#" class="btn btn-success btn-sm">Download</a></td>
-                                            <td class="text-center"><a href="#" class="btn btn-success btn-sm">Download</a></td>
-                                            <td class="text-center"><a href="#" class="btn btn-success btn-sm">Purchase</a></td>
-                                            <td class="text-center"><a href="#" class="btn btn-success btn-sm">Purchase</a></td>
-                                            <td class="text-center"><a href="#" class="btn btn-success btn-sm">Purchase</a></td>
+                                            <td>Spatial Coverage South </td>
+                                            <td>{{ dataset.spatialSouth }}</td>
                                         </tr>
+                                        <tr>
+                                            <td>Spatial Coverage East </td>
+                                            <td>{{ dataset.spatialEast }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Spatial Coverage West </td>
+                                            <td>{{ dataset.spatialWest }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Temporal Coverage From </td>
+                                            <td>{{ dataset.temporalCoverageBegin }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Temporal Coverage To </td>
+                                            <td>{{ dataset.temporalCoverageEnd }}</td>
+                                        </tr>
+                                        {% for property, value in dataset.metadata.items %}
+                                        <tr>
+                                            <td>{{property|capfirst}}</td>
+                                            <td>{{value}}</td>
+                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>

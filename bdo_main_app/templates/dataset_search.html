@@ -1,0 +1,559 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <!-- jPList CSS -->
+    <link rel="stylesheet" href="{% static 'css/jplist.core.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.textbox-filter.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.filter-toggle-bundle.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.pagination-bundle.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.history-bundle.min.css' %}" />
+{% endblock %}
+
+{% block content %}
+  <div id="main-section" data-on-top='{{ data_on_top }}'>
+    <div id="main-row" class="row">
+        <div class="text-center">
+{#            <h1 class="o-blue">BIG DATA OCEAN</h1>#}
+            <img src="{% static 'img/logo.png' %}">
+            <h5>Welcome to the greatest marketplace for maritime data and insights</h5>
+            <div class="home-search-form filter-section" {# method="GET" action="{% url 'search' %}"#} >
+                <div class="form-group">
+                    <input
+                        data-control-type="textbox"
+                        data-control-action="filter"
+                        data-control-name="title-filter"
+                        data-control-animate-to-top="true"
+                        data-path=".dataset-name"
+                        type="text"
+                        class="form-control"
+                        name="q"
+                        id="title-filter"
+                    />
+                    <span class="material-input"></span>
+                    <button class="btn btn-white btn-round btn-just-icon">
+                        <i class="material-icons">search</i><div class="ripple-container"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  <div id="carousel_container" class="carousel slide" data-ride="carousel">
+      <!-- Indicators -->
+      <ol class="carousel-indicators">
+        <li data-target="#carousel_container" data-slide-to="0" class="active"></li>
+        <li data-target="#carousel_container" data-slide-to="1"></li>
+{#        <li data-target="#carousel_container" data-slide-to="2"></li>#}
+      </ol>
+        <!-- Wrapper for slides -->
+      <div class="carousel-inner">
+        <div id="tools_showcase_container"class="item active">
+            <div id="tools">Big Data Analytics Toolbox</div>
+            <div class="card">
+              <img class="card-img-top" src="{% static 'img/front-slider/explore.PNG' %}" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Explore Maritime <br/>Big Data Assets</h4>
+              </div>
+            </div>            <div class="card">
+              <img class="card-img-top" src="{% static 'img/front-slider/visualisations.PNG' %}" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Create Custom <br/>Visualisations</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="{% static 'img/front-slider/dashboards.PNG' %}" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Build Dynamic <br/>Dashboards</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="{% static 'img/front-slider/analytics.PNG' %}" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Create Analytical <br/> Services</h4>
+              </div>
+            </div>
+        </div>
+
+        <div id="services_showcase_container" class="item">
+            <div id="pilots">4 Pilot Services Using Big Data Analytics</div>
+            <div class="card">
+              <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot1.jpg" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Primary Wave Energy Assessment</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot4.jpg" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Anomaly Detection of Vessels</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot1b.jpg" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Fuel Consumption Reduction Service</h4>
+              </div>
+            </div>
+            <div class="card">
+              <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot2.jpg" alt="Card image cap">
+              <div class="card-body">
+                <h4 class="card-text">Oil Spill <br/>Simulation Service</h4>
+              </div>
+            </div>
+        </div>
+
+{#        <div id="datasets_showcase_container"  class="item">#}
+{#            <img src="{% static 'img/front-slider/DataBDO.PNG' %}">#}
+{#            <div id="sources">100 Data Sources</div>#}
+{#            <div id="data_size">150 TBs of Data</div>#}
+{#        </div>#}
+      </div>
+  </div>
+
+    <div id="select-data-modal">
+        <div class="category-filter-section filter-section pull-left col-sm-12">
+            <div class="filter-section col-sm-2">
+                <button
+                    type="button"
+                    class="jplist-reset-btn"
+                    data-control-type="reset"
+                    data-control-name="reset"
+                    data-control-action="reset">
+                    Reset  <i class="fa fa-undo"></i>
+                </button>
+            </div>
+            <div class="jplist-group col-sm-8"
+                 data-control-type="button-filter-group"
+                 data-control-action="filter"
+                 data-control-name="category-filter-group"
+                 data-mode="single"
+            >
+                Category:
+                <button id="all-btn" data-path=".dataset-category" data-button="true" data-selected="true" class="jplist-selected ">
+                    All
+                </button>
+                <button id="oceanography-btn" data-path="[data-category='oceanography']" data-button="true" class="">
+                    Oceanography
+                </button>
+                <button id="ais-btn" data-path="[data-category='ais']" data-button="true" class="">
+                    AIS
+                </button>
+                <button id="weather-btn" data-path="[data-category='weather']" data-button="true" class="">
+                    Weather
+                </button>
+                <button id="weather-btn" data-path="[data-category='vessel']" data-button="true" class="">
+                    Vessel
+                </button>
+            </div>
+
+            <div
+                 class="dropdown  col-sm-2"
+                 style="text-align: right; height: 100%;"
+                 data-control-type="boot-sort-drop-down"
+                 data-control-name="bootstrap-sort-dropdown"
+                 data-control-action="sort"
+                 data-datetime-format="{month}/{day}/{year}"> <!-- {year}, {month}, {day}, {hour}, {min}, {sec} -->
+{#                <span id="sort-by-span">#}
+                    <span style="font-size: 115%;">Sort by:</span>
+                    <button
+                         class="btn btn-sm btn-default dropdown-toggle"
+                         type="button"
+                         id="sort-by-dropdown-btn"
+                         data-toggle="dropdown"
+                         aria-expanded="true">
+                         <span data-type="selected-text">Sort by</span>
+                         <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                        <li role="presentation">
+                            <a
+                               role="menuitem"
+                               tabindex="-1"
+                               href="#"
+                               data-path=".dataset-id"
+                               data-order="asc"
+                               data-type="text"
+                               data-default="true">Default</a>
+                         </li>
+
+                         <li role="presentation" class="divider"></li>
+
+                         <li role="presentation">
+                            <a
+                               role="menuitem"
+                               tabindex="-1"
+                               href="#"
+                               data-path=".dataset-name"
+                               data-order="asc"
+                               data-type="text"
+                               data-default="true">Dataset title A-Z</a>
+                         </li>
+                        <li role="presentation">
+                            <a
+                               role="menuitem"
+                               tabindex="-1"
+                               href="#"
+                               data-path=".dataset-name"
+                               data-order="desc"
+                               data-type="text">Dataset title Z-A</a>
+                        </li>
+                        <li role="presentation" class="divider"></li>
+                    </ul>
+{#                </span>#}
+            </div>
+        </div>
+        <div id="dataset-all-section" class="row">
+            <form id="dataset-filter-section" class="col-sm-2 filter-section">
+                <h3>Filters</h3>
+                <!-- text filter control -->
+                <div class="form-group ">
+                    <label for="variable-filter" class="control-label">Search for variable: </label>
+                    <select
+                        title="select variable"
+                        data-control-type="filter-select"
+                        data-control-action="filter"
+                        data-control-name="variable-filter"
+                        class="form-control full-width"
+                        id="variable-filter"
+                    >
+                        <option value="0" data-path="default" data-default="true" selected>All</option>
+                        {% for var in variables %}
+                            <option value="{{ var.safe_name }}" data-path="[data-variable-name='{{ var.safe_name }}']">{{ var.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group ">
+                    <label for="organization-filter" class="control-label">Publisher: </label>
+                    <select
+                        title="select organization"
+                        data-control-type="filter-select"
+                        data-control-action="filter"
+                        data-control-name="organization-filter"
+                        class="form-control full-width"
+                        id="organization-filter"
+                    >
+                        <option value="0" data-path="default" selected>All</option>
+                        {% for org in organizations %}
+                            {% if org.id != 1 %}
+                                <option value="{{ org.id }}" data-path="[data-publisher-id='{{ org }}']">{{ org }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group ">
+                    <label for="observation-filter" class="control-label">Observation Type: </label>
+                    <select
+                        title="select observation type"
+                        data-control-type="filter-select"
+                        data-control-action="filter"
+                        data-control-name="observation-filter"
+                        class="form-control full-width"
+                        id="observation-filter"
+                    >
+                        <option value="0" data-path="default" selected>All</option>
+                        {% for observation in observations %}
+                            <option value="{{ observation }}" data-path="[data-observation='{{ observation }}']">{{ observation }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group ">
+                    <label for="license-filter" class="control-label">License: </label>
+                    <select
+                        title="select license type"
+                        data-control-type="filter-select"
+                        data-control-action="filter"
+                        data-control-name="license-filter"
+                        class="form-control full-width"
+                        id="license-filter"
+                    >
+                        <option value="0" data-path="default" selected>All</option>
+                        {% for license in licenses %}
+                            <option value="{{ license }}" data-path="[data-license='{{ license }}']">{{ license }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div
+                    class="jplist-group checkbox"
+                    data-control-type="checkbox-group-filter"
+                    data-control-action="filter"
+                    data-control-name="private-filter">
+
+                    <label class="form-check-label">
+                        <input
+                            data-path="[data-dataset-private='False']"
+                            id="private-filter"
+                            class="form-check-input"
+                            type="checkbox"
+                            value=""
+                        />
+                        <span class="form-check-sign">
+                            <span class="check"></span>
+                        </span>
+                        Is open dataset
+                    </label>
+                </div>
+
+                <div
+                    class="jplist-group checkbox"
+                    data-control-type="checkbox-group-filter"
+                    data-control-action="filter"
+                    data-control-name="has-time-filter">
+
+                    <label class="form-check-label">
+                        <input
+                            data-path="[data-has-time='True']"
+                            id="has-time-filter"
+                            class="form-check-input"
+                            type="checkbox"
+                            value=""
+                        />
+                        <span class="form-check-sign">
+                            <span class="check"></span>
+                        </span>
+                        Has time information
+                    </label>
+                </div>
+
+                <div
+                    class="jplist-group checkbox"
+                    data-control-type="checkbox-group-filter"
+                    data-control-action="filter"
+                    data-control-name="has-depth-filter">
+
+                    <label class="form-check-label">
+                        <input
+                            data-path="[data-has-depth='True']"
+                            id="has-depth-filter"
+                            class="form-check-input"
+                            type="checkbox"
+                            value=""
+                        />
+                        <span class="form-check-sign">
+                            <span class="check"></span>
+                        </span>
+                        Has depth information
+                    </label>
+                </div>
+
+            </form>
+
+            <div id="dataset-list-section" class="col-sm-10">
+                <div class="selection-body">
+                    {% for dataset in datasets.all %}
+                        <div class="dataset_collapse_div dataset-section col-sm-6">
+                            <div class="dataset-name card " data-dataset-id="{{ dataset.id }}" data-selected data-toggle="modal" data-target="#metadataModal{{ dataset.id }}">
+                              <div class="card-header card-header-text">
+                                <h4 class="card-title dataset-title" title="{{ dataset.title }}">{{ dataset.title }}</h4>
+{#                                <h6 class="card-subtitle mb-2 text-muted dataset-organization">{{ dataset.organization.title }}</h6>#}
+                              </div>
+                              <div class="card-body">
+{#                                <span class="dataset-organization">{{ dataset.organization.title }}</span>#}
+{#                                <span class="dataset-id">{{ dataset.id }}</span>#}
+                                  <div class="col-sm-2">
+                                      <span class="helper" style="display: inline-block"></span>
+                                      <img src="{{ dataset.image_uri}}" style="display: inline-block"/>
+                                  </div>
+                                  <div class="col-sm-10">
+                                      <div class="dataset-publisher" title="{{ dataset.publisher}}">By {{ dataset.publisher }}</div>
+                                      <div class="dataset-description" title="{{ dataset.description}}">{{ dataset.description|truncatechars:150 }}</div>
+
+                                      <div class="dataset-info hidden">
+                                        <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
+                                            <table class="table table-condensed table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="col-sm-4">Property</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr class="dataset-title">
+                                                        <td>Title</td>
+                                                        <td>{{ dataset.title }}</td>
+                                                    </tr>
+    {#                                                <tr class="dataset-organization" data-organization-id="{{ dataset.organization.id }}">#}
+    {#                                                    <td>Organization</td>#}
+    {#                                                    <td>{{ dataset.organization.title }}</td>#}
+    {#                                                </tr>#}
+                                                    <tr class="dataset-organization" data-publisher-id="{{ dataset.publisher }}">
+                                                        <td>Publisher</td>
+                                                        <td>{{ dataset.publisher }}</td>
+                                                    </tr>
+                                                    <tr class="dataset-observation" data-observation="{{ dataset.observation }}">
+                                                        <td>Observation Type</td>
+                                                        <td>{{ dataset.observation }}</td>
+                                                    </tr>
+                                                    <tr class="dataset-license" data-license="{{ dataset.license }}">
+                                                        <td>License</td>
+                                                        <td>{{ dataset.license }}</td>
+                                                    </tr>
+                                                    <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
+                                                        <td>Private</td>
+                                                        <td>{{ dataset.private }}</td>
+                                                    </tr>
+                                                    <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
+
+                                                    </tr>
+                                                    <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
+                                                    </tr>
+                                                    <tr class="dataset-category" data-category='{{ dataset.category }}'>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="dataset-dimensions-div">
+                                            <ul class="list-group">
+                                                {% for dimension in dataset.variables.first.dimensions.all %}
+                                                    <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
+                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        <div class="dataset-variables-div">
+                                            <ul class="list-group">
+                                                {% for variable in dataset.variables.all %}
+                                                    <li class="variable-section list-group-item"
+                                                        data-variable-name="{{ variable.safe_name }}"
+                                                        data-variable-unit="{{ variable.unit }}"
+                                                        data-variable-id="{{ variable.id }}"
+                                                        data-variable-title="{{ variable.title }}"
+                                                        data-selected="False">
+                                                        <span class="variable-id " hidden>{{ variable.id }}</span>
+                                                        <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}
+                                                            (<span class="variable-unit">{{ variable.unit }}</span>)
+                                                            <span class="variable-check-icon pull-right"><i class="fas fa-check"></i></span>
+                                                        </span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                  </div>
+                              </div>
+                              <div class="card-footer text-muted">
+{#                                  <span class="col-sm-10">last updated: 2 day ago</span>#}
+                                  <span class="col-sm-8">Size: {% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}  rows{% endif %}</span>
+                                  <span class="col-sm-4">
+                                      {% if dataset.category != None %}
+                                          <div class="dataset-category"><span class="badge">{{ dataset.category }}</span></div>
+                                      {% endif %}
+                                      {% if dataset.private %}
+                                          <button class="btn btn-danger btn-sm">Private</button>
+                                      {%  else %}
+                                          <button class="btn btn-success btn-sm">Open</button>
+                                      {% endif %}
+                                  </span>
+                              </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+                    <!-- no results control -->
+                <div class="jplist-no-results">No Results Found</div>
+            </div>
+            <!-- panel -->
+            <div class="jplist-panel filter-section col-sm-offset-2 col-sm-10 text-center">
+                <!-- pagination control -->
+                <div
+                     class="jplist-pagination"
+                     data-control-type="pagination"
+                     data-control-name="paging"
+                     data-control-action="paging"
+                     data-items-per-page="10">
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block modal %}
+    {% for dataset in datasets.all %}
+        <div id="metadataModal{{ dataset.id }}" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">
+                            {{ dataset.title }}
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Published by: </strong>{{ dataset.publisher }}</p>
+                        <p>
+                            <strong>Access type: </strong>
+                            {% if dataset.private %}
+                                <button class="btn btn-danger btn-sm">Private</button>
+                            {%  else %}
+                                <button class="btn btn-success btn-sm">Open</button>
+                            {% endif %}
+                        </p>
+                        <p><strong>Category: </strong>{{ dataset.category }}</p>
+                        <p><strong>Description: </strong>{{ dataset.description }}</p>
+                        <p><strong>License: </strong>{{ dataset.license }}</p>
+                        <p><strong>Observation type: </strong>{{ dataset.observation }}</p>
+                        <p><strong>Size: </strong>{% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}  rows{% endif %}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <a type="button" class="btn btn-success btn-sm" href="/datasets/{{ dataset.id }}/">View More</a>
+                        <button class="btn btn-default close-modal-btn btn-sm" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+
+{% block js %}
+    <script>
+        $('document').ready(function(){
+           $('#dataset-filter-section select').select2({ width: '100%', dropdownAutoWidth : true });
+        });
+    </script>
+
+    <script src="{% static "/js/jplist.core.min.js" %}"></script>
+    <script src="{% static "/js/jplist.textbox-filter.min.js" %}"></script>
+    <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.ext-animation.min.js" %}"></script>
+    <script src="{% static "/js/jplist.pagination-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.history-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.bootstrap-sort-dropdown.min.js" %}"></script>
+
+    <script>
+        $('document').ready(function(){
+           //check all jPList javascript options here
+           $('#main-section').jplist({
+              itemsBox: '.selection-body',
+              itemPath: '.dataset-section',
+              panelPath: '.filter-section',
+              noResults: '.jplist-no-results',
+{#              effect: 'fade',#}
+{#              duration: 300,	//animation duration#}
+{#              fps: 24 //frames per second value#}
+           });
+
+           $("#title-filter").attr({"placeholder": "Search for datasets in the BDO platform..."});
+        });
+    </script>
+
+    <script>
+        $("#title-filter").keyup(function(){
+            $("#main-section").attr({"data-on-top": "true"});
+        });
+
+        $(".jplist-reset-btn").click(function(){
+            setTimeout(function(){$('#dataset-filter-section select').trigger("change");}, 100);
+        });
+
+    </script>
+
+
+
+{% endblock %}

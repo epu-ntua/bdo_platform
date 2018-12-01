@@ -1,0 +1,49 @@
+{u'query': u'SELECT * FROM (SELECT sea_floor_potential_temperature.value AS i0_sea_floor_potential_temperature,sea_floor_potential_temperature.time_1 AS i0_time,sea_floor_potential_temperature.lat_2 AS i0_location_latitude,sea_floor_potential_temperature.lon_3 AS i0_location_longitude,temperature.value AS i1_temperature\r\nFROM seabed_temp_1 AS sea_floor_potential_temperature\r\nJOIN votemper_2 AS temperature ON temperature.time_4=sea_floor_potential_temperature.time_1 AND temperature.lat_6=sea_floor_potential_temperature.lat_2 AND temperature.lon_7=sea_floor_potential_temperature.lon_3\r\n) AS SQ1\r\n', u'feat_1': u'i0_sea_floor_potential_temperature', u'labelCol': u'i1_temperature', u'maxIter': u'2'}
+{u'extendable': u'True', u'parameters': [{u'description': u'max number of iterations (>= 0).', u'title': u'Max Iterations', u'default': u'100', u'min': u'0', u'type': u'INT', u'name': u'maxIter'}], u'package': u'pyspark.ml.regression', u'arg_format': u'Feature-Label', u'type': u'Estimator', u'needs_feat_assembling': u'True', u'arguments': [{u'type': u'QUERY', u'name': u'query', u'title': u'Query'}, {u'extendable': u'True', u'type': u'COLUMN', u'name': u'feat_1', u'title': u'Feature'}, {u'extendable': u'False', u'type': u'COLUMN', u'name': u'labelCol', u'title': u'Label'}], u'output': [{u'tolist': u'1', u'description': u'TODO: Provide a description', u'type': u'attribute', u'name': u'coefficients', u'title': u'Coefficient'}, {u'tolist': u'0', u'description': u'TODO: Provide a description', u'type': u'attribute', u'name': u'intercept', u'title': u'Intercept'}], u'from_mlib': u'True', u'class': u'LinearRegression'}
+-------------------------------------------
+executing query
+query succeeded
+fetched data
+1591160
+query:
+(SELECT spark_part_id, i0_sea_floor_potential_temperature, i1_temperature FROM (SELECT row_number() OVER () AS spark_part_id, * FROM (SELECT * FROM (SELECT sea_floor_potential_temperature.value AS i0_sea_floor_potential_temperature,sea_floor_potential_temperature.time_1 AS i0_time,sea_floor_potential_temperature.lat_2 AS i0_location_latitude,sea_floor_potential_temperature.lon_3 AS i0_location_longitude,temperature.value AS i1_temperature
+FROM seabed_temp_1 AS sea_floor_potential_temperature
+JOIN votemper_2 AS temperature ON temperature.time_4=sea_floor_potential_temperature.time_1 AND temperature.lat_6=sea_floor_potential_temperature.lat_2 AND temperature.lon_7=sea_floor_potential_temperature.lon_3
+) AS SQ1
+ LIMIT 100) AS SPARKQ2) AS SPARKQ1) AS SPARKQ0
+dataframe loaded
++-------------+----------------------------------+--------------+
+|spark_part_id|i0_sea_floor_potential_temperature|i1_temperature|
++-------------+----------------------------------+--------------+
+|            1|                           2.36673|       20.4558|
+|            2|                           2.37197|        20.444|
+|            3|                           2.41217|       20.4432|
+|            4|                           2.42648|       20.4504|
+|            5|                           2.44501|       20.4668|
+|            6|                            2.4508|       20.4899|
+|            7|                           2.45897|       20.5093|
+|            8|                           2.46682|       20.5151|
+|            9|                           2.47223|       20.5089|
+|           10|                           2.45891|       20.4931|
+|           11|                            2.4503|       20.4689|
+|           12|                            2.4388|       20.4438|
+|           13|                           2.45336|       20.4094|
+|           14|                           2.45302|       20.3629|
+|           15|                           2.43963|       20.3054|
+|           16|                           2.44092|       20.2351|
+|           17|                           2.44138|       20.1514|
+|           18|                           2.44161|       20.0792|
+|           19|                           2.43935|       20.0268|
+|           20|                             2.435|       19.9345|
++-------------+----------------------------------+--------------+
+only showing top 20 rows
+
+root
+ |-- spark_part_id: long (nullable = true)
+ |-- i0_sea_floor_potential_temperature: double (nullable = true)
+ |-- i1_temperature: double (nullable = true)
+
+Adding the parameters
+2
+[Stage 2:=====>                                                    (7 + 4) / 80][Stage 2:=======>                                                 (10 + 4) / 80][Stage 2:=========>                                               (14 + 4) / 80][Stage 2:===========>                                             (16 + 4) / 80][Stage 2:============>                                            (18 + 4) / 80][Stage 2:===============>                                         (22 + 4) / 80][Stage 2:==================>                                      (26 + 4) / 80][Stage 2:====================>                                    (29 + 4) / 80][Stage 2:========================>                                (34 + 4) / 80][Stage 2:===========================>                             (38 + 4) / 80][Stage 2:=============================>                           (42 + 4) / 80][Stage 2:================================>                        (46 + 4) / 80][Stage 2:====================================>                    (51 + 4) / 80][Stage 2:=======================================>                 (55 + 4) / 80][Stage 2:==========================================>              (59 + 4) / 80][Stage 2:============================================>            (63 + 4) / 80][Stage 2:===============================================>         (67 + 4) / 80][Stage 2:==================================================>      (71 + 4) / 80][Stage 2:=====================================================>   (75 + 4) / 80][Stage 2:========================================================>(79 + 1) / 80]                                                                                [Stage 4:======================================================>  (77 + 3) / 80]                                                                                [Stage 6:========================>                                (35 + 4) / 80][Stage 6:===================================>                     (50 + 4) / 80][Stage 6:===================================================>     (72 + 4) / 80]                                                                                {u'Coefficient': [-0.0094030385729816091], u'Intercept': 19.302031020802076}
+Terminate batch job (Y/N)? 

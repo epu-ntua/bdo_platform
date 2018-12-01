@@ -1,0 +1,25 @@
+.disabled {
+    pointer-events:none;
+    opacity:0.6;
+}
+
+.unclickable{
+    text-decoration: none;
+    pointer-events:none;
+}
+
+.unclickable:hover{
+    cursor: not-allowed;
+}
+
+.viz_item:hover {
+    background-color: #d4dbe9;
+}
+
+.form_field_info{
+    pointer-events: auto!important;
+}
+.form_field_info:hover {
+    cursor: help;
+    color: rgb(45, 45, 45)!important;
+}

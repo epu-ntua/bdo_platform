@@ -48,12 +48,12 @@
 
     <div class="pagination row col-sm-12" style="text-align: center">
         <span class="step-links">
-            {% if data.has_previous %}
+            {% if offset > 0 %}
                 <button class="btn btn-default">
                     {% if query_pk != 0 %}
-                        <a href="?page={{ data.previous_page_number }}&query={{ query_pk }}">previous</a>
+                        <a href="?offset={{ offset|add:neg_step }}&query={{ query_pk }}{% for el in column_choice %}&column_choice[]={{ el }}{% endfor %}">previous</a>
                     {% else %}
-                        <a href="?page={{ data.previous_page_number }}&df={{ df }}&notebook_id={{ notebook_id }}">previous</a>
+                        <a href="?page={{ offset|add:neg_step }}&df={{ df }}&notebook_id={{ notebook_id }}">previous</a>
                     {% endif %}
                 </button>
             {% endif %}
@@ -62,12 +62,12 @@
                 Page {{ data.number }} of {{ data.paginator.num_pages }}.
             </span>
 
-            {% if data.has_next %}
+            {% if  has_next %}
                 <button class="btn btn-default">
                     {% if query_pk != 0 %}
-                        <a href="?page={{ data.next_page_number }}&query={{ query_pk }}">next</a>
+                        <a href="?offset={{ offset|add:pos_step }}&query={{ query_pk }}{% for el in column_choice %}&column_choice[]={{ el }}{% endfor %}">next</a>
                     {% else %}
-                        <a href="?page={{ data.next_page_number }}&df={{ df }}&notebook_id={{ notebook_id }}">next</a>
+                        <a href="?page={{ offset|add:pos_step }}&df={{ df }}&notebook_id={{ notebook_id }}">next</a>
                     {% endif %}
                 </button>
             {% endif %}

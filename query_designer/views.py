@@ -1,32 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
-from bson import ObjectId
 from decimal import Decimal
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
-
-from mongo_client import get_mongo_db, MongoResponse
-
-
 from query_designer.api import *
 from query_designer.lists import AGGREGATES
 from query_designer.query import *
-
 import json
-
-from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
-
+from django.conf import settings
 from visualizer.models import Visualization
 from datetime import datetime
-
-# from query_designer.mongo_api import *
-# from query_designer.mongo_query import *
-
 
 def index(request):
     return render(request, 'query_designer/index.html', {
@@ -45,7 +29,7 @@ def load_query(request, pk):
 
 
 def simplified(request, pk=None):
-    storage_target = 'UBITECH_POSTGRES'
+    storage_target = settings.STORAGE_TARGET
     public_datasets = Dataset.objects.filter(stored_at=storage_target, private=False).exclude(variables=None)
     user_datasets = Dataset.objects.filter(stored_at=storage_target, owner=request.user, private=True).exclude(variables=None)
 
@@ -62,10 +46,53 @@ def simplified(request, pk=None):
     # combine user and public datasets to show to the user
     user_datasets = user_datasets | public_datasets
     dataset_list = public_datasets | user_datasets | user_with_access_datasets
+    organization_list = Organization.objects.all()
+    variable_list = Variable.objects.all()
+
 
     return render(request, 'query_designer/simplified.html', {
+        'organizations' : organization_list,
+        'variables' : variable_list,
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
+        'temp_queries_count': TempQuery.objects.last().id,
+        'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
+        'AGGREGATES': AGGREGATES,
+    })
+
+
+def clean(request, pk=None):
+    storage_target = settings.STORAGE_TARGET
+    public_datasets = Dataset.objects.filter(stored_at=storage_target, private=False).exclude(variables=None)
+    user_datasets = Dataset.objects.filter(stored_at=storage_target, owner=request.user, private=True).exclude(variables=None)
+
+    user_with_access_datasets_list = []
+    if request.user.is_authenticated():
+        for access in DatasetAccess.objects.filter(user=request.user, valid=True):
+            s = access.start
+            e = access.end
+            if datetime(s.year, s.month, s.day) < datetime.now() < datetime(e.year, e.month, e.day):
+                user_with_access_datasets_list.append(access.dataset.id)
+
+    user_with_access_datasets = Dataset.objects.filter(id__in=user_with_access_datasets_list)
+
+    # combine user and public datasets to show to the user
+    user_datasets = user_datasets | public_datasets
+    dataset_list = public_datasets | user_datasets | user_with_access_datasets
+    organization_list = list(set([dataset.organization for dataset in dataset_list]))
+    publisher_list = list(set([dataset.publisher for dataset in dataset_list]))
+    # for dataset in dataset_list:
+    #     if dataset.organization.title not in organization_list:
+    #         organization_list.append(dataset.organization.title)
+    variable_list = Variable.objects.all()
+
+    return render(request, 'query_designer/clean.html', {
+        'organizations': organization_list,
+        'publishers': publisher_list,
+        'variables': variable_list,
+        'datasets': dataset_list,
+        'dimensions': Dimension.objects.all(),
+        'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
         'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
         'AGGREGATES': AGGREGATES,
     })
@@ -251,38 +278,17 @@ def load_to_analysis(request):
 def get_field_policy(user):
     field_policy = {
         'categories': [],
-        'defaultAggregate': 'AVG',
-        'valueFields': [],
+        'variables': [],
         'aggregates': [],
-        'incrStep': 1,
-        'min': 1,
-        'max': 4
     }
 
-    # for dimension in Dimension.objects.all().distinct('name').order_by('name'):
-    #     field_policy['categories'].append({
-    #         'title': '%s' % (dimension.title),
-    #         'value': dimension.pk,
-    #         'type': dimension.name.replace(' ', '_'),
-    #         'forVariable': dimension.variable.pk,
-    #     })
-
-    """
-    for formula in Formula.objects.filter(created_by=user, is_valid=True):
-        field_policy['valueFields'].append({
-            'value': formula.internal_value,
-            'title': formula.name,
-        })
-    """
-
     for variable in Variable.objects.all():
-        field_policy['valueFields'].append({
-            'value': str(variable.pk)+"_pk_"+variable.safe_name,
+        field_policy['variables'].append({
+            'name': variable.safe_name,
             'title': variable.title,
-            'type': variable.pk,
+            'id': variable.pk,
         })
 
-    # pass aggregates
     for aggregate in AGGREGATES:
         field_policy['aggregates'].append({
             'title': aggregate[1],
