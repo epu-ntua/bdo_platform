@@ -2229,11 +2229,12 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
                 s['exclude'] = False
             elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name'].encode('ascii')
+                s['groupBy'] = True
                 if not existing_temp_res:
-                    s['groupBy'] = True
                     s['aggregate'] = temporal_resolution
                     min_period = temporal_resolution
                 else:
+                    s['aggregate'] = ''
                     min_period = s['aggregate']
                 s['exclude'] = False
                 x_flag = True
