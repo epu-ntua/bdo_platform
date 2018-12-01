@@ -189,6 +189,7 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
                 groups.append(c_name)
                 prejoin_groups.append('%s(%s)' % (s.get('aggregate'), selects[s['name']]['column']))
         data_table_names.append(v_obj.data_table_name)
+        groups = list(set(groups))
     return c_name, v_obj, data_table_names
 
 
