@@ -30,7 +30,7 @@ def create_new_service(request):
         saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
     else:
         saved_queries = []
-    available_viz = Visualization.objects.filter(hidden=False)
+    available_viz = Visualization.objects.filter(hidden=False).order_by('order')
     available_templates = ServiceTemplate.objects.all()
     if settings.TEST_SERVICES:
         service = Service.objects.get(pk=89)

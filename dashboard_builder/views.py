@@ -51,7 +51,7 @@ def build_dynamic_dashboard(request):
             'saved_queries': saved_queries,
             'available_viz': Visualization.objects.filter(hidden=False).order_by('-type','-title'),
             'form_class': form_class,
-            'components': Visualization.objects.all().order_by('id'),
+            'components': Visualization.objects.all().order_by('order'),
             'form': form_class,
             'toCreate': toCreate,
             'variables_list': variables_list,
