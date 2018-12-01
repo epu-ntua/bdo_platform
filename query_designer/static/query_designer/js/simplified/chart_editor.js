@@ -264,6 +264,7 @@ $(document).ready(function () {
 
 
     $(".viz_item").click(function () {
+        $('.popover').hide();
         var component_id = $(this).attr('data-viz-id');
         var component_type = $(this).attr('data-viz-type');
         var component_selector = 'li[data-viz-id="' + component_id + '"]';
