@@ -400,7 +400,7 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
-    doc['limit'] = marker_limit
+    doc['limit'] = 1000
 
     query.document = doc
     return query
