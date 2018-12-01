@@ -318,6 +318,8 @@ def build_from_clause(selects):
 def build_join_clause(c_name, selects, self):
     join_clause = ''
     all_joins_for_check = []
+    tables_in_query = set()
+    tables_in_query.add(selects[self.document['from'][0]['select'][0]['name']]['table'])
     for _from in self.document['from'][1:]:
         joins = []
         joins_for_check = []
@@ -355,8 +357,9 @@ def build_join_clause(c_name, selects, self):
         print "LOOK FOR JOIN"
         print selects
         print _from['name']
-        if selects[_from['select'][0]['name']]['table'] != \
-                selects[self.document['from'][0]['select'][0]['name']]['table']:
+        print tables_in_query
+        if selects[_from['select'][0]['name']]['table'] not in tables_in_query:
+            tables_in_query.add(selects[_from['select'][0]['name']]['table'])
             print "WE HAVE JOIN"
             join_clause += 'JOIN %s ON %s\n' % \
                            (selects[_from['select'][0]['name']]['table'],
