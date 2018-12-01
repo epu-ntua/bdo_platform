@@ -13,6 +13,7 @@ class Visualization(Model):
     icon = ImageField(upload_to='visualizer/static/visualizer/img/',
                       default='visualizer/static/visualizer/img/default-img.jpg')
     type = CharField(max_length=512, default='')
+    order = IntegerField(default=999)
     # info has the following structure
     """
         {
