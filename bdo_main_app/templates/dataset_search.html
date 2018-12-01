@@ -361,7 +361,7 @@
                                   <div class="col-sm-10">
                                       <div class="dataset-publisher" title="{{ dataset.publisher}}">By {{ dataset.publisher }}</div>
                                       <div class="dataset-description" title="{{ dataset.description}}">{{ dataset.description|truncatechars:150 }}</div>
-                                      <div class="dataset-category"><span class="badge">{{ dataset.category }}</span></div>
+
                                       <div class="dataset-info hidden">
                                         <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
                                             <table class="table table-condensed table-striped">
@@ -438,8 +438,11 @@
                               </div>
                               <div class="card-footer text-muted">
 {#                                  <span class="col-sm-10">last updated: 2 day ago</span>#}
-                                  <span class="col-sm-10">Size: {% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}  rows{% endif %}</span>
-                                  <span class="col-sm-2">
+                                  <span class="col-sm-8">Size: {% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}  rows{% endif %}</span>
+                                  <span class="col-sm-4">
+                                      {% if dataset.category != None %}
+                                          <div class="dataset-category"><span class="badge">{{ dataset.category }}</span></div>
+                                      {% endif %}
                                       {% if dataset.private %}
                                           <button class="btn btn-danger btn-sm">Private</button>
                                       {%  else %}
