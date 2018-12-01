@@ -2689,6 +2689,7 @@ def map_markers_in_time_hcmr(request):
         period = 'PT2H'
 
     features = convert_unicode_json(features)
+    folium.LayerControl().add_to(m)
 
     m.save('templates/map.html')
     f = open('templates/map.html', 'r')
