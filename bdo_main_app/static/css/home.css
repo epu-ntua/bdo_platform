@@ -354,7 +354,7 @@
 /*}*/
 
 #select-data-modal  #dataset-filter-section {
-    height: 100%;
+    /*height: 100%;*/
     background-color: #1c567e;
     box-shadow: 2px 2px 14px 2px #b9b9b9;
 }
