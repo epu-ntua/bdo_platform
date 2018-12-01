@@ -591,7 +591,7 @@ $(function () {
                     a: aName,
                     op: filter.op,
                     // b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
-                    b: filter.b
+                    b: parseFloat(filter.b)
                 };
                 if (exprType === 'CUSTOM') {
                     var mapIndex = idx + 1;
