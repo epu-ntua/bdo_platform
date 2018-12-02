@@ -206,6 +206,13 @@
                                                         data-variable-title="{{ variable.title }}"
                                                         data-selected="False">
                                                         <span class="variable-id " hidden>{{ variable.id }}</span>
+                                                        <ul class="variable-dimensions" hidden>
+                                                            {% for dimension in variable.dimensions.all %}
+                                                                <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
+                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
                                                         <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}
                                                             (<span class="variable-unit">{{ variable.unit }}</span>)
                                                             <span class="variable-check-icon pull-right"><i class="fas fa-check"></i></span>
