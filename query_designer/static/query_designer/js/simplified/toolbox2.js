@@ -514,7 +514,7 @@ $(function () {
 
         // *** FILTERS ***
         getFilterArray: function () {
-            return QueryToolbox.filters;
+            // return QueryToolbox.filters;
             var filters = [];
             $.each(Object.keys(QueryToolbox.filters), function (fidx, fkey) {
                 filters.push(QueryToolbox.filters[fkey])
@@ -543,6 +543,71 @@ $(function () {
             // gather individual filters
             var filters = this.getFilterArray();
 
+
+            // if (startdate !== null){
+            //     if (time_dim_id !== null) {
+            //         filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
+            //     }
+            // }
+            // if (enddate !== null){
+            //     if (time_dim_id !== null) {
+            //         filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
+            //     }
+            // }
+
+            var filterTree = {};
+
+            var expression = $('#filters-expr-input').val();
+            var exprType = $('#chart-filters > .filter-expr').attr('data-expr_type');
+            var customExpressionMap = {};
+
+            // $.each(Object.keys(QueryToolbox.filters), function (idx, fkey) {
+            $.each(filters, function (fdx, filter) {
+                    // var filter = QueryToolbox.filters[fkey];
+                    var aName;
+                    $.each(queryDocument.from, function (idx, _from) {
+                        $.each(_from.select, function (jdx, attr) {
+                            if (attr.type === "VALUE") {
+                                // if (String(attr.name).split(new RegExp("i[0-9]+_"))[1] === filter.a) {
+                                if ((filter.a_type === "variable") && (parseInt(_from.type) === parseInt(filter.a))) {
+                                    aName = attr.name;
+                                }
+                            }
+                            else {
+                                if ((filter.a_type === "dimension") && (parseInt(attr.type) === parseInt(filter.a))) {
+                                    aName = attr.name;
+                                }
+                            }
+                        })
+                    });
+                    var newFilter = {
+                        a: aName,
+                        op: filter.op,
+                        // b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
+                        b: parseFloat(filter.b)
+                    };
+                    if (exprType === 'CUSTOM') {
+                        var mapIndex = fdx + 1;
+                        customExpressionMap["F" + mapIndex] = newFilter;
+                    } else {
+                        if (fdx === 0) {
+                            filterTree = newFilter;
+                        } else {
+                            var exprOperator = (exprType === 'ALL_OR') ? 'OR' : 'AND';
+                            filterTree = {
+                                a: newFilter,
+                                op: exprOperator,
+                                b: JSON.parse(JSON.stringify(filterTree))
+                            };
+                        }
+                    }
+            });
+
+
+            if (exprType === 'CUSTOM') {
+                filterTree = buildCustomFilterFromExpressionMapAndExpression(customExpressionMap,expression);
+            }
+
             // Gather temporal filters
             var time_dim_id = null;
             $.each(QueryToolbox.variables, function (vidx, variable) {
@@ -552,67 +617,18 @@ $(function () {
                     }
                 });
             });
-            if (startdate !== null){
-                if (time_dim_id !== null) {
-                    filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
-                }
-            }
-            if (enddate !== null){
-                if (time_dim_id !== null) {
-                    filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
-                }
-            }
-
-            var filterTree = {};
-
-            var expression = $('#filters-expr-input').val();
-            var exprType = $('#chart-filters > .filter-expr').attr('data-expr_type');
-            var customExpressionMap = {};
-
-            $.each(Object.keys(QueryToolbox.filters), function (idx, fkey) {
-                var filter = QueryToolbox.filters[fkey];
-                var aName;
-                $.each(queryDocument.from, function (idx, _from) {
-                    $.each(_from.select, function (jdx, attr) {
-                        if (attr.type === "VALUE") {
-                            // if (String(attr.name).split(new RegExp("i[0-9]+_"))[1] === filter.a) {
-                            if ((filter.a_type === "variable") && (parseInt(_from.type) === parseInt(filter.a))) {
-                                aName = attr.name;
+            var time_name;
+            $.each(queryDocument.from, function (idx, _from) {
+                $.each(_from.select, function (jdx, attr) {
+                    if (attr.type !== "VALUE") {
+                        if (time_dim_id !== null) {
+                            if (parseInt(attr.type) === parseInt(time_dim_id)) {
+                                time_name = attr.name;
                             }
                         }
-                        else {
-                            if ((filter.a_type === "dimension") && (parseInt(attr.type) === parseInt(filter.a))) {
-                                aName = attr.name;
-                            }
-                        }
-                    })
-                });
-                var newFilter = {
-                    a: aName,
-                    op: filter.op,
-                    // b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
-                    b: parseFloat(filter.b)
-                };
-                if (exprType === 'CUSTOM') {
-                    var mapIndex = idx + 1;
-                    customExpressionMap["F" + mapIndex] = newFilter;
-                } else {
-                    if (idx === 0) {
-                        filterTree = newFilter;
-                    } else {
-                        var exprOperator = (exprType === 'ALL_OR') ? 'OR' : 'AND';
-                        filterTree = {
-                            a: newFilter,
-                            op: exprOperator,
-                            b: JSON.parse(JSON.stringify(filterTree))
-                        };
                     }
-                }
+                })
             });
-
-            if (exprType === 'CUSTOM') {
-                filterTree = buildCustomFilterFromExpressionMapAndExpression(customExpressionMap,expression);
-            }
 
             // Gather spatial filters
             var latitude_dim_id = null;
@@ -629,12 +645,42 @@ $(function () {
             });
             if (startdate !== null){
                 if (time_dim_id !== null) {
-                    filters.push({a: time_dim_id, op: 'gte', b: startdate.toString()});
+                    newFilter = {
+                        a: time_name,
+                        op: 'gte_time',
+                        b: "'" + startdate.toString() + "'"
+                    };
+                    if (Object.keys(filterTree).length === 0) {
+                        filterTree = newFilter;
+                    }
+                    else {
+                        filterTree = {
+                            a: newFilter,
+                            op: 'AND',
+                            b: JSON.parse(JSON.stringify(filterTree))
+                        };
+                    }
                 }
             }
+
             if (enddate !== null){
                 if (time_dim_id !== null) {
-                    filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
+                    // filters.push({a: time_dim_id, op: 'lte', b: enddate.toString()});
+                    newFilter = {
+                        a: time_name,
+                        op: 'lte_time',
+                        b: "'" + enddate.toString() + "'"
+                    };
+                    if (Object.keys(filterTree).length === 0) {
+                        filterTree = newFilter;
+                    }
+                    else {
+                        filterTree = {
+                            a: newFilter,
+                            op: 'AND',
+                            b: JSON.parse(JSON.stringify(filterTree))
+                        };
+                    }
                 }
             }
 

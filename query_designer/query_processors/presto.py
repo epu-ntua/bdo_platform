@@ -385,7 +385,7 @@ def build_where_clause(self):
     if not filters:
         where_clause = ''
     else:
-        where_clause = self.process_filters(filters)
+        where_clause = self.process_filters(filters, 'presto')
 
     if where_clause:
         where_clause = 'WHERE ' + where_clause + ' \n'
