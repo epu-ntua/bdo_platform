@@ -1,0 +1,114 @@
+#select-data-modal table{
+    table-layout: fixed;
+    width: 100%;
+}
+
+.variable-title{
+    word-wrap:break-word;
+}
+
+.dataset-title{
+    cursor: pointer;
+}
+
+.modal-content {
+    max-height: 75vh;
+    overflow: auto;
+    background-color: red;
+}
+
+#data-filter-search {
+    width: 100%;
+}
+
+.dataset-info {
+    font-weight: 600;
+}
+
+.dataset-metadata {
+    font-weight: 300;
+}
+
+.dataset-metadata-btn {
+    color: #c5c5c5;
+    cursor: pointer;
+}
+
+.dataset-name {
+    color: #ff9800;
+}
+
+.dataset-section {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.variable-section {
+    margin: 0 0 0 20px;
+    padding: 5px;
+    border: 1px solid #fff;
+    cursor: pointer;
+    height: 40px;
+    /* min-width: 100%; */
+}
+
+.variable-section:not(:last-of-type) {
+    border-bottom: 1px solid #eee;
+}
+
+.variable-section:hover,
+.variable-section.selected {
+    background: #e9f0ff;
+}
+
+.variable-section.selected {
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
+}
+
+.variable-section.selected:first-of-type {
+    border-top: 1px solid #eee;
+}
+
+.variable-section.selected:last-of-type {
+    border-bottom: 1px solid #eee;
+}
+
+.variable-section .variable-title {
+    color: #999;
+    /* width: 210px; */
+    width: 35%;
+}
+
+.selection-body {
+    height: 50vh;
+    overflow-y: scroll;
+    padding-right: 20px;
+}
+
+.selection-confirm {
+    height: 64px;
+}
+
+.selection-confirm > div {
+    border-top: 1px solid #cccc;
+    margin-top: 20px;
+    padding-top: 10px;
+}
+
+.selection-confirm label {
+    width: 70px;
+}
+
+.selection-confirm .selection-group-by {
+    margin: 10px 0;
+}
+
+.selection-confirm #selection-aggregate,
+.selection-confirm .select2-container--default .select2-selection--multiple {
+    border: 1px solid #ccc !important;
+}
+
+.selection-confirm .select2-container {
+    width: 300px !important;
+}

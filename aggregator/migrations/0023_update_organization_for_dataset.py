@@ -12,7 +12,7 @@ def forwards(_, __):
 
 def update_organization_for_dataset():
     query = build_query()
-    execute_query(query)
+    #execute_query(query)
 
 
 def build_query():
