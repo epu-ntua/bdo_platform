@@ -148,40 +148,154 @@ function show_hide_results(){
         '<div id="service_args_container"></div>\n' +
         '<button class="btn-sm" id="submitServiceConfig">Submit</button>\n' +
         '<div id="service_result_container"></div>\n');
-	css_editor.setValue("p { color: #30526a; }\n" +
-                        "iframe {width: 100%; height:300px;}");
-	js_editor.setValue("<script type='text/javascript'>" +
+	html_editor.setValue('' +
+        '<div id="service_container" class="text-center">\n' +
+        '    <div id="service_config_container" class="text-center">\n' +
+        '        <button type="button" id="argsCollapseBtn" class="btn btn-md btn-primary" data-toggle="collapse" data-target="#serviceConfigCollapse">\n' +
+        '          Configure\n' +
+        '        </button>\n' +
+        '        <div id="serviceConfigCollapse" class="collapse in" >\n' +
+        '            <div class="well">\n' +
+        '                <h4 class="modal-title">Please give your input</h4>\n' +
+        '                <form id="service_args_container" class="modal-body" style="padding: 0 25%">\n' +
+        '\n' +
+        '                </form>\n' +
+        '                <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#serviceConfigCollapse" id="submitServiceConfig">Submit</button>\n' +
+        '                <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#serviceConfigCollapse">Cancel</button>\n' +
+        '            </div>\n' +
+        '        </div>\n' +
+        '    </div>\n' +
+        '\n' +
+        '    <div id="service_result_container" class="text-center">\n' +
+        '        <div class="loadingDiv">\n' +
+        '            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>\n' +
+        '        </div>\n' +
+        '   </div>\n' +
+        '</div><div id="service_container" class="text-center">\n' +
+        '    <div id="service_config_container" class="text-center">\n' +
+        '        <button type="button" id="argsCollapseBtn" class="btn btn-md btn-primary" data-toggle="collapse" data-target="#serviceConfigCollapse">\n' +
+        '          Configure\n' +
+        '        </button>\n' +
+        '        <div id="serviceConfigCollapse" class="collapse in" >\n' +
+        '            <div class="well">\n' +
+        '                <h4 class="modal-title">Please give your input</h4>\n' +
+        '                <form id="service_args_container" class="modal-body" style="padding: 0 25%">\n' +
+        '\n' +
+        '                </form>\n' +
+        '                <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#serviceConfigCollapse" id="submitServiceConfig">Submit</button>\n' +
+        '                <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#serviceConfigCollapse">Cancel</button>\n' +
+        '            </div>\n' +
+        '        </div>\n' +
+        '    </div>\n' +
+        '\n' +
+        '    <div id="service_result_container" class="text-center">\n' +
+        '        <div class="loadingDiv">\n' +
+        '            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>\n' +
+        '        </div>\n' +
+        '        <!-- ADD YOUR VISUALISATIONS HERE --> \n' +
+        '   </div>\n' +
+        '</div>\n');
+
+	// css_editor.setValue("p { color: #30526a; }\n" +
+     //                    "iframe {width: 100%; height:300px;}");
+	css_editor.setValue(""+
+        "@media screen and (min-width: 768px){.modal:before {display: inline-block;vertical-align: middle;content: \" \";height: 100%;}}\n" +
+        ".modal-backdrop {z-index:-1;}\n" +
+        "#service_result_container{ position: relative; min-height: 500px; width: 100%; background-color: white; display: none;}\n" +
+        ".loadingDiv, .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}\n" +
+        ".viz_container{position: relative; height: 400px; width: 100%; margin: 1% 0;}\n" +
+        "#service_result_container iframe{border: none; box-shadow: 0 0 3px 0px #a28e8eb0;}\n" +
+        "th{text-align: center; font-weight: 600 !important;}\n" +
+        "#service_result_container .nav>li {display: inline-block !important;width: 300px !important; float: none !important;}");
+
+	// js_editor.setValue("<script type='text/javascript'>" +
+     //    "// Get form fields of all the service arguments\n" +
+     //    "$(document).ready(function () {\n" +
+     //    "   $.ajax({\n" +
+     //    "       url: '/service_builder/load_service_args_form_fields/',\n" +
+     //    "           data: {\n" +
+     //    "           service_id: get_service_id()\n" +
+     //    "       },\n" +
+     //    "       type: 'GET',\n" +
+     //    "       success: function(form_fields){\n" +
+     //    "           $('#service_args_container').html(form_fields);\n" +
+     //    "       }\n" +
+     //    "   });\n" +
+     //    "});\n" +
+     //    " // Submit the service arguments \n" +
+     //    "$(\"#submitServiceConfig\").click(function (element) { \n" +
+     //    "   $.ajax({ \n" +
+     //    "       url: '/service_builder/service/'+get_service_id()+'/execute/', \n" +
+     //    "       data: $('#service_args_container').serialize(), \n" +
+     //    "       type: 'GET', \n" +
+     //    "       success: function(result){ \n" +
+     //    "           $(\"#service_result_container\").html( result );\n" +
+     //    "       },\n" +
+     //    "        error: function () {\n" +
+     //    "            alert('An error occured');\n" +
+     //    "       }\n" +
+     //    "   });\n" +
+     //    "});\n" +
+     //    "</script>\n" +
+     //    "\n");
+
+	js_editor.setValue(""+
+        "// <script type=\"text/javascript\">\n" +
         "// Get form fields of all the service arguments\n" +
         "$(document).ready(function () {\n" +
-        "   $.ajax({\n" +
-        "       url: '/service_builder/load_service_args_form_fields/',\n" +
-        "           data: {\n" +
-        "           service_id: get_service_id()\n" +
-        "       },\n" +
-        "       type: 'GET',\n" +
-        "       success: function(form_fields){\n" +
-        "           $('#service_args_container').html(form_fields);\n" +
-        "       }\n" +
-        "   });\n" +
+        "  $.ajax({\n" +
+        "        url: '/service_builder/load_service_args_form_fields/',\n" +
+        "        data: {\n" +
+        "            service_id: get_service_id()\n" +
+        "        },\n" +
+        "        type: 'GET',\n" +
+        "        success: function(form_fields){\n" +
+        "            $(\"#service_args_container\").html(form_fields);\n" +
+        "        }\n" +
+        "    });\n" +
         "});\n" +
-        " // Submit the service arguments \n" +
-        "$(\"#submitServiceConfig\").click(function (element) { \n" +
-        "   $.ajax({ \n" +
-        "       url: '/service_builder/service/'+get_service_id()+'/execute/', \n" +
-        "       data: $('#service_args_container').serialize(), \n" +
-        "       type: 'GET', \n" +
-        "       success: function(result){ \n" +
-        "           $(\"#service_result_container\").html( result );\n" +
-        "       },\n" +
+        "\n" +
+        "\n" +
+        "\n" +
+        "\n" +
+        "\n" +
+        "// Submit the service arguments\n" +
+        "$(\"#submitServiceConfig\").click(function (element) {\n" +
+        "  $.ajax({\n" +
+        "        url: '/service_builder/service/'+get_service_id()+'/execute/',\n" +
+        "        data: $('#service_args_container').serialize(),\n" +
+        "        type: 'GET',\n" +
+        "        beforeSend: function(){\n" +
+        "            $(\"#service_result_container\").show();\n" +
+        "            $(\".loadingDiv\").css( \"display\", \"block\" );\n" +
+        "        },\n" +
+        "        success: function(result){\n" +
+        "            $(\"#service_result_container\").html( result );\n" +
+        "            // $(\"iframe\").each(function () {\n" +
+        "            //     var src = $( this ).attr('data-src');\n" +
+        "            //     jQuery.each(result['query_mapping'], function(query, temp_query) {\n" +
+        "            //       src = src.replace(new RegExp(\"query=\"+query+\"&\"), \"query=\"+temp_query+\"&\");\n" +
+        "            //       src = src.replace(new RegExp(\"query=\"+query+\"$\"), \"query=\"+temp_query);\n" +
+        "            //     });\n" +
+        "            //     $( this ).attr({'src': src});\n" +
+        "            // });\n" +
+        "            $(\".loadingDiv\").css( \"display\", \"none\" );\n" +
+        "            $(\".loadingFrame\").css( \"display\", \"block\" );\n" +
+        "            $(\".viz_container iframe\").on( \"load\", function(){\n" +
+        "                $(this).siblings(\".loadingFrame\").css( \"display\", \"none\" )\n" +
+        "            });\n" +
+        "\n" +
+        "        },\n" +
         "        error: function () {\n" +
+        "            $(\".loadingDiv\").css( \"display\", \"none\" );\n" +
+        "            $(\"#service_result_container\").hide();\n" +
         "            alert('An error occured');\n" +
-        "       }\n" +
-        "   });\n" +
+        "        }\n" +
+        "    });\n" +
         "});\n" +
-        "</script>\n" +
-        "\n");
+        "    // </script>");
 
-
+        // $("#preview_btn").click();
 
 // ***************	END CODE MIRROR  ***************
 
