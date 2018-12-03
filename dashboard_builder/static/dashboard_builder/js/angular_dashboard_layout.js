@@ -129,6 +129,10 @@ function pageScroll() {
                     noteData: "",
                     title: tempTitle
                 });
+                // setTimeout(function () {
+                //     console.log($scope);
+                // } ,2000);
+                $scope.$apply();
             };
 
             $('#new_widget_btn').click(makeWidget);
