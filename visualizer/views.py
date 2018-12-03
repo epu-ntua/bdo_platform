@@ -2233,6 +2233,28 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
     query.document = doc
     return query
 
+
+def load_modify_query_aggregate(query_pk, var, agg_function):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'] == var):
+                s['groupBy'] = False
+                s['exclude'] = False
+                s['aggregate'] = agg_function
+            else:
+                s['aggregate'] = ''
+                s['groupBy'] = False
+                s['exclude'] = True
+        doc['orderings'] = []
+
+    query.document = doc
+    return query
+
+
+
 def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, ordering = True):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
@@ -2889,7 +2911,7 @@ def get_aggregate_value(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, '', [variable], agg_function, False)
+            query = load_modify_query_aggregate(query_pk, variable, agg_function)
             value, unit = get_aggregate_query_data(query, variable)
         else:
             value, unit, var_list = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
