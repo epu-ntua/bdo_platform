@@ -239,15 +239,18 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['groupBy'] = True
-                s['aggregate'] = 'round0'
+                s['aggregate'] = 'round2'
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = 'round0'
+                s['aggregate'] = 'round2'
                 s['groupBy'] = True
                 lon_flag = True
+            elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
+                s['aggregate'] = 'MAX'
             else:
-                s['exclude'] = True
+                s['aggregate'] = 'AVG'
+                # s['exclude'] = True
 
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
