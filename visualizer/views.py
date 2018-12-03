@@ -2553,6 +2553,12 @@ def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
             color = 'red'
     return color
 
+def color_point_oil_spill2(red_points_list, point):
+    if point in red_points_list:
+        return 'red'
+    else:
+        return 'lightblue'
+
 def map_routes(m):
     routes_query = """SELECT centroids_ci_1.latitude, centroids_ci_1.longitude,centroids_ci_1.route FROM centroids_ci_1  ORDER BY centroids_ci_1.route,centroids_ci_1.latitude, centroids_ci_1.longitude """
     cursor = connections['UBITECH_POSTGRES'].cursor()
@@ -2659,10 +2665,14 @@ def map_markers_in_time_hcmr(request):
         if livy:
             data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
         else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+            # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            # data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            data = []
+            with open('visualizer/static/visualizer/files/hcmr_data.json') as json_data:
+                data = json.load(json_data)
+                print(data[:3])
         min_lat = 90
         max_lat = -90
         min_lon = 180
@@ -2670,14 +2680,27 @@ def map_markers_in_time_hcmr(request):
         for d in data:
             min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
         m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
-        filtered_polygons = []
-        simulation_frame = Polygon([(min_lat, min_lon), (max_lat,min_lon), (max_lat,max_lon),(min_lat,max_lon)])
-        count_inters = 0
-        for pol in shapely_polygons:
-            if simulation_frame.intersects(pol):
-                filtered_polygons.append(pol)
-                count_inters = count_inters + 1
-        print 'intersects:' + str(count_inters)
+        # filtered_polygons = []
+        # simulation_frame = Polygon([(min_lat, min_lon), (max_lat,min_lon), (max_lat,max_lon),(min_lat,max_lon)])
+        # count_inters = 0
+        # for pol in shapely_polygons:
+        #     if simulation_frame.intersects(pol):
+        #         filtered_polygons.append(pol)
+        #         count_inters = count_inters + 1
+        # print 'intersects:' + str(count_inters)
+        red_points = []
+        with open('visualizer/static/visualizer/files/red_points.txt', 'r') as file:
+            line = file.readline()
+            while line:
+                red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
+                line = file.readline()
+            file.close()
+        # red_points = []
+        # with open('red_points.txt', 'r') as file:
+        #     line = file.readline()
+        #     red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
+        #     file.close()
+
         features = [
             {
                 "type": "Feature",
@@ -2688,13 +2711,16 @@ def map_markers_in_time_hcmr(request):
                 "properties": {
                     "times": [str(d[order_var])],
                     "style": {
-                        "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
+                        # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
+                        "color": color_point_oil_spill2(red_points, (d[lat_col], d[lon_col])),
                         # "color": "red"
                     }
                 }
             }
             for d in data
         ]
+        # print data
+
         tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
         period = 'PT2H'
 
