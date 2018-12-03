@@ -193,7 +193,12 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
         # doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
-        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+        found = False
+        for ord in doc['orderings']:
+            if ord['name'] == order_var:
+                found = True
+        if not found:
+            doc['orderings'].append({'name': order_var, 'type': 'ASC'})
 
     if not platform_flag:
         raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
