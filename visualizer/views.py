@@ -249,8 +249,10 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
                 s['groupBy'] = True
                 lon_flag = True
             elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'MAX'
+                # s['exclude'] = True
+                s['groupBy'] = False
+                # if s['aggregate'] == '':
+                s['aggregate'] = 'MAX'
             else:
                 s['aggregate'] = 'AVG'
                 # s['exclude'] = True
