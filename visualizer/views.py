@@ -239,15 +239,18 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['groupBy'] = True
-                s['aggregate'] = 'round2'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'round2'
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = 'round2'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'round2'
                 s['groupBy'] = True
                 lon_flag = True
             elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
-                s['aggregate'] = 'MAX'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'MAX'
             else:
                 s['aggregate'] = 'AVG'
                 # s['exclude'] = True
