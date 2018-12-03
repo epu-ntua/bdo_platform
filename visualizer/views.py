@@ -391,8 +391,8 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 lon_flag = True
-            else:
-                s['exclude'] = True
+            # else:
+            #     s['exclude'] = True
 
     if not heat_col_flag:
         if heat_col != 'heatmap_frequency':
