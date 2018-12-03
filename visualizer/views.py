@@ -2220,6 +2220,8 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
                 s['exclude'] = False
                 x_flag = True
             else:
+                s['aggregate'] = ''
+                s['groupBy'] = False
                 s['exclude'] = True
     if ordering == True:
         if x_flag == True:
@@ -2247,11 +2249,13 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
                     s['aggregate'] = temporal_resolution
                     min_period = temporal_resolution
                 else:
-                    s['aggregate'] = ''
+                    # s['aggregate'] = ''
                     min_period = s['aggregate']
                 s['exclude'] = False
                 x_flag = True
             else:
+                s['aggregate'] = ''
+                s['groupBy'] = False
                 s['exclude'] = True
     if ordering == True:
         if x_flag == True:
