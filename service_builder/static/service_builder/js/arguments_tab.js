@@ -26,31 +26,31 @@ $(document).ready(function(){
         $("#alg_select_options").val('{"options":[]}')
         populate_select("#alg_vartype");
         $('.popover-content #alg_vartype').on('change', function() {
-                        selected = true;
-                        var new_type = $("#alg_vartype option:selected").val();
-                        if(new_type == 'SELECT') {
-                            $("#alg_select_options").prop('disabled', true);
-                            $("#alg_vardefault").val('');
-                            $("#hidden_select_options").show();
-                            $("#arg_def_val_div").hide();
-                            $("#select_option_button").on('click',function(){
-                                var sel_val = $("#select_value_input").val();
-                                var sel_text = $("#select_text_input").val();
-                                var txt_area_new =select_json_creator(sel_val,sel_text,$("#alg_select_options"))
-                                $("#alg_select_options").val(txt_area_new)
-                                $("#select_value_input").val('');
-                                $("#select_text_input").val('');
-                                populate_option_select_json($("#alg_select_options_sel"),$("#alg_select_options").val());
+            selected = true;
+            var new_type = $("#alg_vartype option:selected").val();
+            if(new_type == 'SELECT') {
+                $("#alg_select_options").prop('disabled', true);
+                $("#alg_vardefault").val('');
+                $("#hidden_select_options").show();
+                $("#arg_def_val_div").hide();
+                $("#select_option_button").on('click',function(){
+                    var sel_val = $("#select_value_input").val();
+                    var sel_text = $("#select_text_input").val();
+                    var txt_area_new =select_json_creator(sel_val,sel_text,$("#alg_select_options"))
+                    $("#alg_select_options").val(txt_area_new)
+                    $("#select_value_input").val('');
+                    $("#select_text_input").val('');
+                    populate_option_select_json($("#alg_select_options_sel"),$("#alg_select_options").val());
 
-                            })
-                        }
-                        else{
-                            $("#alg_select_options").val('{"options":[]}')
-                            $("#hidden_select_options").hide();
-                            $("#arg_def_val_div").show();
-                        }
+                })
+            }
+            else{
+                $("#alg_select_options").val('{"options":[]}')
+                $("#hidden_select_options").hide();
+                $("#arg_def_val_div").show();
+            }
 
-                     });
+         });
 
         $("#alg_select_options_sel").empty();
         $('.popover-content #alg_vartype').select2();
@@ -234,8 +234,8 @@ $(document).ready(function(){
         $('#selected-queries-table tbody tr').each(function( index ) {
             console.log( index + ": " + $( this ).find($("td[data-columnname='doc']")).text());
             console.log( index + ": " + $( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
-            console.log( index + ": " + JSON.stringify(JSON.parse($( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'))['filters']) );
-            var query_doc = JSON.parse($( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
+            console.log( index + ": " + JSON.stringify(JSON.parse($( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"').replace(/None/g , '"None"'))['filters']) );
+            var query_doc = JSON.parse($( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"').replace(/None/g , '"None"'));
             var filters = query_doc['filters'];
             if (filters != undefined){
                 parse_filters($( this ).find($("td[data-columnname='query_id']")).text(), $( this ).find($("td[data-columnname='number']")).text(), filters) ;
