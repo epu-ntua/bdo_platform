@@ -13,14 +13,16 @@
             <div class="form-group label-floating{% if not field.value %} is-empty{% endif %}">
                 <label class="control-label">
                     {{ field.label }}
-
                     {% if field.field.required %}
                         <span class="o-red">*</span>
                     {% endif %}
                 </label>
 
-
                 {{ field }}
+                {% if field.auto_id == 'id_password'%}
+                        <span><a class="o-blue" style="display: block;font-size: 12px;" href="/accounts/password/reset/"><b>Forgot Password?</b></a></span>
+                {% endif %}
+
                 <span class="material-input"></span>
 
                 {% if field.errors %}
