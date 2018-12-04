@@ -26,31 +26,31 @@ $(document).ready(function(){
         $("#alg_select_options").val('{"options":[]}')
         populate_select("#alg_vartype");
         $('.popover-content #alg_vartype').on('change', function() {
-                        selected = true;
-                        var new_type = $("#alg_vartype option:selected").val();
-                        if(new_type == 'SELECT') {
-                            $("#alg_select_options").prop('disabled', true);
-                            $("#alg_vardefault").val('');
-                            $("#hidden_select_options").show();
-                            $("#arg_def_val_div").hide();
-                            $("#select_option_button").on('click',function(){
-                                var sel_val = $("#select_value_input").val();
-                                var sel_text = $("#select_text_input").val();
-                                var txt_area_new =select_json_creator(sel_val,sel_text,$("#alg_select_options"))
-                                $("#alg_select_options").val(txt_area_new)
-                                $("#select_value_input").val('');
-                                $("#select_text_input").val('');
-                                populate_option_select_json($("#alg_select_options_sel"),$("#alg_select_options").val());
+            selected = true;
+            var new_type = $("#alg_vartype option:selected").val();
+            if(new_type == 'SELECT') {
+                $("#alg_select_options").prop('disabled', true);
+                $("#alg_vardefault").val('');
+                $("#hidden_select_options").show();
+                $("#arg_def_val_div").hide();
+                $("#select_option_button").on('click',function(){
+                    var sel_val = $("#select_value_input").val();
+                    var sel_text = $("#select_text_input").val();
+                    var txt_area_new =select_json_creator(sel_val,sel_text,$("#alg_select_options"))
+                    $("#alg_select_options").val(txt_area_new)
+                    $("#select_value_input").val('');
+                    $("#select_text_input").val('');
+                    populate_option_select_json($("#alg_select_options_sel"),$("#alg_select_options").val());
 
-                            })
-                        }
-                        else{
-                            $("#alg_select_options").val('{"options":[]}')
-                            $("#hidden_select_options").hide();
-                            $("#arg_def_val_div").show();
-                        }
+                })
+            }
+            else{
+                $("#alg_select_options").val('{"options":[]}')
+                $("#hidden_select_options").hide();
+                $("#arg_def_val_div").show();
+            }
 
-                     });
+         });
 
         $("#alg_select_options_sel").empty();
         $('.popover-content #alg_vartype').select2();
@@ -234,8 +234,8 @@ $(document).ready(function(){
         $('#selected-queries-table tbody tr').each(function( index ) {
             console.log( index + ": " + $( this ).find($("td[data-columnname='doc']")).text());
             console.log( index + ": " + $( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
-            console.log( index + ": " + JSON.stringify(JSON.parse($( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'))['filters']) );
-            var query_doc = JSON.parse($( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"'));
+            console.log( index + ": " + JSON.stringify(JSON.parse($( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"').replace(/None/g , '"None"'))['filters']) );
+            var query_doc = JSON.parse($( this ).find($("td[data-columnname='doc']")).text().replace(/"'/g , "'").replace(/'"/g , "'").replace(/u'/g , "'").replace(/u"/g , "'").replace(/'/g , '"').replace(/False/g , '"False"').replace(/True/g , '"True"').replace(/None/g , '"None"'));
             var filters = query_doc['filters'];
             if (filters != undefined){
                 parse_filters($( this ).find($("td[data-columnname='query_id']")).text(), $( this ).find($("td[data-columnname='number']")).text(), filters) ;
@@ -244,7 +244,7 @@ $(document).ready(function(){
 
 
         $('#query-argument-select').empty();
-        $('#query-argument-select').append('<option disabled selected>-- select one of the available filters --</option>');
+        $('#query-argument-select').append('<option disabled selected value="">-- select one of the available filters --</option>');
         // var keys = [];
         // for(var k in available_filter_args) keys.push(k);
         for(var query in available_filter_args){
@@ -252,10 +252,63 @@ $(document).ready(function(){
             for(var arg_idx in available_filter_args[query]['filter_args']) {
                 var display_name = available_filter_args[query]['display_name'];
                 var arg = available_filter_args[query]['filter_args'][arg_idx];
-                var arg_a = arg['a'];
+                var arg_a = '';
+                if (String(arg['a']).startsWith('i')){
+                    arg_a = arg['a'].split(/_(.+)/)[1];
+                }
+                else{
+                    arg_a = arg['a'];
+                }
                 var arg_op = arg['op'];
                 var arg_b = arg['b'];
-                $('#query-argument-select').append('<option  data-query-id="'+query+'" data-display_name="'+display_name+'" data-arg-a="'+arg_a+'" data-arg-op="'+arg_op+'" data-arg-b="'+arg_b+'" title="' + display_name + '-' + arg_a +' '+ arg_op +' '+ arg_b + '"> ' + display_name + '-' + arg_a +' '+ arg_op +' '+ arg_b + ' </option>');
+                var text_in_option = display_name + '-' + arg_a +' '+ arg_op +' '+ arg_b;
+                if (arg_op === 'inside_rect'){
+                    text_in_option =
+                        display_name + ' - ' +
+                        'Latitude between ' +
+                        '(' + String(arg_b).split('<<')[1].split(',')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[0] + ')' +
+                        ' and Longitude between ' +
+                        '(' + String(arg_b).split(',')[1].split('>')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[1].split('>>')[0] + ')' +
+                        ' degrees';
+                        arg_a = '';
+                        arg_op =
+                            'Latitude between ' +
+                            '(' + String(arg_b).split('<<')[1].split(',')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[0] + ')' +
+                            ' and Longitude between ' +
+                            '(' + String(arg_b).split(',')[1].split('>')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[1].split('>>')[0] + ')' +
+                            ' degrees';
+                }
+                if (arg_op === 'gt'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '>' +' '+ arg_b;
+                }
+                if (arg_op === 'gte'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '>=' +' '+ arg_b;
+                }
+                if (arg_op === 'lt'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<' +' '+ arg_b;
+                }
+                if (arg_op === 'lte'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<=' +' '+ arg_b;
+                }
+                if (arg_op === 'eq'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '=' +' '+ arg_b;
+                }
+                if (arg_op === 'nqe'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<>' +' '+ arg_b;
+                }
+                if (arg_op === 'gt_time'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '>' +' '+ arg_b;
+                }
+                if (arg_op === 'gte_time'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '>=' +' '+ arg_b;
+                }
+                if (arg_op === 'lt_time'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<' +' '+ arg_b;
+                }
+                if (arg_op === 'lte_time'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<=' +' '+ arg_b;
+                }
+                $('#query-argument-select').append('<option  data-query-id="'+query+'" data-display_name="'+display_name+'" data-arg-a="'+arg_a+'" data-arg-op="'+arg_op+'" data-arg-b="'+arg_b+'" title="' + text_in_option + '"> ' + text_in_option + ' </option>');
             }
         }
 
@@ -274,7 +327,27 @@ $(document).ready(function(){
             new_arg_a = $(this).children(":selected").attr("data-arg-a");
             new_arg_op = $(this).children(":selected").attr("data-arg-op");
             new_arg_b = $(this).children(":selected").attr("data-arg-b");
-            $('.popover-content #filter_def_val').val(new_arg_b)
+            $('.popover-content #filter_def_val').val(new_arg_b).attr('disabled','disabled');
+            // alert(new_arg_op);
+            if (new_arg_op.startsWith("Latitude")){
+                $("#filter_type option").not('[value="SPATIAL_COV"]').attr('disabled',true);
+                $("#filter_type").find('option[value="SPATIAL_COV"]').attr("disabled", false);
+                $("#filter_type").val('SPATIAL_COV').trigger('change');
+                $("#filter_type").select2();
+            }
+            else if ((arg_op === 'gt_time') || (arg_op === 'gte_time') || (arg_op === 'lt_time') || (arg_op === 'lte_time')){
+                $("#filter_type option").not('[value="DATETIME"]').attr('disabled',true);
+                $("#filter_type").find('option[value="DATETIME"]').attr("disabled", false);
+                $("#filter_type").val('DATETIME').trigger('change');
+                $("#filter_type").select2();
+            }
+            else{
+                $("#filter_type option").attr("disabled", false);
+                $("#filter_type").find('option[value="SPATIAL_COV"]').attr('disabled',true);
+                $("#filter_type").find('option[value="DATETIME"]').attr('disabled',true);
+                $("#filter_type").val('FLOAT').trigger('change');
+                $("#filter_type").select2();
+            }
         });
 
 
@@ -337,7 +410,8 @@ $(document).ready(function(){
 
                     // $("select#select2-query-argument-select-container ").val(temp_query_choice).change();
 
-                    $("#filter_def_val").val(temp_filter_def_val);
+                    $("#filter_def_val").val(temp_filter_def_val).attr('disabled', true);
+                    $("label[for='query-argument-select']").hide();
                     $("#filter_varname").val(temp_filter_var_name);
                     $("#filter_vartitle").val(temp_filter_var_title);
                     $("#filter_descr").val(temp_filter_descr);
@@ -421,12 +495,13 @@ $(document).ready(function(){
 
     function populate_select(selector){
         $(selector).empty();
+        $(selector).append('<option disabled selected value="">-- Select argument type --</option>');
         $(selector).append('<option value="INT">Integer</option>');
         $(selector).append('<option value="FLOAT">Float</option>');
-        $(selector).append('<option value="STRING">String</option>');
+        // $(selector).append('<option value="STRING">String</option>');
         $(selector).append('<option value="DATETIME">Date</option>');
         $(selector).append('<option value="SPATIAL_COV">Spatial Coverage</option>');
-        $(selector).append('<option value="SELECT">Select</option>');
+        // $(selector).append('<option value="SELECT">Select</option>');
 
     }
 

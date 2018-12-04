@@ -9,6 +9,10 @@
         #chartdiv {
             width: 100%;
             height: 500px;
+            margin-top: 0 !important;
+        }
+        .wrapper{
+            margin: 0 !important;
         }
     </style>
 {% endblock %}
@@ -58,19 +62,19 @@
                 </button>
             {% endif %}
 
-            <span class="current">
-                Page {{ data.number }} of {{ data.paginator.num_pages }}.
-            </span>
-
-            {% if  has_next %}
-                <button class="btn btn-default">
-                    {% if query_pk != 0 %}
-                        <a href="?offset={{ offset|add:pos_step }}&query={{ query_pk }}{% for el in column_choice %}&column_choice[]={{ el }}{% endfor %}">next</a>
-                    {% else %}
-                        <a href="?page={{ offset|add:pos_step }}&df={{ df }}&notebook_id={{ notebook_id }}">next</a>
-                    {% endif %}
-                </button>
-            {% endif %}
+{#            <span class="current">#}
+{#                Page {{ data.number }} of {{ data.paginator.num_pages }}.#}
+{#            </span>#}
+{##}
+{#            {% if  has_next %}#}
+{#                <button class="btn btn-default">#}
+{#                    {% if query_pk != 0 %}#}
+{#                        <a href="?offset={{ offset|add:pos_step }}&query={{ query_pk }}{% for el in column_choice %}&column_choice[]={{ el }}{% endfor %}">next</a>#}
+{#                    {% else %}#}
+{#                        <a href="?page={{ offset|add:pos_step }}&df={{ df }}&notebook_id={{ notebook_id }}">next</a>#}
+{#                    {% endif %}#}
+{#                </button>#}
+{#            {% endif %}#}
         </span>
     </div>
 

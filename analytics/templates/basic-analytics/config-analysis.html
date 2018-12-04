@@ -36,7 +36,7 @@
                                                     <option id="{{ query.id }}" value="{{ query.raw_query }}">{{ query.title }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <a href="/queries/simplified/" id="new_query_link"> + or create a new query </a>
+                                            <a href="/queries/" id="new_query_link"> + or create a new query </a>
                                             <input id="new_query_doc" type="hidden" value=""/>
                                         {% elif argument.type == 'COLUMN' %}
                                             <select class="form-control full-width variable-select" name="{{ argument.name }}" autocomplete="off">
