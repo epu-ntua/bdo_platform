@@ -93,7 +93,7 @@ def clean(request, pk=None):
         'variables': variable_list,
         'datasets': dataset_list.order_by('order'),
         'dimensions': Dimension.objects.all(),
-        'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
+        # 'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
         'available_viz': Visualization.objects.filter(hidden=False).order_by('order'),
         'AGGREGATES': AGGREGATES,
     })
