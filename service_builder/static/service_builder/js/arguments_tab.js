@@ -252,7 +252,13 @@ $(document).ready(function(){
             for(var arg_idx in available_filter_args[query]['filter_args']) {
                 var display_name = available_filter_args[query]['display_name'];
                 var arg = available_filter_args[query]['filter_args'][arg_idx];
-                var arg_a = arg['a'].split(/_(.+)/)[1];
+                var arg_a = '';
+                if (String(arg['a']).startsWith('i')){
+                    arg_a = arg['a'].split(/_(.+)/)[1];
+                }
+                else{
+                    arg_a = arg['a'];
+                }
                 var arg_op = arg['op'];
                 var arg_b = arg['b'];
                 var text_in_option = display_name + '-' + arg_a +' '+ arg_op +' '+ arg_b;
@@ -264,6 +270,13 @@ $(document).ready(function(){
                         ' and Longitude between ' +
                         '(' + String(arg_b).split(',')[1].split('>')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[1].split('>>')[0] + ')' +
                         ' degrees';
+                        arg_a = '';
+                        arg_op =
+                            'Latitude between ' +
+                            '(' + String(arg_b).split('<<')[1].split(',')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[0] + ')' +
+                            ' and Longitude between ' +
+                            '(' + String(arg_b).split(',')[1].split('>')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[1].split('>>')[0] + ')' +
+                            ' degrees';
                 }
                 if (arg_op === 'gt'){
                     text_in_option = display_name + ' - ' + arg_a +' '+ '>' +' '+ arg_b;
@@ -316,7 +329,7 @@ $(document).ready(function(){
             new_arg_b = $(this).children(":selected").attr("data-arg-b");
             $('.popover-content #filter_def_val').val(new_arg_b).attr('disabled','disabled');
             // alert(new_arg_op);
-            if (new_arg_op === 'inside_rect'){
+            if (new_arg_op.startsWith("Latitude")){
                 $("#filter_type option").not('[value="SPATIAL_COV"]').attr('disabled',true);
                 $("#filter_type").find('option[value="SPATIAL_COV"]').attr("disabled", false);
                 $("#filter_type").val('SPATIAL_COV').trigger('change');
@@ -397,7 +410,8 @@ $(document).ready(function(){
 
                     // $("select#select2-query-argument-select-container ").val(temp_query_choice).change();
 
-                    $("#filter_def_val").val(temp_filter_def_val);
+                    $("#filter_def_val").val(temp_filter_def_val).attr('disabled', true);
+                    $("label[for='query-argument-select']").hide();
                     $("#filter_varname").val(temp_filter_var_name);
                     $("#filter_vartitle").val(temp_filter_var_title);
                     $("#filter_descr").val(temp_filter_descr);
