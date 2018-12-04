@@ -94,7 +94,7 @@
 
 {#        <div id="chart-status-msg" class="pull-right"></div>#}
         <div id="chart-name" class="pull-right hidden">
-            {% trans 'Query name' %}: <input type="text" name="chart-name" />
+            {% trans 'Query name' %}: <input type="text" name="chart-name" val=""/>
         </div>
         <input type="number" class="hidden" id="offset_input" value="0" />
     </div>
@@ -292,22 +292,38 @@
 
     <script type="text/javascript">
         $('#createPreBuildLink').click(function (e) {
-            if($('#viz_container > iframe').length) {
-                var tempLink = $('#viz_container > iframe');
-                var helperVar = (tempLink[0].contentDocument || tempLink[0].contentWindow);
-                tempLink = helperVar.URL;
-                var encodedUrl = encodeURIComponent(tempLink);
-                window.location = "/dashboards/create?toCreate=" + encodedUrl;
+            if($("input[name='chart-name']").val() === ""){
+                alert('Please give a name to your query!')
+            }
+            else {
+                if ($('#viz_container > iframe').length) {
+                    QueryToolbox.save(function (id) {}, 0);
+                    setTimeout(function () {
+                        var tempLink = $('#viz_container > iframe');
+                        var helperVar = (tempLink[0].contentDocument || tempLink[0].contentWindow);
+                        tempLink = helperVar.URL;
+                        var encodedUrl = encodeURIComponent(tempLink);
+                        window.location = "/dashboards/create?toCreate=" + encodedUrl;
+                    }, 1000);
+                }
             }
         });
 
         $('#createPreBuildLinkExisting').click(function (e) {
-            if($('#viz_container > iframe').length) {
-                var tempLink = $('#viz_container > iframe');
-                var helperVar = (tempLink[0].contentDocument || tempLink[0].contentWindow);
-                tempLink = helperVar.URL;
-                var encodedUrl = encodeURIComponent(tempLink);
-                window.location = "/dashboards/create?toCreate=" + encodedUrl;
+            if($("input[name='chart-name']").val() === ""){
+                alert('Please give a name to your query!')
+            }
+            else {
+                if ($('#viz_container > iframe').length) {
+                    QueryToolbox.save(function (id) {}, 0);
+                    setTimeout(function () {
+                        var tempLink = $('#viz_container > iframe');
+                        var helperVar = (tempLink[0].contentDocument || tempLink[0].contentWindow);
+                        tempLink = helperVar.URL;
+                        var encodedUrl = encodeURIComponent(tempLink);
+                        window.location = "/dashboards/create?toCreate=" + encodedUrl;
+                    }, 1000);
+                }
             }
         });
     </script>

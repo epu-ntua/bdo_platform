@@ -156,7 +156,12 @@ $(function() {
 
     /* On chart save */
     $('body').on('click', '#chart-save', function () {
-        QueryToolbox.save(function (id) {}, 0);
+        if($("input[name='chart-name']").val() === ""){
+            alert('Please give a name to your query!')
+        }
+        else{
+            QueryToolbox.save(function (id) {}, 0);
+        }
     });
 
     /* On chart open dialog */

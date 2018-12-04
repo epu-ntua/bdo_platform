@@ -43,7 +43,7 @@ $(function () {
         /* Initialisation (it is called from the template) */
         addChart: function (chartFilters, chartPolicy, queryId, queryTitle) {
             // Add the title of the query
-            queryTitle = queryTitle || 'Query 1';
+            queryTitle = queryTitle || '';
             // Create a new object
             var obj = {
                 'queryId': queryId,
