@@ -111,6 +111,7 @@ function pageScroll() {
             });
             $("#dismiss-modal-btn").click(function () {
                 $scope.standardItems.pop();
+                $scope.$apply();
                 $('#myModal #viz_container').html('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' + '  </div>');
                 $('.viz_item').popover('hide');
                 $('#myModal #viz_config').hide();
@@ -129,6 +130,10 @@ function pageScroll() {
                     noteData: "",
                     title: tempTitle
                 });
+                // setTimeout(function () {
+                //     console.log($scope);
+                // } ,2000);
+                $scope.$apply();
             };
 
             $('#new_widget_btn').click(makeWidget);

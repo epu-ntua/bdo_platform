@@ -11,16 +11,16 @@
         <button type="button" id="preview_btn" class="btn btn-md btn-primary">
             Update Preview
         </button>
-        <div class="dropdown" style="display: inline-block;">
-          <button type="button" id="load_template_btn" class="btn btn-md btn-primary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Load Template <span class="caret"></span>
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="dLabel">
-              {% for template in available_templates %}
-                <li class="template_item" data-template-id="{{ template.id }}">Template {{ template.id }}</li>
-              {% endfor %}
-          </ul>
-        </div>
+{#        <div class="dropdown" style="display: inline-block;">#}
+{#          <button type="button" id="load_template_btn" class="btn btn-md btn-primary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">#}
+{#            Load Template <span class="caret"></span>#}
+{#          </button>#}
+{#          <ul class="dropdown-menu" aria-labelledby="dLabel">#}
+{#              {% for template in available_templates %}#}
+{#                <li class="template_item" data-template-id="{{ template.id }}">Template {{ template.id }}</li>#}
+{#              {% endfor %}#}
+{#          </ul>#}
+{#        </div>#}
         <button type="button" class="btn btn-md btn-primary pull-right" data-target="#publishModal", data-toggle="modal">
             Publish
         </button>

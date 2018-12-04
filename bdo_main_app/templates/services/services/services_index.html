@@ -124,7 +124,25 @@
                     </div>
 
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                        <li class="list-group-item">Service Creator
+                            <div class="pull-right">
+                                {% if item.title == 'Primary Wave Energy Assessment'%}
+                                    'R&D Nester'
+                                {% elif  item.title == 'Vessel Anomaly Detection'%}
+                                    'Marine Traffic'
+                                {% elif  item.title == 'Route Anomaly Detection'%}
+                                    'Marine Traffic'
+                                {% elif  item.title == 'Fuel Consumption Reduction Service (FNK)'%}
+                                    'FOINIKAS'
+                                {% elif  item.title == 'Fuel Consumption Reduction Service (ANEK)'%}
+                                    'ANEK'
+                                {% elif  item.title == 'Oil Spill Simulation Service'%}
+                                    'HCMR'
+                                {% else %}
+                                    {{ item.user.username }}
+                                {% endif %}
+                            </div>
+                        </li>
                         <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
                         <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
                     </ul>

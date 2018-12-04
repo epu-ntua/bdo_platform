@@ -49,24 +49,52 @@ class AbstractQuery(Model):
 
     @staticmethod
     def operator_to_str(op, mode='postgres'):
-        return {
-            # comparison
-            'eq': ('=', ':'),
-            'neq': ('!=', None),
-            'gt': ('>', None),
-            'gte': ('>=', None),
-            'lt': ('<', None),
-            'lte': ('<=', None),
-            'mod': ('%', None),
+        if mode == 'postgres':
+            return {
+                # comparison
+                'eq': ('=', ':'),
+                'neq': ('!=', None),
+                'gt': ('>', None),
+                'gte': ('>=', None),
+                'lt': ('<', None),
+                'lte': ('<=', None),
+                'mod': ('%', None),
 
-            # boolean
-            '&&': ('AND', 'AND'),
-            'and': ('AND', 'AND'),
-            '||': ('OR', 'OR'),
-            'or': ('OR', 'OR'),
-            '!': ('NOT', None),
-            'not': ('NOT', None),
-        }[op.lower()][0 if mode == 'postgres' else 1]
+                # timestamp
+                'lte_time': ('<=', None),
+                'gte_time': ('>=', None),
+
+                # boolean
+                '&&': ('AND', 'AND'),
+                'and': ('AND', 'AND'),
+                '||': ('OR', 'OR'),
+                'or': ('OR', 'OR'),
+                '!': ('NOT', None),
+                'not': ('NOT', None),
+            }[op.lower()][0 if mode == 'postgres' else 1]
+        else:
+            return {
+                # comparison
+                'eq': ('=', ':'),
+                'neq': ('!=', None),
+                'gt': ('>', None),
+                'gte': ('>=', None),
+                'lt': ('<', None),
+                'lte': ('<=', None),
+                'mod': ('%', None),
+
+                # timestamp
+                'lte_time': ('<= timestamp ', None),
+                'gte_time': ('>= timestamp ', None),
+
+                # boolean
+                '&&': ('AND', 'AND'),
+                'and': ('AND', 'AND'),
+                '||': ('OR', 'OR'),
+                'or': ('OR', 'OR'),
+                '!': ('NOT', None),
+                'not': ('NOT', None),
+            }[op.lower()][0 if mode == 'presto' else 1]
 
     def process_filters(self, filters, mode='postgres', quote=False):
         print 'filters:'

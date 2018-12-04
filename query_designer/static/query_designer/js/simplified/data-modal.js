@@ -55,17 +55,16 @@ $(function() {
        }
 
        window.getDataSelection = function() {
-           // Gather the dimensions of the selected variable
-           var dims = [];
-           $("#dataset-dimensions-div .dimension-section span").each(function (_, dim) {
-               dims.push({
-                    id: $(dim).data('type'),
-                    title: $(this).data('name')
-                })
-           });
-
            var selection = [];
            $("#dataset-variables-div .variable-section[data-selected='True']").each(function (_, variable) {
+               // Gather the dimensions of the selected variable
+               var dims = [];
+               $(this).find(".dimension-section span").each(function (_, dim) {
+                   dims.push({
+                        id: $(dim).data('type'),
+                        title: $(this).data('name')
+                    })
+               });
                selection.push({
                     id: $(variable).data('variable-id'),
                     name: $(variable).data('variable-name'),

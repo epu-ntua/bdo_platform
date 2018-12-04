@@ -148,40 +148,154 @@ function show_hide_results(){
         '<div id="service_args_container"></div>\n' +
         '<button class="btn-sm" id="submitServiceConfig">Submit</button>\n' +
         '<div id="service_result_container"></div>\n');
-	css_editor.setValue("p { color: #30526a; }\n" +
-                        "iframe {width: 100%; height:300px;}");
-	js_editor.setValue("<script type='text/javascript'>" +
+	html_editor.setValue('' +
+        '<div id="service_container" class="text-center">\n' +
+        '    <div id="service_config_container" class="text-center">\n' +
+        '        <button type="button" id="argsCollapseBtn" class="btn btn-md btn-primary" data-toggle="collapse" data-target="#serviceConfigCollapse">\n' +
+        '          Configure\n' +
+        '        </button>\n' +
+        '        <div id="serviceConfigCollapse" class="collapse in" >\n' +
+        '            <div class="well">\n' +
+        '                <h4 class="modal-title">Please give your input</h4>\n' +
+        '                <form id="service_args_container" class="modal-body" style="padding: 0 25%">\n' +
+        '\n' +
+        '                </form>\n' +
+        '                <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#serviceConfigCollapse" id="submitServiceConfig">Submit</button>\n' +
+        '                <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#serviceConfigCollapse">Cancel</button>\n' +
+        '            </div>\n' +
+        '        </div>\n' +
+        '    </div>\n' +
+        '\n' +
+        '    <div id="service_result_container" class="text-center">\n' +
+        '        <div class="loadingDiv">\n' +
+        '            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>\n' +
+        '        </div>\n' +
+        '   </div>\n' +
+        '</div><div id="service_container" class="text-center">\n' +
+        '    <div id="service_config_container" class="text-center">\n' +
+        '        <button type="button" id="argsCollapseBtn" class="btn btn-md btn-primary" data-toggle="collapse" data-target="#serviceConfigCollapse">\n' +
+        '          Configure\n' +
+        '        </button>\n' +
+        '        <div id="serviceConfigCollapse" class="collapse in" >\n' +
+        '            <div class="well">\n' +
+        '                <h4 class="modal-title">Please give your input</h4>\n' +
+        '                <form id="service_args_container" class="modal-body" style="padding: 0 25%">\n' +
+        '\n' +
+        '                </form>\n' +
+        '                <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#serviceConfigCollapse" id="submitServiceConfig">Submit</button>\n' +
+        '                <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#serviceConfigCollapse">Cancel</button>\n' +
+        '            </div>\n' +
+        '        </div>\n' +
+        '    </div>\n' +
+        '\n' +
+        '    <div id="service_result_container" class="text-center">\n' +
+        '        <div class="loadingDiv">\n' +
+        '            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>\n' +
+        '        </div>\n' +
+        '        <!-- ADD YOUR VISUALISATIONS HERE --> \n' +
+        '   </div>\n' +
+        '</div>\n');
+
+	// css_editor.setValue("p { color: #30526a; }\n" +
+     //                    "iframe {width: 100%; height:300px;}");
+	css_editor.setValue(""+
+        "@media screen and (min-width: 768px){.modal:before {display: inline-block;vertical-align: middle;content: \" \";height: 100%;}}\n" +
+        ".modal-backdrop {z-index:-1;}\n" +
+        "#service_result_container{ position: relative; min-height: 500px; width: 100%; background-color: white; display: none;}\n" +
+        ".loadingDiv, .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}\n" +
+        ".viz_container{position: relative; height: 400px; width: 100%; margin: 1% 0;}\n" +
+        "#service_result_container iframe{border: none; box-shadow: 0 0 3px 0px #a28e8eb0;}\n" +
+        "th{text-align: center; font-weight: 600 !important;}\n" +
+        "#service_result_container .nav>li {display: inline-block !important;width: 300px !important; float: none !important;}");
+
+	// js_editor.setValue("<script type='text/javascript'>" +
+     //    "// Get form fields of all the service arguments\n" +
+     //    "$(document).ready(function () {\n" +
+     //    "   $.ajax({\n" +
+     //    "       url: '/service_builder/load_service_args_form_fields/',\n" +
+     //    "           data: {\n" +
+     //    "           service_id: get_service_id()\n" +
+     //    "       },\n" +
+     //    "       type: 'GET',\n" +
+     //    "       success: function(form_fields){\n" +
+     //    "           $('#service_args_container').html(form_fields);\n" +
+     //    "       }\n" +
+     //    "   });\n" +
+     //    "});\n" +
+     //    " // Submit the service arguments \n" +
+     //    "$(\"#submitServiceConfig\").click(function (element) { \n" +
+     //    "   $.ajax({ \n" +
+     //    "       url: '/service_builder/service/'+get_service_id()+'/execute/', \n" +
+     //    "       data: $('#service_args_container').serialize(), \n" +
+     //    "       type: 'GET', \n" +
+     //    "       success: function(result){ \n" +
+     //    "           $(\"#service_result_container\").html( result );\n" +
+     //    "       },\n" +
+     //    "        error: function () {\n" +
+     //    "            alert('An error occured');\n" +
+     //    "       }\n" +
+     //    "   });\n" +
+     //    "});\n" +
+     //    "</script>\n" +
+     //    "\n");
+
+	js_editor.setValue(""+
+        "// <script type=\"text/javascript\">\n" +
         "// Get form fields of all the service arguments\n" +
         "$(document).ready(function () {\n" +
-        "   $.ajax({\n" +
-        "       url: '/service_builder/load_service_args_form_fields/',\n" +
-        "           data: {\n" +
-        "           service_id: get_service_id()\n" +
-        "       },\n" +
-        "       type: 'GET',\n" +
-        "       success: function(form_fields){\n" +
-        "           $('#service_args_container').html(form_fields);\n" +
-        "       }\n" +
-        "   });\n" +
+        "  $.ajax({\n" +
+        "        url: '/service_builder/load_service_args_form_fields/',\n" +
+        "        data: {\n" +
+        "            service_id: get_service_id()\n" +
+        "        },\n" +
+        "        type: 'GET',\n" +
+        "        success: function(form_fields){\n" +
+        "            $(\"#service_args_container\").html(form_fields);\n" +
+        "        }\n" +
+        "    });\n" +
         "});\n" +
-        " // Submit the service arguments \n" +
-        "$(\"#submitServiceConfig\").click(function (element) { \n" +
-        "   $.ajax({ \n" +
-        "       url: '/service_builder/service/'+get_service_id()+'/execute/', \n" +
-        "       data: $('#service_args_container').serialize(), \n" +
-        "       type: 'GET', \n" +
-        "       success: function(result){ \n" +
-        "           $(\"#service_result_container\").html( result );\n" +
-        "       },\n" +
+        "\n" +
+        "\n" +
+        "\n" +
+        "\n" +
+        "\n" +
+        "// Submit the service arguments\n" +
+        "$(\"#submitServiceConfig\").click(function (element) {\n" +
+        "  $.ajax({\n" +
+        "        url: '/service_builder/service/'+get_service_id()+'/execute/',\n" +
+        "        data: $('#service_args_container').serialize(),\n" +
+        "        type: 'GET',\n" +
+        "        beforeSend: function(){\n" +
+        "            $(\"#service_result_container\").show();\n" +
+        "            $(\".loadingDiv\").css( \"display\", \"block\" );\n" +
+        "        },\n" +
+        "        success: function(result){\n" +
+        "            $(\"#service_result_container\").html( result );\n" +
+        "            // $(\"iframe\").each(function () {\n" +
+        "            //     var src = $( this ).attr('data-src');\n" +
+        "            //     jQuery.each(result['query_mapping'], function(query, temp_query) {\n" +
+        "            //       src = src.replace(new RegExp(\"query=\"+query+\"&\"), \"query=\"+temp_query+\"&\");\n" +
+        "            //       src = src.replace(new RegExp(\"query=\"+query+\"$\"), \"query=\"+temp_query);\n" +
+        "            //     });\n" +
+        "            //     $( this ).attr({'src': src});\n" +
+        "            // });\n" +
+        "            $(\".loadingDiv\").css( \"display\", \"none\" );\n" +
+        "            $(\".loadingFrame\").css( \"display\", \"block\" );\n" +
+        "            $(\".viz_container iframe\").on( \"load\", function(){\n" +
+        "                $(this).siblings(\".loadingFrame\").css( \"display\", \"none\" )\n" +
+        "            });\n" +
+        "\n" +
+        "        },\n" +
         "        error: function () {\n" +
+        "            $(\".loadingDiv\").css( \"display\", \"none\" );\n" +
+        "            $(\"#service_result_container\").hide();\n" +
         "            alert('An error occured');\n" +
-        "       }\n" +
-        "   });\n" +
+        "        }\n" +
+        "    });\n" +
         "});\n" +
-        "</script>\n" +
-        "\n");
+        "    // </script>");
 
-
+        // $("#preview_btn").click();
 
 // ***************	END CODE MIRROR  ***************
 
@@ -198,183 +312,183 @@ function show_hide_results(){
     });
 
 
-	$('#addVizModal select').select2();
+	$('#addVizModal #load-viz-query-select').select2();
 
 
-    function updateVariables(element) {
-        $('#addVizModal .variable-select').find('option').remove().end();
-        $('#addVizModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
-        var new_query_id = $('#addVizModal #selected_query').val();
-        var new_query_doc = {};
-        $.ajax({
-            url: '/queries/get_query_variables/',
-            data: {
-                id: new_query_id,
-                document: new_query_doc
-                },
-            type: 'GET',
-            success: function(result){
-                var variables = result['variables'];
-                var dimensions = result['dimensions'];
-                $('.variable-select').append($("<option></option>")
-                .attr("value", '')
-                .text('-- column select --'));
+    // function updateVariables(element) {
+    //     $('#addVizModal .variable-select').find('option').remove().end();
+    //     $('#addVizModal .variable-select').append($("<option disabled selected>-- select variable --</option>"));
+    //     var new_query_id = $('#addVizModal #selected_query').val();
+    //     var new_query_doc = {};
+    //     $.ajax({
+    //         url: '/queries/get_query_variables/',
+    //         data: {
+    //             id: new_query_id,
+    //             document: new_query_doc
+    //             },
+    //         type: 'GET',
+    //         success: function(result){
+    //             var variables = result['variables'];
+    //             var dimensions = result['dimensions'];
+    //             $('.variable-select').append($("<option></option>")
+    //             .attr("value", '')
+    //             .text('-- column select --'));
+    //
+    //             $.each(variables, function(k, v) {
+    //                 $('#addVizModal .variable-select').append($("<option></option>")
+    //                     .attr("value", v)
+    //                     .text(k));
+    //             });
+    //
+    //             $.each(dimensions, function(k, v) {
+    //                 $('#addVizModal .variable-select').append($("<option></option>")
+    //                     .attr("value", v)
+    //                     .text(k));
+    //             });
+    //         }
+    //     });
+    // }
 
-                $.each(variables, function(k, v) {
-                    $('#addVizModal .variable-select').append($("<option></option>")
-                        .attr("value", v)
-                        .text(k));
-                });
 
-                $.each(dimensions, function(k, v) {
-                    $('#addVizModal .variable-select').append($("<option></option>")
-                        .attr("value", v)
-                        .text(k));
-                });
-            }
-        });
-    }
-
-
-    $('#addVizModal .select2').on("click", function() {
-        $('.popover').popover('hide');
-    });
+    // $('#addVizModal .select2').on("click", function() {
+    //     $('.popover').popover('hide');
+    // });
 
     $('#addVizModal #query select').on('change', function() {
         $('#addVizModal #query #viz_config').show();
         var new_query_id = $(this).children(":selected").attr("data-query-id");
         $('#addVizModal #query #selected_query').val(new_query_id);
         $('.popover').popover('hide');
-          updateVariables(this);
-    });
-
-    $('#addVizModal #dataframe #selected_dataframe').on('change', function() {
-        $('#addVizModal #dataframe #viz_config').show();
-        var new_query_id = $(this).children(":selected").attr("data-query-id");
-        $('#addVizModal #selected_query').val(new_query_id);
-        $('.popover').popover('hide');
           // updateVariables(this);
     });
 
+    // $('#addVizModal #dataframe #selected_dataframe').on('change', function() {
+    //     $('#addVizModal #dataframe #viz_config').show();
+    //     var new_query_id = $(this).children(":selected").attr("data-query-id");
+    //     $('#addVizModal #selected_query').val(new_query_id);
+    //     $('.popover').popover('hide');
+    //       // updateVariables(this);
+    // });
 
 
-    $("#query .viz_item").click(function (element) {
-      var component_id = $(this).attr('data-viz-id');
-      var component_selector = 'li[data-viz-id="'+component_id+'"]';
-      $.ajax({
-            url: '/dashboards/get_visualization_form_fields',
-            data: {
-                id: parseInt(component_id),
-                order: 1
-                },
-            type: 'GET',
-            success: function(form_fields){
-                $("#conf-container").html(form_fields);
-                $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
 
-                $(component_selector).popover({
-                    html: true,
-                    title: 'Configure visualisation',
-                    trigger: 'manual',
-                    content: function() {
-                        return $('#conf-container').html();
-                    }
-                });
-                updateVariables($('#load-viz-query-select'));
-                $(component_selector).popover('toggle');
-                var popver_id = '#' + $(component_selector).attr('aria-describedby');
-                $(popver_id+' #select_conf_ok').click(function(e){
-                    submit_conf(component_selector, 'query');
-                    $(component_selector).popover("hide");
-                });
-            }
-        });
-    });
+    // $("#query .viz_item").click(function (element) {
+    //   var component_id = $(this).attr('data-viz-id');
+    //   var component_selector = 'li[data-viz-id="'+component_id+'"]';
+    //   $.ajax({
+    //         url: '/dashboards/get_visualization_form_fields',
+    //         data: {
+    //             id: parseInt(component_id),
+    //             order: 1
+    //             },
+    //         type: 'GET',
+    //         success: function(form_fields){
+    //             $("#conf-container").html(form_fields);
+    //             $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
+    //
+    //             $(component_selector).popover({
+    //                 html: true,
+    //                 title: 'Configure visualisation',
+    //                 trigger: 'manual',
+    //                 content: function() {
+    //                     return $('#conf-container').html();
+    //                 }
+    //             });
+    //             updateVariables($('#load-viz-query-select'));
+    //             $(component_selector).popover('toggle');
+    //             var popver_id = '#' + $(component_selector).attr('aria-describedby');
+    //             $(popver_id+' #select_conf_ok').click(function(e){
+    //                 submit_conf(component_selector, 'query');
+    //                 $(component_selector).popover("hide");
+    //             });
+    //         }
+    //     });
+    // });
 
-    $("#dataframe .viz_item").click(function (element) {
-      var component_id = $(this).attr('data-viz-id');
-      var component_selector = '#dataframe li[data-viz-id="'+component_id+'"]';
-      $.ajax({
-            url: '/dashboards/get_visualization_form_fields_df',
-            data: {
-                id: parseInt(component_id),
-                order: 1
-                },
-            type: 'GET',
-            success: function(form_fields){
-                $("#conf-container").html(form_fields);
-                $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
-
-                $(component_selector).popover({
-                    html: true,
-                    title: 'Configure visualisation',
-                    trigger: 'manual',
-                    content: function() {
-                        return $('#conf-container').html();
-                    }
-                });
-                $(component_selector).popover('toggle');
-                // alert("submit conf");
-                var popver_id = '#' + $(component_selector).attr('aria-describedby');
-                $(popver_id+' #select_conf_ok').click(function(e){
-                    // alert("submit conf");
-                    submit_conf(component_selector, 'df');
-                    $(component_selector).popover("hide");
-                });
-            }
-        });
-    });
-
-
-    var viz_request = "";
-    function submit_conf(component_selector, from) {
-        // viz_request = "http://localhost:8000/visualizations/";
-        viz_request = "/visualizations/";
-        viz_request += $('#addVizModal').find('.modal-body').find('#action').val();
-        var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-        // alert(viz_request);
-        var submitted_args = $('#addVizModal').find(conf_popover_id).find('.popover-content').clone();
-        var selects = $('#addVizModal').find(conf_popover_id).find('.popover-content').find("select");
-        $(selects).each(function(i) {
-            var select = this;
-            $(submitted_args).find("select").eq(i).val($(select).val());
-        });
-        $('#config-viz-form').empty();
-        $('#config-viz-form').append(submitted_args);
+    // $("#dataframe .viz_item").click(function (element) {
+    //   var component_id = $(this).attr('data-viz-id');
+    //   var component_selector = '#dataframe li[data-viz-id="'+component_id+'"]';
+    //   $.ajax({
+    //         url: '/dashboards/get_visualization_form_fields_df',
+    //         data: {
+    //             id: parseInt(component_id),
+    //             order: 1
+    //             },
+    //         type: 'GET',
+    //         success: function(form_fields){
+    //             $("#conf-container").html(form_fields);
+    //             $("#conf-container").append('<button type="button" id="select_conf_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>');
+    //
+    //             $(component_selector).popover({
+    //                 html: true,
+    //                 title: 'Configure visualisation',
+    //                 trigger: 'manual',
+    //                 content: function() {
+    //                     return $('#conf-container').html();
+    //                 }
+    //             });
+    //             $(component_selector).popover('toggle');
+    //             // alert("submit conf");
+    //             var popver_id = '#' + $(component_selector).attr('aria-describedby');
+    //             $(popver_id+' #select_conf_ok').click(function(e){
+    //                 // alert("submit conf");
+    //                 submit_conf(component_selector, 'df');
+    //                 $(component_selector).popover("hide");
+    //             });
+    //         }
+    //     });
+    // });
 
 
-        var myData = $("#config-viz-form").serialize();
-        viz_request += '?';
-        viz_request += myData;
+    // var viz_request = "";
+    // function submit_conf(component_selector, from) {
+    //     // viz_request = "http://localhost:8000/visualizations/";
+    //     viz_request = "/visualizations/";
+    //     viz_request += $('#addVizModal').find('.modal-body').find('#action').val();
+    //     var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+    //     // alert(viz_request);
+    //     var submitted_args = $('#addVizModal').find(conf_popover_id).find('.popover-content').clone();
+    //     var selects = $('#addVizModal').find(conf_popover_id).find('.popover-content').find("select");
+    //     $(selects).each(function(i) {
+    //         var select = this;
+    //         $(submitted_args).find("select").eq(i).val($(select).val());
+    //     });
+    //     $('#config-viz-form').empty();
+    //     $('#config-viz-form').append(submitted_args);
+    //
+    //
+    //     var myData = $("#config-viz-form").serialize();
+    //     viz_request += '?';
+    //     viz_request += myData;
+    //
+    //     if (from === 'query')
+    //         viz_request += '&query=' + $('#addVizModal #selected_query').val();
+    //     else
+    //         viz_request += '&df=' + $('#addVizModal #selected_dataframe').val();
+    //         viz_request += '&notebook_id=' + $('#notebook_id').val();
+    //     // alert(viz_request);
+    //     show_viz(viz_request, from);
+    // }
 
-        if (from === 'query')
-            viz_request += '&query=' + $('#addVizModal #selected_query').val();
-        else
-            viz_request += '&df=' + $('#addVizModal #selected_dataframe').val();
-            viz_request += '&notebook_id=' + $('#notebook_id').val();
-        // alert(viz_request);
-        show_viz(viz_request, from);
-    }
-
-    function show_viz(viz_request, from) {
-        if (from === 'query')
-            $("#query #viz_container").html('<iframe id="viz-iframe" ' +
-                'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
-                '></iframe>');
-        else
-            $("#dataframe #viz_container").html('<iframe id="viz-iframe" ' +
-                'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
-                '></iframe>');
-    }
+    // function show_viz(viz_request, from) {
+    //     if (from === 'query')
+    //         $("#query #viz_container").html('<iframe id="viz-iframe" ' +
+    //             'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+    //             '></iframe>');
+    //     else
+    //         $("#dataframe #viz_container").html('<iframe id="viz-iframe" ' +
+    //             'src="'+viz_request+'" frameborder="0" allowfullscreen="" '+
+    //             '></iframe>');
+    // }
 
 
-    $("#addVizModal #submit-query-btn").click(function () {
-        $('#query #viz_container iframe').appendTo('#dynamic_dashboard');
-        html_editor.replaceRange('\n<div id="viz_container"><div class="loadingFrame"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
-        html_editor.refresh();
-        viz_request = "";
-        $('#query #addVizModal #viz_container').empty();
-    });
+    // $("#addVizModal #submit-query-btn").click(function () {
+    //     $('#query #viz_container iframe').appendTo('#dynamic_dashboard');
+    //     html_editor.replaceRange('\n<div id="viz_container"><div class="loadingFrame"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
+    //     html_editor.refresh();
+    //     viz_request = "";
+    //     $('#query #addVizModal #viz_container').empty();
+    // });
 
     $("#addVizModal #submit-dataframe-btn").click(function () {
         $('#dataframe #viz_container iframe').appendTo('#dynamic_dashboard');

@@ -79,6 +79,7 @@ def clean(request, pk=None):
     # combine user and public datasets to show to the user
     user_datasets = user_datasets | public_datasets
     dataset_list = public_datasets | user_datasets | user_with_access_datasets
+    # dataset_list.order_by('order')
     organization_list = list(set([dataset.organization for dataset in dataset_list]))
     publisher_list = list(set([dataset.publisher for dataset in dataset_list]))
     # for dataset in dataset_list:
@@ -90,10 +91,10 @@ def clean(request, pk=None):
         'organizations': organization_list,
         'publishers': publisher_list,
         'variables': variable_list,
-        'datasets': dataset_list,
+        'datasets': dataset_list.order_by('order'),
         'dimensions': Dimension.objects.all(),
-        'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
-        'available_viz': Visualization.objects.filter(hidden=False).order_by('id'),
+        # 'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
+        'available_viz': Visualization.objects.filter(hidden=False).order_by('order'),
         'AGGREGATES': AGGREGATES,
     })
 

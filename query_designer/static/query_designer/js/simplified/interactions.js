@@ -46,6 +46,11 @@ $(function() {
                     });
                 }
 
+                if (($("#temporal_resolution").val() !== "") || ($("#spatial_resolution").val() !== "") || ($('[name="category"]').val().length > 0)){
+                    newVariable.aggregate = 'AVG';
+                    $fieldset.find("[name='field_aggregate']").val("AVG").trigger("change");
+                }
+
                 QueryToolbox.variables.push({
                     id: newVariable.id,
                     name: newVariable.name,

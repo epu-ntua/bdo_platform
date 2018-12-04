@@ -30,7 +30,7 @@ def create_new_service(request):
         saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
     else:
         saved_queries = []
-    available_viz = Visualization.objects.filter(hidden=False)
+    available_viz = Visualization.objects.filter(hidden=False).order_by('order')
     available_templates = ServiceTemplate.objects.all()
     if settings.TEST_SERVICES:
         service = Service.objects.get(pk=89)
@@ -310,6 +310,17 @@ def update_service_arguments(request):
 
 def submit_service_args(request, service_id):
     service = Service.objects.get(pk=int(service_id))
+    if service.title == 'Oil Spill Simulation Service':
+        output_html = service.output_html
+        soup = BeautifulSoup(str(output_html), 'html.parser')
+        service_result_container = soup.find(id="service_result_container")
+        innerHTML = ''
+        for c in service_result_container.contents:
+            innerHTML += str(c)
+
+        context = Context({"result": ''})
+        template = Template(innerHTML)
+        return HttpResponse(template.render(context))
     livy = service.through_livy
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now())
     service_exec.save()

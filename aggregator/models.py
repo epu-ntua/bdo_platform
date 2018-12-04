@@ -31,6 +31,7 @@ class Dataset(Model):
     title = TextField()
     source = TextField()
     description = TextField()
+    order = IntegerField(default=999)
     references = ArrayField(TextField(), null=True)
     stored_at = CharField(max_length=32, choices=DATASET_STORAGES, default='LOCAL_POSTGRES')
     table_name = CharField(max_length=200)
@@ -112,7 +113,7 @@ class BaseVariable(Model):
     name = CharField(max_length=256)
     title = CharField(max_length=256)
     unit = CharField(max_length=256)
-    # description = TextField(null=True)
+    description = TextField(null=True)
 
     class Meta:
         abstract = True

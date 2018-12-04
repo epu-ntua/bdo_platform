@@ -7,9 +7,24 @@
     <link href="{% static 'service_builder/css/mycss.css' %}" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
     <style>
         #loadImg{position:absolute;z-index:999;}
         #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
+        .outputLoadImg{
+            text-align: center;
+{#            display: block;#}
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            min-width: 100%;
+        }
+        .viz_item {
+            cursor: pointer;
+        }
         .popover{
             width: 500px;
             max-width: 600px;
@@ -96,6 +111,9 @@
 
     {# End Code Mirror    #}
 
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
+    <script src="{% static 'service_builder/js/visualisations.js' %}"></script>
 
     <script src="{% static 'service_builder/js/queries_tab.js' %}"></script>
     <script src="{% static 'service_builder/js/arguments_tab.js' %}"></script>
@@ -115,18 +133,23 @@
             <div class="modal-content">
                 <div class="modal-header text-center">
 {#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
-                    <h4 class="modal-title">Add a new visualisation to the dashboard</h4>
+                    <h4 class="modal-title">Add a new visualisation to the service</h4>
                 </div>
                 <div class="modal-body">
+                    {# LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN #}
+                    {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
+                    <div id="query-variables-select-container" hidden></div>
+                    <div id="query-dimensions-select-container" hidden ></div>
+
                     <ul class="nav nav-pills">
                         <li class="active"><a data-toggle="pill" id="queryPill" href="#query">From Query</a></li>
-                        <li><a data-toggle="pill" id="dataframePill" href="#dataframe">From Dataframe</a></li>
+{#                        <li><a data-toggle="pill" id="dataframePill" href="#dataframe">From Dataframe</a></li>#}
                     </ul>
                     <div class="tab-content">
                         <div id="query" class="tab-pane fade in active">
                             <div class="row text-left">
                                 <div id="load-viz-query-select-container">
-                                    <select id="load-viz-query-select" class="form-control" name="load-viz-query">
+                                    <select id="load-viz-query-select" class="form-control " name="load-viz-query">
                                         <option disabled selected>-- select one of the saved queries --</option>
                                         {% for query in saved_queries %}
                                             <option value="{{ query.id }}"
@@ -143,7 +166,7 @@
                             <div class="row" id="viz_config" style="display: none;">
                                 <ul class="list-group collapse in col-sm-2" style="width: 15%">
                                     {% for viz in available_viz %}
-                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                                        <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
                                     {% endfor %}
                                 </ul>
                                 <div id="viz_container" class="col-sm-8" style="width: 85%">
@@ -152,24 +175,24 @@
                             </div>
                         </div>
 
-                        <div id="dataframe" class="tab-pane fade">
-                            <div class="row text-left">
-                                <label for="selected_dataframe">Dataframe name:</label>
-                                <input id="selected_dataframe" class="form-control" name="selected_dataframe">
-                                </input>
-                            </div>
-
-                            <div class="row" id="viz_config" style="display: none;">
-                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                                    {% for viz in available_viz %}
-                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
-                                    {% endfor %}
-                                </ul>
-                                <div id="viz_container" class="col-sm-8" style="width: 85%">
-
-                                </div>
-                            </div>
-                        </div>
+{#                        <div id="dataframe" class="tab-pane fade">#}
+{#                            <div class="row text-left">#}
+{#                                <label for="selected_dataframe">Dataframe name:</label>#}
+{#                                <input id="selected_dataframe" class="form-control" name="selected_dataframe">#}
+{#                                </input>#}
+{#                            </div>#}
+{##}
+{#                            <div class="row" id="viz_config" style="display: none;">#}
+{#                                <ul class="list-group collapse in col-sm-2" style="width: 15%">#}
+{#                                    {% for viz in available_viz %}#}
+{#                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>#}
+{#                                    {% endfor %}#}
+{#                                </ul>#}
+{#                                <div id="viz_container" class="col-sm-8" style="width: 85%">#}
+{##}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
                     </div>
 
                 </div>

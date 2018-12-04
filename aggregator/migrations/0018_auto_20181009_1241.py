@@ -20,12 +20,12 @@ class Migration(migrations.Migration):
             model_name='dataset',
             name='state',
         ),
-        migrations.RemoveField(
-            model_name='dimension',
-            name='description',
-        ),
-        migrations.RemoveField(
-            model_name='variable',
-            name='description',
-        ),
+        # migrations.RemoveField(
+        #     model_name='dimension',
+        #     name='description',
+        # ),
+        # migrations.RemoveField(
+        #     model_name='variable',
+        #     name='description',
+        # ),
     ]
