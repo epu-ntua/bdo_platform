@@ -211,23 +211,50 @@ function pageScroll() {
                     "success": function (result) {
                         console.log(result);
                         $('#dashboard_pk').val(result.pk);
+                        var id = String(result.pk);
                         window.history.replaceState({}, 'a_title', '/dashboards/create/' + result.pk + '/');
-                        alert('Dashboard saved successfully!');
+                        // alert('Dashboard saved successfully!');
+                        // var message = "Dashboard saved successfully! <br/> You can view it <b><a style='text-decoration: underline;' href='/services/dashboard/"+id+"'/>here</a></b>!"
+                        $.notify({
+                              icon: "add_alert",
+                              message: "Dashboard saved successfully! <br/> You can view it <b><a style='text-decoration: underline' href='/services/dashboard/"+id+"/'>here</a></b>!"
+
+                          },{
+                              type: 'success',
+                              timer: 4000,
+                              placement: {
+                                  from: 'top',
+                                  align: 'right'
+                              }
+                          });
                     },
                     error:function(x,e) {
+                        var message='Saving dashboard failed!</br>';
                         if (x.status==0) {
-                            alert('You are offline!!\n Please Check Your Network.');
+                            message+='You are offline!!\n Please Check Your Network.';
                         } else if(x.status==404) {
-                            alert('Requested URL not found.');
+                            message+='Requested URL not found.';
                         } else if(x.status==500) {
-                            alert('Internel Server Error.');
+                            message+='Internel Server Error.';
                         } else if(e=='parsererror') {
-                            alert('Error.\nParsing JSON Request failed.');
+                            message+='Parsing JSON Request failed.';
                         } else if(e=='timeout'){
-                            alert('Request Time out.');
+                            message+='Request Time out.';
                         } else {
-                            alert('Unknow Error.\n'+x.responseText);
+                            message+='Unknow Error.\n'+x.responseText;
                         }
+                        $.notify({
+                              icon: "add_alert",
+                              message: message
+
+                          },{
+                              type: 'danger',
+                              timer: 4000,
+                              placement: {
+                                  from: 'top',
+                                  align: 'right'
+                              }
+                          });
                     }
                 });
         });
