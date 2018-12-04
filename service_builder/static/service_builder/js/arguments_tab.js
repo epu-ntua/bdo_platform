@@ -244,7 +244,7 @@ $(document).ready(function(){
 
 
         $('#query-argument-select').empty();
-        $('#query-argument-select').append('<option disabled selected>-- select one of the available filters --</option>');
+        $('#query-argument-select').append('<option disabled selected value="">-- select one of the available filters --</option>');
         // var keys = [];
         // for(var k in available_filter_args) keys.push(k);
         for(var query in available_filter_args){
@@ -252,10 +252,50 @@ $(document).ready(function(){
             for(var arg_idx in available_filter_args[query]['filter_args']) {
                 var display_name = available_filter_args[query]['display_name'];
                 var arg = available_filter_args[query]['filter_args'][arg_idx];
-                var arg_a = arg['a'];
+                var arg_a = arg['a'].split(/_(.+)/)[1];
                 var arg_op = arg['op'];
                 var arg_b = arg['b'];
-                $('#query-argument-select').append('<option  data-query-id="'+query+'" data-display_name="'+display_name+'" data-arg-a="'+arg_a+'" data-arg-op="'+arg_op+'" data-arg-b="'+arg_b+'" title="' + display_name + '-' + arg_a +' '+ arg_op +' '+ arg_b + '"> ' + display_name + '-' + arg_a +' '+ arg_op +' '+ arg_b + ' </option>');
+                var text_in_option = display_name + '-' + arg_a +' '+ arg_op +' '+ arg_b;
+                if (arg_op === 'inside_rect'){
+                    text_in_option =
+                        display_name + ' - ' +
+                        'Latitude between ' +
+                        '(' + String(arg_b).split('<<')[1].split(',')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[0] + ')' +
+                        ' and Longitude between ' +
+                        '(' + String(arg_b).split(',')[1].split('>')[0] + ', ' + String(arg_b).split('>,<')[1].split(',')[1].split('>>')[0] + ')' +
+                        ' degrees';
+                }
+                if (arg_op === 'gt'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '>' +' '+ arg_b;
+                }
+                if (arg_op === 'gte'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '>=' +' '+ arg_b;
+                }
+                if (arg_op === 'lt'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<' +' '+ arg_b;
+                }
+                if (arg_op === 'lte'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<=' +' '+ arg_b;
+                }
+                if (arg_op === 'eq'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '=' +' '+ arg_b;
+                }
+                if (arg_op === 'nqe'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<>' +' '+ arg_b;
+                }
+                if (arg_op === 'gt_time'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '>' +' '+ arg_b;
+                }
+                if (arg_op === 'gte_time'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '>=' +' '+ arg_b;
+                }
+                if (arg_op === 'lt_time'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<' +' '+ arg_b;
+                }
+                if (arg_op === 'lte_time'){
+                    text_in_option = display_name + ' - ' + arg_a +' '+ '<=' +' '+ arg_b;
+                }
+                $('#query-argument-select').append('<option  data-query-id="'+query+'" data-display_name="'+display_name+'" data-arg-a="'+arg_a+'" data-arg-op="'+arg_op+'" data-arg-b="'+arg_b+'" title="' + text_in_option + '"> ' + text_in_option + ' </option>');
             }
         }
 
@@ -274,7 +314,27 @@ $(document).ready(function(){
             new_arg_a = $(this).children(":selected").attr("data-arg-a");
             new_arg_op = $(this).children(":selected").attr("data-arg-op");
             new_arg_b = $(this).children(":selected").attr("data-arg-b");
-            $('.popover-content #filter_def_val').val(new_arg_b)
+            $('.popover-content #filter_def_val').val(new_arg_b).attr('disabled','disabled');
+            // alert(new_arg_op);
+            if (new_arg_op === 'inside_rect'){
+                $("#filter_type option").not('[value="SPATIAL_COV"]').attr('disabled',true);
+                $("#filter_type").find('option[value="SPATIAL_COV"]').attr("disabled", false);
+                $("#filter_type").val('SPATIAL_COV').trigger('change');
+                $("#filter_type").select2();
+            }
+            else if ((arg_op === 'gt_time') || (arg_op === 'gte_time') || (arg_op === 'lt_time') || (arg_op === 'lte_time')){
+                $("#filter_type option").not('[value="DATETIME"]').attr('disabled',true);
+                $("#filter_type").find('option[value="DATETIME"]').attr("disabled", false);
+                $("#filter_type").val('DATETIME').trigger('change');
+                $("#filter_type").select2();
+            }
+            else{
+                $("#filter_type option").attr("disabled", false);
+                $("#filter_type").find('option[value="SPATIAL_COV"]').attr('disabled',true);
+                $("#filter_type").find('option[value="DATETIME"]').attr('disabled',true);
+                $("#filter_type").val('FLOAT').trigger('change');
+                $("#filter_type").select2();
+            }
         });
 
 
@@ -421,12 +481,13 @@ $(document).ready(function(){
 
     function populate_select(selector){
         $(selector).empty();
+        $(selector).append('<option disabled selected value="">-- Select argument type --</option>');
         $(selector).append('<option value="INT">Integer</option>');
         $(selector).append('<option value="FLOAT">Float</option>');
-        $(selector).append('<option value="STRING">String</option>');
+        // $(selector).append('<option value="STRING">String</option>');
         $(selector).append('<option value="DATETIME">Date</option>');
         $(selector).append('<option value="SPATIAL_COV">Spatial Coverage</option>');
-        $(selector).append('<option value="SELECT">Select</option>');
+        // $(selector).append('<option value="SELECT">Select</option>');
 
     }
 
