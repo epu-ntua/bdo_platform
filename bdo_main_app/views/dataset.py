@@ -24,19 +24,22 @@ def dataset(request, dataset_id):
     column_list_string = column_list_string[1:]
     if dataset.stored_at == "UBITECH_PRESTO":
         try:
-            presto_credentials = settings.DATABASES['UBITECH_PRESTO']
-            conn_presto = prestodb.dbapi.connect(
-                host=presto_credentials['HOST'],
-                port=presto_credentials['PORT'],
-                user=presto_credentials['USER'],
-                catalog=presto_credentials['CATALOG'],
-                schema=presto_credentials['SCHEMA'],
-            )
-            cursor_presto = conn_presto.cursor()
-            query = "SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " LIMIT 5"
-            print query
-            cursor_presto.execute("SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " LIMIT 5")
-            rows_to_render = cursor_presto.fetchall()
+            # presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+            # conn_presto = prestodb.dbapi.connect(
+            #     host=presto_credentials['HOST'],
+            #     port=presto_credentials['PORT'],
+            #     user=presto_credentials['USER'],
+            #     catalog=presto_credentials['CATALOG'],
+            #     schema=presto_credentials['SCHEMA'],
+            # )
+            # cursor_presto = conn_presto.cursor()
+            # query = "SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " LIMIT 5"
+            # print query
+            # cursor_presto.execute("SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " LIMIT 5")
+            # rows_to_render = cursor_presto.fetchall()
+            rows_to_render = dataset.sample_rows['data']
+            column_list_titles = dataset.sample_rows['column_titles']
+            column_list_units = dataset.sample_rows['column_units']
         except Exception, e:
             print 'error'
             print str(e)
