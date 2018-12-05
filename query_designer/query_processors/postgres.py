@@ -593,18 +593,26 @@ def add_joins_to_chain_if_exist(all_joins_list, chain_list, chained_dimensions, 
 
 
 def get_min_max_dimension(dim):
-    cursor = connections['default'].cursor()
-    min_max_dim_query = build_min_max_dimension_query(dim)
+    # cursor = connections['default'].cursor()
+    # min_max_dim_query = build_min_max_dimension_query(dim)
+    # try:
+    #     cursor.execute(min_max_dim_query)
+    # except ProgrammingError as e:
+    #     print "query execution failed due to: ", e
+    #     return None
+    # res = cursor.fetchone()
+    res = None
     try:
-        cursor.execute(min_max_dim_query)
-    except ProgrammingError as e:
-        print "query execution failed due to: ", e
-        return None
-    res = cursor.fetchone()
+        min = Variable.objects.get(pk=int(dim[0])).dimensions.get(name=dim[1]).min
+        max = Variable.objects.get(pk=int(dim[0])).dimensions.get(name=dim[1]).max
+        if min is not None and max is not None:
+            res = (min, max)
+    except:
+        pass
     if res is not None:
         return res[0], res[1]
     else:
-        return (-1*sys.maxint), sys.maxint
+        return (-1 * sys.maxint), sys.maxint
 
 
 def build_min_max_dimension_query(dim):

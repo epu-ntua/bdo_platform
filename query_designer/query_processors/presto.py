@@ -545,7 +545,11 @@ def extract_dataset_id_from_varible_ids(variable_id):
 
 def is_same_range_joins(join_list):
     join_chain_list = create_join_chain_list_from_joins(join_list)
+    print 'join_chain_list'
+    print join_chain_list
     min_max_list = calculate_range_for_every_join_chain(join_chain_list)
+    print 'min_max_list'
+    print min_max_list
     return is_valid_range_all_chains(min_max_list)
 
 
@@ -607,14 +611,22 @@ def add_joins_to_chain_if_exist(all_joins_list, chain_list, chained_dimensions, 
 
 
 def get_min_max_dimension(dim):
-    cursor = connections['default'].cursor()
-    min_max_dim_query = build_min_max_dimension_query(dim)
+    # cursor = connections['default'].cursor()
+    # min_max_dim_query = build_min_max_dimension_query(dim)
+    # try:
+    #     cursor.execute(min_max_dim_query)
+    # except ProgrammingError as e:
+    #     print "query execution failed due to: ", e
+    #     return None
+    # res = cursor.fetchone()
+    res = None
     try:
-        cursor.execute(min_max_dim_query)
-    except ProgrammingError as e:
-        print "query execution failed due to: ", e
-        return None
-    res = cursor.fetchone()
+        min = Variable.objects.get(pk=int(dim[0])).dimensions.get(name=dim[1]).min
+        max = Variable.objects.get(pk=int(dim[0])).dimensions.get(name=dim[1]).max
+        if min is not None and max is not None:
+            res = (min, max)
+    except:
+        pass
     if res is not None:
         return res[0], res[1]
     else:
