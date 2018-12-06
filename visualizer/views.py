@@ -2514,7 +2514,7 @@ def get_data_table(request):
     try:
         query_pk, df, notebook_id = get_data_parameters(request, '')
         column_choice = request.GET.getlist('column_choice[]')
-        limit = 50
+        limit = 500
         offset = int(request.GET.get('offset', 0))
         if not column_choice:
             raise ValueError('At least one column of the given query has to be selected.')
