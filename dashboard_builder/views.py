@@ -18,19 +18,10 @@ def build_dynamic_dashboard(request):
         user = request.user
         if request.user.is_authenticated():
             saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
-            # saved_queries = []
+
         else:
             saved_queries = []
 
-        # datasets = dict()
-        # for q in saved_queries:
-        #     datasets[q.id] = []
-        #     for var in q.document['from']:
-        #         var_id = var['type']
-        #         dataset_id = Variable.objects.get(id=var_id).dataset_id
-        #         dataset = Dataset.objects.get(id=dataset_id)
-        #         if dataset not in datasets[q.id]:
-        #             datasets[q.id].append(dataset)
         variables_list = []
         dimensions_list = []
         var_list = Variable.objects.all()
@@ -51,7 +42,7 @@ def build_dynamic_dashboard(request):
             'saved_queries': saved_queries,
             'available_viz': Visualization.objects.filter(hidden=False).order_by('-type','-title'),
             'form_class': form_class,
-            'components': Visualization.objects.all().order_by('order'),
+            # 'components': Visualization.objects.all().order_by('order'),
             'form': form_class,
             'toCreate': toCreate,
             'variables_list': variables_list,
@@ -60,6 +51,42 @@ def build_dynamic_dashboard(request):
         })
     return None
 
+
+def edit_dashboard(request, pk= None):
+    if request.method == 'GET':
+        user = request.user
+        if request.user.is_authenticated():
+            saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
+        else:
+            saved_queries = []
+
+        variables_list = []
+        dimensions_list = []
+        var_list = Variable.objects.all()
+        dim_list = Dimension.objects.all()
+        for el in var_list:
+            if not (el.name in variables_list):
+                variables_list.append(el.name.encode('ascii'))
+        for el in dim_list:
+            if not (el.name in dimensions_list):
+                dimensions_list.append(el.name.encode('ascii'))
+        toCreate = "None"
+        form_class = forms.CkEditorForm
+        dashboard = Dashboard.objects.get(pk=pk)
+        return render(request, 'dashboard_builder/dashboard_editor_new.html', {
+            'dashboard': dashboard,
+            'dashboard_json':json.dumps(dashboard.viz_components),
+            'dashboard_pk': pk,
+            'dashboard_title': dashboard.title,
+            'sidebar_active': 'products',
+            'saved_queries': saved_queries,
+            'available_viz': Visualization.objects.filter(hidden=False).order_by('-type', '-title'),
+            'form': form_class,
+            'toCreate': toCreate,
+            'variables_list': variables_list,
+            'dimensions_list': dimensions_list,
+        })
+    return None
 
 def get_visualization_form_fields(request):
     viz_id = request.GET.get('id')
@@ -128,26 +155,4 @@ def save_dashboard(request, pk=None):
         'pk': dashboard.pk,
     })
 
-def edit_dashboard(request, pk= None):
-    if request.method == 'GET':
-        user = request.user
-        if request.user.is_authenticated():
-            saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
-        else:
-            saved_queries = []
 
-        toCreate = "None"
-        form_class = forms.CkEditorForm
-
-        dashboard = Dashboard.objects.get(pk=pk)
-        return render(request, 'dashboard_builder/dashboard_editor.html', {
-            'dashboard': dashboard,
-            'dashboard_pk': pk,
-            'dashboard_title': dashboard.title,
-            'sidebar_active': 'products',
-            'saved_queries': saved_queries,
-            'components': Visualization.objects.all().order_by('id'),
-            'form': form_class,
-            'toCreate': toCreate,
-        })
-    return None

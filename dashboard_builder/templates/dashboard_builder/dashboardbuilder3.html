@@ -19,8 +19,9 @@
                 cursor:help;
             }
         </style>
-        <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}"/>
     {% endfor %}
+    <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}"/>
+
 
 {% endblock %}
 
@@ -47,7 +48,7 @@
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
                 data-target="#myModal">
-            <i class="fa fa-plus-circle o-white"></i> New widget
+            <i class="fa fa-plus-circle o-white"></i> New Widget
         </button>
 
         <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" style="display: none">
@@ -121,7 +122,6 @@
                     <div class="tab-content">
                         <div class="text-center">
                             <h4 class="modal-title">Add a new widget to the dashboard</h4>
-
                             <ul class="nav nav-pills">
                               <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
                               <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
@@ -231,7 +231,6 @@
 
 
                         <div class="row tab-pane fade" id="viz_note"></div>
-
                         <input type="hidden" id="selected_query" value="">
                     </div>
 
