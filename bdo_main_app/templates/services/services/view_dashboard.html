@@ -9,12 +9,13 @@
 {% block content %}
 
     <h1 class="text-center">{{ dashboard.title }}</h1>
-
-    <div class="row">
-        <a href="/dashboards/edit/{{ dashboard.id }}/" class="btn btn-default btn-md pull-left bg-color--blue" style="">
-            <i class="fas fa-edit"></i> Edit Dashboard
-        </a>
-    </div>
+    {% if is_owner %}
+        <div class="row">
+            <a href="/dashboards/edit/{{ dashboard.id }}/" class="btn btn-default btn-md pull-left bg-color--blue" style="">
+                <i class="fas fa-edit"></i> Edit Dashboard
+            </a>
+        </div>
+    {% endif %}
 
     <div>
          <div ng-app="myApp" ng-controller="MainCtrl">

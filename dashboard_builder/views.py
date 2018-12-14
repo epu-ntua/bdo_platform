@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
-
+from django.http import HttpResponseForbidden
+from django.core.exceptions import PermissionDenied
 from query_designer.models import Query
 from visualizer.models import Visualization
 from dashboard_builder.models import Dashboard
@@ -52,13 +53,19 @@ def build_dynamic_dashboard(request):
     return None
 
 
-def edit_dashboard(request, pk= None):
+def edit_dashboard(request, pk = None):
     if request.method == 'GET':
         user = request.user
         if request.user.is_authenticated():
             saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
         else:
             saved_queries = []
+        dashboard = Dashboard.objects.get(pk=pk)
+        try:
+            if dashboard.user_id != user.id:
+                raise PermissionDenied
+        except:
+            return HttpResponseForbidden()
 
         variables_list = []
         dimensions_list = []
@@ -72,7 +79,6 @@ def edit_dashboard(request, pk= None):
                 dimensions_list.append(el.name.encode('ascii'))
         toCreate = "None"
         form_class = forms.CkEditorForm
-        dashboard = Dashboard.objects.get(pk=pk)
         return render(request, 'dashboard_builder/dashboard_editor_new.html', {
             'dashboard': dashboard,
             'dashboard_json':json.dumps(dashboard.viz_components),

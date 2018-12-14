@@ -46,7 +46,6 @@ def convert_unicode_json(data):
 def view_dashboard(request, pk):
     user = request.user
     dashboard = Dashboard.objects.get(pk=pk)
-
     # check for the access
     try:
         access_decision = PEP.access_to_dashboard(request, dashboard.id)
@@ -54,12 +53,16 @@ def view_dashboard(request, pk):
             raise PermissionDenied
     except:
         return HttpResponseForbidden()
-
+    # check if user is the owner or just has been granted access
+    owner = False
+    if dashboard.user_id == user.id:
+        owner = True
     dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
     print dashboard.viz_components
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
         'pk': pk,
+        'is_owner':owner
     })
 
 
