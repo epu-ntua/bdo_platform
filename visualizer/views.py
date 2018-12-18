@@ -1940,17 +1940,19 @@ def get_histogram_chart_am(request):
             where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
         except:
             where_clause = ''
-        bins -= 1
 
-        raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
-                    histogram as (select width_bucket({0}, min, max, {2}) ,
-                     (min({0}), max({0})) as range,
-                     count(*) as freq from {1}, drb_stats {3}
-                     group by 1
-                     order by 1)
-                    select range, freq
-                    from histogram""".format(table_col, from_table, bins, where_clause)
+        raw_query = """with min_max as (select min({0}) as min,max({0}) as max from {1} {3}),
+                    x as (select width_bucket({0}, min, max+1e-10, {2}) as bucket, 
+                    count(*) as cnt
+                    from {1},min_max {3}
+                    group by 1
+                    order by 1)
+                    select 
+                      (min + ((bucket-1) * (max - min)/{2}), 
+                      (min + (bucket) * (max - min)/{2})), cnt  
+                    from x, min_max""".format(table_col, from_table, bins, where_clause)
 
+        print(raw_query)
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
 
         result = execute_query_method(query)[0]
@@ -2514,7 +2516,7 @@ def get_data_table(request):
     try:
         query_pk, df, notebook_id = get_data_parameters(request, '')
         column_choice = request.GET.getlist('column_choice[]')
-        limit = 50
+        limit = 500
         offset = int(request.GET.get('offset', 0))
         if not column_choice:
             raise ValueError('At least one column of the given query has to be selected.')
