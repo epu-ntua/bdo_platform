@@ -1923,15 +1923,16 @@ def get_histogram_chart_am(request):
         raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
                     histogram as (select width_bucket({0}, min, max, {2}) ,
                      (min({0}), max({0})) as range,
-                     count(*) as freq from {1}, drb_stats {3}
+                     count(*) as freq from {1}, drb_stats {3} where {0} IS NOT NULL
+
                      group by 1
                      order by 1)
                     select range, freq
                     from histogram""".format(table_col, from_table, bins, where_clause)
 
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
-
-        result = execute_query_method(query)[0]
+        print raw_query
+        # result = execute_query_method(query)[0]
 
         cursor.execute(raw_query)
         data = cursor.fetchall()
