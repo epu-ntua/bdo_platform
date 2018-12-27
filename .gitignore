@@ -114,5 +114,6 @@ aggregator/datasets
 /bdo_platform/settings_management/development_smouzakitis.py
 /bdo_platform/settings_management/development_spitsios.py
 /bdo_platform/settings_management/development_tfyts.py
+/bdo_platform/settings_management/development_ctsap.py
 /templates/map.html
 /templates/map1.html
