@@ -8,11 +8,11 @@ from json import JSONEncoder
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
 
-from bdo_platform.settings_management.development_dpap import DOCUMENT_STORE_URL, DOCUMENT_STORE_DB
+from django.conf import settings
 
 
 def get_mongo_db():
-    return MongoClient(DOCUMENT_STORE_URL).get_database(name=DOCUMENT_STORE_DB)
+    return MongoClient(settings.DOCUMENT_STORE_URL).get_database(name=settings.DOCUMENT_STORE_DB)
 
 
 class MongoEncoder(JSONEncoder):
