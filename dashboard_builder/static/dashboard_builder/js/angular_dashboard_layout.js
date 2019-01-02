@@ -112,9 +112,9 @@ function pageScroll() {
             $("#dismiss-modal-btn").click(function () {
                 $scope.standardItems.pop();
                 $scope.$apply();
-                $('#myModal #viz_container').html('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' + '  </div>');
+                // $('#myModal #viz_container').html('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' + '  </div>');
                 $('.viz_item').popover('hide');
-                $('#myModal #viz_config').hide();
+                // $('#myModal #viz_config').hide();
                 $('#myModal #submit-modal-btn').hide();
             });
 
@@ -167,6 +167,9 @@ function pageScroll() {
                 if (prebuiltViz != 'None') {
                     makeWidget();
                     var tempid = "#widget" + $scope.counter;
+                    $(tempid).append('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' +' </div>');
+                    $('#viz_container iframe').appendTo(tempid);
+                    $(tempid).find(".loadingFrame").css( "display", "block" );
                     var decodedViz = decodeURIComponent(prebuiltViz);
                     var prebuildIFrameString = "<iframe class='iframe-class' id='viz-iframe' " +
                     "src='" + decodedViz + "' frameborder='0' allowfullscreen='' " +
@@ -174,10 +177,14 @@ function pageScroll() {
                     var prebuildIFrameItem= $.parseHTML(prebuildIFrameString);
                     var helperfunc = function(){
                         $(tempid).append(prebuildIFrameItem[0]);
+                        $(tempid).find("iframe").on( "load", function(){
+                            $(this).siblings(".loadingFrame").css( "display", "none" );
+                        });
                     };
                     setTimeout(helperfunc ,250);
                     $scope.standardItems[$scope.standardItems.length - 1].url = decodedViz;
                     $('#save_dashboard_btn').show();
+
                 }
             });
 

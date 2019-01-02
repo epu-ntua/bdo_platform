@@ -29,7 +29,12 @@ $("#select_data_popover").click(function () {
             var vis_created_flag = false;
 
             $("#new_widget_btn").click(function () {
-                $('#submit-modal-btn').hide();
+                $("#myModal #viz_container").empty();
+                $('#myModal #submit-modal-btn').hide();
+                $('#myModal #add_layer_btn').parent().hide();
+                $('#myModal #layers-list').parent().hide();
+
+
             })
             $("#add_layer_btn").parent().click(function () {
                 $(this).hide();
@@ -117,7 +122,10 @@ $("#select_data_popover").click(function () {
                     $('#query_name_span').show();
                     $('#query_name_span').text(new_query_text);
                     $('#myModal #select_data_popover').popover("hide");
-                    $('#viz_config').show();
+                    $('#myModal #viz_config .list-group').show();
+                    $('#myModal #viz_config #viz_container').show();
+                    // $('#add_layer_btn').parent().hide();
+                    // $('#layers-list').parent().hide();
                     $(".list-group").css('visibility','visible');
                 })
                 $('.popover-content #select_data_cancel').click(function (e) {
@@ -430,9 +438,9 @@ $("#select_data_popover").click(function () {
                 refresh_visualisation_modal();
                 $('#select_viz_popover').prop('disabled', true);
                 $('#select_conf_popover').prop('disabled', true);
-                $('#myModal #viz_container').html('<div class="loadingFrame">' +
-                    '                    <img src="' + img_source_path + '"/>' +
-                    '                </div>');
+                // $('#myModal #viz_container').html('<div class="loadingFrame">' +
+                //     '                    <img src="' + img_source_path + '"/>' +
+                //     '                </div>');
             });
 
             $("#myModal #submit-modal-btn").click(function () {
@@ -454,8 +462,8 @@ $("#select_data_popover").click(function () {
                 selected_visualization = null;
                 first_time = true ;
                 vis_created_flag = false;
-                $('#add_layer_btn').parent().hide();
-                $('#layers-list').parent().hide();
+                $('#myModal #viz_config #add_layer_btn').parent().hide();
+                $('#myModal #viz_config #layers-list').parent().hide();
                 $("#viz_config .list-group").children().each(function () {
                     $(this).find("#selected_viz_span").hide();
                 });
@@ -463,7 +471,9 @@ $("#select_data_popover").click(function () {
                         $(this).removeClass('disabled');
                 });
                 $('.viz_item').popover('hide');
-                $('#myModal #viz_config').hide();
+                $('#myModal #viz_config .list-group').hide();
+                $('#myModal #viz_config #viz_container').hide();
+
 
             }
 

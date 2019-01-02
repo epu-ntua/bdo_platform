@@ -62,7 +62,7 @@ def view_dashboard(request, pk):
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
         'pk': pk,
-        'is_owner':owner
+        'is_owner': owner
     })
 
 

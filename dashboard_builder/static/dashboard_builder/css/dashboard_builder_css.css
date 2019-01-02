@@ -26,7 +26,10 @@
     background-color: #b6b6b6;
 }
 
-.loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
+
+.loadingFrame{position:absolute;z-index:999;display:block;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
+
+
 .viz_item{
     cursor: pointer;
     font-size: 10.5pt;

@@ -12,7 +12,7 @@ from aggregator.models import *
 from . import forms
 
 import json
-
+import collections
 def build_dynamic_dashboard(request):
 
     if request.method == 'GET':
@@ -52,8 +52,17 @@ def build_dynamic_dashboard(request):
         })
     return None
 
+def convert_unicode_json(data):
+    if isinstance(data, basestring):
+        return str(data)
+    elif isinstance(data, collections.Mapping):
+        return dict(map(convert_unicode_json, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(convert_unicode_json, data))
+    else:
+        return data
 
-def edit_dashboard(request, pk = None):
+def edit_dashboard(request, pk=None):
     if request.method == 'GET':
         user = request.user
         if request.user.is_authenticated():
@@ -79,9 +88,11 @@ def edit_dashboard(request, pk = None):
                 dimensions_list.append(el.name.encode('ascii'))
         toCreate = "None"
         form_class = forms.CkEditorForm
+        dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
+        print dashboard.viz_components
         return render(request, 'dashboard_builder/dashboard_editor_new.html', {
             'dashboard': dashboard,
-            'dashboard_json':json.dumps(dashboard.viz_components),
+            'dashboard_json': json.dumps(dashboard.viz_components),
             'dashboard_pk': pk,
             'dashboard_title': dashboard.title,
             'sidebar_active': 'products',

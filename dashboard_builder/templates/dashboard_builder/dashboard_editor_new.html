@@ -62,9 +62,10 @@
         <div id="dynamic_dashboard" gridster="gridsterOpts">
             <ul id="widgetParent">
                 <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
+{#                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">#}
                     <div class='wrap1'></div>
-                    <header class="iframeHeader">
-                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
+                    <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-class="{'titleNote': item.url == ''}" ng-model="item.title">
                         {% load  static %}
                         <input type='button' value='X' class='deletebtn'
                                style="background-image: url({% static "images/exitBtn.png" %})"
@@ -73,7 +74,7 @@
                     <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.url" >
                         <div class="ng-wrapper" ng-switch-when="true">
                             <div class="loadingFrame"><img src="{% static 'img/loading_gif.gif' %}"/></div>
-                            <iframe  class="iframe-class" src=[[item.url]] frameborder='0' onLoad="hideLoadGif( this, event )" ></iframe>
+                            <iframe  class="iframe-class" src=[[item.url]] frameborder='0' onLoad="hideGif( this, event )" ></iframe>
                         </div>
                     </div>
                     <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.noteData">
@@ -160,8 +161,8 @@
                                 </button>
                             </div>
 
-                            <div class="row" id="viz_config" style="display: none">
-                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                            <div class="row" id="viz_config">
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%; display: none">
                                     {% for viz in available_viz %}
                                         <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
                                             <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
@@ -181,10 +182,10 @@
                                         </div>
                                     </div>
 
-                                    <div id="viz_container" class="col-sm-8" style="width: 85%">
-                                        <div class="loadingFrame">
-                                            <img src="{% static 'img/loading_gif.gif' %}"/>
-                                        </div>
+                                    <div id="viz_container" class="col-sm-8" style="width: 85%; display: none">
+{#                                        <div class="loadingFrame">#}
+{#                                            <img src="{% static 'img/loading_gif.gif' %}"/>#}
+{#                                        </div>#}
 
                                     </div>
                                 </div>
@@ -262,15 +263,15 @@
     </script>
     <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
 {#    <script type="text/javascript" src="{% static 'dashboard_builder/js/angular_dashboard_layout.js' %}"></script>#}
+{#    <script>#}
+{#        function hideLoadGif( elem, event ){#}
+{#            $(elem).siblings(".loadingFrame").css( "display", "none" );#}
+{#        }#}
+{#    </script>#}
     <script>
-        function hideLoadGif( elem, event ){
-            $(elem).siblings(".loadingFrame").css( "display", "none" );
-        }
-    </script>
-    <script>
-    function pageScroll() {
-                $('#main-panel').scrollTop();
-            }
+{#    function pageScroll() {#}
+{#                $('#main-panel').scrollTop();#}
+{#            }#}
         var app = angular.module('myApp', ['gridster','ngSanitize']);
 
         app.config(function ($interpolateProvider) {
@@ -318,14 +319,15 @@
 
             $scope.standardItems = [];
 
-{#            function toggleSaveBtn() {#}
-{#                if ($('#widgetParent li').length > 0 ){#}
-{#                    $('#save_dashboard_btn').show();#}
-{#                }#}
-{#                else{#}
-{#                    $('#save_dashboard_btn').hide();#}
-{#                }#}
-{#            }#}
+            $scope.clear = function () {
+                $scope.standardItems = [];
+            };
+
+            $scope.removeWidget = function (item) {
+                var index = $scope.standardItems.indexOf(item);
+                $scope.standardItems.splice(index, 1);
+            };
+
 
 
             $("#myModal #submit-modal-btn").click(function () {
@@ -334,10 +336,10 @@
 
                 $scope.standardItems[$scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
 
-                $(tempid).append('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' +' </div>');
+{#                $(tempid).append('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' +' </div>');#}
 {#                $('#viz_container iframe').appendTo(tempid);#}
                 $scope.$apply();
-                toggleSaveBtn();
+{#                toggleSaveBtn();#}
                 $(tempid).find(".loadingFrame").css( "display", "block" );
                 $(tempid).find("iframe").on( "load", function(){
                     $(this).siblings(".loadingFrame").css( "display", "none" );
@@ -385,9 +387,9 @@
             $("#dismiss-modal-btn").click(function () {
                 $scope.standardItems.pop();
                 $scope.$apply();
-                $('#myModal #viz_container').html('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' + '  </div>');
+{#                $('#myModal #viz_container').html('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' + '  </div>');#}
                 $('.viz_item').popover('hide');
-                $('#myModal #viz_config').hide();
+{#                $('#myModal #viz_config').hide();#}
                 $('#myModal #submit-modal-btn').hide();
             });
 
@@ -414,13 +416,13 @@
 {#                $('#submit-modal-btn').show();#}
                 $('#modal-tab-data').trigger('click');
             });
-            $('#scroll_down_area').mouseenter(function () {
-                window.scrollBy(0, 40);
-                scrolldelay = setTimeout('pageScroll()', 200);
-            });
-            $('#scroll_down_area').mouseleave(function () {
-                clearTimeout(scrolldelay);
-            });
+{#            $('#scroll_down_area').mouseenter(function () {#}
+{#                window.scrollBy(0, 40);#}
+{#                scrolldelay = setTimeout('pageScroll()', 200);#}
+{#            });#}
+{#            $('#scroll_down_area').mouseleave(function () {#}
+{#                clearTimeout(scrolldelay);#}
+{#            });#}
             $scope.finished = function () {
                 var tempid = "widget" + $scope.counter;
                 $('#viz_container iframe').appendTo(tempid);
@@ -441,12 +443,12 @@
                 var viz_components = JSON.parse('{{ dashboard_json |escapejs}}');
                 for (var key in viz_components) {
                     if (viz_components.hasOwnProperty(key)) {
-                        console.log(key + " -> " + viz_components[key]);
+{#                        console.log(key + " -> " + viz_components[key]);#}
                         var count;
                         var array = viz_components[key];
-                        for (count=0; count< array.length;count++){
-                            console.log(String(count)+'. '+String(array[count]));
-                        }
+{#                        for (count=0; count< array.length;count++){#}
+{#                            console.log(String(count)+'. '+String(array[count]));#}
+{#                        }#}
                         $scope.standardItems.push({
                         sizeX: parseInt(array[1]),
                         sizeY: parseInt(array[2]),
@@ -598,6 +600,9 @@
                 });
             });
         });
+        function hideGif( elem, event ){
+            $(elem).siblings(".loadingFrame").css( "display", "none" );
+        }
 
 
     </script>
