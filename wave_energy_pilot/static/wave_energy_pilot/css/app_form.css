@@ -1,0 +1,19 @@
+#app_form{
+    position: absolute;
+    right: 0;
+    z-index: 2;
+    background-color: white;
+    width: 25%;
+    top: 29%;
+    /*margin-top: 270px;*/
+}
+
+#chart-sidebar{
+    width: 100%;
+}
+
+
+
+.app-selector{
+    padding-top: 10px;
+}
