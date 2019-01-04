@@ -1,6 +1,6 @@
 from django.conf.urls import url
-from . import views
+from wave_energy_pilot import views
 
 urlpatterns = [
-    # url(r'^$', views.upload_form, name='upload-form'),
+    url(r'^$', views.init, name='wave_energy_init'),
 ]
