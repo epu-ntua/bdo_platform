@@ -1,6 +1,7 @@
 $("#select_data_popover").click(function () {
             $('.viz_item').popover('hide');
         });
+        var open_modal= false;
         var new_query_id;
         // {#Variable to store active ckeditor version #}
         var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
@@ -175,6 +176,7 @@ $("#select_data_popover").click(function () {
 
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id + ' #select_conf_ok').click(function (e) {
+                    open_modal=true;
                     selected_visualization = $(component_selector).text();
                     $("#viz_config .list-group").children().each(function () {
                         $(this).find("#selected_viz_span").hide();
@@ -336,6 +338,7 @@ $("#select_data_popover").click(function () {
                 var myData;
                 $('#add_layer_btn').parent().hide();
                 $('#layers-list').parent().hide();
+                $('#myModal #submit-modal-btn').hide();
                 if(component_type!='map') {
                     var viz_request = "/visualizations/";
                     viz_request += $('#myModal').find('.modal-body').find('#action').val();
@@ -419,18 +422,20 @@ $("#select_data_popover").click(function () {
                     '></iframe>');
 
 
-                $('#myModal #submit-modal-btn').show();
+                // $('#myModal #submit-modal-btn').show();
                 $("#myModal #viz_container .loadingFrame").css( "display", "block" );
                 $("#myModal #viz_container iframe").on( "load", function(){
                     $(this).siblings(".loadingFrame").css( "display", "none" );
                     var execution_flag = $(this).contents().find('.visualisation_execution_input').val();
-                    if ((execution_flag === 'success')&&(comp_type === 'map')){
+                    if ((execution_flag === 'success')&&(comp_type === 'map')&&(open_modal === true)){
                         $('#add_layer_btn').parent().show();
                         $('#layers-list').parent().show();
+                        $('#myModal #submit-modal-btn').show();
                     }
                     else{
                         $('#add_layer_btn').parent().hide();
                         $('#layers-list').parent().hide();
+                        $('#myModal #submit-modal-btn').hide();
                     }
                 });
             }
@@ -455,6 +460,7 @@ $("#select_data_popover").click(function () {
             });
 
             function refresh_visualisation_modal(){
+                open_modal = false;
                 $('#layers-list ul').empty();
                 $("#query_name_span").text(null);
                 layer_count = 0;
