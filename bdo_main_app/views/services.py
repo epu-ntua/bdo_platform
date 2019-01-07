@@ -11,7 +11,7 @@ from service_builder.models import Service
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from access_controller.policy_enforcement_point import PEP
-
+from django.views.decorators.cache import never_cache
 
 def services(request):
     user = request.user
@@ -42,7 +42,7 @@ def convert_unicode_json(data):
     else:
         return data
 
-
+@never_cache
 def view_dashboard(request, pk):
     user = request.user
     dashboard = Dashboard.objects.get(pk=pk)
