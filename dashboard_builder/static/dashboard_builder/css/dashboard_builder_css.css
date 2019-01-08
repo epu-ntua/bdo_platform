@@ -125,10 +125,27 @@ ul {
     border: none;
     color: white;
     width: 30px;
+    font-weight: bold;
 }
 
 .deletebtn:hover{
     background-color: #9e0000;
+    cursor: pointer;
+}
+
+.editnotebtn{
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: transparent;
+    height: 37px;
+    border: none;
+    color: white;
+    width: 37px;
+}
+
+.editnotebtn:hover{
+    background-color: #273a4e !important;
     cursor: pointer;
 }
 

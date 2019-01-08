@@ -45,6 +45,7 @@
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
         <span class="pull-left"><input type="checkbox" name="private" value="True" checked/> Private<br></span>
     </div>
+
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
                 data-target="#myModal">
@@ -64,11 +65,11 @@
             <ul id="widgetParent">
                 <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
                     <div class='wrap1'></div>
-                    <header class="iframeHeader">
-                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
+                    <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
                         {% load  static %}
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
                         <input type='button' value='X' class='deletebtn'
-{#                               style="background-image: url({% static "images/exitBtn.png" %})"#}
+                               style="background-image: url({% static "img/exitBtn.png" %})"
                                ng-click="removeWidget(item);">
                     </header>
 
@@ -109,7 +110,25 @@
 
 
 {% block modal %}
+    <div id="editNoteModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h3 class="modal-title">Edit Widget Content</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="change_note"></div>
+                </div>
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-change-btn">Save
+                    </button>
+                    <button style="margin-left: 10px" type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-change-btn">Cancel
+                    </button>
+                </div>
 
+            </div>
+        </div>
+    </div>
 
     <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">

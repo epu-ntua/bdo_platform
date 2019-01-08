@@ -1,10 +1,13 @@
 $("#select_data_popover").click(function () {
             $('.viz_item').popover('hide');
         });
+        var widget_open_edit_modal = null;
+        var widget_edit_id = null;
         var open_modal= false;
         var new_query_id;
         // {#Variable to store active ckeditor version #}
-        var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
+        var textEditNote = CKEDITOR.appendTo('change_note');
+        var textEditor = CKEDITOR.appendTo('viz_note');
         // {#Function to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
             var viz_success = null;
@@ -34,7 +37,6 @@ $("#select_data_popover").click(function () {
                 $('#myModal #submit-modal-btn').hide();
                 $('#myModal #add_layer_btn').parent().hide();
                 $('#myModal #layers-list').parent().hide();
-
 
             })
             $("#add_layer_btn").parent().click(function () {
@@ -439,6 +441,7 @@ $("#select_data_popover").click(function () {
                     }
                 });
             }
+
             $("#dismiss-modal-btn").click(function m(e) {
                 refresh_visualisation_modal();
                 $('#select_viz_popover').prop('disabled', true);
