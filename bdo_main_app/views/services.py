@@ -1,5 +1,5 @@
 from datetime import timedelta
-
+import json
 import collections
 from django.contrib.auth.models import User
 from django.shortcuts import render
@@ -61,6 +61,7 @@ def view_dashboard(request, pk):
     print dashboard.viz_components
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
+        'dashboard_json': json.dumps(dashboard.viz_components),
         'pk': pk,
         'is_owner': owner
     })

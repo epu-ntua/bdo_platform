@@ -21,7 +21,7 @@
          <div ng-app="myApp" ng-controller="MainCtrl">
             <div id="dynamic_dashboard" gridster="gridsterOpts">
                 <ul id="widgetParent">
-                    <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">
+                    <li id="[[item.id]]" gridster-item="item" ng-repeat="item in standardItems">
                         <div class='wrap1'></div>
                         <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
                             <p class="widget-title" ng-class="{'titleNote': item.url == ''}" ng-bind="item.title"> </p>
@@ -134,61 +134,89 @@
 
             {#Initializing widgets from database and setting content#}
             var init = function (){
-                 {% for order, url in dashboard.viz_components.items %}
-                     var tempinfo= "{{ url }}";
-                     tempinfo = tempinfo.replace(/u&#39;/g, '"');
-                     tempinfo = tempinfo.replace(/&#39;/g, '"');
-                     tempinfo=tempinfo.replace(/u&quot;/,'"');
-                     tempinfo=tempinfo.replace(/&quot;/,'"');
+{#                 {% for order, url in dashboard.viz_components.items %}#}
+                var viz_components = JSON.parse('{{ dashboard_json |escapejs}}');
+                for (var key in viz_components) {
+                    if (viz_components.hasOwnProperty(key)) {
+                        console.log(key + " -> " + viz_components[key]);
+                        var count;
+                        $scope.counter++
+                        var array = viz_components[key];
+{#                        for (count=0; count< array.length;count++){#}
+{#                            console.log(String(count)+'. '+String(array[count]));#}
+{#                        }#}
+                        $scope.standardItems.push({
+                        sizeX: parseInt(array[1]),
+                        sizeY: parseInt(array[2]),
+                        row: parseInt(array[3]),
+                        col: parseInt(array[4]),
+                        url:array[0] ,
+                        noteData: array[6] ,
+                        title:array[5],
+                        id: array[7]
+                    });
+
+                    }
+                }
+
+            $scope.gridsterOpts.floating = true;
+            };
+{#            var init = function (){#}
+{#                 {% for order, url in dashboard.viz_components.items %}#}
+{#                     var tempinfo= "{{ url }}";#}
+{#                     tempinfo = tempinfo.replace(/u&#39;/g, '"');#}
+{#                     tempinfo = tempinfo.replace(/&#39;/g, '"');#}
+{#                     tempinfo=tempinfo.replace(/u&quot;/,'"');#}
+{#                     tempinfo=tempinfo.replace(/&quot;/,'"');#}
 {#                     tempinfo=tempinfo.replace("[","");#}
 {#                     tempinfo=tempinfo.replace("]","");#}
-                     tempinfo = tempinfo.slice(1,-1);
-                     var nth= 13;
-                     var toslice = 0;
-                     for(var i=0 ; i<tempinfo.length ;i++){
-                         if(tempinfo.charAt(i) == '"'){
-                             if(!--nth){
-                                 toslice = i;
-                             }
-                         }
-                     }
-
-                     var info = tempinfo.split("," , 6);
-
-                     tempinfo= tempinfo.slice(toslice + 1);
-
-
-                    $scope.counter++;
-
-                    var tempid="widget" + $scope.counter;
+{#                     tempinfo = tempinfo.slice(1,-1);#}
+{#                     var nth= 13;#}
+{#                     var toslice = 0;#}
+{#                     for(var i=0 ; i<tempinfo.length ;i++){#}
+{#                         if(tempinfo.charAt(i) == '"'){#}
+{#                             if(!--nth){#}
+{#                                 toslice = i;#}
+{#                             }#}
+{#                         }#}
+{#                     }#}
+{##}
+{#                     var info = tempinfo.split("," , 6);#}
+{##}
+{#                     tempinfo= tempinfo.slice(toslice + 1);#}
+{##}
+{##}
+{#                    $scope.counter++;#}
+{##}
+{#                    var tempid="widget" + $scope.counter;#}
                     {#$scope.iframeSource = info[0];#}
-                     var noteDataEncoded = tempinfo;
-                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();
+{#                     var noteDataEncoded = tempinfo;#}
+{#                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();#}
                      {#noteDataDecoded= noteDataDecoded.substr(1);#}
                      {#if(noteDataDecoded.charAt(0)=="u"){#}
                      {#    if(noteDataDecoded.charAt(1)=="\""){#}
                      {#        noteDataDecoded= noteDataDecoded.substr(2);#}
                      {#    }#}
                      {# }#}
-                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);
-
+{#                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);#}
+{##}
                                           {#alert(noteDataDecoded);#}
-
+{##}
                      {#noteDataDecode=noteDataDecode.encode("utf-8");#}
-
+{##}
                      {#alert(info[0]);#}
-                     for(var i=0 ; i < 6; i++)
-                     {
-                         if(i!= 0)
-                            info[i] = info[i].slice(2,-1);
-                         else
-                             info[i] = info[i].slice(1,-1);
-                     }
+{#                     for(var i=0 ; i < 6; i++)#}
+{#                     {#}
+{#                         if(i!= 0)#}
+{#                            info[i] = info[i].slice(2,-1);#}
+{#                         else#}
+{#                             info[i] = info[i].slice(1,-1);#}
+{#                     }#}
                      {#alert(info[0]);#}
-
-                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded ,title:info[5]});
-                {% endfor %}
-            };
+{##}
+{#                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded ,title:info[5]});#}
+{#                {% endfor %}#}
+{#            };#}
 
             init();
         });

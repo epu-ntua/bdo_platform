@@ -61,8 +61,7 @@
     <div ng-app="myApp" ng-controller="MainCtrl">
         <div id="dynamic_dashboard" gridster="gridsterOpts">
             <ul id="widgetParent">
-                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
-{#                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">#}
+                <li id="[[item.id]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
                     <div class='wrap1'></div>
                     <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
                         <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-class="{'titleNote': item.url == ''}" ng-model="item.title">
@@ -120,23 +119,19 @@
 
 {% block modal %}
 
-    <div id="editNoteModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+     <div id="editNoteModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header text-center">
-                    <h5 class="modal-title">Edit Widget Content</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-
+                    <h3 class="modal-title">Edit Widget Content</h3>
                 </div>
                 <div class="modal-body">
-                    <div class="row tab-pane fade" id="change_note"></div>
+                    <div class="row" id="change_note"></div>
                 </div>
                 <div class="modal-footer" >
-                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-change-btn" style="display: none">Save
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-change-btn">Save
                     </button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-change-btn">Cancel
+                    <button style="margin-left: 10px" type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-change-btn">Cancel
                     </button>
                 </div>
 
@@ -379,6 +374,14 @@
                 var tempidJs = "widget" + $scope.counter;
                 var note_wrapper = "<div class='note_wrapper'>" + myData + " </div>"
                 $scope.standardItems[$scope.standardItems.length - 1].noteData = note_wrapper;
+                $(String(tempid)+" header").prepend('<input type="submit" id="'+String(tempidJs)+"_edit_btn"+'" class="editnotebtn far fa-edit" data-toggle="modal" data-target="#editNoteModal" value="&#xf044" style="z-index: 4">');
+                $(String(tempid)+"_edit_btn").click(function () {
+                    widget_open_edit_modal = tempid;
+                    widget_edit_id = tempidJs;
+                    var edit_data = $(this).parent().parent().find('.note_wrapper').html();
+                    textEditNote.setData(edit_data);
+
+                });
 {#                $(tempid).append(note_wrapper);#}
                 $scope.$apply();
                 $('#save_dashboard_btn').show();
@@ -410,6 +413,25 @@
                     }
                 }
             });
+
+             $("#submit-note-change-btn").click(function () {
+                var edited_note_text = textEditNote.getData();
+                $(widget_open_edit_modal).find('.note_wrapper').empty();
+                $(widget_open_edit_modal).find('.note_wrapper').append(edited_note_text);
+                console.log($scope.standardItems);
+                for (var i=0; i<$scope.standardItems.length;i++){
+                    if ($scope.standardItems[i].id === widget_edit_id){
+                        $scope.standardItems[i].noteData = "<div class='note_wrapper'>" + edited_note_text + " </div>";
+                    }
+                }
+                widget_open_edit_modal = null;
+                widget_edit_id = null;
+            });
+            $("#dismiss-modal-change-btn").click(function () {
+                widget_open_edit_modal = null;
+                widget_edit_id = null;
+            });
+
             $("#dismiss-modal-btn").click(function () {
                 $scope.standardItems.pop();
                 $scope.$apply();
@@ -429,7 +451,8 @@
                     col: 0,
                     url: "",
                     noteData: "",
-                    title: tempTitle
+                    title: tempTitle,
+                    id: "widget" + $scope.counter
                 });
                 // setTimeout(function () {
                 //     console.log($scope);
@@ -465,16 +488,12 @@
             };
 
             var init = function (){
-{#                 {% for order, url in dashboard.viz_components.items %}#}
                 var viz_components = JSON.parse('{{ dashboard_json |escapejs}}');
                 for (var key in viz_components) {
                     if (viz_components.hasOwnProperty(key)) {
-{#                        console.log(key + " -> " + viz_components[key]);#}
                         var count;
+                        $scope.counter++;
                         var array = viz_components[key];
-{#                        for (count=0; count< array.length;count++){#}
-{#                            console.log(String(count)+'. '+String(array[count]));#}
-{#                        }#}
                         $scope.standardItems.push({
                         sizeX: parseInt(array[1]),
                         sizeY: parseInt(array[2]),
@@ -482,69 +501,16 @@
                         col: parseInt(array[4]),
                         url:array[0] ,
                         noteData: array[6] ,
-                        title:array[5]
+                        title:array[5],
+                        id: array[7]
                     });
 
                     }
                 }
 
-{#                var tempinfo= "{{ url }}";#}
-{#                 tempinfo=tempinfo.replace(/u&#39;/g,"");#}
-{#                 tempinfo=tempinfo.replace(/&#39;/g,"");#}
-{#                 tempinfo=tempinfo.replace("[","");#}
-{#                 tempinfo=tempinfo.replace("]","");#}
-{##}
-{#                 var nth= 6;#}
-{#                 var toslice = 0;#}
-{#                 for(var i=0 ; i<tempinfo.length ;i++){#}
-{#                     if(tempinfo.charAt(i) == ','){#}
-{#                         if(!--nth){#}
-{#                             toslice = i;#}
-{#                         }#}
-{#                     }#}
-{#                 }#}
-{##}
-{#                 var info = tempinfo.split("," , 6);#}
-{##}
-{#                 tempinfo= tempinfo.slice(toslice + 1);#}
-{##}
-{#                $scope.counter++;#}
-{#                var tempid="widget" + $scope.counter;#}
-                {#$scope.iframeSource = info[0];#}
-{#                 var noteDataEncoded = tempinfo;#}
-{#                 var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();#}
-                 {#noteDataDecoded= noteDataDecoded.substr(1);#}
-{#                 if(noteDataDecoded.charAt(0)=="u"){#}
-{#                     if(noteDataDecoded.charAt(1)=="\""){#}
-{#                         noteDataDecoded= noteDataDecoded.substr(2);#}
-{#                     }#}
-{#                  }#}
-{#                 noteDataDecoded= noteDataDecoded.slice(0 ,-1);#}
-                 {#noteDataDecode=noteDataDecode.encode("utf-8");#}
-{##}
-                 {#for(var i=0 ; i < 5; i++)#}
-                 {#{#}
-                 {#    if(i!= 0)#}
-                 {#       info[i] = info[i].slice(1,-1);#}
-                 {#    else#}
-                 {#        info[i] = info[i].slice(1,-1);#}
-                 {# }#}
-{##}
-{#                $scope.standardItems.push({#}
-{#                    sizeX: parseInt(info[1]),#}
-{#                    sizeY: parseInt(info[2]),#}
-{#                    row: parseInt(info[3]),#}
-{#                    col: parseInt(info[4]),#}
-{#                    url:info[0] ,#}
-{#                    noteData: noteDataDecoded ,#}
-{#                    title:info[5]#}
-{#                });#}
 
-
-{#                {% endfor %}#}
-
-            $scope.gridsterOpts.floating = true;
-             };
+                $scope.gridsterOpts.floating = true;
+            };
 
             init();
 
@@ -625,12 +591,52 @@
                     }
                 });
             });
+
+            $( document ).ready(function() {
+            var max = 0;
+            $(".note_wrapper").each(function (index) {
+                var curr_widget = $(this).parent().parent().parent().attr('id');
+                var num = parseInt(curr_widget.replace("widget",""));
+                if(num > max){
+                    max = num;
+                    $scope.counter = max;
+                }
+                $(this).parent().parent().parent().find("header").prepend('<input type="submit" id="' + String(curr_widget) + "_edit_btn" + '" class="editnotebtn far fa-edit" data-toggle="modal" data-target="#editNoteModal" value="&#xf044" style="z-index: 4">');
+                $("#" + curr_widget + "_edit_btn").click(function () {
+                    widget_open_edit_modal = "#" + curr_widget;
+                    widget_edit_id = curr_widget;
+                    var edit_data = $(this).parent().parent().find('.note_wrapper').html();
+                    textEditNote.setData(edit_data);
+                });
+            });
+
+            });
         });
         function hideGif( elem, event ){
             $(elem).siblings(".loadingFrame").css( "display", "none" );
         }
 
-
+{#        $( document ).ready(function() {#}
+{#            var max = 0;#}
+{#            $(".note_wrapper").each(function (index) {#}
+{#                var curr_widget = $(this).parent().parent().parent().attr('id');#}
+{#                var num = parseInt(curr_widget.replace("widget",""));#}
+{#                if(num > max){#}
+{#                    max = num;#}
+{#                    $scope.counter = max;#}
+{#                }#}
+{#                alert(max);#}
+{#                alert($scope.counter);#}
+{#                $(this).parent().parent().parent().find("header").prepend('<input type="submit" id="' + String(curr_widget) + "_edit_btn" + '" class="editnotebtn far fa-edit" data-toggle="modal" data-target="#editNoteModal" value="&#xf044" style="z-index: 4">');#}
+{#                $("#" + curr_widget + "_edit_btn").click(function () {#}
+{#                    widget_open_edit_modal = "#" + curr_widget;#}
+{#                    widget_edit_id = curr_widget;#}
+{#                    var edit_data = $(this).parent().parent().find('.note_wrapper').html();#}
+{#                    textEditNote.setData(edit_data);#}
+{#                });#}
+{#            });#}
+{##}
+{#        });#}
     </script>
     {#    <script>#}
 {#        var init = function (){#}

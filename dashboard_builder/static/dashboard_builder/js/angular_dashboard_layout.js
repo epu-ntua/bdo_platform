@@ -159,7 +159,7 @@ function pageScroll() {
                     url: "",
                     noteData: "",
                     title: tempTitle,
-                    id: "widget" + $scope.counter
+                    id: "widget" + $scope.counter,
                 });
                 // setTimeout(function () {
                 //     console.log($scope);
@@ -229,7 +229,7 @@ function pageScroll() {
                 var tempcounter= 0;
                 for(var myindex in $scope.standardItems){
                     var tempTitleId= "widgetTitleModel" + myindex.toString();
-                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() , $scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString()];
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() , $scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString(),$scope.standardItems[myindex].id.toString()];
                     post_data_obj[String(tempcounter)] = temparray;
                     tempcounter++;
                 }
