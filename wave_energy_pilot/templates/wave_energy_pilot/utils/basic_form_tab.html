@@ -1,63 +1,116 @@
 <div class="app-selector">
+    <h4>Application</h4>
      <select name="app_selector" class="ui-dropdown" id="select_app">
         <option value="">Select Application</option>
-        <option value="Wave Resource Assessment">Wave Resource Assessment</option>
-        <option value="Wave Forecast">Wave Forecast</option>
-        <option value="Data Visualisation">Data Visualisation</option>
+        <option value="Wave_Resource_Assessment_single">Wave Resource Assessment (Single Location)</option>
+        <option value="Wave_Resource_Assessment_area">Wave Resource Assessment (Area)</option>
+        <option value="Wave_Forecast">Wave Forecast</option>
+        <option value="Data_Visualisation">Data Visualisation</option>
     </select>
+    <hr>
 </div>
 
-
-<div class="spatial-selection">
-
+<div class="single-spatial-selection" hidden>
+    <h4>Geographic Coverage</h4>
     <div class="row" style="margin: 25px;">
 {#    <div class="col-sm-12" style="margin: 0px;">#}
-        <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
-            <p>Latitude, from:</p>
+        <div class="lat-container">
+             <div class='col-sm-6' >
+                <p>Latitude: </p>
+            </div>
+            <div class='col-sm-6' >
+                <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
+            </div>
         </div>
-        <div class='col-sm-3' style="padding: 0px;">
-            <input class="form-control" id="lat_min" type='number' step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
-        </div>
-        <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
-            <p>to:</p>
-        </div>
-        <div class='col-sm-3' style="padding: 0px;">
-            <input class="form-control" id="lat_max" type='number'  step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
-        </div>
+
 {#    </div>#}
 {#    <div class="col-sm-12" style="margin: 0px;">#}
-        <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
-            <p>Longitude, from:</p>
+        <div class="lon-container">
+            <div class='col-sm-6'>
+                <p>Longitude:</p>
+            </div>
+            <div class='col-sm-6' >
+                <input class="form-control" id="lon" type='number'  step="0.01" min="-180" max="180" />
+            </div>
         </div>
-        <div class='col-sm-3' style="padding: 0px;">
-            <input class="form-control" id="lon_min" type='number'  step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+
+{#    </div>#}
+{#    <input hidden type="number" id="areaSelectWidth" value="" >#}
+{#    <input hidden type="number" id="areaSelectHeight" value="">#}
+
+    </div>
+    <hr>
+</div>
+
+<div class="spatial-selection" hidden>
+     <h4>Geographic Coverage</h4>
+    <div class="row" style="margin: 25px;">
+{#    <div class="col-sm-12" style="margin: 0px;">#}
+        <div class="lat-container">
+             <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
+                <p>Latitude, from:</p>
+            </div>
+            <div class='col-sm-4' style="padding: 0px;">
+                <input class="form-control" id="lat_min" type='number' step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+            </div>
+            <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
+                <p>to:</p>
+            </div>
+            <div class='col-sm-3' style="padding: 0px;">
+                <input class="form-control" id="lat_max" type='number'  step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+            </div>
         </div>
-        <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
-            <p>to:</p>
+
+{#    </div>#}
+{#    <div class="col-sm-12" style="margin: 0px;">#}
+        <div class="lon-container">
+            <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
+                <p>Longitude, from:</p>
+            </div>
+            <div class='col-sm-4' style="padding: 0px;">
+                <input class="form-control" id="lon_min" type='number'  step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+            </div>
+            <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
+                <p>to:</p>
+            </div>
+            <div class='col-sm-3' style="padding: 0px;">
+                <input class="form-control" id="lon_max" type='number' step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+            </div>
         </div>
-        <div class='col-sm-3' style="padding: 0px;">
-            <input class="form-control" id="lon_max" type='number' step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
-        </div>
+
 {#    </div>#}
     <input hidden type="number" id="areaSelectWidth" value="" >
     <input hidden type="number" id="areaSelectHeight" value="">
 
     <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
     </div>
+    <hr>
 </div>
 
-
 <div class="dataset-selector">
-    <select name="gender" class="ui dropdown" id="select_dataset">
+     <h4>Available Datasets</h4>
+    <select name="dataset-selector" class="ui dropdown" id="select_dataset">
         <option value="">Availabla Datasets</option>
         <option value="Copernicus 1">Copernicus 1 - Numerical Model</option>
         <option value="Maretec 1">Maretec 1 - Numerical Model</option>
         <option value="Buoy XPTO">Buoy XPTO - in - situ measurements</option>
     </select>
+     <hr>
 </div>
 
+<div class="variable-selector" hidden>
+    <h4>Variable Selection</h4>
+    <select name="variable-selector" class="ui dropdown" id="select_variable">
+        <option value="">Available Datasets</option>
+        <option value="Copernicus 1">Copernicus 1 - Numerical Model</option>
+        <option value="Maretec 1">Maretec 1 - Numerical Model</option>
+        <option value="Buoy XPTO">Buoy XPTO - in - situ measurements</option>
+    </select>
+     <hr>
+</div>
 
 <div class="coverage-date-filters">
+    <h4>Timeframe</h4>
 {#    <div style="text-align: left;"><h4 style="margin: 0;">Filter by temporal coverage</h4></div>#}
     <div class="row" style="margin-top:15px">
         <div class="coverage-date-filters-icon">
@@ -85,9 +138,108 @@
             </div>
         </div>
     </div>
+    <hr>
 </div>
 
-
 <div class="results-tabs">
+    <h4>Results</h4>
+    <div id="wave-atlas-results" hidden>
+        <ul class="nav nav-pills nav-justified">
+             <li class="nav-item">
+                <a class="nav-link active" href="#wave-atlas-results">Graphic</a>
 
+            </li>
+        </ul>
+        <div class="form-check" id="wave-atlas-results">
+            <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+            <label class="form-check-label" for="defaultCheck1">Mean Wave parameters (significant Height, period)</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="defaultCheck2">
+            <label class="form-check-label" for="defaultCheck2">Mean Wave power</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="defaultCheck3">
+            <label class="form-check-label" for="defaultCheck3">Maximum significant height</label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="defaultCheck4">
+            <label class="form-check-label" for="defaultCheck4">Maximum Wave power</label>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="defaultCheck5">
+            <label class="form-check-label" for="defaultCheck5">Wave Rose</label>
+        </div>
+    </div>
+
+</div>
+    <div id="wave-resource-assessment" hidden></div>
+    <div id="data-visualisation-results" hidden>
+        <ul class="nav nav-pills nav-justified">
+             <li class="nav-item">
+                <a class="nav-link active" href="#data-visualisation-results">Variable Statistics</a>
+            </li>
+        </ul>
+        <div class="form-check" id="data-visualisation-results">
+            <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+            <label class="form-check-label" for="defaultCheck1">Min</label>
+        </div>
+        <div class="form-check" id="data-visualisation-results">
+            <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+            <label class="form-check-label" for="defaultCheck1">Max</label>
+        </div>
+        <div class="form-check" id="data-visualisation-results">
+            <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+            <label class="form-check-label" for="defaultCheck1">Average</label>
+        </div>
+    </div>
+    <div id="wave-forecast-results" hidden>
+        <ul class="nav nav-pills nav-justified" role="tablist">
+             <li class="nav-item">
+                <a  class="nav-link active" id="pills-wave-statistics-tab" data-toggle="pill"
+                    href="#wave-forecast-results-wave-statistics" role="tab"  aria-controls="pills-wave-statistics" aria-selected="true">
+                    Wave Statistics</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-time-series-tab" data-toggle="pill"
+                   href="#wave-forecast-results-time-series-graph" role="tab"  aria-controls="pills-time-series" aria-selected="false">
+                    Time series graph</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="wave-forecast-results-tabContent">
+            <div class="tab-pane fade in active" id="wave-forecast-results-wave-statistics" role="tabpanel" aria-labelledby="pills-wave-statistics-tab">
+
+                <div class="form-check" >
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">Min, Max, Average: Wave Heigh and Period</label>
+                </div>
+                <div class="form-check" >
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">Min, Max, Average: Wave power</label>
+                </div>
+                <div class="form-check" >
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">Total Wave Energy during forecast period</label>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="wave-forecast-results-time-series-graph" role="tabpanel" aria-labelledby="pills-time-series-tab">
+                <div class="form-check" >
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">Wave Height</label>
+                </div>
+                <div class="form-check" >
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">Wave Period</label>
+                </div>
+                <div class="form-check" >
+                    <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                    <label class="form-check-label" for="defaultCheck1">Wave Power</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="run-query-btn" class="btn btn-primary btn-sm btn-default">
+    <i class="fa fa-play-circle"></i> Run Service
 </div>
