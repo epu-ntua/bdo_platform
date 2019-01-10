@@ -3,8 +3,8 @@
     right: 0;
     z-index: 2;
     background-color: white;
-    width: 25%;
-    top: 29%;
+    width: 19%;
+    top: 16%;
     /*margin-top: 270px;*/
 }
 
@@ -16,4 +16,22 @@
 
 .app-selector{
     padding-top: 10px;
+}
+
+
+.ui-dropdown{
+    width: 100%;
+}
+#run-query-btn{
+    padding: 10px;
+}
+
+.form-check-label{
+    font-size: 14px;
+    color: #000000;
+}
+
+.form-group{
+    padding-bottom: 0px;
+    margin: 0 0 0 0;
 }
