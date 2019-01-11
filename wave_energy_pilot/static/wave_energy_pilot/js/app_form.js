@@ -93,6 +93,25 @@ $(document).ready(function() {
                 $('.variable-selector').show();
 
 
+                var buoys_plane = [];
+                $('.buoy').each(function(i, obj) {
+                    // alert($(this).data("id"));
+
+                    var buoy_id = $(this).data("id");
+                    var buoy_lat = $(this).data("lat");
+                    var buoy_lon = $(this).data("lon");
+                    var buoy = [buoy_id, buoy_lat, buoy_lon];
+                    buoys_plane = [buoy_plane, buoy];
+                    alert(buoy_plane);
+                });
+
+                for (var i = 0; i < buoys_plane.length; i++){
+                    marker = new L.marker([buoys_plane[i][1],buoys_plane[i][2]])
+                        .bindPopup(buoys_plane[i][0])
+                        .addTo(map);
+                }
+
+
             }
             else{
                $('#data-visualisation-results').hide();
