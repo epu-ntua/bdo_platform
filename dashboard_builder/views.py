@@ -9,9 +9,10 @@ from dashboard_builder.models import Dashboard
 from aggregator.models import *
 
 from . import forms
-
+from django.views.decorators.cache import never_cache
 import json
 
+@never_cache
 def build_dynamic_dashboard(request):
 
     if request.method == 'GET':
