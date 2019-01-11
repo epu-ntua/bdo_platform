@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.http import HttpResponseForbidden
@@ -144,14 +145,7 @@ def save_dashboard(request, pk=None):
     dashboard_data = request.POST.dict()
     for order in dashboard_data.keys():
         dashboard_data = json.loads(order)
-    # for k in dashboard_data.keys():
-    #     dashboard_data = k
-    #     break
-    #
-    # json_acceptable_string = dashboard_data.replace("'", "\"")
-    # print "NOW PRINTING json_acceptable_string"
-    # print json_acceptable_string
-    # dashboard_data = json.loads(json_acceptable_string)
+
     print "We are now printing dashboard data"
     print dashboard_data
     print "end of data"
@@ -173,3 +167,17 @@ def save_dashboard(request, pk=None):
     })
 
 
+def delete_dashboard(request, pk=None):
+    user = request.user
+    try:
+        dashboard = Dashboard.objects.get(pk=pk)
+        try:
+            if dashboard.user_id != user.id:
+                raise PermissionDenied
+        except:
+            return HttpResponseForbidden()
+
+        dashboard.delete()
+    except ObjectDoesNotExist:
+        pass
+    return redirect('/bdo')
