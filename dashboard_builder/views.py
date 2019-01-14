@@ -51,6 +51,7 @@ def build_dynamic_dashboard(request):
             'dimensions_list': dimensions_list,
             # 'datasets_of_queries_lists': datasets,
         })
+    
     return None
 
 def convert_unicode_json(data):
@@ -70,7 +71,12 @@ def edit_dashboard(request, pk=None):
             saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
         else:
             saved_queries = []
-        dashboard = Dashboard.objects.get(pk=pk)
+        try:
+            dashboard = Dashboard.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            message = 'You cannot edit this Dashboard!\nThe Dashboard does not exist or has already been deleted!'
+            return render(request, 'error_page.html', {'message': message})
+
         try:
             if dashboard.user_id != user.id:
                 raise PermissionDenied
