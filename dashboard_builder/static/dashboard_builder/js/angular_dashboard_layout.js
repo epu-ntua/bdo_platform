@@ -250,7 +250,8 @@ function pageScroll() {
                         console.log(result);
                         $('#dashboard_pk').val(result.pk);
                         var id = String(result.pk);
-                        window.history.replaceState({}, 'a_title', '/dashboards/create/' + result.pk + '/');
+                        window.history.replaceState({}, 'a_title', '/dashboards/edit/' + result.pk + '/');
+                        // window.location.replace("/dashboards/create/' + result.pk + '/'")
                         // alert('Dashboard saved successfully!');
                         // var message = "Dashboard saved successfully! <br/> You can view it <b><a style='text-decoration: underline;' href='/services/dashboard/"+id+"'/>here</a></b>!"
                         $.notify({

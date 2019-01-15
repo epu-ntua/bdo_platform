@@ -51,8 +51,8 @@ def build_dynamic_dashboard(request):
             'dimensions_list': dimensions_list,
             # 'datasets_of_queries_lists': datasets,
         })
-    
-    return None
+    else:
+        return None
 
 def convert_unicode_json(data):
     if isinstance(data, basestring):
@@ -93,7 +93,7 @@ def edit_dashboard(request, pk=None):
         for el in dim_list:
             if not (el.name in dimensions_list):
                 dimensions_list.append(el.name.encode('ascii'))
-        toCreate = "None"
+        # toCreate = dashboard.title
         form_class = forms.CkEditorForm
         dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
         print dashboard.viz_components
@@ -106,7 +106,7 @@ def edit_dashboard(request, pk=None):
             'saved_queries': saved_queries,
             'available_viz': Visualization.objects.filter(hidden=False).order_by('-type', '-title'),
             'form': form_class,
-            'toCreate': toCreate,
+            # 'toCreate': toCreate,
             'variables_list': variables_list,
             'dimensions_list': dimensions_list,
         })
