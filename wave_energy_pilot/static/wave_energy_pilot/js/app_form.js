@@ -6,6 +6,25 @@ var buoys_layer;
 
 $(document).ready(function() {
 
+     function map_init() {
+        var maplayer = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=';
+        var token = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ';
+        var attr = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors,' +
+        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
+        'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
+
+        map = L.map('map').setView([38, 25], 5);
+
+        L.tileLayer(maplayer + token, {
+            attribution: attr,
+            maxZoom: 18,
+
+        }).addTo(map);
+
+        init = true;
+
+    }
+
     function create_buoys_plane(){
         var buoys_plane = [];
         $('.buoy').each(function(i, obj) {
@@ -111,7 +130,8 @@ $(document).ready(function() {
             else {
                 $('#wave-atlas-results').hide();
                 $('.spatial-selection').hide();
-                // map.removeLayer(areaSelect);
+                map.remove();
+                map_init();
             }
 
             if ($('.app-selector :selected').val() == "Data_Visualisation"){
