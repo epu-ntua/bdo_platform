@@ -77,7 +77,8 @@ INSTALLED_APPS = [
     'uploader',
     'on_demand',
     'data_parser',
-    'feedback_form'
+    'feedback_form',
+    'wave_energy_pilot'
 ]
 
 AUTHENTICATION_BACKENDS = (
