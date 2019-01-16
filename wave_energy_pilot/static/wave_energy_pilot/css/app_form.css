@@ -35,3 +35,11 @@
     padding-bottom: 0px;
     margin: 0 0 0 0;
 }
+
+#lat{
+    width: 62%;
+}
+
+#lon{
+    width: 62%;
+}

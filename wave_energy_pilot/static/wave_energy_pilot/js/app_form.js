@@ -3,27 +3,9 @@
 
 
 var buoys_layer;
-
+var single_marker_layer;
+var user_marker = {};
 $(document).ready(function() {
-
-     function map_init() {
-        var maplayer = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=';
-        var token = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ';
-        var attr = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors,' +
-        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
-        'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
-
-        map = L.map('map').setView([38, 25], 5);
-
-        L.tileLayer(maplayer + token, {
-            attribution: attr,
-            maxZoom: 18,
-
-        }).addTo(map);
-
-        init = true;
-
-    }
 
     function create_buoys_plane(){
         var buoys_plane = [];
@@ -36,15 +18,16 @@ $(document).ready(function() {
         });
 
         var buoys_markers = [];
+        var redIcon = new L.Icon({
+          iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
+        });
         for (var i = 0; i < buoys_plane.length; i++){
-            marker = new L.marker([buoys_plane[i][1],buoys_plane[i][2]]).bindPopup(buoys_plane[i][0]);
+            marker = new L.marker([buoys_plane[i][1],buoys_plane[i][2]], {icon: redIcon}).bindPopup(buoys_plane[i][0]).on('click', erase_user_marker);
             buoys_markers.push(marker);
         }
         buoys_layer = L.layerGroup(buoys_markers);
 
-        // alert(map.hasLayer(buoys_layer));
         map.addLayer(buoys_layer);
-        // alert(map.hasLayer(buoys_layer));
     }
 
     $('#select_app')
@@ -73,20 +56,46 @@ $(document).ready(function() {
 
     }
 
+    function erase_user_marker(){
+        // alert(this.getLatLng().lat);
+        $('#lat').val(this.getLatLng().lat);
+        $('#lon').val(this.getLatLng().lng);
+        if(user_marker != undefined){
+            map.removeLayer(user_marker);
+        }
+    }
 
     $(function () {
         $('.app-selector').change(function () {
 
+            //Wave Forecast Scenario
             if ($('.app-selector :selected').val() == "Wave_Forecast") {
 
                 $('.dataset-selector').hide();
                 $('.coverage-date-filters').hide();
                 $('#wave-forecast-results').show();
+
+
+                map.on('click', function(e){
+
+                    $('#lat').val(e.latlng.lat);
+                    $('#lon').val(e.latlng.lng);
+
+                    if(user_marker != undefined){
+                        map.removeLayer(user_marker);
+                    }
+
+                    user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
+                    single_marker_layer =  L.layerGroup(user_marker);
+                    map.addLayer(single_marker_layer);
+                 });
+
             }
             else{
                 $('.dataset-selector').show();
                 $('.coverage-date-filters').show();
                 $('#wave-forecast-results').hide();
+
             }
             if ($('.app-selector :selected').val() == "Wave_Resource_Assessment_area"){
                 $('.spatial-selection').show();
@@ -130,8 +139,8 @@ $(document).ready(function() {
             else {
                 $('#wave-atlas-results').hide();
                 $('.spatial-selection').hide();
-                map.remove();
-                map_init();
+                // map.removeLayer(areaSelect);
+
             }
 
             if ($('.app-selector :selected').val() == "Data_Visualisation"){
@@ -140,6 +149,21 @@ $(document).ready(function() {
                 $('.variable-selector').show();
 
                 create_buoys_plane();
+
+                // var user_marker = {};
+                map.on('click', function(e){
+
+                    $('#lat').val(e.latlng.lat);
+                    $('#lon').val(e.latlng.lng);
+
+                    if(user_marker != undefined){
+                        map.removeLayer(user_marker);
+                    }
+
+                    user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
+                    single_marker_layer =  L.layerGroup(user_marker);
+                    map.addLayer(single_marker_layer);
+                 });
 
             }
             else{
@@ -159,19 +183,29 @@ $(document).ready(function() {
                 $('#wave-resource-assessment').show();
                 $('.single-spatial-selection').show();
 
+                // var user_marker = {};
+                map.on('click', function(e){
+
+                    $('#lat').val(e.latlng.lat);
+                    $('#lon').val(e.latlng.lng);
+
+                    if(user_marker != undefined){
+                        map.removeLayer(user_marker);
+                    }
+                    user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
+                    single_marker_layer =  L.layerGroup(user_marker);
+                    map.addLayer(single_marker_layer);
+                 });
+
             }
             else {
                  $('#wave-resource-assessment').hide();
-
-
              }
         })
     })
 
-    $(".leaflet-marker-icon").click(function () {
-        $('#lat').val();
-        $('#lon').val();
-    })
+
+
 
 });
 
