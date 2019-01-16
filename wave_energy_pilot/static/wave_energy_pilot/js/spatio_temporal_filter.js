@@ -6,6 +6,8 @@ var selections = [[53,9,66,31],[32,125,53,144],[12,32,30,45],[30,-6,46,37]];    
 var areaSelect;
 var map, mapprev, init=false;
 var area_bounds;
+
+
 $(document).ready(function() {
      /*          Set Up Maps for Modal and Preview       */
     function map_init() {
@@ -118,4 +120,7 @@ $(document).ready(function() {
          enddate =null;
     })
 
+
+
 });
+
