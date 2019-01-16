@@ -154,6 +154,12 @@ $(function() {
         QueryToolbox.save(function (id) {}, 0);
     });
 
+    $('body').on('click', '#chart-save-as', function () {
+        QueryToolbox.objects[0].queryId = null;
+        QueryToolbox.save(function (id) {}, 0);
+
+    })
+
     /* On chart open dialog */
     $('body').on('click', '#chart-open', function () {
         QueryToolbox.chartLoadDialog.open();
