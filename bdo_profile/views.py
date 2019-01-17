@@ -42,7 +42,8 @@ def update_profile(request):
         if form.is_valid():
             profile = form.save()
             user = request.user
-            user.email = form.cleaned_data['email']
+            if user.email is None or user.email == '':
+                user.email = form.cleaned_data['email']
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
             user.save()
