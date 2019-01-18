@@ -42,16 +42,21 @@ def update_profile(request):
         if form.is_valid():
             profile = form.save()
             user = request.user
-            user.email = form.cleaned_data['email']
+            if user.email is None or user.email == '':
+                if form.cleaned_data['email'].strip() != '':
+                    user.email = form.cleaned_data['email']
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
             user.save()
-            try:
-                email_address = EmailAddress.objects.get(user=user)
-                email_address.email = user.email
-            except EmailAddress.DoesNotExist:
-                email_address = EmailAddress(user=user, email=user.email, primary=True)
-            email_address.save()
+            print "email: " + str(user.email)
+            print str(user.email.strip()) != ''
+            if user.email is not None and str(user.email.strip()) != '':
+                try:
+                    email_address = EmailAddress.objects.get(user=user)
+                    email_address.email = user.email
+                except EmailAddress.DoesNotExist:
+                    email_address = EmailAddress(user=user, email=user.email, primary=True)
+                email_address.save()
             return redirect(profile.get_absolute_url())
     else:
         form = UserProfileForm(instance=profile)
