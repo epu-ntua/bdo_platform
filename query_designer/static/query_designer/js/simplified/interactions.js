@@ -440,7 +440,12 @@ $(function() {
 
     /* On chart add new filter */
     $('body').on('click', '.add-new-filter', function () {
-        QueryToolbox.filterManager.addFilter();
+        var filter_input = $("#new-filter-value-container input").val();
+        if((filter_input === null)||(filter_input.trim() ==='')||typeof(filter_input) === 'undefined'){
+            alert('The value of the new filter cannot be empty!')
+        }else {
+            QueryToolbox.filterManager.addFilter();
+        }
     });
 
     /* On filter expression type change */
