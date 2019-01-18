@@ -149,16 +149,49 @@ $(function() {
         reset();
     });
 
+
+
     /* On chart save */
+
     $('body').on('click', '#chart-save', function () {
-        QueryToolbox.save(function (id) {}, 0);
+        var curr_query_title = $('#query-save-name').val();
+        if(curr_query_title.trim() == '') {
+            alert('Please fill in the name for the query')
+        }else{
+            $('#chart-name input').val(curr_query_title).trigger('change');
+            // $('.queryTitle').text(curr_query_title);
+            QueryToolbox.save(function (id) {}, 0);
+        }
     });
 
     $('body').on('click', '#chart-save-as', function () {
-        QueryToolbox.objects[0].queryId = null;
-        QueryToolbox.save(function (id) {}, 0);
+        var curr_query_title = $('#query-save-as-name').val();
+        $('#query-save-as-name').val('');
+        if(curr_query_title.trim() == '') {
+            alert('Please fill in the name for the query')
+        }else {
+             $('#chart-name input').val(curr_query_title).trigger('change');
+             // $('.queryTitle').text(curr_query_title);
+             QueryToolbox.objects[0].queryId = null;
+             QueryToolbox.save(function (id) {
+             }, 0);
+         }
+    });
 
-    })
+    $('body').on('click','#front-chart-save',function () {
+        var curr_query_id = QueryToolbox.objects[0].queryId;
+        if((curr_query_id === null)||(curr_query_id ==='')||typeof(curr_query_id) === 'undefined') {
+            // $("#saveModal").modal("hide");
+        }
+        else{
+            $("#saveModal .modal-body").replaceWith('<div class="modal-body" style="height: inherit;margin-bottom: 20px; ">\n' +
+                '                    <div id="save-modal-text">Do you want to save the query: '+ String($("#chart-name input").val()) +' ?</div>\n' +
+                '<input class="form-control" id="query-save-name" type="text" style="display: none" value="'+String($("#chart-name input").val())+'">                </div>')
+
+        }
+    });
+
+
 
     /* On chart open dialog */
     $('body').on('click', '#chart-open', function () {
@@ -172,10 +205,9 @@ $(function() {
     });
 
     /* On chart rename */
-    $('body').on('keyup', '#chart-name input', function () {
+    $('body #chart-name input').on('change', function () {
         QueryToolbox.rename($(this).val());
     });
-
 
 
 

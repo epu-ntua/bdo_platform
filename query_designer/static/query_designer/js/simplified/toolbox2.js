@@ -43,7 +43,7 @@ $(function () {
         /* Initialisation (it is called from the template) */
         addChart: function (chartFilters, chartPolicy, queryId, queryTitle) {
             // Add the title of the query
-            queryTitle = queryTitle || 'Query 1';
+            queryTitle = queryTitle || '';
             // Create a new object
             var obj = {
                 'queryId': queryId,
@@ -60,7 +60,8 @@ $(function () {
             // set chart options (category/value fields) & filters
             this.initChartOptions(obj);
             // show name field
-            $('#chart-name').removeClass('hidden').find('input').val(queryTitle);
+            // $('#chart-name').removeClass('hidden').find('input').val(queryTitle);
+            $('#chart-name').find('input').val(queryTitle);
         },
 
         setChartOptions: function (obj, chartFilters, chartPolicy) {

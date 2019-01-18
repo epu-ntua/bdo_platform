@@ -82,10 +82,10 @@
     </ul>
 
     <div id="chart-file-controls">
-        <div id="new-query" class="chart-file-control" title="Create new chart (Ctrl+Alt+N)"><i class="fa fa-plus-circle"></i> {% trans 'New' %}</div>
+{#        <div id="new-query" class="chart-file-control" title="Create new chart (Ctrl+Alt+N)"><i class="fa fa-plus-circle"></i> {% trans 'New' %}</div>#}
 {#        <div id="chart-open" class="chart-file-control" title="Open existing chart (Ctrl+O)"><i class="fa fa-file-o"></i> {% trans 'Open' %}</div>#}
-        <div id="chart-save" class="chart-file-control" title="Save chart (Ctrl+S)"><i class="fa fa-save"></i> {% trans 'Save' %}</div>
-         <div id="chart-save-as" class="chart-file-control" title="Save chart as (Ctrl+S)"><i class="fa fa-save"></i> {% trans 'Save As' %}</div>
+        <div id="front-chart-save" type="button" data-target="#saveModal" data-toggle="modal" class="chart-file-control"  style="margin-right: 10px;"><i class="fa fa-save"></i> {% trans 'Save' %}</div>
+        <div id="front-chart-save-as" type="button" data-target="#saveAsModal" data-toggle="modal" class="chart-file-control" ><i class="far fa-save" ></i> {% trans 'Save As' %}</div>
 {#        <button id="run-query-btn" class="btn btn-sm btn-primary after-data-selection"> Run </button>#}
 
 {#        <div id="chart-status-msg" class="pull-right"></div>#}
@@ -218,6 +218,46 @@
                     {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
                     <div id="query-variables-select-container" hidden></div>
                     <div id="query-dimensions-select-container" hidden ></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="saveModal"  tabindex="-1"  role="dialog" aria-labelledby="saveModalLabel" aria-hidden="true" style="width: 60%;top:20vh; left:45vh;">
+        <div class="modal-dialog " role="document" style="width: 50%;">
+            <div class="modal-content" style="height: inherit;">
+                <div class="modal-header">
+                    <h4 style="font-weight: bold" class="modal-title" id="saveModalLabel">Save</h4>
+                </div>
+                <div class="modal-body" style="height: inherit;margin-bottom: 20px; ">
+                    <div id="save-modal-text">Fill in the name and click on 'Save' to store the current Query.</div>
+                    <input class="form-control" id="query-save-name" type="text" placeholder="Query Name" style="width: 100%; padding: 3px; height: 100%;margin-top: 20px">
+
+                </div>
+                <div class="modal-footer">
+                    <div id="chart-save" class="chart-file-control btn btn-primary" data-dismiss="modal" style="  margin-top: 0;" class="btn btn-md"><i class="fa fa-save"></i> {% trans 'Save' %}</div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"  style="float: right;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="modal fade" id="saveAsModal" tabindex="-1" role="dialog" aria-labelledby="saveAsModalLabel" aria-hidden="true" style="width: 60%;top:20vh; left:45vh;">
+        <div class="modal-dialog " role="document" style="width: 50%;">
+            <div class="modal-content" style="height: inherit; ">
+                <div class="modal-header">
+                    <h4 style="font-weight: bold" class="modal-title" id="saveAsModalLabel">Save As</h4>
+                </div>
+                <div class="modal-body" style="height: inherit;margin-bottom: 20px; ">
+                    <div id="save-as-modal-text">Fill in the name and click on 'Save' to store the current Query with a different title.</div>
+                    <input class="form-control" id="query-save-as-name" type="text" placeholder="Query Name" style="width: 100%; padding: 3px; height: 100%;margin-top: 20px">
+
+                </div>
+                <div class="modal-footer">
+                    <div id="chart-save-as" class="chart-file-control btn btn-primary" data-dismiss="modal" style="margin-top: 0;" class="btn btn-md"><i class="fa fa-save"></i> {% trans 'Save' %}</div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"  style="float: right;">Close</button>
                 </div>
             </div>
         </div>
