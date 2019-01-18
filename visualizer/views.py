@@ -159,8 +159,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name']
                 s['groupBy'] = True
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_minute'
+                s['aggregate'] = 'date_trunc_minute'
                 time_flag = True
             elif s['name'] == color_col and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -176,15 +175,12 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 # s['groupBy'] = True
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'round1'
-                s['groupBy'] = True
+                s['aggregate'] = 'avg'
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'round1'
-                s['groupBy'] = True
+                s['aggregate'] = 'avg'
+                # s['groupBy'] = True
                 lon_flag = True
             else:
                 s['exclude'] = True
@@ -193,12 +189,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
         # doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
-        found = False
-        for ord in doc['orderings']:
-            if ord['name'] == order_var:
-                found = True
-        if not found:
-            doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
 
     if not platform_flag:
         raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
@@ -239,23 +230,15 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['groupBy'] = True
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'round2'
+                s['aggregate'] = 'round0'
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'round2'
+                s['aggregate'] = 'round0'
                 s['groupBy'] = True
                 lon_flag = True
-            elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
-                # s['exclude'] = True
-                s['groupBy'] = False
-                # if s['aggregate'] == '':
-                s['aggregate'] = 'MAX'
             else:
-                s['aggregate'] = 'AVG'
-                # s['exclude'] = True
+                s['exclude'] = True
 
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
@@ -278,8 +261,7 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name']
                 s['groupBy'] = True
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_minute'
+                s['aggregate'] = 'date_trunc_minute'
                 time_flag = True
             elif (s['name'].split('_', 1)[1] == 'platform_id') and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
@@ -287,15 +269,11 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
                 platform_flag = True
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'round1'
-                s['groupBy'] = True
+                s['aggregate'] = 'avg'
                 lat_flag = True
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'round1'
-                s['groupBy'] = True
+                s['aggregate'] = 'avg'
                 lon_flag = True
             else:
                 s['exclude'] = True
@@ -404,8 +382,8 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
             elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
                 s['exclude'] = False
                 lon_flag = True
-            # else:
-            #     s['exclude'] = True
+            else:
+                s['exclude'] = True
 
     if not heat_col_flag:
         if heat_col != 'heatmap_frequency':
@@ -1940,22 +1918,21 @@ def get_histogram_chart_am(request):
             where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
         except:
             where_clause = ''
+        bins -= 1
 
-        raw_query = """with min_max as (select min({0}) as min,max({0}) as max from {1} {3}),
-                    x as (select width_bucket({0}, min, max+1e-10, {2}) as bucket, 
-                    count(*) as cnt
-                    from {1},min_max {3}
-                    group by 1
-                    order by 1)
-                    select 
-                      (min + ((bucket-1) * (max - min)/{2}), 
-                      (min + (bucket) * (max - min)/{2})), cnt  
-                    from x, min_max""".format(table_col, from_table, bins, where_clause)
+        raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
+                    histogram as (select width_bucket({0}, min, max, {2}) ,
+                     (min({0}), max({0})) as range,
+                     count(*) as freq from {1}, drb_stats {3} where {0} IS NOT NULL
 
-        print(raw_query)
+                     group by 1
+                     order by 1)
+                    select range, freq
+                    from histogram""".format(table_col, from_table, bins, where_clause)
+
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
-
-        result = execute_query_method(query)[0]
+        print raw_query
+        # result = execute_query_method(query)[0]
 
         cursor.execute(raw_query)
         data = cursor.fetchall()
@@ -2224,8 +2201,6 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
                 s['exclude'] = False
                 x_flag = True
             else:
-                s['aggregate'] = ''
-                s['groupBy'] = False
                 s['exclude'] = True
     if ordering == True:
         if x_flag == True:
@@ -2234,28 +2209,6 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
             raise ValueError('-Variable or Dimension for the X-Axis of Line-Charts and Column-Charts is needed.\n-Variable or Dimension for creating the sub-groups of the Pie-Chart is needed.')
     query.document = doc
     return query
-
-
-def load_modify_query_aggregate(query_pk, var, agg_function):
-    query = AbstractQuery.objects.get(pk=query_pk)
-    query = TempQuery(document=query.document)
-    doc = query.document
-    for f in doc['from']:
-        for s in f['select']:
-            if (s['name'] == var):
-                s['groupBy'] = False
-                s['exclude'] = False
-                s['aggregate'] = agg_function
-            else:
-                s['aggregate'] = ''
-                s['groupBy'] = False
-                s['exclude'] = True
-        doc['orderings'] = []
-
-    query.document = doc
-    return query
-
-
 
 def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, ordering = True):
     query = AbstractQuery.objects.get(pk=query_pk)
@@ -2270,18 +2223,15 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
                 s['exclude'] = False
             elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name'].encode('ascii')
-                s['groupBy'] = True
                 if not existing_temp_res:
+                    s['groupBy'] = True
                     s['aggregate'] = temporal_resolution
                     min_period = temporal_resolution
                 else:
-                    # s['aggregate'] = ''
                     min_period = s['aggregate']
                 s['exclude'] = False
                 x_flag = True
             else:
-                s['aggregate'] = ''
-                s['groupBy'] = False
                 s['exclude'] = True
     if ordering == True:
         if x_flag == True:
@@ -2516,7 +2466,7 @@ def get_data_table(request):
     try:
         query_pk, df, notebook_id = get_data_parameters(request, '')
         column_choice = request.GET.getlist('column_choice[]')
-        limit = 500
+        limit = 50
         offset = int(request.GET.get('offset', 0))
         if not column_choice:
             raise ValueError('At least one column of the given query has to be selected.')
@@ -2593,12 +2543,6 @@ def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
         if pol.contains(shapely_point):
             color = 'red'
     return color
-
-def color_point_oil_spill2(red_points_list, point):
-    if point in red_points_list:
-        return 'red'
-    else:
-        return 'lightblue'
 
 def map_routes(m):
     routes_query = """SELECT centroids_ci_1.latitude, centroids_ci_1.longitude,centroids_ci_1.route FROM centroids_ci_1  ORDER BY centroids_ci_1.route,centroids_ci_1.latitude, centroids_ci_1.longitude """
@@ -2706,14 +2650,10 @@ def map_markers_in_time_hcmr(request):
         if livy:
             data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
         else:
-            # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-            # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            # data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            data = []
-            with open('visualizer/static/visualizer/files/hcmr_data.json') as json_data:
-                data = json.load(json_data)
-                print(data[:3])
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         min_lat = 90
         max_lat = -90
         min_lon = 180
@@ -2721,27 +2661,14 @@ def map_markers_in_time_hcmr(request):
         for d in data:
             min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
         m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
-        # filtered_polygons = []
-        # simulation_frame = Polygon([(min_lat, min_lon), (max_lat,min_lon), (max_lat,max_lon),(min_lat,max_lon)])
-        # count_inters = 0
-        # for pol in shapely_polygons:
-        #     if simulation_frame.intersects(pol):
-        #         filtered_polygons.append(pol)
-        #         count_inters = count_inters + 1
-        # print 'intersects:' + str(count_inters)
-        red_points = []
-        with open('visualizer/static/visualizer/files/red_points.txt', 'r') as file:
-            line = file.readline()
-            while line:
-                red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
-                line = file.readline()
-            file.close()
-        # red_points = []
-        # with open('red_points.txt', 'r') as file:
-        #     line = file.readline()
-        #     red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
-        #     file.close()
-
+        filtered_polygons = []
+        simulation_frame = Polygon([(min_lat, min_lon), (max_lat,min_lon), (max_lat,max_lon),(min_lat,max_lon)])
+        count_inters = 0
+        for pol in shapely_polygons:
+            if simulation_frame.intersects(pol):
+                filtered_polygons.append(pol)
+                count_inters = count_inters + 1
+        print 'intersects:' + str(count_inters)
         features = [
             {
                 "type": "Feature",
@@ -2752,16 +2679,13 @@ def map_markers_in_time_hcmr(request):
                 "properties": {
                     "times": [str(d[order_var])],
                     "style": {
-                        # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
-                        "color": color_point_oil_spill2(red_points, (d[lat_col], d[lon_col])),
+                        "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
                         # "color": "red"
                     }
                 }
             }
             for d in data
         ]
-        # print data
-
         tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
         period = 'PT2H'
 
@@ -2913,7 +2837,7 @@ def get_aggregate_value(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_aggregate(query_pk, variable, agg_function)
+            query = load_modify_query_chart(query_pk, '', [variable], agg_function, False)
             value, unit = get_aggregate_query_data(query, variable)
         else:
             value, unit, var_list = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)

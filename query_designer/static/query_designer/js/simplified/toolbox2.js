@@ -60,7 +60,8 @@ $(function () {
             // set chart options (category/value fields) & filters
             this.initChartOptions(obj);
             // show name field
-            $('#chart-name').removeClass('hidden').find('input').val(queryTitle);
+            // $('#chart-name').removeClass('hidden').find('input').val(queryTitle);
+            $('#chart-name').find('input').val(queryTitle);
         },
 
         setChartOptions: function (obj, chartFilters, chartPolicy) {
