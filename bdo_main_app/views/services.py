@@ -1,5 +1,5 @@
 from datetime import timedelta
-
+import json
 import collections
 from django.contrib.auth.models import User
 from django.shortcuts import render
@@ -11,7 +11,8 @@ from service_builder.models import Service
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from access_controller.policy_enforcement_point import PEP
-
+from django.views.decorators.cache import never_cache
+from django.core.exceptions import ObjectDoesNotExist
 
 def services(request):
     user = request.user
@@ -42,11 +43,14 @@ def convert_unicode_json(data):
     else:
         return data
 
-
+@never_cache
 def view_dashboard(request, pk):
     user = request.user
-    dashboard = Dashboard.objects.get(pk=pk)
-
+    try:
+        dashboard = Dashboard.objects.get(pk=pk)
+    except ObjectDoesNotExist:
+        return render(request, 'error_page.html',
+                      {'message': 'You cannot view this Dashboard!\nThe Dashboard does not exist or has already been deleted!'})
     # check for the access
     try:
         access_decision = PEP.access_to_dashboard(request, dashboard.id)
@@ -54,12 +58,17 @@ def view_dashboard(request, pk):
             raise PermissionDenied
     except:
         return HttpResponseForbidden()
-
+    # check if user is the owner or just has been granted access
+    owner = False
+    if dashboard.user_id == user.id:
+        owner = True
     dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
     print dashboard.viz_components
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
+        'dashboard_json': json.dumps(dashboard.viz_components),
         'pk': pk,
+        'is_owner': owner
     })
 
 

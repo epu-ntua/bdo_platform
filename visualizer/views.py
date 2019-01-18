@@ -735,6 +735,7 @@ def create_plotline_points(data, lat_index, lon_index):
 
 def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_points_limit, m, cached_file, request):
     dict = {}
+    max_intensity = 1.0
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_heatmap(query_pk, heat_col, heat_points_limit)
@@ -749,7 +750,7 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_
                 row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
                 heatmap_data.append(row)
 
-        heatmap_result_data, min_lat, min_lon, max_lat, max_lon = create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index)
+        heatmap_result_data, min_lat, min_lon, max_lat, max_lon, max_intensity = create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index)
         dict['min_lat'] = min_lat
         dict['max_lat'] = max_lat
         dict['min_lon'] = min_lon
@@ -768,7 +769,8 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_
         max_lon = cached_data['max_lon']
         heatmap_result_data = cached_data['heatmap_result_data']
 
-    HeatMap(heatmap_result_data, name="Heat Map - Layer: "+str(time.time()).replace(".","_")).add_to(m)
+    HeatMap(heatmap_result_data,max_val=1.0, radius = 15,name="Heat Map - Layer: "+str(time.time()).replace(".","_")).add_to(m)
+    # if needed use gradient above gradient={0: 'blue',0.2: 'lightblue',0.3:'cadetblue', 0.4: 'lightgreen',0.5:'green',0.6:'lime', 0.7:'yellow',0.9:'orange',1: 'red'}
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     ret_html = ""
     return m, ret_html
@@ -1705,6 +1707,7 @@ def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
     min_lon = 180
     max_lon = -180
     heatmap_result_data = []
+    maximum = 1.0
     if (heat_col == 'heatmap_frequency'):
         for d in data:
             heatmap_result_data.append(
@@ -1718,27 +1721,41 @@ def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
             if d[lon_index] < min_lon:
                 min_lon = d[lon_index]
     else:
-        maximum = -1000000
-        for d in data:
-            if d[heat_var_index] > maximum:
-                maximum = float(d[heat_var_index])
+        maximum = -999999999
+        minimum = 999999999
+
         for d in data:
             if d[heat_var_index] is not None:
-                heatmap_result_data.append((np.array([float(d[lat_index]), float(d[lon_index]), float(d[heat_var_index]) / maximum])).tolist())
-                if d[lat_index] > max_lat:
-                    max_lat = d[lat_index]
-                if d[lat_index] < min_lat:
-                    min_lat = d[lat_index]
-                if d[lon_index] > max_lon:
-                    max_lon = d[lon_index]
-                if d[lon_index] < min_lon:
-                    min_lon = d[lon_index]
+                if d[heat_var_index] > maximum:
+                    maximum = float(d[heat_var_index])
+                if d[heat_var_index] < minimum:
+                    minimum = float(d[heat_var_index])
+        if (len(data) != 1) and (maximum != minimum):
+            for d in data:
+                if d[heat_var_index] is not None:
+                    heatmap_result_data.append((np.array([float(d[lat_index]), float(d[lon_index]), float((d[heat_var_index]) - minimum )/( maximum - minimum)])).tolist())
+                    # heatmap_result_data.append((np.array([float(d[lat_index]), float(d[lon_index]),
+                    #                                       float(d[heat_var_index])])).tolist())
+
+                    if d[lat_index] > max_lat:
+                        max_lat = d[lat_index]
+                    if d[lat_index] < min_lat:
+                        min_lat = d[lat_index]
+                    if d[lon_index] > max_lon:
+                        max_lon = d[lon_index]
+                    if d[lon_index] < min_lon:
+                        min_lon = d[lon_index]
+        else:
+            for d in data:
+                heatmap_result_data.append((np.array([float(data[0][lat_index]), float(data[0][lon_index]),
+                                                  float(1)])).tolist())
+
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
     min_lon = float(min_lon)
 
-    return heatmap_result_data, min_lat, min_lon, max_lat, max_lon
+    return heatmap_result_data, min_lat, min_lon, max_lat, max_lon, maximum
 
 
 

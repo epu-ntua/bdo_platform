@@ -1,0 +1,585 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+
+    <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    {% for viz in available_viz %}
+        <style>
+            #{{ viz.view_name}}_tip{
+                opacity: .3;
+                position: relative;
+                bottom:1px;
+            }
+            li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
+                opacity: inherit;
+                margin:auto;
+                cursor:help;
+            }
+        </style>
+    {% endfor %}
+    <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}"/>
+
+
+{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+    <div class="row" style="display: none;">
+        <form class="form" id="config-viz-form"></form>
+    </div>
+
+    <input type="hidden" id="dashboard_pk" value="{{ dashboard_pk }}">
+
+    <div class="row">
+        <div class="text-center">
+            <h5 style="display: inline-block; margin: 0;">Edit, reformat and extend you dashboard.</h5>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <input class="form-control text-center" type="text" id="dashboard_title"
+               value="{{ dashboard_title }}" style="font-size: 20pt;"/>
+        <span class="pull-left"><input type="checkbox" name="private" value="True" checked/> Private<br></span>
+    </div>
+    <div class="row text-left">
+        <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal" style="padding-left: 15px;"
+                data-target="#myModal">
+            <i style="float: left; margin-right: 18px" class="fa fa-plus-circle o-white"></i> <span style="float: right">New Widget</span>
+        </button>
+        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" >
+            Save Dashboard
+        </button>
+        <button data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_dashboard_btn" style="float: right; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;" class="btn btn-md">
+             <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Dashboard</span>
+        </button>
+    </div>
+
+
+
+    <div ng-app="myApp" ng-controller="MainCtrl">
+        <div id="dynamic_dashboard" gridster="gridsterOpts">
+            <ul id="widgetParent">
+                <li id="[[item.id]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
+                    <div class='wrap1'></div>
+                    <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-class="{'titleNote': item.url == ''}" ng-model="item.title">
+                        {% load  static %}
+                        <input type='button' value='X' class='deletebtn'
+                               style="background-image: url({% static "images/exitBtn.png" %})"
+                               ng-click="removeWidget(item);">
+                    </header>
+                    <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.url" >
+                        <div class="ng-wrapper" ng-switch-when="true">
+                            <div class="loadingFrame"><img src="{% static 'img/loading_gif.gif' %}"/></div>
+                            <iframe  class="iframe-class" src=[[item.url]] frameborder='0' onLoad="hideGif( this, event )" ></iframe>
+                        </div>
+                    </div>
+                    <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.noteData">
+                        <div class="ng-wrapper" ng-switch-when="true" ng-bind-html="[[item.noteData]]">
+                        </div>
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div id="scroll_down_area"></div>
+
+    <div id="query-container" style="display: none;">
+        <select id="query-select" class="ui search selection form-control " name="query" style="width: 300px !important;">
+            {% for query in saved_queries %}
+                <option value="{{ query.id }}">{{ query.title }}</option>
+            {% endfor %}
+        </select>
+        <div><a href="/queries/" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+        <input id="new_query_doc" type="hidden" value=""/>
+        <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+        <button type="button" id="select_data_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>
+    </div>
+
+    <div id="viz-container" hidden>
+        <button type="button" id="select_viz_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+    </div>
+
+    <div id="conf-container" hidden></div>
+
+
+{% endblock %}
+
+
+{% block modal %}
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="width: 50%;top:30vh; left:45vh;">
+        <div class="modal-dialog " role="document" style="width: 50%;">
+            <div class="modal-content" style="height: inherit; ">
+                <div class="modal-header">
+                    <h4 style="margin-bottom: 15px; margin-left:10px; font-weight: bold" class="modal-title" id="deleteModalLabel">Delete Dashboard</h4>
+                </div>
+                <div class="modal-body" style="height: inherit;margin-top: 10px;margin-bottom: 30px">
+                    Are you sure you want to delete this Dashboard?
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'delete_dashboard' pk=dashboard_pk %}" id="confirm-dashboard-delete" type="button" class="btn btn-primary"  style=" background-color: rgb(160, 0, 0) !important ; margin-top: 0;" class="btn btn-md">Delete</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"  style="float: right;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <div id="editNoteModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h3 class="modal-title">Edit Widget Content</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="change_note"></div>
+                </div>
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-change-btn">Save
+                    </button>
+                    <button style="margin-left: 10px" type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-change-btn">Cancel
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center"></div>
+                <div class="modal-body">
+                    <div class="tab-content">
+                        <div class="text-center">
+                            <h4 class="modal-title">Add a new widget to the dashboard</h4>
+                            <ul class="nav nav-pills">
+                              <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
+                              <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
+                            </ul>
+                        </div>
+                        <div class="tab-pane fade in active" id="viz_widget">
+                            <div class="row">
+                                <div class="text-left" id="model-button-row" style="display: inline">
+                                    <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
+                                            data-toggle="popover" title="Select your data" data-placement="right"
+                                    >Select data
+                                    </button>
+                                </div>
+
+                                <div style="display: inline; margin-left: 80px;">
+                                    <span><strong>Selected Query: </strong></span><span id="query_name_span" style="display: none;"></span>
+                                </div>
+
+                                <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select visualization type" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">2. Select visualisation
+                                </button>
+                                <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select your data" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">3. Configure
+                                </button>
+                            </div>
+
+                            <div class="row" id="viz_config">
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%; display: none">
+                                    {% for viz in available_viz %}
+                                        <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
+                                            <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
+                                            <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+                                        </li>
+                                    {% endfor %}
+
+                                </ul>
+                                <div id="visualisation_frame">
+                                    <div style="right: 25px; top:80px; z-index: 2; position: absolute; display: none;">
+                                        <button type="button" id="add_layer_btn" class="btn btn-primary btn-md" >SAVE LAYER  <i class="glyphicon glyphicon-plus "></i></button>
+                                    </div>
+                                    <div class="ui buttons" style="display: none; top:80px; position: absolute; z-index: 1; right: 190px; ">
+                                        <div id='layers-list' class="ui floating dropdown btn btn-secondary btn-md " tabindex="0">LAYERS
+                                          <i class="dropdown icon"></i>
+                                          <ul class="menu transition hidden unclickable" tabindex="-1"></ul>
+                                        </div>
+                                    </div>
+
+                                    <div id="viz_container" class="col-sm-8" style="width: 85%; display: none"></div>
+                                </div>
+                            </div>
+
+{#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
+                            {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
+
+                            <div id="query-variables-select-container" hidden>
+                                {% for query in saved_queries %}
+                                    <div id={{ query.id }}>
+                                        {% for el in query.document.from %}
+                                            {% for var in el.select %}
+                                                {% if var.exclude == False or var.exclude == ''%}
+                                                     {% if var.type == 'VALUE' %}
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
+                                                     {% endif %}
+
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div id="query-dimensions-select-container" hidden >
+                                {% for query in saved_queries %}
+                                    <div id={{ query.id }}>
+                                        {% for el in query.document.from %}
+                                            {% for var in el.select %}
+                                                {% if var.exclude == False or var.exclude == ''%}
+                                                    {% if var.type != 'VALUE' %}
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
+                                                     {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="row tab-pane fade" id="viz_note"></div>
+                        <input type="hidden" id="selected_query" value="">
+                    </div>
+                </div>
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
+                    </button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn" style="display: none">Add
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+
+    <script type="text/javascript" src={% static '/js/angular.js' %}></script>
+    <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
+    <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
+    <script src="https://cdn.ckeditor.com/4.9.2/standard/ckeditor.js"></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script type="text/javascript">
+        var img_source_path =  "{% static "img/loading_gif.gif" %}";
+    </script>
+    <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
+    <script>
+        var app = angular.module('myApp', ['gridster','ngSanitize']);
+
+        app.config(function ($interpolateProvider) {
+            $interpolateProvider.startSymbol('[[');
+            $interpolateProvider.endSymbol(']]');
+        });
+
+        app.controller('MainCtrl', function ($scope) {
+            $scope.counter = "0";
+            $scope.tempInnerHtml = "";
+            $scope.gridsterOpts = {
+                margins: [20, 20],
+                swapping: true,
+                outerMargin: false,
+                pushing: true,
+                floating: true,
+                columns: 6,
+                defaultSizeX: 6,
+	            defaultSizeY: 2,
+                rowHeight: 200,
+                draggable: {
+                    enabled: true,
+                    handle: '.iframeHeader',
+                    start: function (e, ui, $widget) {
+                        $('#scroll_down_area').show();
+                        $('.wrap1').show();
+                    },
+                    stop: function (e, ui, $widget) {
+                        $('#scroll_down_area').hide();
+                        $('.wrap1').hide();
+                    }
+                },
+                resizable: {
+                    enabled: true,
+                    handles: ['se', 'sw'],
+                    start: function (e, ui, $widget) {
+                        $('.wrap1').show();
+                    }
+                    ,
+                    stop: function (e, ui, $widget) {
+                        $('.wrap1').hide();
+                    }
+                }
+            };
+
+            $scope.standardItems = [];
+
+            $scope.clear = function () {
+                $scope.standardItems = [];
+            };
+
+            $scope.removeWidget = function (item) {
+                var index = $scope.standardItems.indexOf(item);
+                $scope.standardItems.splice(index, 1);
+            };
+
+
+
+            $("#myModal #submit-modal-btn").click(function () {
+                var tempid = "#widget" + $scope.counter;
+                $scope.standardItems[$scope.standardItems.length - 1].url = document.getElementById("viz_container").querySelector("#viz-iframe").getAttribute('src');
+                $scope.$apply();
+                $(tempid).find(".loadingFrame").css( "display", "block" );
+                $(tempid).find("iframe").on( "load", function(){
+                    $(this).siblings(".loadingFrame").css( "display", "none" );
+                });
+            });
+
+            $("#myModal #submit-note-btn").click(function () {
+                var myData = textEditor.getData();
+                var tempid = "#widget" + $scope.counter;
+                var tempidJs = "widget" + $scope.counter;
+                var note_wrapper = "<div class='note_wrapper'>" + myData + " </div>"
+                $scope.standardItems[$scope.standardItems.length - 1].noteData = note_wrapper;
+                $(String(tempid)+" header").prepend('<input type="submit" id="'+String(tempidJs)+"_edit_btn"+'" class="editnotebtn far fa-edit" data-toggle="modal" data-target="#editNoteModal" value="&#xf044" style="z-index: 4">');
+                $(String(tempid)+"_edit_btn").click(function () {
+                    widget_open_edit_modal = tempid;
+                    widget_edit_id = tempidJs;
+                    var edit_data = $(this).parent().parent().find('.note_wrapper').html();
+                    textEditNote.setData(edit_data);
+                });
+                $scope.$apply();
+                $('#save_dashboard_btn').show();
+                textEditor.destroy();
+                textEditor = null;
+                $('#viz_config').show();
+                $('#model-button-row').show();
+                $('#submit-note-btn').hide();
+                $('#submit-modal-btn').show();
+                var newWidget = document.getElementById(tempidJs);
+                for(var i=0 ; i < newWidget.childNodes.length ;i++){
+                    if(newWidget.childNodes[i].className == "iframeHeader"){
+                        var tempHeader = newWidget.childNodes[i];
+                        tempHeader.style.backgroundColor = "white";
+                        $(tempHeader).mouseenter(function(){
+                        });
+                        $(tempHeader).mouseleave(function () {
+                            this.style.backgroundColor = "white "
+                        });
+                        for (var j = 0; j < tempHeader.childNodes.length; j++) {
+                            if (tempHeader.childNodes[j].className == "form-group") {
+                                tempHeader.childNodes[j].style.display = "none";
+                            }
+                            if (tempHeader.childNodes[j].className == "deletebtn") {
+                                tempHeader.childNodes[j].style.backgroundColor = "white";
+                                tempHeader.childNodes[j].style.color = "black";
+                            }
+                        }
+                    }
+                }
+            });
+
+            $("#submit-note-change-btn").click(function () {
+                var edited_note_text = textEditNote.getData();
+                $(widget_open_edit_modal).find('.note_wrapper').empty();
+                $(widget_open_edit_modal).find('.note_wrapper').append(edited_note_text);
+                console.log($scope.standardItems);
+                for (var i=0; i<$scope.standardItems.length;i++){
+                    if ($scope.standardItems[i].id === widget_edit_id){
+                        $scope.standardItems[i].noteData = "<div class='note_wrapper'>" + edited_note_text + " </div>";
+                    }
+                }
+                widget_open_edit_modal = null;
+                widget_edit_id = null;
+            });
+            $("#dismiss-modal-change-btn").click(function () {
+                widget_open_edit_modal = null;
+                widget_edit_id = null;
+            });
+
+            $("#dismiss-modal-btn").click(function () {
+                $scope.standardItems.pop();
+                $scope.$apply();
+                $('.viz_item').popover('hide');
+                $('#myModal #submit-modal-btn').hide();
+            });
+
+            var makeWidget =function (){
+                $scope.counter++;
+                var tempTitle = "Widget" + $scope.counter;
+                $scope.standardItems.push({
+                    sizeX: 6,
+                    sizeY: 2,
+                    row: 0,
+                    col: 0,
+                    url: "",
+                    noteData: "",
+                    title: tempTitle,
+                    id: "widget" + $scope.counter
+                });
+                $scope.$apply();
+            };
+
+            $('#new_widget_btn').click(makeWidget);
+            $('#new_widget_btn').click(function () {
+                $('#modal-tab-data').trigger('click');
+            });
+
+            $scope.finished = function () {
+                var tempid = "widget" + $scope.counter;
+                $('#viz_container iframe').appendTo(tempid);
+            };
+            $scope.clear = function () {
+                $scope.standardItems = [];
+            };
+            $scope.removeWidget = function (item) {
+                var index = $scope.standardItems.indexOf(item);
+                $scope.standardItems.splice(index, 1);
+                setTimeout(function() {
+                    toggleSaveBtn();
+                }, 500);
+            };
+
+            var init = function (){
+                var viz_components = JSON.parse('{{ dashboard_json |escapejs}}');
+                for (var key in viz_components) {
+                    if (viz_components.hasOwnProperty(key)) {
+                        var count;
+                        $scope.counter++;
+                        var array = viz_components[key];
+                        $scope.standardItems.push({
+                        sizeX: parseInt(array[1]),
+                        sizeY: parseInt(array[2]),
+                        row: parseInt(array[3]),
+                        col: parseInt(array[4]),
+                        url:array[0] ,
+                        noteData: array[6] ,
+                        title:array[5],
+                        id: array[7]
+                        });
+                    }
+                }
+                $scope.gridsterOpts.floating = true;
+            };
+
+            init();
+
+            $('#save_dashboard_btn').click(function () {
+                var postEndpoint = "/dashboards/save/";
+                var pk = $('#dashboard_pk').val();
+                if (pk !== '') {
+                    postEndpoint += pk + '/'
+                }
+                var post_data_obj = new Object();
+                var tempcounter= 0;
+                for(var myindex in $scope.standardItems){
+                    var tempTitleId= "widgetTitleModel" + myindex.toString();
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() , $scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString()];
+                    post_data_obj[String(tempcounter)] = temparray;
+                    tempcounter++;
+                }
+                post_data_obj['title'] = $('#dashboard_title').val();
+                post_data_obj['private'] = $('input[name="private"]').is(':checked');
+                var post_data = encodeURIComponent(JSON.stringify(post_data_obj));
+                $.ajax({
+                    "type": "POST",
+                    "dataType": "json",
+                    "url": postEndpoint,
+                    "data": post_data,
+                    "beforeSend": function (xhr, settings) {
+                        console.log("Before Send");
+                        console.log(post_data);
+                        $.ajaxSettings.beforeSend(xhr, settings);
+                    },
+                    "success": function (result) {
+                        console.log(result);
+                        $('#dashboard_pk').val(result.pk);
+                        var id = String(result.pk);
+                        window.history.replaceState({}, 'a_title', '/dashboards/edit/' + result.pk + '/');
+                        // alert('Dashboard saved successfully!');
+                        // var message = "Dashboard saved successfully! <br/> You can view it <b><a style='text-decoration: underline;' href='/services/dashboard/"+id+"'/>here</a></b>!"
+                        $.notify({
+                              icon: "add_alert",
+                              message: "Dashboard saved successfully! <br/> You can view it <b><a style='text-decoration: underline' href='/services/dashboard/"+id+"/'>here</a></b>!"
+
+                          },{
+                              type: 'success',
+                              timer: 4000,
+                              placement: {
+                                  from: 'top',
+                                  align: 'right'
+                              }
+                          });
+                    },
+                    error:function(x,e) {
+                        var message='Saving dashboard failed!</br>';
+                        if (x.status==0) {
+                            message+='You are offline!!\n Please Check Your Network.';
+                        } else if(x.status==404) {
+                            message+='Requested URL not found.';
+                        } else if(x.status==500) {
+                            message+='Internel Server Error.';
+                        } else if(e=='parsererror') {
+                            message+='Parsing JSON Request failed.';
+                        } else if(e=='timeout'){
+                            message+='Request Time out.';
+                        } else {
+                            message+='Unknow Error.\n'+x.responseText;
+                        }
+                        $.notify({
+                              icon: "add_alert",
+                              message: message
+
+                          },{
+                              type: 'danger',
+                              timer: 4000,
+                              placement: {
+                                  from: 'top',
+                                  align: 'right'
+                              }
+                          });
+                    }
+                });
+            });
+
+            $( document ).ready(function() {
+                $('#dashboard_title').val('{{dashboard_title}}');
+                var max = 0;
+                $(".note_wrapper").each(function (index) {
+                    var curr_widget = $(this).parent().parent().parent().attr('id');
+                    var num = parseInt(curr_widget.replace("widget",""));
+                    if(num > max){
+                        max = num;
+                        $scope.counter = max;
+                    }
+                    $(this).parent().parent().parent().find("header").prepend('<input type="submit" id="' + String(curr_widget) + "_edit_btn" + '" class="editnotebtn far fa-edit" data-toggle="modal" data-target="#editNoteModal" value="&#xf044" style="z-index: 4">');
+                    $("#" + curr_widget + "_edit_btn").click(function () {
+                        widget_open_edit_modal = "#" + curr_widget;
+                        widget_edit_id = curr_widget;
+                        var edit_data = $(this).parent().parent().find('.note_wrapper').html();
+                        textEditNote.setData(edit_data);
+                    });
+                });
+
+            });
+        });
+
+        function hideGif( elem, event ){
+            $(elem).siblings(".loadingFrame").css( "display", "none" );
+        }
+    </script>
+    <script type="text/javascript" src="{% static 'dashboard_builder/js/multilayer_viz_dashboard_ui.js' %}"></script>
+
+{% endblock %}
