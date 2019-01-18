@@ -442,6 +442,20 @@ $(function () {
                     if (callback) {
                         callback(data.pk)
                     }
+                    if (temp === 0) {
+                        $.notify({
+                            icon: "add_alert",
+                            message: "Query: " + QueryToolbox.objects[0].queryTitle + " saved successfully!"
+
+                        }, {
+                            type: 'success',
+                            timer: 1000,
+                            placement: {
+                                from: 'top',
+                                align: 'right'
+                            }
+                        });
+                    }
                 }
             });
         },
