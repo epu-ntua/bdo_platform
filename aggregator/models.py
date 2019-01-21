@@ -38,7 +38,7 @@ class Dataset(Model):
     private = BooleanField(default=False)
     spatialEast = CharField(max_length=200, null=True)
     spatialSouth = CharField(max_length=200, null=True)
-    spatiaNorth = CharField(max_length=200, null=True)
+    spatialNorth = CharField(max_length=200, null=True)
     spatialWest = CharField(max_length=200, null=True)
     temporalCoverageBegin = DateTimeField(null=True)
     temporalCoverageEnd = DateTimeField(null=True)
@@ -114,6 +114,9 @@ class BaseVariable(Model):
     title = CharField(max_length=256)
     unit = CharField(max_length=256)
     description = TextField(null=True)
+    sameAs = CharField(null=True, max_length=256)
+    dataType = CharField(null=True, max_length=256)
+    original_column_name = CharField(null=True, max_length=256)
 
     class Meta:
         abstract = True

@@ -10,19 +10,37 @@ class Command(BaseCommand):
     help = 'Collects the datasets/tables on Presto and updates all the metadata'
 
     def handle(self, *args, **options):
-        # GET JWT
+        # GET JWT for fileHandler
         response = requests.post(settings.PARSER_LOG_IN_URL,
                                  data=json.dumps({"username": settings.PARSER_USERNAME, "password": settings.PARSER_PASSWORD}))
         FILEHANDLER_JWT = response.headers["Authorization"]
+
+        # GET JWT for Harmonization
+        headers = {'Content-type': 'application/json'}
+        response = requests.post(settings.HARMONIZATION_AUTH,
+                                 data=json.dumps({"username": settings.HARMONIZATION_USERNAME, "password": settings.HARMONIZATION_PASSWORD}),
+                                 headers=headers)
+        self.stdout.write(str(response))
+        HARMONIZATION_JWT = str(response.json()["access_token"])
+
         # GET THE TABLES FROM DJANGO
         all_tables_django = [d['table_name'] for d in Dataset.objects.filter(stored_at='UBITECH_PRESTO').values('table_name')]
         self.stdout.write('tables in django')
         self.stdout.write(str(all_tables_django))
         self.stdout.write(str(len(all_tables_django)))
 
-        # GET THE TABLES FROM METADATA PROFILES
-        headers = {'Authorization': FILEHANDLER_JWT}
-        response = requests.get(settings.PROFILES_URL, headers=headers)
+        # # GET THE TABLES FROM FILEHANDLER PROFILES
+        # headers = {'Authorization': FILEHANDLER_JWT}
+        # response = requests.get(settings.PROFILES_URL, headers=headers)
+        # profile_list = response.json()
+        # all_tables_profiles = [profile["storageTable"] for profile in profile_list]
+        # self.stdout.write('tables with profiles')
+        # self.stdout.write(str(all_tables_profiles))
+        # self.stdout.write(str(len(all_tables_profiles)))
+
+        # GET THE TABLES FROM HARMONIZATION PROFILES
+        headers = {'Authorization': "JWT " + HARMONIZATION_JWT}
+        response = requests.get(settings.HARMONIZATION_DATASET_LIST_URL, headers=headers)
         profile_list = response.json()
         all_tables_profiles = [profile["storageTable"] for profile in profile_list]
         self.stdout.write('tables with profiles')
@@ -35,7 +53,7 @@ class Command(BaseCommand):
         self.stdout.write(str(tables_to_add))
         self.stdout.write(str(len(tables_to_add)))
 
-        for profile in profile_list:
+        for profile in profile_list[:1]:
             if profile["storageTable"] in tables_to_add:
                 dataset = Dataset(title=profile["title"],
                                   source=profile["source"],
@@ -83,17 +101,72 @@ class Command(BaseCommand):
                 self.stdout.write(str(dataset_dimensions))
                 for var in dataset_variables:
                     self.stdout.write('adding '+str(var["canonicalName"]))
-                    if var["unit"] is None:
-                        var["unit"] = ''
-                    variable = Variable(name=var["canonicalName"], title=var["name"], unit=var["unit"], dataset=dataset)
+                    # if var["unit"] is None:
+                    #     var["unit"] = ''
+                    # GET one variable info
+                    headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
+                    response = requests.post(settings.VARIABLE_LOOKUP_URL,
+                                             data=json.dumps([{"name": var["name"], "canonicalName": var["canonicalName"]}]),
+                                             headers=headers)
+                    var_info = response.json()[0]
+                    variable = Variable(name=var_info["canonicalName"], title=var_info["title"], original_column_name=var_info["name"],
+                                        unit="", description=var_info["description"], sameAs=var_info["sameAs"],
+                                        dataType=var_info["dataType"], dataset=dataset)
                     variable.save()
                     for dim in dataset_dimensions:
                         self.stdout.write('adding ' + str(dim["canonicalName"]))
-                        if dim["unit"] is None:
-                            dim["unit"] = ''
-                        dimension = Dimension(name=dim["canonicalName"], title=dim["name"], unit=dim["unit"], variable=variable)
+                        # if dim["unit"] is None:
+                        #     dim["unit"] = ''
+                        # GET one dimension info
+                        headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
+                        response = requests.post(settings.VARIABLE_LOOKUP_URL,
+                                                 data=json.dumps([{"name": dim["name"], "canonicalName": dim["canonicalName"]}]), headers=headers)
+                        dim_info = response.json()[0]
+                        dimension = Dimension(name=dim_info["canonicalName"], title=dim_info["title"], original_column_name=dim_info["name"],
+                                              unit="", description=dim_info["description"], sameAs=dim_info["sameAs"],
+                                              dataType=dim_info["dataType"], variable=variable)
                         dimension.save()
-
+            else:
+                possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
+                                       "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
+                                       "timestamp", "ship_id"]
+                dataset_variables = []
+                dataset_dimensions = []
+                for var in profile["variables"]:
+                    if var["canonicalName"] not in possible_dimensions:
+                        dataset_variables.append(var)
+                    else:
+                        dataset_dimensions.append(var)
+                for var in dataset_variables:
+                    # GET one variable info
+                    headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
+                    response = requests.post(settings.VARIABLE_LOOKUP_URL,
+                                             data=json.dumps([{"name": var["name"], "canonicalName": var["canonicalName"]}]), headers=headers)
+                    var_info = response.json()[0]
+                    variable = Variable.objects.get(dataset=dataset, name=var_info["canonicalName"])
+                    variable.name = var_info["canonicalName"]
+                    variable.title = var_info["title"]
+                    variable.original_column_name = var_info["name"]
+                    # variable.unit = var_info["unit"]
+                    variable.description = var_info["description"]
+                    variable.sameAs = var_info["sameAs"]
+                    variable.dataType = var_info["dataType"]
+                    variable.save()
+                    for dim in dataset_dimensions:
+                        # GET one dimension info
+                        headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
+                        response = requests.post(settings.VARIABLE_LOOKUP_URL,
+                                                 data=json.dumps([{"name": dim["name"], "canonicalName": dim["canonicalName"]}]), headers=headers)
+                        dim_info = response.json()[0]
+                        dimension = Dimension.objects.get(variable=variable, name=dim_info["canonicalName"])
+                        dimension.name = dim_info["canonicalName"]
+                        dimension.title = dim_info["title"]
+                        dimension.original_column_name = dim_info["name"]
+                        # dimension.unit = dim_info["unit"]
+                        dimension.description = dim_info["description"]
+                        dimension.sameAs = dim_info["sameAs"]
+                        dimension.dataType = dim_info["dataType"]
+                        dimension.save()
             rows_to_render = []
             variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
             variable_list_units = [v.unit for v in Variable.objects.filter(dataset=dataset)]
