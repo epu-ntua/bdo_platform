@@ -367,8 +367,12 @@ $(document).ready(function () {
         $("#viz_container .outputLoadImg").css("display", "block");
         $("#viz_container iframe").on("load", function () {
             $(this).siblings(".outputLoadImg").css("display", "none");
-
             var iframe = $(this).contents();
+            iframe.find('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
+            iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
+            iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
+            iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
+
             iframe.find("#chartPaginationDiv").on('click', '#chartNextBtn', function () {
                 var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
                 if (page >= 0) {
