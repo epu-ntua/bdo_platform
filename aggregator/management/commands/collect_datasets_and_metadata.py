@@ -5,9 +5,14 @@ import prestodb
 import psycopg2
 import requests
 import json
+from datetime import datetime
 
 class Command(BaseCommand):
     help = 'Collects the datasets/tables on Presto and updates all the metadata'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--update_old', default=False, help='For already added datasets, just update their '
+                                                                'variables and dimensions without creating new ones')
 
     def handle(self, *args, **options):
         # GET JWT for fileHandler
@@ -127,109 +132,120 @@ class Command(BaseCommand):
                                               dataType=dim_info["dataType"], variable=variable)
                         dimension.save()
             else:
-                possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
-                                       "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
-                                       "timestamp", "ship_id"]
-                dataset_variables = []
-                dataset_dimensions = []
-                for var in profile["variables"]:
-                    if var["canonicalName"] not in possible_dimensions:
-                        dataset_variables.append(var)
-                    else:
-                        dataset_dimensions.append(var)
-                for var in dataset_variables:
-                    # GET one variable info
-                    headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
-                    response = requests.post(settings.VARIABLE_LOOKUP_URL,
-                                             data=json.dumps([{"name": var["name"], "canonicalName": var["canonicalName"]}]), headers=headers)
-                    var_info = response.json()[0]
-                    variable = Variable.objects.get(dataset=dataset, name=var_info["canonicalName"])
-                    variable.name = var_info["canonicalName"]
-                    variable.title = var_info["title"]
-                    variable.original_column_name = var_info["name"]
-                    # variable.unit = var_info["unit"]
-                    variable.description = var_info["description"]
-                    variable.sameAs = var_info["sameAs"]
-                    variable.dataType = var_info["dataType"]
-                    variable.save()
-                    for dim in dataset_dimensions:
-                        # GET one dimension info
+                if options['update_old']:
+                    possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
+                                           "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
+                                           "timestamp", "ship_id"]
+                    dataset_variables = []
+                    dataset_dimensions = []
+                    for var in profile["variables"]:
+                        if var["canonicalName"] not in possible_dimensions:
+                            dataset_variables.append(var)
+                        else:
+                            dataset_dimensions.append(var)
+                    for var in dataset_variables:
+                        # GET one variable info
                         headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
                         response = requests.post(settings.VARIABLE_LOOKUP_URL,
-                                                 data=json.dumps([{"name": dim["name"], "canonicalName": dim["canonicalName"]}]), headers=headers)
-                        dim_info = response.json()[0]
-                        dimension = Dimension.objects.get(variable=variable, name=dim_info["canonicalName"])
-                        dimension.name = dim_info["canonicalName"]
-                        dimension.title = dim_info["title"]
-                        dimension.original_column_name = dim_info["name"]
-                        # dimension.unit = dim_info["unit"]
-                        dimension.description = dim_info["description"]
-                        dimension.sameAs = dim_info["sameAs"]
-                        dimension.dataType = dim_info["dataType"]
-                        dimension.save()
-            rows_to_render = []
-            variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
-            variable_list_units = [v.unit for v in Variable.objects.filter(dataset=dataset)]
-            dimension_list_canonical = [d.name for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
-            dimension_list_units = [d.unit for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
-            column_list_titles = variable_list_canonical + dimension_list_canonical
-            column_list_units = variable_list_units + dimension_list_units
-            column_list_string = ""
-            for column in column_list_titles:
-                column_list_string += ", " + column
-            column_list_string = column_list_string[1:]
-            try:
-                presto_credentials = settings.DATABASES['UBITECH_PRESTO']
-                conn_presto = prestodb.dbapi.connect(
-                    host=presto_credentials['HOST'],
-                    port=presto_credentials['PORT'],
-                    user=presto_credentials['USER'],
-                    catalog=presto_credentials['CATALOG'],
-                    schema=presto_credentials['SCHEMA'],
-                )
-                cursor_presto = conn_presto.cursor()
-                query = "SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " LIMIT 5"
-                print query
-                cursor_presto.execute(query)
-                rows_to_render = cursor_presto.fetchall()
-                sample_rows = []
-                for row in rows_to_render:
-                    sample_row = []
-                    for x in row:
-                        if isinstance(x, unicode):
-                            y = x.encode('ascii', 'backslashreplace')
-                        else:
-                            y = x
-                        sample_row.append(y)
-                    sample_rows.append(sample_row)
-                print rows_to_render
-                dataset.sample_rows = {"column_titles": column_list_titles,
-                                       "column_units": column_list_units,
-                                       "data": sample_rows}
+                                                 data=json.dumps([{"name": var["name"], "canonicalName": var["canonicalName"]}]), headers=headers)
+                        var_info = response.json()[0]
+                        variable = Variable.objects.get(dataset=dataset, name=var_info["canonicalName"])
+                        variable.name = var_info["canonicalName"]
+                        variable.title = var_info["title"]
+                        variable.original_column_name = var_info["name"]
+                        # variable.unit = var_info["unit"]
+                        variable.description = var_info["description"]
+                        variable.sameAs = var_info["sameAs"]
+                        variable.dataType = var_info["dataType"]
+                        variable.save()
+                        for dim in dataset_dimensions:
+                            # GET one dimension info
+                            headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
+                            response = requests.post(settings.VARIABLE_LOOKUP_URL,
+                                                     data=json.dumps([{"name": dim["name"], "canonicalName": dim["canonicalName"]}]), headers=headers)
+                            dim_info = response.json()[0]
+                            dimension = Dimension.objects.get(variable=variable, name=dim_info["canonicalName"])
+                            dimension.name = dim_info["canonicalName"]
+                            dimension.title = dim_info["title"]
+                            dimension.original_column_name = dim_info["name"]
+                            # dimension.unit = dim_info["unit"]
+                            dimension.description = dim_info["description"]
+                            dimension.sameAs = dim_info["sameAs"]
+                            dimension.dataType = dim_info["dataType"]
+                            dimension.save()
+
+            headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
+            response = requests.get(settings.PARSER_URL + '/fileHandler/table/' + dataset.table_name + '/lastUpdate', headers=headers)
+            if response.content == '':
+                dataset.last_updated = None
+                dataset.save()
+            else:
+                dataset.last_updated = datetime.strptime(response.content, '%Y-%m-%dT%H:%M:%S.%f')
                 dataset.save()
 
-            except Exception, e:
-                print 'error'
-                print str(e)
+                rows_to_render = []
+                variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
+                variable_list_units = [v.unit for v in Variable.objects.filter(dataset=dataset)]
+                dimension_list_canonical = [d.name for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
+                dimension_list_units = [d.unit for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
+                column_list_titles = variable_list_canonical + dimension_list_canonical
+                column_list_units = variable_list_units + dimension_list_units
+                column_list_string = ""
+                for column in column_list_titles:
+                    column_list_string += ", " + column
+                column_list_string = column_list_string[1:]
+                try:
+                    presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+                    conn_presto = prestodb.dbapi.connect(
+                        host=presto_credentials['HOST'],
+                        port=presto_credentials['PORT'],
+                        user=presto_credentials['USER'],
+                        catalog=presto_credentials['CATALOG'],
+                        schema=presto_credentials['SCHEMA'],
+                    )
+                    cursor_presto = conn_presto.cursor()
+                    query = "SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " LIMIT 5"
+                    print query
+                    cursor_presto.execute(query)
+                    rows_to_render = cursor_presto.fetchall()
+                    sample_rows = []
+                    for row in rows_to_render:
+                        sample_row = []
+                        for x in row:
+                            if isinstance(x, unicode):
+                                y = x.encode('ascii', 'backslashreplace')
+                            else:
+                                y = x
+                            sample_row.append(y)
+                        sample_rows.append(sample_row)
+                    print rows_to_render
+                    dataset.sample_rows = {"column_titles": column_list_titles,
+                                           "column_units": column_list_units,
+                                           "data": sample_rows}
+                    dataset.save()
 
-            try:
-                presto_credentials = settings.DATABASES['UBITECH_PRESTO']
-                conn_presto = prestodb.dbapi.connect(
-                    host=presto_credentials['HOST'],
-                    port=presto_credentials['PORT'],
-                    user=presto_credentials['USER'],
-                    catalog=presto_credentials['CATALOG'],
-                    schema=presto_credentials['SCHEMA'],
-                )
-                cursor_presto = conn_presto.cursor()
-                query = "SELECT COUNT(*) FROM " + str(dataset.table_name)
-                print query
-                cursor_presto.execute(query)
-                number_of_rows = cursor_presto.fetchall()[0][0]
-                print number_of_rows
-                dataset.number_of_rows = number_of_rows
-                dataset.save()
-            except Exception, e:
-                print 'error'
-                print str(e)
+                except Exception, e:
+                    print 'error'
+                    print str(e)
+
+                try:
+                    presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+                    conn_presto = prestodb.dbapi.connect(
+                        host=presto_credentials['HOST'],
+                        port=presto_credentials['PORT'],
+                        user=presto_credentials['USER'],
+                        catalog=presto_credentials['CATALOG'],
+                        schema=presto_credentials['SCHEMA'],
+                    )
+                    cursor_presto = conn_presto.cursor()
+                    query = "SELECT COUNT(*) FROM " + str(dataset.table_name)
+                    print query
+                    cursor_presto.execute(query)
+                    number_of_rows = cursor_presto.fetchall()[0][0]
+                    print number_of_rows
+                    dataset.number_of_rows = number_of_rows
+                    dataset.save()
+                except Exception, e:
+                    print 'error'
+                    print str(e)
         self.stdout.write(self.style.SUCCESS('Successfully collected and updated datasets and metadata'))
