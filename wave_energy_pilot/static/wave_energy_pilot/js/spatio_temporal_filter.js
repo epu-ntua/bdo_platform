@@ -54,24 +54,6 @@ $(document).ready(function() {
     //
     $('#bounds').addClass('after-data-selection');
     /*          Set Up Maps for Modal and Preview       */
-    /*          Set Up Time Pickers For Start/End Date  */
-    var startpick = $('#startdatepicker').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
-    var endpick = $('#enddatepicker').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
-
-    startpick.on('changeDate', function(e){
-        var minDate = new Date(e.date.valueOf());
-        endpick.datetimepicker('setStartDate' ,minDate);
-        startdate = $('#startdatepicker input').val();
-        set_time_filters();
-    });
-    endpick.on('changeDate', function(e){
-        var maxDate = new Date(e.date.valueOf());
-        startpick.datetimepicker('setEndDate', maxDate);
-        enddate = $('#enddatepicker input').val();
-        set_time_filters();
-    });
-
-
     //Change Lan, Lon values from user's selection area
 
     $('.leaflet-edit-move').mouseup(function(){
@@ -119,6 +101,8 @@ $(document).ready(function() {
          startdate = null;
          enddate =null;
     })
+
+
 
 
 

@@ -38,6 +38,24 @@ $(document).ready(function() {
       .dropdown()
     ;
 
+    $('#select_variable')
+      .dropdown()
+    ;
+
+    $('#select_dataset_wave_resource_assessment_single')
+      .dropdown()
+    ;
+    $('#select_dataset_wave_resource_assessment_area')
+      .dropdown()
+    ;
+    $('#select_dataset_data_visualisation')
+      .dropdown()
+    ;
+
+     var dataset_selection = $('#select_dataset_data_visualisation :selected').val();
+
+    $('#'+dataset_selection+'-variables').show();
+
     function create_new_area_select(area_select_bounds){
         $(".leaflet-interactive").remove();
         areaSelect = L.rectangle(area_select_bounds);
@@ -72,9 +90,9 @@ $(document).ready(function() {
             if ($('.app-selector :selected').val() == "Wave_Forecast") {
 
                 $('.dataset-selector').hide();
-                $('.coverage-date-filters').hide();
+                $('.coverage-date-filters').show();
                 $('#wave-forecast-results').show();
-
+                $('.single-spatial-selection').show();
 
                 map.on('click', function(e){
 
@@ -90,19 +108,57 @@ $(document).ready(function() {
                     map.addLayer(single_marker_layer);
                  });
 
+
+                /*          Set Up Time Pickers For Start/End Date  */
+
+                var dateToday = new  Date();
+                var startpick = $('#startdatepicker').datetimepicker({
+                    autoclose: true,
+                    pickerPosition: 'top-left',
+                    startDate: dateToday,
+                    // todayBtn: true,
+
+                }).datetimepicker("setDate", new Date());
+
+
+                var endpick = $('#enddatepicker').datetimepicker({
+                    autoclose: true,
+                    pickerPosition: 'top-left',
+                    endDate: dateToday+7
+                });
+
+                // startpick.on('changeDate', function(e){
+                //     var minDate = new Date(e.date.valueOf());
+                //     endpick.datetimepicker('setStartDate' ,minDate);
+                //     startdate = $('#startdatepicker input').val();
+                //     set_time_filters();
+                // });
+                //
+                // endpick.on('changeDate', function(e){
+                //     var maxDate = new Date(e.date.valueOf());
+                //     startpick.datetimepicker('setEndDate', maxDate);
+                //     enddate = $('#enddatepicker input').val();
+                //     set_time_filters();
+                // });
+
             }
             else{
+                $('.single-spatial-selection').hide();
                 $('.dataset-selector').show();
                 $('.coverage-date-filters').show();
                 $('#wave-forecast-results').hide();
-
+                $('#startdatepicker input').val('');
+                $('#enddatepicker input').val('');
+                startdate = null;
+                enddate =null;
             }
             if ($('.app-selector :selected').val() == "Wave_Resource_Assessment_area"){
+                $('.wave_resource_assessment_area_dropdown').show();
                 $('.spatial-selection').show();
                 $('#wave-atlas-results').show();
-                 create_new_area_select([[29.2575,-24.2578],[49.479,37.0898]]);
+                create_new_area_select([[29.2575,-24.2578],[49.479,37.0898]]);
 
-                 $('.leaflet-edit-move').mouseup(function(){
+                $('.leaflet-edit-move').mouseup(function(){
                     area_bounds = areaSelect.getBounds();
                     var swlat = Math.round(area_bounds.getSouthWest().lat * 10000) / 10000;
                     var swlon = Math.round(area_bounds.getSouthWest().lng * 10000) / 10000;
@@ -129,28 +185,29 @@ $(document).ready(function() {
                 });
 
                 $('#lat_min, #lat_max, #lon_min, #lon_max').change(function () {
-
                     bounds = [parseFloat($('#lat_min').val()),parseFloat($('#lon_min').val()),parseFloat($('#lat_max').val()),parseFloat($('#lon_max').val())];
                     $(".leaflet-interactive").remove();
                     create_new_area_select([[parseFloat($('#lat_min').val()),parseFloat($('#lon_min').val())],[parseFloat($('#lat_max').val()),parseFloat($('#lon_max').val())]]);
                 });
-
             }
             else {
+                $('.wave_resource_assessment_area_dropdown').hide();
                 $('#wave-atlas-results').hide();
                 $('.spatial-selection').hide();
                 // map.removeLayer(areaSelect);
 
             }
-
             if ($('.app-selector :selected').val() == "Data_Visualisation"){
+                $('.data_visualisation').show();
                 $('.single-spatial-selection').show();
                 $('#data-visualisation-results').show();
                 $('.variable-selector').show();
 
+                $('#select_dataset_data_visualisation :selected').val();
+                $('#'+dataset_selection+'-variables').show();
+
                 create_buoys_plane();
 
-                // var user_marker = {};
                 map.on('click', function(e){
 
                     $('#lat').val(e.latlng.lat);
@@ -164,27 +221,23 @@ $(document).ready(function() {
                     single_marker_layer =  L.layerGroup(user_marker);
                     map.addLayer(single_marker_layer);
                  });
-
             }
             else{
-               $('#data-visualisation-results').hide();
-               $('.variable-selector').hide();
-               $('.single-spatial-selection').hide();
+                $('.data_visualisation').hide();
+                $('#data-visualisation-results').hide();
+                $('.variable-selector').hide();
+                // $('.single-spatial-selection').hide();
 
-                // alert("edw");
                 if(map.hasLayer(buoys_layer)) {
-                    // alert("edw2");
                     map.removeLayer(buoys_layer);
                 }
-
             }
-
              if ($('.app-selector :selected').val() == "Wave_Resource_Assessment_single"){
-                $('#wave-resource-assessment').show();
-                $('.single-spatial-selection').show();
+                 $('.wave_resource_assessment_single_dropdown').show();
+                 $('#wave-resource-assessment').show();
+                 $('.single-spatial-selection').show();
 
-                // var user_marker = {};
-                map.on('click', function(e){
+                 map.on('click', function(e){
 
                     $('#lat').val(e.latlng.lat);
                     $('#lon').val(e.latlng.lng);
@@ -196,15 +249,22 @@ $(document).ready(function() {
                     single_marker_layer =  L.layerGroup(user_marker);
                     map.addLayer(single_marker_layer);
                  });
-
             }
             else {
-                 $('#wave-resource-assessment').hide();
+                    $('.wave_resource_assessment_single_dropdown').hide();
+                    $('#wave-resource-assessment').hide();
              }
         })
     })
 
+   $(function () {
+       $('#select_dataset_data_visualisation').change(function () {
 
+           $('.variables-selector').hide();
+           var dataset_selection = $('#select_dataset_data_visualisation').val();
+            $('#'+dataset_selection+'-variables').show();
+       })
+   })
 
 
 });
