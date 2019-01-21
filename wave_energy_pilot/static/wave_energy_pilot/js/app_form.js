@@ -29,6 +29,12 @@ $(document).ready(function() {
 
         map.addLayer(buoys_layer);
     }
+    
+    function removeAreaSelect() {
+        var layers_arr = Object.values(map._layers);
+        layers_arr.shift();
+        $.each(layers_arr, function(i, e){e.remove()});
+    }
 
     $('#select_app')
       .dropdown()
@@ -194,7 +200,7 @@ $(document).ready(function() {
                 $('.wave_resource_assessment_area_dropdown').hide();
                 $('#wave-atlas-results').hide();
                 $('.spatial-selection').hide();
-                // map.removeLayer(areaSelect);
+                removeAreaSelect();
 
             }
             if ($('.app-selector :selected').val() == "Data_Visualisation"){
