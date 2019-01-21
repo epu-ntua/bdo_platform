@@ -58,7 +58,7 @@ class Command(BaseCommand):
         self.stdout.write(str(tables_to_add))
         self.stdout.write(str(len(tables_to_add)))
 
-        for profile in profile_list[:1]:
+        for profile in profile_list:
             if profile["storageTable"] in tables_to_add:
                 dataset = Dataset(title=profile["title"],
                                   source=profile["source"],
