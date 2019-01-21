@@ -5,6 +5,7 @@
 var buoys_layer;
 var single_marker_layer;
 var user_marker = {};
+var mode=null;
 $(document).ready(function() {
 
     function create_buoys_plane(){
@@ -94,24 +95,25 @@ $(document).ready(function() {
 
             //Wave Forecast Scenario
             if ($('.app-selector :selected').val() == "Wave_Forecast") {
-
+                mode = "location";
                 $('.dataset-selector').hide();
                 $('.coverage-date-filters').show();
                 $('#wave-forecast-results').show();
                 $('.single-spatial-selection').show();
 
                 map.on('click', function(e){
+                    if (mode == "location") {
+                        $('#lat').val(e.latlng.lat);
+                        $('#lon').val(e.latlng.lng);
 
-                    $('#lat').val(e.latlng.lat);
-                    $('#lon').val(e.latlng.lng);
+                        if (user_marker != undefined) {
+                            map.removeLayer(user_marker);
+                        }
 
-                    if(user_marker != undefined){
-                        map.removeLayer(user_marker);
+                        user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
+                        single_marker_layer = L.layerGroup(user_marker);
+                        map.addLayer(single_marker_layer);
                     }
-
-                    user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
-                    single_marker_layer =  L.layerGroup(user_marker);
-                    map.addLayer(single_marker_layer);
                  });
 
 
@@ -159,6 +161,7 @@ $(document).ready(function() {
                 enddate =null;
             }
             if ($('.app-selector :selected').val() == "Wave_Resource_Assessment_area"){
+                mode = "area";
                 $('.wave_resource_assessment_area_dropdown').show();
                 $('.spatial-selection').show();
                 $('#wave-atlas-results').show();
@@ -197,6 +200,7 @@ $(document).ready(function() {
                 });
             }
             else {
+                mode = "location";
                 $('.wave_resource_assessment_area_dropdown').hide();
                 $('#wave-atlas-results').hide();
                 $('.spatial-selection').hide();
@@ -214,18 +218,19 @@ $(document).ready(function() {
 
                 create_buoys_plane();
 
-                map.on('click', function(e){
+                map.on('click', function(e) {
+                    if (mode == "location"){
+                        $('#lat').val(e.latlng.lat);
+                        $('#lon').val(e.latlng.lng);
 
-                    $('#lat').val(e.latlng.lat);
-                    $('#lon').val(e.latlng.lng);
+                        if (user_marker != undefined) {
+                            map.removeLayer(user_marker);
+                        }
 
-                    if(user_marker != undefined){
-                        map.removeLayer(user_marker);
+                        user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
+                        single_marker_layer = L.layerGroup(user_marker);
+                        map.addLayer(single_marker_layer);
                     }
-
-                    user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
-                    single_marker_layer =  L.layerGroup(user_marker);
-                    map.addLayer(single_marker_layer);
                  });
             }
             else{
@@ -244,16 +249,17 @@ $(document).ready(function() {
                  $('.single-spatial-selection').show();
 
                  map.on('click', function(e){
+                    if (mode == "location") {
+                        $('#lat').val(e.latlng.lat);
+                        $('#lon').val(e.latlng.lng);
 
-                    $('#lat').val(e.latlng.lat);
-                    $('#lon').val(e.latlng.lng);
-
-                    if(user_marker != undefined){
-                        map.removeLayer(user_marker);
+                        if (user_marker != undefined) {
+                            map.removeLayer(user_marker);
+                        }
+                        user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
+                        single_marker_layer = L.layerGroup(user_marker);
+                        map.addLayer(single_marker_layer);
                     }
-                    user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
-                    single_marker_layer =  L.layerGroup(user_marker);
-                    map.addLayer(single_marker_layer);
                  });
             }
             else {
@@ -261,7 +267,7 @@ $(document).ready(function() {
                     $('#wave-resource-assessment').hide();
              }
         })
-    })
+    });
 
    $(function () {
        $('#select_dataset_data_visualisation').change(function () {
