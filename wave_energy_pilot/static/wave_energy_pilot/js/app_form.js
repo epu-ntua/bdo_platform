@@ -1,7 +1,4 @@
 
-
-
-
 var buoys_layer;
 var single_marker_layer;
 var user_marker = {};
@@ -30,36 +27,50 @@ $(document).ready(function() {
 
         map.addLayer(buoys_layer);
     }
-    
+
     function removeAreaSelect() {
         var layers_arr = Object.values(map._layers);
         layers_arr.shift();
         $.each(layers_arr, function(i, e){e.remove()});
     }
 
-    $('#select_app')
-      .dropdown()
-    ;
+    function set_forecast_timeframe(){
+         var startDate = new  Date();
+         startDate.setDate(startDate.getDate() + 1);
+         startDate.setHours(0,0,0,0);
+         var startpick = $('#startdatepicker').datetimepicker({
+             autoclose: true,
+             pickerPosition: 'top-left',
+             startDate: startDate,
+             endDate: startDate,
+         });
+         $('#startdatepicker').datetimepicker("update", startDate);
+         $('#startdatepicker').datetimepicker('setStartDate', startDate);
+         $('#startdatepicker').datetimepicker('setEndDate', startDate);
 
-    $('#select_dataset')
-      .dropdown()
-    ;
+         var endDate = new  Date();
+         endDate.setDate(endDate.getDate() + 7);
+         endDate.setHours(23,59,59,999);
+         var endpick = $('#enddatepicker').datetimepicker({
+             autoclose: true,
+             pickerPosition: 'top-left',
+             startDate: endDate,
+             endDate: endDate,
+         });
+         $('#enddatepicker').datetimepicker("update", endDate);
+         $('#enddatepicker').datetimepicker('setStartDate', endDate);
+         $('#enddatepicker').datetimepicker('setEndDate', endDate);
+    }
 
-    $('#select_variable')
-      .dropdown()
-    ;
 
-    $('#select_dataset_wave_resource_assessment_single')
-      .dropdown()
-    ;
-    $('#select_dataset_wave_resource_assessment_area')
-      .dropdown()
-    ;
-    $('#select_dataset_data_visualisation')
-      .dropdown()
-    ;
+    $('#select_app').dropdown();
+    $('#select_dataset').dropdown();
+    $('.ui dropdown').dropdown();
+    $('#select_dataset_wave_resource_assessment_single').dropdown();
+    $('#select_dataset_wave_resource_assessment_area').dropdown();
+    $('#select_dataset_data_visualisation').dropdown();
 
-     var dataset_selection = $('#select_dataset_data_visualisation :selected').val();
+    var dataset_selection = $('#select_dataset_data_visualisation :selected').val();
 
     $('#'+dataset_selection+'-variables').show();
 
@@ -115,39 +126,8 @@ $(document).ready(function() {
                     }
                  });
 
-
-                /*          Set Up Time Pickers For Start/End Date  */
-
-                var dateToday = new  Date();
-                var startpick = $('#startdatepicker').datetimepicker({
-                    autoclose: true,
-                    pickerPosition: 'top-left',
-                    startDate: dateToday,
-                    // todayBtn: true,
-
-                }).datetimepicker("setDate", new Date());
-
-
-                var endpick = $('#enddatepicker').datetimepicker({
-                    autoclose: true,
-                    pickerPosition: 'top-left',
-                    endDate: dateToday+7
-                });
-
-                // startpick.on('changeDate', function(e){
-                //     var minDate = new Date(e.date.valueOf());
-                //     endpick.datetimepicker('setStartDate' ,minDate);
-                //     startdate = $('#startdatepicker input').val();
-                //     set_time_filters();
-                // });
-                //
-                // endpick.on('changeDate', function(e){
-                //     var maxDate = new Date(e.date.valueOf());
-                //     startpick.datetimepicker('setEndDate', maxDate);
-                //     enddate = $('#enddatepicker input').val();
-                //     set_time_filters();
-                // });
-
+                /* Set Up Time Pickers For Start/End Date  */
+                set_forecast_timeframe();
             }
             else{
                 $('.single-spatial-selection').hide();
@@ -156,8 +136,11 @@ $(document).ready(function() {
                 $('#wave-forecast-results').hide();
                 $('#startdatepicker input').val('');
                 $('#enddatepicker input').val('');
+                // $('#enddatepicker').datepicker('remove');
+                // $('#startdatepicker').datepicker('remove');
                 startdate = null;
-                enddate =null;
+                enddate = null;
+
             }
             if ($('.app-selector :selected').val() == "Wave_Resource_Assessment_area"){
                 mode = "area";
@@ -213,9 +196,6 @@ $(document).ready(function() {
                 $('.single-spatial-selection').show();
                 $('#data-visualisation-results').show();
                 $('.variable-selector').show();
-
-                $('#select_dataset_data_visualisation :selected').val();
-                $('#'+dataset_selection+'-variables').show();
 
                 create_buoys_plane();
 
@@ -275,7 +255,32 @@ $(document).ready(function() {
 
            $('.variables-selector').hide();
            var dataset_selection = $('#select_dataset_data_visualisation').val();
-            $('#'+dataset_selection+'-variables').show();
+           $('#'+dataset_selection+'-variables').show();
+           $('.dataset').each(function (i, obj) {
+               if ($(this).data("title") === dataset_selection){
+
+                   var startdate = new Date($(this).data("startdate"));
+                   var enddate = new Date($(this).data("enddate"));
+                   // startdate.setDate();
+                    var startpick = $('#startdatepicker').datetimepicker({
+                        autoclose: true,
+                        pickerPosition: 'top-left',
+                        startDate: startdate,
+                        endDate: enddate,
+                    });
+                    $('#startdatepicker').datetimepicker("update", startdate);
+
+
+                    // enddate.setDate();
+                    var endpick = $('#enddatepicker').datetimepicker({
+                        autoclose: true,
+                        pickerPosition: 'top-left',
+                        startDate: startdate,
+                        endDate: enddate
+                    });
+                    $('#enddatepicker').datetimepicker("update", enddate);
+               }
+           })
        })
    })
 

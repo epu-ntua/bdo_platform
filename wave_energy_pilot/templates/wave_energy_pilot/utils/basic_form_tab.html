@@ -103,7 +103,7 @@
         <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_area">
             <option value="">Available Datasets</option>
             {% for dataset in datasets_list %}
-                {%  if dataset.application == "wave_resource_assessment_are" %}
+                {%  if dataset.application == "wave_resource_assessment_area" %}
                     <option value="{{ dataset.title }}">{{ dataset.title }}</option>
                 {% endif %}
             {% endfor %}
@@ -144,6 +144,10 @@
 
 <div class="coverage-date-filters" hidden>
     <h4>Timeframe</h4>
+    {% for dataset in datasets_list %}
+        <div class="dataset" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}"
+             data-enddate="{{ dataset.max_date }}" data-app="{{ dataset.application }}"></div>
+    {% endfor %}
     <div class="row" style="margin-top:15px">
         <div class="coverage-date-filters-icon">
         </div>
