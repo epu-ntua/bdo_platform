@@ -87,31 +87,63 @@
     <hr>
 </div>
 
-<div class="dataset-selector">
+<div class="dataset-selector" hidden>
      <h4>Available Datasets</h4>
-    <select name="dataset-selector" class="ui dropdown" id="select_dataset">
-        <option value="">Availabla Datasets</option>
-        <option value="Copernicus 1">Copernicus 1 - Numerical Model</option>
-        <option value="Maretec 1">Maretec 1 - Numerical Model</option>
-        <option value="Buoy XPTO">Buoy XPTO - in - situ measurements</option>
-    </select>
-     <hr>
+    <div class="wave_resource_assessment_single_dropdown" hidden>
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_single">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {%  if dataset.application == "wave_resource_assessment_single" %}
+                    <option value="{{ dataset.title }}">{{ dataset.title }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="wave_resource_assessment_area_dropdown" hidden>
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_area">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {%  if dataset.application == "wave_resource_assessment_are" %}
+                    <option value="{{ dataset.title }}">{{ dataset.title }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="data_visualisation" hidden>
+         <select name="dataset-selector" class="ui dropdown" id="select_dataset_data_visualisation">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {%  if dataset.application == "data_visualisation" %}
+                    <option value="{{ dataset.title }}">{{ dataset.title }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <hr>
 </div>
 
 <div class="variable-selector" hidden>
-    <h4>Variable Selection</h4>
-    <select name="variable-selector" class="ui dropdown" id="select_variable">
-        <option value="">Available Datasets</option>
-        <option value="Copernicus 1">Copernicus 1 - Numerical Model</option>
-        <option value="Maretec 1">Maretec 1 - Numerical Model</option>
-        <option value="Buoy XPTO">Buoy XPTO - in - situ measurements</option>
-    </select>
-     <hr>
+    <h4>Available Variables</h4>
+
+
+        {% for dataset in datasets_list %}
+            {%  if dataset.application == "data_visualisation" %}
+                   <div class="variables-selector" id="{{ dataset.title }}-variables" hidden>
+                       <select name="variables-selector" class="ui dropdown" id="{{ dataset.title }}-dropdown">
+                            <option value="">Available Variables</option>
+                            {% for variable in dataset.variables %}
+                                 <option value="{{ variable.title }}">{{ variable.title }}</option>
+                           {% endfor %}
+                       </select>
+                   </div>
+                {% endif %}
+        {% endfor %}
+
+    <hr>
 </div>
 
-<div class="coverage-date-filters">
+<div class="coverage-date-filters" hidden>
     <h4>Timeframe</h4>
-{#    <div style="text-align: left;"><h4 style="margin: 0;">Filter by temporal coverage</h4></div>#}
     <div class="row" style="margin-top:15px">
         <div class="coverage-date-filters-icon">
         </div>
@@ -141,7 +173,7 @@
     <hr>
 </div>
 
-<div class="results-tabs">
+<div class="results-tabs" hidden>
     <h4>Results</h4>
     <div id="wave-atlas-results" hidden>
         <ul class="nav nav-pills nav-justified">
@@ -240,6 +272,8 @@
     </div>
 </div>
 
-<div id="run-query-btn" class="btn btn-primary btn-sm btn-default">
-    <i class="fa fa-play-circle"></i> Run Service
+<div class="button-container" hidden>
+    <div id="run-query-btn" class="btn btn-primary btn-sm btn-default">
+        <i class="fa fa-play-circle"></i> Run Service
+    </div>
 </div>
