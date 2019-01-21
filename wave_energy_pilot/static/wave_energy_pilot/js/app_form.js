@@ -95,7 +95,6 @@ $(document).ready(function() {
 
             //Wave Forecast Scenario
             if ($('.app-selector :selected').val() == "Wave_Forecast") {
-                mode = "location";
                 $('.dataset-selector').hide();
                 $('.coverage-date-filters').show();
                 $('#wave-forecast-results').show();
@@ -162,6 +161,7 @@ $(document).ready(function() {
             }
             if ($('.app-selector :selected').val() == "Wave_Resource_Assessment_area"){
                 mode = "area";
+                $("#map").css("cursor", "grab");
                 $('.wave_resource_assessment_area_dropdown').show();
                 $('.spatial-selection').show();
                 $('#wave-atlas-results').show();
@@ -201,6 +201,7 @@ $(document).ready(function() {
             }
             else {
                 mode = "location";
+                $("#map").css("cursor", "pointer");
                 $('.wave_resource_assessment_area_dropdown').hide();
                 $('#wave-atlas-results').hide();
                 $('.spatial-selection').hide();
