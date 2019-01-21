@@ -106,8 +106,8 @@ class Command(BaseCommand):
                 self.stdout.write(str(dataset_dimensions))
                 for var in dataset_variables:
                     self.stdout.write('adding '+str(var["canonicalName"]))
-                    # if var["unit"] is None:
-                    #     var["unit"] = ''
+                    if var["unit"] is None:
+                        var["unit"] = ''
                     # GET one variable info
                     headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
                     response = requests.post(settings.VARIABLE_LOOKUP_URL,
@@ -115,20 +115,20 @@ class Command(BaseCommand):
                                              headers=headers)
                     var_info = response.json()[0]
                     variable = Variable(name=var_info["canonicalName"], title=var_info["title"], original_column_name=var_info["name"],
-                                        unit="", description=var_info["description"], sameAs=var_info["sameAs"],
+                                        unit=var_info["unit"], description=var_info["description"], sameAs=var_info["sameAs"],
                                         dataType=var_info["dataType"], dataset=dataset)
                     variable.save()
                     for dim in dataset_dimensions:
                         self.stdout.write('adding ' + str(dim["canonicalName"]))
-                        # if dim["unit"] is None:
-                        #     dim["unit"] = ''
+                        if dim["unit"] is None:
+                            dim["unit"] = ''
                         # GET one dimension info
                         headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
                         response = requests.post(settings.VARIABLE_LOOKUP_URL,
                                                  data=json.dumps([{"name": dim["name"], "canonicalName": dim["canonicalName"]}]), headers=headers)
                         dim_info = response.json()[0]
                         dimension = Dimension(name=dim_info["canonicalName"], title=dim_info["title"], original_column_name=dim_info["name"],
-                                              unit="", description=dim_info["description"], sameAs=dim_info["sameAs"],
+                                              unit=dim_info["unit"], description=dim_info["description"], sameAs=dim_info["sameAs"],
                                               dataType=dim_info["dataType"], variable=variable)
                         dimension.save()
             else:
@@ -153,7 +153,7 @@ class Command(BaseCommand):
                         variable.name = var_info["canonicalName"]
                         variable.title = var_info["title"]
                         variable.original_column_name = var_info["name"]
-                        # variable.unit = var_info["unit"]
+                        variable.unit = var_info["unit"]
                         variable.description = var_info["description"]
                         variable.sameAs = var_info["sameAs"]
                         variable.dataType = var_info["dataType"]
@@ -168,7 +168,7 @@ class Command(BaseCommand):
                             dimension.name = dim_info["canonicalName"]
                             dimension.title = dim_info["title"]
                             dimension.original_column_name = dim_info["name"]
-                            # dimension.unit = dim_info["unit"]
+                            dimension.unit = dim_info["unit"]
                             dimension.description = dim_info["description"]
                             dimension.sameAs = dim_info["sameAs"]
                             dimension.dataType = dim_info["dataType"]
