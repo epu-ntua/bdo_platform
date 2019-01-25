@@ -1989,7 +1989,7 @@ def get_histogram_chart_am(request):
         if livy:
             tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
             run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=session_id, mode='livy')
-            scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col='power',num_of_bins=bins)
+            scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var,num_of_bins=bins)
             run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=session_id, mode='livy')
             json_data = create_livy_scala_toJSON_paragraph(session_id=session_id, df_name=df)
 
@@ -1998,7 +1998,7 @@ def get_histogram_chart_am(request):
         else:
             tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
             run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=0, mode='zeppelin')
-            scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col='power', num_of_bins=bins)
+            scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var, num_of_bins=bins)
             run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=0, mode='zeppelin')
             toJSON_paragraph_id = create_zep_scala_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
             run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
@@ -2359,7 +2359,7 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, orderi
         # TODO: use proper names
         y_title_list.insert(0, str(x))
         y_m_unit.insert(0, str('unknown unit'))
-
+    print json_data[:2]
     return json_data, y_m_unit, y_title_list
 
 
@@ -2388,7 +2388,7 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 
