@@ -74,8 +74,12 @@ class Command(BaseCommand):
                           'temporalCoverageBegin', 'temporalCoverageEnd', 'license', 'observation']
             for field in basic_info:
                 try:
+                    self.stdout.write('setting' + str(field))
                     setattr(dataset, field, profile[field])
-                except:
+                    dataset.save()
+                except Exception, e:
+                    setattr(dataset, field, None)
+                    dataset.save() 
                     pass
             if profile["accessRights"] == 'Public':
                 dataset.private = False
@@ -149,7 +153,14 @@ class Command(BaseCommand):
                         response = requests.post(settings.VARIABLE_LOOKUP_URL,
                                                  data=json.dumps([{"name": var["name"], "canonicalName": var["canonicalName"]}]), headers=headers)
                         var_info = response.json()[0]
-                        variable = Variable.objects.get(dataset=dataset, name=var_info["canonicalName"])
+                        self.stdout.write('modifying '+str(var_info["canonicalName"]))
+                        try:
+                       	    variable = Variable.objects.get(dataset=dataset, name=var_info["canonicalName"])
+                        except Exception, e:
+                            variable = Variable(name=var_info["canonicalName"], title=var_info["title"], original_column_name=var_info["name"],
+                                        unit=var_info["unit"], description=var_info["description"], sameAs=var_info["sameAs"],
+                                        dataType=var_info["dataType"], dataset=dataset)
+                            pass
                         variable.name = var_info["canonicalName"]
                         variable.title = var_info["title"]
                         variable.original_column_name = var_info["name"]
@@ -164,7 +175,13 @@ class Command(BaseCommand):
                             response = requests.post(settings.VARIABLE_LOOKUP_URL,
                                                      data=json.dumps([{"name": dim["name"], "canonicalName": dim["canonicalName"]}]), headers=headers)
                             dim_info = response.json()[0]
-                            dimension = Dimension.objects.get(variable=variable, name=dim_info["canonicalName"])
+                            try:
+                                dimension = Dimension.objects.get(variable=variable, name=dim_info["canonicalName"])
+                            except Exception, e:
+                                dimension = Dimension(name=dim_info["canonicalName"], title=dim_info["title"], original_column_name=dim_info["name"],
+                                              unit=dim_info["unit"], description=dim_info["description"], sameAs=dim_info["sameAs"],
+                                              dataType=dim_info["dataType"], variable=variable)
+                                pass
                             dimension.name = dim_info["canonicalName"]
                             dimension.title = dim_info["title"]
                             dimension.original_column_name = dim_info["name"]
@@ -182,7 +199,7 @@ class Command(BaseCommand):
             else:
                 dataset.last_updated = datetime.strptime(response.content, '%Y-%m-%dT%H:%M:%S.%f')
                 dataset.save()
-
+            if response.content != '' or profile["storageTable"] in tables_to_add:
                 rows_to_render = []
                 variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
                 variable_list_units = [v.unit for v in Variable.objects.filter(dataset=dataset)]
@@ -227,7 +244,7 @@ class Command(BaseCommand):
                 except Exception, e:
                     print 'error'
                     print str(e)
-
+                    pass
                 try:
                     presto_credentials = settings.DATABASES['UBITECH_PRESTO']
                     conn_presto = prestodb.dbapi.connect(
@@ -248,4 +265,5 @@ class Command(BaseCommand):
                 except Exception, e:
                     print 'error'
                     print str(e)
+                    pass
         self.stdout.write(self.style.SUCCESS('Successfully collected and updated datasets and metadata'))
