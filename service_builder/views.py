@@ -666,7 +666,7 @@ def APIcreateInputFileForHCMRSpillSimulator(request):
                                   WIND_MODEL + "\n" + \
                                   WAVE_MODEL + "\n"
             print 'InputString:{0}'.format(OilSpillInputString)
-            from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME, FTPPASS
+            FTPSERVER, FTPUSERNAME, FTPPASS = 'tethys.hcmr.gr','bdo', '!p1l0t2#'
 
             #Save Oil Spill Simulation input string to a text file in ftp
             ftp = ftplib.FTP(FTPSERVER)
@@ -703,7 +703,7 @@ def APIcheckIfOutputExistsforHCMRSpillSimulator(request):
             LATLON = request.GET['LATLON']
             DATETIME = request.GET['DATETIME']
 
-            from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME, FTPPASS
+            FTPSERVER, FTPUSERNAME, FTPPASS = 'tethys.hcmr.gr','bdo', '!p1l0t2#'
 
             # Check the out directory
             ftp = ftplib.FTP(FTPSERVER)
