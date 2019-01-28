@@ -204,7 +204,8 @@
                                                         data-variable-unit="{{ variable.unit }}"
                                                         data-variable-id="{{ variable.id }}"
                                                         data-variable-title="{{ variable.title }}"
-                                                        data-selected="False">
+                                                        data-selected="False"
+                                                        data-variable-dataset="{{ dataset.id }}">
                                                         <span class="variable-id " hidden>{{ variable.id }}</span>
                                                         <ul class="variable-dimensions" hidden>
                                                             {% for dimension in variable.dimensions.all %}
