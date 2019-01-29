@@ -545,12 +545,14 @@ def load_template(request):
 
 def updateServiceInstanceVisualizations(execution_id, url):
     service_exec = ServiceInstance.objects.get(pk=execution_id)
-    for viz in service_exec.dataframe_visualizations:
+    for key in service_exec.dataframe_visualizations.keys():
+        viz = service_exec.dataframe_visualizations[key]
         if viz['url'] == url and not viz['done']:
             viz['done'] = True
             break
     all_done = True
-    for viz in service_exec.dataframe_visualizations:
+    for key in service_exec.dataframe_visualizations.keys():
+        viz = service_exec.dataframe_visualizations[key]
         if not viz['done']:
             all_done = False
             break

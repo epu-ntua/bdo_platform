@@ -32,6 +32,9 @@
         <div id="app_form" class="form container " >
             {% include "wave_energy_pilot/utils/basic_form_tab.html" %}
         </div>
+        
+        <btn id="execution_btn" class="btn btn-success">Execute!</btn>
+        <span id="execution_status"></span>
     </div>
 
 {% endblock %}
@@ -45,4 +48,57 @@
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
     <script src="{% static 'wave_energy_pilot/js/app_form.js' %}"></script>
     <script src="{% static 'wave_energy_pilot/js/location_markers.js' %}"></script>
+    
+    <script type="text/javascript">
+        var exec_instance = '';
+        $("#execution_btn").click(function () {
+            $.ajax({
+                "type": "GET",
+                "url": "/wave-energy/evaluate_location/execute/?dataset_id=111&start_date=2019-01-05&end_date=2019-01-15&latitude_from=35.1&latitude_to=40.2&longitude_from=-11.3&longitude_to=-6.4",
+                "data": {},
+                "success": function(result) {
+                    console.log(result);
+                    exec_instance = result['exec_instance'];
+                },
+                error: function () {
+                    alert('error');
+                }
+            });
+
+            window.setInterval(function(){
+
+            }, 1000);
+
+            var execution_status_interval = setInterval(check_execution_status, 5000);
+
+            function check_execution_status() {
+                $.ajax({
+                    "type": "GET",
+                    "url": "/wave-energy/evaluate_location/status/"+exec_instance+"/",
+                    "data": {},
+                    "success": function(result) {
+                        console.log(result["status"]);
+                        $("#execution_status").html(result["status"]);
+                        if(result["status"] === "done"){
+                            execution_status_stop();
+                            // similar behavior as clicking on a link
+                            window.location.href = "/wave-energy/evaluate_location/results/"+exec_instance+"/";
+                        }
+                        else if (result["status"] === "failed") {
+                            execution_status_stop();
+                            alert("execution failed");
+                        }
+                    },
+                    error: function () {
+                        execution_status_stop();
+                        alert('error');
+                    }
+                });
+            }
+
+            function execution_status_stop() {
+              clearInterval(execution_status_interval);
+            }
+        })
+    </script>
 {% endblock %}
