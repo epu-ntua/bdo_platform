@@ -2,8 +2,24 @@
 var buoys_layer;
 var single_marker_layer;
 var user_marker = {};
+var buoys_markers = [];
 var mode=null;
 $(document).ready(function() {
+    
+    function create_buoys_dataset_dict() {
+        var buoys_dict = [];
+        $('.buoy').each(function(i, obj) {
+
+            var my_list = [];
+            var buoy_id = $(this).data("id");
+            var dataset_id = $(this).data("dataset_id");
+            my_list.push(buoy_id, dataset_id);
+            buoys_dict.push(my_list);
+        })
+        return buoys_dict;
+    }
+
+    var buoys_dict = create_buoys_dataset_dict();
 
     function create_buoys_plane(){
         var buoys_plane = [];
@@ -15,7 +31,7 @@ $(document).ready(function() {
             buoys_plane.push(buoy);
         });
 
-        var buoys_markers = [];
+
         var redIcon = new L.Icon({
           iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
         });
@@ -65,7 +81,7 @@ $(document).ready(function() {
 
     $('#select_app').dropdown();
     $('#select_dataset').dropdown();
-    $('.ui dropdown').dropdown();
+    $('.ui.dropdown').dropdown();
     $('#select_dataset_wave_resource_assessment_single').dropdown();
     $('#select_dataset_wave_resource_assessment_area').dropdown();
     $('#select_dataset_data_visualisation').dropdown();
@@ -92,10 +108,48 @@ $(document).ready(function() {
 
     }
 
+
     function erase_user_marker(){
-        // alert(this.getLatLng().lat);
+
+        var redIcon = new L.Icon({
+          iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
+        });
+        for(var i = 0; i < buoys_markers.length; i++){
+            buoys_markers[i].setIcon(redIcon);
+        }
+        $("#select_dataset_data_visualisation .item").each(function() {
+            if($(".item").hasClass("disabled")) {
+
+                $(".item").removeClass("disabled");
+            }
+        });
+        var selected_buoy = this.getPopup().getContent();
+        var dataset_id = -1;
+        for(var i = 0; i < buoys_dict.length; i++){
+            if(buoys_dict[i][0] === selected_buoy){
+                dataset_id = buoys_dict[i][1];
+                break;
+            }
+        }
+
+        //select the dataset which the buoy belongs
+        var dataset_title = $(`#select_dataset_data_visualisation .item[data-id="${dataset_id}"]`).data("title");
+        $("#select_dataset_data_visualisation").dropdown("set selected", [`${dataset_title}`]);
+
+
+        $("#select_dataset_data_visualisation .item").each(function() {
+
+            if ($(this).data("id") != dataset_id){
+                var dropwdown_id = $(this).data("id");
+               $(`.item[data-id="${dropwdown_id}"]`).addClass("disabled item");
+            }
+        });
+        var newIcon = new L.Icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png'});
+        this.setIcon(newIcon);
+
         $('#lat').val(this.getLatLng().lat);
         $('#lon').val(this.getLatLng().lng);
+
         if(user_marker != undefined){
             map.removeLayer(user_marker);
         }
@@ -123,6 +177,11 @@ $(document).ready(function() {
                         user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
                         single_marker_layer = L.layerGroup(user_marker);
                         map.addLayer(single_marker_layer);
+                        user_marker.on('dragend', function (e) {
+                            // alert(e.target._latlng);
+                             $('#lat').val(e.target._latlng.lat);
+                             $('#lon').val(e.target._latlng.lng);
+                        })
                     }
                  });
 
@@ -204,13 +263,29 @@ $(document).ready(function() {
                         $('#lat').val(e.latlng.lat);
                         $('#lon').val(e.latlng.lng);
 
+                        //make again the buoys layer red
+                        var redIcon = new L.Icon({iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'});
+                        for(var i = 0; i < buoys_markers.length; i++)
+                            buoys_markers[i].setIcon(redIcon);
+
                         if (user_marker != undefined) {
                             map.removeLayer(user_marker);
                         }
 
-                        user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
+                        $("#select_dataset_data_visualisation .item").each(function() {
+                            if($(".item").hasClass("disabled")) {
+                                $(".item").removeClass("disabled");
+                            }
+                        });
+
+                        user_marker = L.marker([e.latlng.lat, e.latlng.lng], {draggable:true}).bindPopup("AS4254").addTo(map);
                         single_marker_layer = L.layerGroup(user_marker);
                         map.addLayer(single_marker_layer);
+                        user_marker.on('dragend', function (e) {
+
+                             $('#lat').val(e.target._latlng.lat);
+                             $('#lon').val(e.target._latlng.lng);
+                        })
                     }
                  });
             }
@@ -237,9 +312,21 @@ $(document).ready(function() {
                         if (user_marker != undefined) {
                             map.removeLayer(user_marker);
                         }
+
+                        $("#select_dataset_data_visualisation .item").each(function() {
+                            if($(".item").hasClass("disabled")) {
+                                $(".item").removeClass("disabled");
+                            }
+                        });
+
                         user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
                         single_marker_layer = L.layerGroup(user_marker);
                         map.addLayer(single_marker_layer);
+                        user_marker.on('dragend', function (e) {
+
+                             $('#lat').val(e.target._latlng.lat);
+                             $('#lon').val(e.target._latlng.lng);
+                        })
                     }
                  });
             }
@@ -254,10 +341,12 @@ $(document).ready(function() {
        $('#select_dataset_data_visualisation').change(function () {
 
            $('.variables-selector').hide();
-           var dataset_selection = $('#select_dataset_data_visualisation').val();
+           var dataset_selection = $('#select_dataset_data_visualisation').dropdown('get text');
+           alert(dataset_selection);
            $('#'+dataset_selection+'-variables').show();
            $('.dataset').each(function (i, obj) {
-               if ($(this).data("title") === dataset_selection){
+
+               if ($(this).data("id") == dataset_selection){
 
                    var startdate = new Date($(this).data("startdate"));
                    var enddate = new Date($(this).data("enddate"));

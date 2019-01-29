@@ -12,8 +12,7 @@
 
 {% block content %}
     <div class="app-container">
-{#        <div id="newmap" style="min-height: 800px; width: 100%; margin-top: 10px; z-index: 1;">#}
-{#        </div>#}
+
 
         <div id="map" style="min-height: 800px; width: 100%; margin-top: 10px; z-index: 1; ">
 
@@ -22,7 +21,7 @@
         <div id="buoys">
 
                 {% for buoy in buoys_list %}
-                    <div class="buoy" data-id="{{ buoy.id }}" data-lat="{{ buoy.lat }}" data-lon="{{ buoy.lon }}">
+                    <div class="buoy" data-id="{{ buoy.id }}" data-lat="{{ buoy.lat }}" data-lon="{{ buoy.lon }}" data-dataset_id="{{ buoy.dataset_id }}">
                     </div>
                 {% endfor %}
 
