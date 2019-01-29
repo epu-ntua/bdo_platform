@@ -109,15 +109,22 @@
             {% endfor %}
         </select>
     </div>
-    <div class="data_visualisation" hidden>
-         <select name="dataset-selector" class="ui dropdown" id="select_dataset_data_visualisation">
-            <option value="">Available Datasets</option>
-            {% for dataset in datasets_list %}
-                {%  if dataset.application == "data_visualisation" %}
-                    <option value="{{ dataset.title }}">{{ dataset.title }}</option>
-                {% endif %}
-            {% endfor %}
-        </select>
+    <div class="data_visualisation" >
+{#         <select name="dataset-selector" class="ui dropdown" id="select_dataset_data_visualisation">#}
+         <div class="ui selection dropdown" id="select_dataset_data_visualisation">
+             <input type="hidden" name="data-visualisation-datasets">
+             <i class="dropdown icon"></i>
+             <div class="default text">Available Datasets</div>
+{#            <option value="">Available Datasets</option>#}
+             <div class="menu">
+                {% for dataset in datasets_list %}
+                    {%  if dataset.application == "data_visualisation" %}
+                        <div class="item" data-id="{{ dataset.id }}" data-title="{{ dataset.title }}">{{ dataset.title }}</div>
+    {#                    <option value="{{ dataset.id }}">{{ dataset.title }}</option>#}
+                    {% endif %}
+                {% endfor %}
+             </div>
+        </div>
     </div>
     <hr>
 </div>
@@ -128,8 +135,8 @@
 
         {% for dataset in datasets_list %}
             {%  if dataset.application == "data_visualisation" %}
-                   <div class="variables-selector" id="{{ dataset.title }}-variables" hidden>
-                       <select name="variables-selector" class="ui dropdown" id="{{ dataset.title }}-dropdown">
+                   <div class="variables-selector" id="{{ dataset.id }}-variables" hidden>
+                       <select name="variables-selector" class="ui dropdown" >
                             <option value="">Available Variables</option>
                             {% for variable in dataset.variables %}
                                  <option value="{{ variable.title }}">{{ variable.title }}</option>
@@ -145,7 +152,7 @@
 <div class="coverage-date-filters" hidden>
     <h4>Timeframe</h4>
     {% for dataset in datasets_list %}
-        <div class="dataset" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}"
+        <div class="dataset" data-id="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}"
              data-enddate="{{ dataset.max_date }}" data-app="{{ dataset.application }}"></div>
     {% endfor %}
     <div class="row" style="margin-top:15px">
