@@ -1,0 +1,50 @@
+{
+  "visualiser":{
+    "line_chart_am":{
+      "limit":600
+    },
+    "column_chart_am":{
+      "limit":500
+    },
+    "pie_chart_am":{
+      "limit":20
+    },
+     "time_series_am":{
+      "limit":600
+    },
+    "aggregate_value":{
+      "limit":1
+    },
+    "data_table":{
+      "limit":500
+    },
+    "histogram_chart_am":{
+      "limit":30,
+      "default_bins":8
+    },
+    "map_contour":{
+      "limit":1000
+    },
+    "map_heatmap":{
+      "limit":10000,
+      "default_points":100
+    },
+    "map_markers_grid":{
+      "limit":1000,
+      "default_points":100
+    },
+    "map_markers_vessel_course":{
+      "limit":1000,
+      "default_points":50
+    },
+    "map_plotline_vessel_course":{
+      "limit":10000,
+      "default_points":50
+    },
+    "map_polygon":{
+      "limit": 100000,
+      "default_points":60
+    }
+
+  }
+}

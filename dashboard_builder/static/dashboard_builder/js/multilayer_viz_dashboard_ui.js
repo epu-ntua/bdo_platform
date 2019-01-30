@@ -487,6 +487,18 @@ $("#select_data_popover").click(function () {
             }
 
             function specific_viz_form_configuration(){
+                //HISTOGRAM
+                var histogram_id = $('#viz_config ul li[data-viz-name="get_histogram_chart_am"]').attr('data-viz-id');
+                var histogram_input = $('.popover-content #viz_'+histogram_id+' #bins');
+                var viz_conf_histogram = viz_conf_json['visualiser']['histogram_chart_am'];
+                histogram_input.val(viz_conf_histogram['default_bins']);
+                histogram_input.on('input',function () {
+                    if ( histogram_input.val()>=viz_conf_histogram['limit'] || histogram_input.val()<0){
+                        alert('Please set the number of bins below 1000 and above 0.');
+                        histogram_input.val(viz_conf['default_bins']);
+                    }
+                });
+
                 //PIE CHART
                 var pie_chart_id = $('#viz_config ul li[data-viz-name="get_pie_chart_am"]').attr('data-viz-id');
                 var pie_chart_agg_select = $('.popover-content #viz_'+pie_chart_id+' .aggregate-select');
@@ -505,31 +517,34 @@ $("#select_data_popover").click(function () {
                 var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
                 var plotline_platform_id_input = $('.popover-content #viz_'+ plotline_vessel_course_id+' #platform_id');
                 plotline_platform_id_input.val(' ');
-                plotline_vessel_course_input.val(20);
+                var viz_conf_plotline = viz_conf_json['visualiser']['map_plotline_vessel_course'];
+                plotline_vessel_course_input.val(viz_conf_plotline['default_points']);
                 plotline_vessel_course_input.on('input',function () {
-                    if (plotline_vessel_course_input.val()>=10000 || plotline_vessel_course_input.val()<0){
+                    if (plotline_vessel_course_input.val()>=viz_conf_plotline['limit'] || plotline_vessel_course_input.val()<0){
                         alert('Please set the limit of plotline points below 10000 and above 0.');
-                        plotline_vessel_course_input.val(20);
+                        plotline_vessel_course_input.val(viz_conf_plotline['default_points']);
                     }
                 });
                 // POLYGON LINE
                 var polygon_id = $('#viz_config ul li[data-viz-name="get_map_polygon"]').attr('data-viz-id');
                 var polygon_input = $('.popover-content #viz_'+polygon_id+' #points_limit');
-                polygon_input.val(1);
+                var viz_conf_polygon = viz_conf_json['visualiser']['map_polygon'];
+                polygon_input.val(viz_conf_polygon['default_points']);
                 polygon_input.on('input',function () {
-                    if ( polygon_input.val()>=100000 ||  polygon_input.val()<0){
+                    if ( polygon_input.val()>=viz_conf_polygon['limit'] ||  polygon_input.val()<0){
                         alert('Please set the limit of polygon points below 100000 and above 0.');
-                         polygon_input.val(1);
+                         polygon_input.val(viz_conf_polygon['default_points']);
                     }
                 });
                 //HEATMAP
                 var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
                 var heatmap_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
-                heatmap_input.val(30);
+                var viz_conf_heatmap = viz_conf_json['visualiser']['map_heatmap'];
+                heatmap_input.val(viz_conf_heatmap['default_points']);
                 heatmap_input.on('input',function () {
-                    if ( heatmap_input.val()>=10000 || heatmap_input.val()<0){
+                    if ( heatmap_input.val()>=viz_conf_heatmap['limit'] || heatmap_input.val()<0){
                         alert('Please set the limit of heatmap points below 10000 and above 0.');
-                        heatmap_input.val(30);
+                        heatmap_input.val(viz_conf_heatmap['default_points']);
                     }
                 });
                 var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
@@ -543,11 +558,12 @@ $("#select_data_popover").click(function () {
                 var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
                 var markers_platform_id_input = $('.popover-content #viz_'+ markers_vessel_id+' #platform_id');
                 markers_platform_id_input.val(' ');
-                markers_vessel_input.val(20);
+                var viz_conf_markers_vessel = viz_conf_json['visualiser']['map_markers_vessel_course'];
+                markers_vessel_input.val(viz_conf_markers_vessel['default_points']);
                 markers_vessel_input.on('input',function () {
-                    if ( markers_vessel_input.val()>=1000 || markers_vessel_input.val()<0){
+                    if ( markers_vessel_input.val()>=viz_conf_markers_vessel['limit'] || markers_vessel_input.val()<0){
                         alert('Please set the limit of heatmap points below 1000 and above 0.');
-                        markers_vessel_input.val(20);
+                        markers_vessel_input.val(viz_conf_markers_vessel['default_points']);
                     }
                 });
                 var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var').parent();
@@ -557,13 +573,13 @@ $("#select_data_popover").click(function () {
 
                  //MAP MARKERS GRID
                 var markers_grid_id = $('#viz_config ul li[data-viz-name="get_map_markers_grid"]').attr('data-viz-id');
-
                 var markers_grid_input = $('.popover-content #viz_'+ markers_grid_id+' #marker_limit');
-                markers_grid_input.val(30);
+                var viz_conf_markers_grid = viz_conf_json['visualiser']['map_markers_grid'];
+                markers_grid_input.val(viz_conf_markers_grid['default_points']);
                 markers_grid_input.on('input',function () {
-                    if ( markers_grid_input.val()>=1000 || markers_grid_input.val()<0){
+                    if ( markers_grid_input.val()>=viz_conf_markers_grid['limit'] || markers_grid_input.val()<0){
                         alert('Please set the limit of heatmap points below 1000 and above 0.');
-                        markers_grid_input.val(30);
+                        markers_grid_input.val(viz_conf_markers_grid['default_points']);
                     }
                 });
 
