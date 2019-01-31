@@ -47,14 +47,38 @@ def find_visualization_variables(variables, query_id):
     return_variables = list()
     doc = AbstractQuery.objects.get(pk=query_id).document
     for var in variables:
-        variable_dict = dict({'variable': var, 'query_variable': None, 'title': None})
+        variable_dict = dict({'variable': var, 'query_variable': None, 'title': None, 'unit': None, 'variable_id': None})
         for _f in doc['from']:
-            if str(_f['name'])[:str(_f['name']).rfind('_')] == var:
+            if str(_f['select'][0]['name'])[int(str(_f['select'][0]['name']).find('_'))+1:] == var:
                 variable_dict['query_variable'] = _f['select'][0]['name']
                 variable_dict['title'] = Variable.objects.get(pk=int(_f['type'])).title
+                variable_dict['unit'] = Variable.objects.get(pk=int(_f['type'])).unit
+                variable_dict['variable_id'] = _f['type']
         return_variables.append(variable_dict)
     return return_variables
 
+
+def get_query_aggregate(query_id, var, aggregate):
+    temp_q = TempQuery(document=AbstractQuery.objects.get(pk=query_id).document)
+    for _f in temp_q.document['from']:
+        if int(_f['type']) == int(var['variable_id']):
+            _f['select'][0]['exclude'] = False
+            _f['select'][0]['aggregate'] = aggregate
+            _f['select'][0]['groupBy'] = False
+            for _s in _f['select'][1:]:
+                _s['exclude'] = True
+                _s['groupBy'] = False
+        else:
+            for _s in _f['select']:
+                _s['exclude'] = True
+                _s['groupBy'] = False
+
+    results = temp_q.execute()[0]['results']
+    if len(results) > 0:
+        result = results[0][0]
+    else:
+        result = '-'
+    return result
 
 
 def convert_unicode_json(data):
@@ -175,7 +199,7 @@ def data_visualization_results(request):
                              'df': '',
                              'query': visualization_query_id,
                              'title': "Time Series Graph",
-                             'url': "/visualizations/get_line_chart_am/?viz_id=21&action=get_line_chart_am&"+y_var+"x_var=i0_time&agg_func=AVG&query="+str(visualization_query_id),
+                             'url': "/visualizations/get_line_chart_am/?"+y_var+"x_var=i0_time&agg_func=AVG&query="+str(visualization_query_id),
                              'done': False})
     service_exec.dataframe_visualizations = visualizations
     service_exec.save()
@@ -184,9 +208,9 @@ def data_visualization_results(request):
     for var in variable_list:
         result[str(var['variable'])] = dict()
         result[str(var['variable'])]['title'] = str(var['title'])
-        result[str(var['variable'])]['min'] = 'min'
-        result[str(var['variable'])]['max'] = 'max'
-        result[str(var['variable'])]['avg'] = 'avg'
+        result[str(var['variable'])]['unit'] = str(var['unit'])
+        for agg in ['min', 'max', 'avg']:
+            result[str(var['variable'])][agg] = get_query_aggregate(visualization_query_id, var, agg)
 
     variable_list_with_commas = ''
     for var in variable_list:
@@ -198,10 +222,10 @@ def data_visualization_results(request):
                    'service_title': 'Visualisation of a single data source',
                    'study_conditions': [
                        {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(35.1, -11.3) +/- 10 degrees'},
-                       {'icon': 'fas fa-map-marker-alt', 'text': 'Timeframe:', 'value': 'from '+ str(request.GET["start_date"]) + ' to ' + str(request.GET["end_date"])},
+                       {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:', 'value': 'from '+ str(request.GET["start_date"]) + ' to ' + str(request.GET["end_date"])},
                        {'icon': 'fas fa-database', 'text': 'Dataset used:',
                         'value': 'Nester Maretec Waves Forecast <a target="_blank" rel="noopener noreferrer"  href="/datasets/111/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
-                       {'icon': 'fas fa-map-marker-alt', 'text': 'Selected variables:', 'value': str(variable_list_with_commas)}],
+                       {'icon': 'fas fa-info-circle', 'text': 'Selected variables:', 'value': str(variable_list_with_commas)}],
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 

@@ -14,15 +14,18 @@
         <div class="col-sm-12">
             <div class="col-sm-12">
                 <table class="table" style="margin-bottom: 0;">
-                    <thead>
+                    <thead style="background-color: #30526a; color: white;">
                         <tr>
-                            <th class="col-sm-5"></th><th class="col-sm-2">Maximum</th><th class="col-sm-2">Average</th><th class="col-sm-2">Minimum</th>
+                            <th class="col-sm-5">Variable</th><th class="col-sm-2">Maximum</th><th class="col-sm-2">Average</th><th class="col-sm-2">Minimum</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for key, var in result.items %}
                             <tr>
-                                <td>{{ var.title }}</td><td>{{ var.max }} {{ key }}</td><td>{{ var.avg }} {{ key }}</td><td>{{ var.min }} {{ key }}</td>
+                                <td>{{ var.title }}</td>
+                                <td>{{ var.max|floatformat:3 }} {{ var.unit }}</td>
+                                <td>{{ var.avg|floatformat:3 }} {{ var.unit }}</td>
+                                <td>{{ var.min|floatformat:3 }} {{ var.unit }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

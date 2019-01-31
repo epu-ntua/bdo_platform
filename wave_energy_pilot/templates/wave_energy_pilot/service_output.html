@@ -27,9 +27,9 @@
         {# STUDY CONDITIONS #}
         <div id="study_conditions" class="row col-sm-12" style="box-shadow: 0 1px #c7c7c7; margin-bottom: 3vh;">
             <div class="col-sm-12" style="text-align: center;">
-                <h3> Study Conditions </h3>
+                <button class="btn btn-primary" data-toggle="collapse" data-target="#conditions_div"> Study Conditions </button>
             </div>
-            <div class="col-sm-6 col-sm-offset-3" style="text-align: center;">
+            <div id="conditions_div" class="col-sm-6 col-sm-offset-3 collapse in" style="text-align: center;">
                 <table class="table">
                     <tbody>
                         {% for condition in study_conditions %}

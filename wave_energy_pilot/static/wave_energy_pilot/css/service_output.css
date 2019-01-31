@@ -9,3 +9,7 @@
 #service_result_container td{text-align: center; }
 #service_result_container .nav>li {display: inline-block !important;width: 300px !important; float: none !important;}
 #study_conditions td {text-align: left;}
+
+h1, h2, h3, h4 {margin: 0;}
+
+#service_result_container tbody tr :first-child{background-color: #eeeeee;;}
