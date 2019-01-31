@@ -272,10 +272,12 @@ def single_location_evaluation_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
     # GATHER THE SERVICE ARGUMENTS
-    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to"]
+    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
     args_to_note = gather_service_args(service_args, request, service_exec)
     # CONFIGURE THE QUERY TO BE USED
-    wave_height_query_id = get_query_with_updated_filters(request)
+    dataset_id = request.GET["dataset_id"]
+    query_id = settings.LOCATION_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
+    wave_height_query_id = get_query_with_updated_filters(request, query_id)
     # CLONE THE SERVICE NOTE
     new_notebook_id = clone_service_note(request, service, service_exec)
     # ADD THE VISUALISATIONS TO BE CREATED
@@ -364,10 +366,12 @@ def wave_forecast_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
     # GATHER THE SERVICE ARGUMENTS
-    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to"]
+    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", 'dataset_id']
     args_to_note = gather_service_args(service_args, request, service_exec)
     # CONFIGURE THE QUERY TO BE USED
-    wave_forecast_query_id = get_query_with_updated_filters(request)
+    dataset_id = request.GET["dataset_id"]
+    query_id = settings.WAVE_FORECAST_SERVICE_DATASET_QUERY[dataset_id]
+    wave_forecast_query_id = get_query_with_updated_filters(request, query_id)
     # CLONE THE SERVICE NOTE
     new_notebook_id = clone_service_note(request, service, service_exec)
     # ADD THE VISUALISATIONS TO BE CREATED
@@ -423,14 +427,22 @@ def wave_forecast_results(request, exec_instance):
     # GET THE SERVICE RESULTS
     result = get_result_dict_from_livy(service_exec.livy_session, 'result')
     print 'result: ' + str(result)
+
     # clean_up_new_note(service_exec.notebook_id)
+    dataset_id = str(result['dataset_id'])
+    dataset_title = str(Dataset.objects.get(pk=dataset_id))
+    location_lat = str(result['location_lat'])
+    location_lon = str(result['location_lon'])
+    start_date = str(result['start_date'])
+    end_date = str(result['end_date'])
 
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wave_forecast result.html',
                   {'result': result,
                    'service_title': 'Wave Energy - Wave forecast in a location',
-                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(35.1, -11.3) +/- 10 degrees'},
-                                        {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': 'Nester Maretec Waves Forecast <a target="_blank" rel="noopener noreferrer"  href="/datasets/111/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
+                                        {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
+                                        {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
