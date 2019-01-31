@@ -5,7 +5,7 @@
         #location_assessment_statistics{ text-align: center;}
         #location_assessment_statistics th{text-align: center; font-weight: 600 !important;}
         #location_assessment_statistics td{text-align: center; }
-        #location_assessment_statistics .panel-primary .panel-heading{background-color: #1d567e; color: white;}
+        #location_assessment_statistics .panel-primary .panel-heading{background-color: #30526a; color: white;}
         #location_assessment_statistics .panel-warning .panel-heading{background-color: #8a6d3b; color: white;}
         #location_assessment_statistics .panel-success .panel-heading{background-color: #3c763d; color: white;}
         #location_assessment_statistics .panel-default .panel-heading{background-color: #707070; color: white;}
@@ -29,13 +29,13 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Wave Significant Height</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.stand_dev_height }}</td>
+                            <td>Wave Significant Height</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.min_height }}</td>
                         </tr>
                         <tr>
-                            <td>Wave Mean Period</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.stand_dev_height }}</td>
+                            <td>Wave Mean Period</td><td>{{ result.max_period }}</td><td>{{ result.av_period }}</td><td>{{ result.min_period }}</td>
                         </tr>
                         <tr>
-                            <td>Wave Power</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.stand_dev_height }}</td>
+                            <td>Wave Power</td><td>{{ result.max_power }}</td><td>{{ result.av_power }}</td><td>{{ result.min_power }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -44,7 +44,7 @@
         <div class="panel panel-primary col-sm-3" style="border: none; ">
             <div class="panel-heading">Total Wave Energy</div>
             <div class="panel-body" style="border: none; padding: 0; text-align: center; height: 20vh;">
-                <div style="    height: 10vh; line-height: 10vh; font-size: 220%;">{{ result.max_height }}</div>
+                <div style="    height: 10vh; line-height: 10vh; font-size: 220%;">{{ result.energy }}</div>
                 <div style="    height: 6vh; line-height: 6vh; font-size: 170%;"> kWh </div>
             </div>
         </div>
