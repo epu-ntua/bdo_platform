@@ -1,126 +1,79 @@
-{% extends "base.html" %}
+{% extends "wave_energy_pilot/service_output.html" %}
 {% load static %}
-{% load leaflet_tags %}
 {% block css %}
-
     <style>
-        @media screen and (min-width: 768px){.modal:before {display: inline-block;vertical-align: middle;content: " ";height: 100%;}}
-        .modal-backdrop {z-index:-1;}
-        #service_result_container{ position: relative; min-height: 500px; width: 100%; /*background-color: white; display: none;*/}
-        .loadingDiv, .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
-        .viz_container{position: relative; height: 400px; width: 100%; margin: 1% 0;}
-        #service_result_container iframe{border: none; box-shadow: 0 0 3px 0px #a28e8eb0;}
-        th{text-align: center; font-weight: 600 !important;}
-        #service_result_container .nav>li {display: inline-block !important;width: 300px !important; float: none !important;}
+        #location_assessment_statistics{ text-align: center;}
+        #location_assessment_statistics th{text-align: center; font-weight: 600 !important;}
+        #location_assessment_statistics td{text-align: center; }
+        #location_assessment_statistics .panel-primary .panel-heading{background-color: #1d567e; color: white;}
+        #location_assessment_statistics .panel-warning .panel-heading{background-color: #8a6d3b; color: white;}
+        #location_assessment_statistics .panel-success .panel-heading{background-color: #3c763d; color: white;}
+        #location_assessment_statistics .panel-default .panel-heading{background-color: #707070; color: white;}
     </style>
+
+    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}">
 {% endblock %}
 
-{% block content %}
-
-    <div id="service_result_container" class="text-center">
-        <div class="loadingDiv">
-            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>
+{% block service_output_results %}
+    <div id="location_assessment_statistics" class="text-center">
+        <div class="col-sm-12" style="text-align: center;">
+            <h2 style="font-size: 3vh; margin: 0;"> Location Assessment Statistics </h2>
         </div>
-
-        <table class="table table-full-width">
-            <thead>
-                <tr>
-                    <th>Maximum Height</th><th>Average Height</th><th>Standard Deviation</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.stand_dev_height }}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <table class="table table-full-width">
-            <thead>
-                <tr>
-                    <th>Maximum Period</th><th>Average Period</th><th>Standard Deviation</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ result.max_period }}</td><td>{{ result.av_period }}</td><td>{{ result.stand_dev_period }}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="panel-group row">
-            <div class="panel panel-default col-sm-3">
-                <div class="panel-heading">Maximum Power</div>
-                <div class="panel-body">{{ result.max_power }}</div>
-            </div>
-            <div class="panel panel-default col-sm-3">
-                <div class="panel-heading">Minimum Power</div>
-                <div class="panel-body">{{ result.min_power }}</div>
-            </div>
-            <div class="panel panel-default col-sm-3">
-                <div class="panel-heading">Average Power</div>
-                <div class="panel-body">{{ result.av_power }}</div>
-            </div>
-            <div class="panel panel-default col-sm-3">
-                <div class="panel-heading">Energy</div>
-                <div class="panel-body">{{ result.energy }}</div>
+        <div class="col-sm-9">
+            <div class="col-sm-12">
+                <table class="table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-5"></th><th class="col-sm-2">Maximum</th><th class="col-sm-2">Average</th><th class="col-sm-2">Minimum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Wave Significant Height</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.stand_dev_height }}</td>
+                        </tr>
+                        <tr>
+                            <td>Wave Mean Period</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.stand_dev_height }}</td>
+                        </tr>
+                        <tr>
+                            <td>Wave Power</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.stand_dev_height }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
+        <div class="panel panel-primary col-sm-3" style="border: none; ">
+            <div class="panel-heading">Total Wave Energy</div>
+            <div class="panel-body" style="border: none; padding: 0; text-align: center; height: 20vh;">
+                <div style="    height: 10vh; line-height: 10vh; font-size: 220%;">{{ result.max_height }}</div>
+                <div style="    height: 6vh; line-height: 6vh; font-size: 170%;"> kWh </div>
+            </div>
+        </div>
+    </div>
 
+    <div id="service_visualisations_container" class="text-center">
         <ul class="nav nav-pills">
-          <li class="active"><a data-toggle="pill" href="#viz1">Wave significant height Line Chart</a></li>
-          <li><a data-toggle="pill" href="#viz2">Power Line Chart</a></li>
-          <li><a data-toggle="pill" href="#viz3">Power Histogram</a></li>
+            {% for key, viz in visualisations.items %}
+                <li {% if forloop.counter == 1 %}class="active"{% endif %}><a data-toggle="pill" href="#{{ key }}">{{ viz.title }}</a></li>
+            {% endfor %}
         </ul>
-
         <div class="tab-content">
-            <div class="viz_container row tab-pane fade in active"  id="viz1">
-                <div class="loadingFrame">
-                    <img src="{% static 'img/loading_gif.gif' %}"/>
+            {% for key, viz in visualisations.items %}
+                <div class="viz_container row tab-pane fade {% if forloop.counter == 1 %} in active {% endif %}"  id="{{ key }}">
+{#                    <div class="loadingFrame">#}
+{#                        <img src="{% static 'img/loading_gif.gif' %}"/>#}
+{#                    </div>#}
+                    {% if no_viz %}
+                        <iframe src=""
+                                style="width: 100%; height: 100%; background-color: white;">
+                        </iframe>
+                    {% else %}
+                        <iframe src="{{ viz.url }}" class="col-sm-6"
+                                style="width: 100%; height: 100%; background-color: white;">
+                        </iframe>
+                    {% endif %}
                 </div>
-                {% if no_viz %}
-                    <iframe src=""
-                            style="width: 100%; height: 100%; background-color: white;">
-                    </iframe>
-                {% else %}
-                    <iframe src="{{ visualisations.v1.url }}"
-                            style="width: 100%; height: 100%; background-color: white;">
-                    </iframe>
-                {% endif %}
-            </div>
-
-            <div class="viz_container row tab-pane fade" id="viz2">
-                <div class="loadingFrame">
-                    <img src="{% static 'img/loading_gif.gif' %}"/>
-                </div>
-                {% if no_viz %}
-                    <iframe src=""
-                            style="width: 100%; height: 100%; background-color: white;">
-                    </iframe>
-                {% else %}
-                    <iframe src="{{ visualisations.v2.url }}"
-                            style="width: 100%; height: 100%; background-color: white;">
-                    </iframe>
-                {% endif %}
-            </div>
-
-            <div class="viz_container row tab-pane fade" id="viz3">
-                <div class="loadingFrame">
-                    <img src="{% static 'img/loading_gif.gif' %}"/>
-                </div>
-                {% if no_viz %}
-                    <iframe src=""
-                            style="width: 100%; height: 100%; background-color: white;">
-                    </iframe>
-                {% else %}
-                    <iframe src="{{ visualisations.v3.url }}"
-                            style="width: 100%; height: 100%; background-color: white;">
-                    </iframe>
-                {% endif %}
-            </div>
-
+            {% endfor %}
         </div>
-
     </div>
 
 {% endblock %}
