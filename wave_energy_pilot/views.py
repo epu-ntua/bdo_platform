@@ -248,7 +248,7 @@ def data_visualization_results(request):
                   {'result': result,
                    'service_title': 'Visualisation of a single data source',
                    'study_conditions': [
-                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '('+location_lat+', '+location_lon+') +/- 10 degrees'},
+                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '('+location_lat+', '+location_lon+') +/- 1 degree'},
                        {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:', 'value': 'from '+ str(start_date) + ' to ' + str(end_date)},
                        {'icon': 'fas fa-database', 'text': 'Dataset used:',
                         'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/'+str(dataset_id)+'/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
