@@ -1,30 +1,51 @@
-{% extends "base.html" %}
+{% extends "wave_energy_pilot/service_output.html" %}
 {% load static %}
-{% load leaflet_tags %}
 
 {% block css %}
-
-    <style>
-        @media screen and (min-width: 768px){.modal:before {display: inline-block;vertical-align: middle;content: " ";height: 100%;}}
-        .modal-backdrop {z-index:-1;}
-        #service_result_container{ position: relative; min-height: 500px; width: 100%; /*background-color: white; display: none;*/}
-        .loadingDiv, .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
-        .viz_container{position: relative; height: 400px; width: 100%; margin: 1% 0;}
-        #service_result_container iframe{border: none; box-shadow: 0 0 3px 0px #a28e8eb0;}
-        th{text-align: center; font-weight: 600 !important;}
-        #service_result_container .nav>li {display: inline-block !important;width: 300px !important; float: none !important;}
-    </style>
+    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}">
 {% endblock %}
 
-{% block content %}
+{% block service_output_results %}
 
-
-    <div id="service_result_container">
-        <div class="viz_container row" id="viz1">
-            <iframe src="{{ visualisations.v1.url }}"
-                style="width: 100%; height: 100%; background-color: white;">
-            </iframe>
+    <div id="visualisation_statistics" class="col-sm-12" style="">
+        <div class="col-sm-12" style="text-align: center;">
+            <h3> Statistics </h3>
         </div>
+        <div class="col-sm-12">
+            <div class="col-sm-12">
+                <table class="table" style="margin-bottom: 0;">
+                    <thead>
+                        <tr>
+                            <th class="col-sm-5"></th><th class="col-sm-2">Maximum</th><th class="col-sm-2">Average</th><th class="col-sm-2">Minimum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, var in result.items %}
+                            <tr>
+                                <td>{{ key }}</td><td>{{ var.max }} {{ key }}</td><td>{{ var.avg }} {{ key }}</td><td>{{ var.min }} {{ key }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="service_visualisations_container" class="text-center col-sm-12">
+        {% for key, viz in visualisations.items %}
+            <div class="viz_container" id="{{ key }}">
+                <h3>{{ viz.title }}</h3>
+                {% if no_viz %}
+                    <iframe src=""
+                            style="width: 100%; height: 100%; background-color: white;">
+                    </iframe>
+                {% else %}
+                    <iframe src="{{ viz.url }}"
+                            style="width: 100%; height: 100%; background-color: white;">
+                    </iframe>
+                {% endif %}
+            </div>
+        {% endfor %}
     </div>
 
 {% endblock %}

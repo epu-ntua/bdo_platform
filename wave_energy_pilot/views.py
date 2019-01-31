@@ -162,22 +162,30 @@ def data_visualization_results(request):
     visualizations['v1'] = ({'notebook_id': '',
                              'df': '',
                              'query': visualization_query_id,
-                             # 'url': "/visualizations/get_line_chart_am/?viz_id=21&action=get_line_chart_am&y_var[]=i0_sea_surface_wave_zero_upcrossing_period&y_var[]=i1_sea_surface_wave_significant_height&x_var=i0_time&agg_func=AVG&query=" + str(
-                             #     visualisation_query_id),
+                             'title': "Time Series Graph",
                              'url': "/visualizations/get_line_chart_am/?viz_id=21&action=get_line_chart_am&"+y_var+"x_var=i0_time&agg_func=AVG&query="+str(visualization_query_id),
-                             'done': False
-                            # {'notebook_id':'',
-                            #  'df':'',
-                            #  'url':"/visualizations/get_aggregate_value/?viz_id=30&action=get_aggregate_value&"
-                            #
-                            #
-                            })
+                             'done': False})
     service_exec.dataframe_visualizations = visualizations
     service_exec.save()
 
+    result = dict()
+    for var in variables_selection:
+        result[str(var)] = dict()
+        result[str(var)]['min'] = 'min'
+        result[str(var)]['max'] = 'max'
+        result[str(var)]['avg'] = 'avg'
 
     return render(request, 'wave_energy_pilot/data_visualisation result.html',
-                  {'visualisations': service_exec.dataframe_visualizations})
+                  {'result': result,
+                   'service_title': 'Wave Energy - Evaluation of a single location',
+                   'study_conditions': [
+                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(35.1, -11.3) +/- 10 degrees'},
+                       {'icon': 'fas fa-map-marker-alt', 'text': 'Timeframe:', 'value': 'from '+ str(request.GET["start_date"]) + ' to ' + str(request.GET["end_date"])},
+                       {'icon': 'fas fa-database', 'text': 'Dataset used:',
+                        'value': 'Nester Maretec Waves Forecast <a target="_blank" rel="noopener noreferrer"  href="/datasets/111/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
+                       {'icon': 'fas fa-map-marker-alt', 'text': 'Selected variables:', 'value': str(variables_selection)}],
+                   'no_viz': 'no_viz' in request.GET.keys(),
+                   'visualisations': service_exec.dataframe_visualizations})
 
 
 def single_location_evaluation_execute(request):
