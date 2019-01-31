@@ -10,7 +10,7 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-from aggregator.models import Variable
+from aggregator.models import Variable, Dataset
 from lists import *
 from datasets import *
 
@@ -58,26 +58,38 @@ def find_visualization_variables(variables, query_id):
     return return_variables
 
 
-def get_query_aggregate(query_id, var, aggregate):
+def get_query_aggregates(query_id, var):
     temp_q = TempQuery(document=AbstractQuery.objects.get(pk=query_id).document)
-    for _f in temp_q.document['from']:
-        if int(_f['type']) == int(var['variable_id']):
-            _f['select'][0]['exclude'] = False
-            _f['select'][0]['aggregate'] = aggregate
-            _f['select'][0]['groupBy'] = False
-            for _s in _f['select'][1:]:
-                _s['exclude'] = True
-                _s['groupBy'] = False
-        else:
-            for _s in _f['select']:
-                _s['exclude'] = True
-                _s['groupBy'] = False
+    new_from = []
+    for agg in ['min', 'max', 'avg']:
+        for _f in temp_q.document['from']:
+            if int(_f['type']) == int(var['variable_id']):
+                new_select = dict()
+                for key in _f['select'][0].keys():
+                    new_select[key] = _f['select'][0][key]
+                new_select['name'] = new_select['name']
+                new_select['aggregate'] = agg
+                new_from.append({'select': [new_select], 'type': _f['type'], 'name': _f['name']})
+    temp_q.document['from'] = new_from
+
+    # for _f in temp_q.document['from']:
+    #     if int(_f['type']) == int(var['variable_id']):
+    #         _f['select'][0]['exclude'] = False
+    #         _f['select'][0]['aggregate'] = aggregate
+    #         _f['select'][0]['groupBy'] = False
+    #         for _s in _f['select'][1:]:
+    #             _s['exclude'] = True
+    #             _s['groupBy'] = False
+    #     else:
+    #         for _s in _f['select']:
+    #             _s['exclude'] = True
+    #             _s['groupBy'] = False
 
     results = temp_q.execute()[0]['results']
     if len(results) > 0:
-        result = results[0][0]
+        result = results[0][0], results[0][1], results[0][2]
     else:
-        result = '-'
+        result = '-', '-', '-'
     return result
 
 
@@ -183,7 +195,16 @@ def data_visualization_results(request):
     # service_exec.save()
     # print
 
-    query_id = settings.DATA_VISUALISATION_SERVICE_DATASET_QUERY[request.GET["dataset_id"]]
+    start_date = request.GET["start_date"]
+    end_date = request.GET["end_date"]
+    latitude_from = float(request.GET["latitude_from"])
+    latitude_to = float(request.GET["latitude_to"])
+    longitude_from = float(request.GET["longitude_from"])
+    longitude_to = float(request.GET["longitude_to"])
+
+
+    dataset_id = request.GET["dataset_id"]
+    query_id = settings.DATA_VISUALISATION_SERVICE_DATASET_QUERY[dataset_id]
     visualization_query_id = get_query_with_updated_filters(request, query_id)
 
     variables_selection = request.GET.getlist("variables[]")
@@ -209,22 +230,28 @@ def data_visualization_results(request):
         result[str(var['variable'])] = dict()
         result[str(var['variable'])]['title'] = str(var['title'])
         result[str(var['variable'])]['unit'] = str(var['unit'])
-        for agg in ['min', 'max', 'avg']:
-            result[str(var['variable'])][agg] = get_query_aggregate(visualization_query_id, var, agg)
+        min, max, avg = get_query_aggregates(visualization_query_id, var)
+        result[str(var['variable'])]['min'] = min
+        result[str(var['variable'])]['max'] = max
+        result[str(var['variable'])]['avg'] = avg
 
     variable_list_with_commas = ''
     for var in variable_list:
         variable_list_with_commas += var['title'] + ', '
     variable_list_with_commas = variable_list_with_commas[:-2]
 
+    dataset_title = Dataset.objects.get(pk=dataset_id).title
+    location_lat = str(latitude_from + abs(latitude_to-latitude_from)/2)
+    location_lon = str(longitude_from + abs(longitude_to - longitude_from) / 2)
+
     return render(request, 'wave_energy_pilot/data_visualisation result.html',
                   {'result': result,
                    'service_title': 'Visualisation of a single data source',
                    'study_conditions': [
-                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(35.1, -11.3) +/- 10 degrees'},
-                       {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:', 'value': 'from '+ str(request.GET["start_date"]) + ' to ' + str(request.GET["end_date"])},
+                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '('+location_lat+', '+location_lon+') +/- 10 degrees'},
+                       {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:', 'value': 'from '+ str(start_date) + ' to ' + str(end_date)},
                        {'icon': 'fas fa-database', 'text': 'Dataset used:',
-                        'value': 'Nester Maretec Waves Forecast <a target="_blank" rel="noopener noreferrer"  href="/datasets/111/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
+                        'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/'+str(dataset_id)+'/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
                        {'icon': 'fas fa-info-circle', 'text': 'Selected variables:', 'value': str(variable_list_with_commas)}],
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
