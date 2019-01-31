@@ -10,10 +10,11 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
+from aggregator.models import Variable
 from lists import *
 from datasets import *
 
-from query_designer.models import Query, TempQuery
+from query_designer.models import Query, TempQuery, AbstractQuery
 from service_builder.models import Service, ServiceInstance
 from visualizer.utils import delete_zep_notebook, clone_zep_note, create_zep_arguments_paragraph, delete_zep_paragraph, run_zep_note, \
     get_result_dict_from_livy, create_zep_getDict_paragraph, run_zep_paragraph, get_zep_getDict_paragraph_response, close_livy_session, \
@@ -41,14 +42,20 @@ def configure_temporal_filter(filters, start_date, end_date):
             filters['b'] = configure_temporal_filter(filters['b'], start_date, end_date)
     return filters
 
-def define_visualization_variables(variables):
-    y_var = ""
-    index_variable_counter = 0
-    base_string = "y_var[]="
-    for variable in variables:
-        y_var += base_string +"i"+str(index_variable_counter)+"_"+str(variable)+"&"
-        index_variable_counter += 1
-    return y_var
+
+def find_visualization_variables(variables, query_id):
+    return_variables = list()
+    doc = AbstractQuery.objects.get(pk=query_id).document
+    for var in variables:
+        variable_dict = dict({'variable': var, 'query_variable': None, 'title': None})
+        for _f in doc['from']:
+            if str(_f['name'])[:str(_f['name']).rfind('_')] == var:
+                variable_dict['query_variable'] = _f['select'][0]['name']
+                variable_dict['title'] = Variable.objects.get(pk=int(_f['type'])).title
+        return_variables.append(variable_dict)
+    return return_variables
+
+
 
 def convert_unicode_json(data):
     if isinstance(data, basestring):
@@ -151,13 +158,18 @@ def data_visualization_results(request):
                                    status="starting service", dataframe_visualizations=[])
     # service_exec.save()
     # print
-    variables_selection = request.GET.getlist("variables[]")
-    y_var = define_visualization_variables(variables_selection)
 
     query_id = settings.DATA_VISUALISATION_SERVICE_DATASET_QUERY[request.GET["dataset_id"]]
-
-
     visualization_query_id = get_query_with_updated_filters(request, query_id)
+
+    variables_selection = request.GET.getlist("variables[]")
+    variable_list = find_visualization_variables(variables_selection, visualization_query_id)
+
+    y_var = ""
+    base_string = "y_var[]="
+    for variable in variable_list:
+        y_var += base_string + str(variable['query_variable']) + "&"
+
     visualizations = dict()
     visualizations['v1'] = ({'notebook_id': '',
                              'df': '',
@@ -169,21 +181,27 @@ def data_visualization_results(request):
     service_exec.save()
 
     result = dict()
-    for var in variables_selection:
-        result[str(var)] = dict()
-        result[str(var)]['min'] = 'min'
-        result[str(var)]['max'] = 'max'
-        result[str(var)]['avg'] = 'avg'
+    for var in variable_list:
+        result[str(var['variable'])] = dict()
+        result[str(var['variable'])]['title'] = str(var['title'])
+        result[str(var['variable'])]['min'] = 'min'
+        result[str(var['variable'])]['max'] = 'max'
+        result[str(var['variable'])]['avg'] = 'avg'
+
+    variable_list_with_commas = ''
+    for var in variable_list:
+        variable_list_with_commas += var['title'] + ', '
+    variable_list_with_commas = variable_list_with_commas[:-2]
 
     return render(request, 'wave_energy_pilot/data_visualisation result.html',
                   {'result': result,
-                   'service_title': 'Wave Energy - Evaluation of a single location',
+                   'service_title': 'Visualisation of a single data source',
                    'study_conditions': [
                        {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(35.1, -11.3) +/- 10 degrees'},
                        {'icon': 'fas fa-map-marker-alt', 'text': 'Timeframe:', 'value': 'from '+ str(request.GET["start_date"]) + ' to ' + str(request.GET["end_date"])},
                        {'icon': 'fas fa-database', 'text': 'Dataset used:',
                         'value': 'Nester Maretec Waves Forecast <a target="_blank" rel="noopener noreferrer"  href="/datasets/111/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
-                       {'icon': 'fas fa-map-marker-alt', 'text': 'Selected variables:', 'value': str(variables_selection)}],
+                       {'icon': 'fas fa-map-marker-alt', 'text': 'Selected variables:', 'value': str(variable_list_with_commas)}],
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
