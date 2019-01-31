@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^wave_forecast/results/(?P<exec_instance>[0-9]+)/$', views.wave_forecast_results, name='wave_forecast_results'),
     url(r'^wave_forecast/status/(?P<exec_instance>[0-9]+)/$', views.wave_forecast_status, name='wave_forecast_status'),
 
+    url(r'^data_visualisation/execute/$', views.data_visualization_results, name='data_visualization_results'),
 ]
