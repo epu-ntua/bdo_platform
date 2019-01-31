@@ -162,16 +162,19 @@ def single_location_evaluation_execution_process(request, exec_instance):
     visualisations['v1'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
+                             'title': "Sea surface wave significant height",
                              'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
                              'done': False})
     visualisations['v2'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
+                             'title': "Wave period",
                              'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
     visualisations['v3'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
+                             'title': "Power histogram",
                              'url': "/visualizations/get_histogram_chart_am/?bins=5&x_var=avg(power)&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
     service_exec.dataframe_visualizations = visualisations
@@ -211,10 +214,106 @@ def single_location_evaluation_results(request, exec_instance):
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/location_assessment result.html',
                   {'result': result,
+                   'service_title': 'Wave Energy - Evaluation of a single location',
+                   'study_conditions': [
+                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(35.1, -11.3) +/- 10 degrees'},
+                       {'icon': 'fas fa-database', 'text': 'Dataset used:',
+                        'value': 'Nester Maretec Waves Forecast <a target="_blank" rel="noopener noreferrer"  href="/datasets/111/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
 
 def single_location_evaluation_status(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    return JsonResponse({'status': service_exec.status})
+
+
+def wave_forecast_execute(request):
+    service = Service.objects.get(pk=settings.WAVE_FORECAST_SERVICE_ID)
+    service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
+                                   status="starting service", dataframe_visualizations=[])
+    service_exec.save()
+    # Spawn thread to process the data
+    t = Thread(target=wave_forecast_execution_process, args=(request, service_exec.id))
+    t.start()
+    return JsonResponse({'exec_instance': service_exec.id})
+
+
+def wave_forecast_execution_process(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    service = Service.objects.get(pk=service_exec.service_id)
+    # GATHER THE SERVICE ARGUMENTS
+    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to"]
+    args_to_note = gather_service_args(service_args, request, service_exec)
+    # CONFIGURE THE QUERY TO BE USED
+    wave_forecast_query_id = get_query_with_updated_filters(request)
+    # CLONE THE SERVICE NOTE
+    new_notebook_id = clone_service_note(request, service, service_exec)
+    # ADD THE VISUALISATIONS TO BE CREATED
+    visualisations = dict()
+    visualisations['v1'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': wave_forecast_query_id,
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_forecast_query_id),
+                             'done': False,
+                             'title': 'Wave significant height'})
+    visualisations['v2'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': wave_forecast_query_id,
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_zero_upcrossing_period&x_var=i0_time&query=" + str(
+                                 wave_forecast_query_id),
+                             'done': False,
+                             'title': 'Wave mean period'})
+    visualisations['v3'] = ({'notebook_id': new_notebook_id,
+                             'df': 'power_df',
+                             'query': '',
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
+                             'done': False,
+                             'title': 'Wave Energy'})
+    service_exec.dataframe_visualizations = visualisations
+    service_exec.save()
+    # CREATE NEW ARGUMENTS PARAGRAPH
+    new_arguments_paragraph = create_args_paragraph(request, new_notebook_id, args_to_note, service)
+    # CREATE A LIVY SESSION
+    service_exec.status = "Initializing Spark Session"
+    service_exec.save()
+    livy_session = create_service_livy_session(request, service_exec)
+    try:
+        # RUN THE SERVICE CODE
+        execute_service_code(request, service_exec, new_arguments_paragraph)
+        service_exec.status = "done"
+        service_exec.save()
+
+    except Exception as e:
+        print 'exception in livy execution'
+        print '%s (%s)' % (e.message, type(e))
+        service_exec.status = "failed"
+        service_exec.save()
+        # clean_up_new_note(service_exec.notebook_id)
+        if 'livy_session' in request.GET.keys():
+            pass
+        else:
+            if service_exec.service.through_livy:
+                close_livy_session(service_exec.livy_session)
+
+
+def wave_forecast_results(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    # GET THE SERVICE RESULTS
+    result = get_result_dict_from_livy(service_exec.livy_session, 'result')
+    print 'result: ' + str(result)
+    # clean_up_new_note(service_exec.notebook_id)
+
+    # SHOW THE SERVICE OUTPUT PAGE
+    return render(request, 'wave_energy_pilot/wave_forecast result.html',
+                  {'result': result,
+                   'service_title': 'Wave Energy - Wave forecast in a location',
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(35.1, -11.3) +/- 10 degrees'},
+                                        {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': 'Nester Maretec Waves Forecast <a target="_blank" rel="noopener noreferrer"  href="/datasets/111/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
+                   'no_viz': 'no_viz' in request.GET.keys(),
+                   'visualisations': service_exec.dataframe_visualizations})
+
+
+def wave_forecast_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
