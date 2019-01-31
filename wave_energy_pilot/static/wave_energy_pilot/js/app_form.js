@@ -342,11 +342,12 @@ $(document).ready(function() {
 
            $('.variables-selector').hide();
            var dataset_selection = $('#select_dataset_data_visualisation').dropdown('get text');
-           alert(dataset_selection);
-           $('#'+dataset_selection+'-variables').show();
+           var dataset_id = $(`#select_dataset_data_visualisation .item[data-title="${dataset_selection}"]`).data("id");
+
+           $('#'+dataset_id+'-variables').show();
            $('.dataset').each(function (i, obj) {
 
-               if ($(this).data("id") == dataset_selection){
+               if ($(this).data("title") == dataset_selection){
 
                    var startdate = new Date($(this).data("startdate"));
                    var enddate = new Date($(this).data("enddate"));
