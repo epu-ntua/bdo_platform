@@ -291,7 +291,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
     visualisations['v2'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
-                             'title': "Wave period",
+                             'title': "Power line chart",
                              'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
     visualisations['v3'] = ({'notebook_id': new_notebook_id,
@@ -299,6 +299,12 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'query': '',
                              'title': "Power histogram",
                              'url': "/visualizations/get_histogram_chart_am/?bins=5&x_var=avg(power)&df=power_df&notebook_id="+str(new_notebook_id),
+                             'done': False})
+    visualisations['v4'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': wave_height_query_id,
+                             'title': "Wave period",
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_zero_upcrossing_period&x_var=i1_time&query="+str(wave_height_query_id),
                              'done': False})
     service_exec.dataframe_visualizations = visualisations
     service_exec.save()
@@ -334,14 +340,20 @@ def single_location_evaluation_results(request, exec_instance):
     print 'result: ' + str(result)
     # clean_up_new_note(service_exec.notebook_id)
 
+    dataset_id = str(result['dataset_id'])
+    dataset_title = str(Dataset.objects.get(pk=dataset_id))
+    location_lat = str(result['location_lat'])
+    location_lon = str(result['location_lon'])
+    start_date = str(result['start_date'])
+    end_date = str(result['end_date'])
+
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/location_assessment result.html',
                   {'result': result,
                    'service_title': 'Wave Energy - Evaluation of a single location',
-                   'study_conditions': [
-                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(35.1, -11.3) +/- 10 degrees'},
-                       {'icon': 'fas fa-database', 'text': 'Dataset used:',
-                        'value': 'Nester Maretec Waves Forecast <a target="_blank" rel="noopener noreferrer"  href="/datasets/111/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
+                                        {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
+                                        {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
