@@ -41,6 +41,14 @@ def configure_temporal_filter(filters, start_date, end_date):
             filters['b'] = configure_temporal_filter(filters['b'], start_date, end_date)
     return filters
 
+def define_visualization_variables(variables):
+    y_var = ""
+    index_variable_counter = 0
+    base_string = "y_var[]="
+    for variable in variables:
+        y_var += base_string +"i"+str(index_variable_counter)+"_"+str(variable)+"&"
+        index_variable_counter += 1
+    return y_var
 
 def convert_unicode_json(data):
     if isinstance(data, basestring):
@@ -64,10 +72,11 @@ def gather_service_args(service_args, request, service_exec):
     return args_to_note
 
 
-def get_query_with_updated_filters(request):
-    dataset_id = request.GET["dataset_id"]
-    original_query_id = settings.LOCATION_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
-    query_doc = Query.objects.get(pk=original_query_id).document
+def get_query_with_updated_filters(request, query_id):
+    # dataset_id = request.GET["dataset_id"]
+    # original_query_id = settings.LOCATION_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
+
+    query_doc = Query.objects.get(pk=query_id).document
     query_doc['filters'] = configure_spatial_filter(query_doc['filters'], request.GET["latitude_from"], request.GET["latitude_to"],
                                                     request.GET["longitude_from"], request.GET["longitude_to"])
     query_doc['filters'] = configure_temporal_filter(query_doc['filters'], request.GET["start_date"], request.GET["end_date"])
@@ -136,6 +145,41 @@ def init(request):
     return render(request, 'wave_energy_pilot/load_service.html', {'buoys_list': BUOYS, 'datasets_list': DATASETS})
 
 
+def data_visualization_results(request):
+    service = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
+    service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
+                                   status="starting service", dataframe_visualizations=[])
+    # service_exec.save()
+    # print
+    variables_selection = request.GET.getlist("variables[]")
+    y_var = define_visualization_variables(variables_selection)
+
+    query_id = settings.DATA_VISUALISATION_SERVICE_DATASET_QUERY[request.GET["dataset_id"]]
+
+
+    visualization_query_id = get_query_with_updated_filters(request, query_id)
+    visualizations = dict()
+    visualizations['v1'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': visualization_query_id,
+                             # 'url': "/visualizations/get_line_chart_am/?viz_id=21&action=get_line_chart_am&y_var[]=i0_sea_surface_wave_zero_upcrossing_period&y_var[]=i1_sea_surface_wave_significant_height&x_var=i0_time&agg_func=AVG&query=" + str(
+                             #     visualisation_query_id),
+                             'url': "/visualizations/get_line_chart_am/?viz_id=21&action=get_line_chart_am&"+y_var+"x_var=i0_time&agg_func=AVG&query="+str(visualization_query_id),
+                             'done': False
+                            # {'notebook_id':'',
+                            #  'df':'',
+                            #  'url':"/visualizations/get_aggregate_value/?viz_id=30&action=get_aggregate_value&"
+                            #
+                            #
+                            })
+    service_exec.dataframe_visualizations = visualizations
+    service_exec.save()
+
+
+    return render(request, 'wave_energy_pilot/data_visualisation result.html',
+                  {'visualisations': service_exec.dataframe_visualizations})
+
+
 def single_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
@@ -162,7 +206,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
     visualisations['v1'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
                              'done': False})
     visualisations['v2'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
