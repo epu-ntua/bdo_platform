@@ -78,7 +78,7 @@ def create_json_from_out_file(filename_output):
 def wait_until_output_ready(params):
     found = False
     error = False
-    tries = 10
+    tries = 12
     while (not found) and (tries > 0) and (not error):
         tries -= 1
         time.sleep(2)
@@ -95,8 +95,8 @@ def wait_until_output_ready(params):
 
 
 def create_inp_file_from_request_and_upload(request):
-    latitude, longitude, oil_volume, start_date = parse_request_params(request)
-    url_params = build_request_params_for_file_creation(latitude, longitude, oil_volume, start_date)
+    latitude, longitude, oil_volume, start_date, latitude2, longitude2 = parse_request_params(request)
+    url_params = build_request_params_for_file_creation(latitude, longitude, latitude2, longitude2, oil_volume, start_date)
     response = requests.get(
         "http://localhost:8000/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
@@ -107,21 +107,28 @@ def create_inp_file_from_request_and_upload(request):
     return filename, url_params
 
 
-def build_request_params_for_file_creation(latitude, longitude, oil_volume, start_date):
+def build_request_params_for_file_creation(latitude, longitude, latitude2, longitude2, oil_volume, start_date):
     print(start_date)
     date, daytime = start_date.split(' ')
     print(date)
     year, month, day = date.split('-')
     hours, mins = daytime.split(':')
     url_params = "LATLON=" + str(latitude) + '%20' + str(longitude)
+    latlon2 = "&LATLON2="
+    if latitude2!='' and longitude2!='':
+        latlon2 = "&LATLON2=" + str(latitude2) + '%20' + str(longitude2)
+
+    url_params += latlon2
     url_params += "&DATETIME=" + year + '%20' + month + '%20' + day+'+'+hours+mins
     url_params += "&VOLUME=" + str(oil_volume)
     return url_params
 
 
 def parse_request_params(request):
-    latitude = request.GET.get('latitude')
-    longitude = request.GET.get('longitude')
+    latitude1 = request.GET.get('latitude1')
+    latitude2 = request.GET.get('latitude2')
+    longitude1 = request.GET.get('longitude1')
+    longitude2 = request.GET.get('longitude2')
     start_date = request.GET.get('start_date')
     oil_volume = request.GET.get('oil_volume')
-    return latitude, longitude, oil_volume, start_date
+    return latitude1, longitude1, oil_volume, start_date, latitude2, longitude2

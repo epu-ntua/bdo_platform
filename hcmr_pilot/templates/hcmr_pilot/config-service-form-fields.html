@@ -262,7 +262,7 @@
                 <div class="container" style="width: 100%; text-align: center;">
                     <h2 style="text-align: center">Oil Spill Simulation Service</h2>
                     <div id="newmap" class="center" style="height: 450px; display: block; margin-left: auto; margin-right: auto;  width: 50%;"></div>
-                    <form action="/oilspill/process/" method="GET">
+                    <form action="/oilspill/process/" method="GET" id="oilspill_form">
                         {% csrf_token %}
                         {{ form }}
                         <input type="submit" value="Submit">
@@ -367,8 +367,8 @@
               map.removeLayer(marker);
         };
         marker = L.marker(e.latlng).addTo(map);
-        $('#id_latitude').val(e.latlng.lat)
-        $('#id_longitude').val(e.latlng.lng)
+        $('#id_latitude1').val(e.latlng.lat)
+        $('#id_longitude1').val(e.latlng.lng)
     }
 
     map.on('click', onMapClick);

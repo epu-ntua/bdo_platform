@@ -1,9 +1,10 @@
 from django import forms
 
 class HCMRForm(forms.Form):
-    # your_name = forms.CharField(label='Your name', max_length=100)
-    latitude = forms.FloatField(label = 'Latitude:')
-    longitude = forms.FloatField(label = 'Longitude:')
+    latitude1 = forms.FloatField(label = 'Latitude1:')
+    latitude2 = forms.FloatField(label='Latitude2:', required=False)
+    longitude1 = forms.FloatField(label = 'Longitude1:')
+    longitude2 = forms.FloatField(label = 'Longitude2:', required=False)
     start_date = forms.DateField(label='Start Date')
     end_date = forms.DateField(label='End Date')
     duration = forms.IntegerField(label='Duration in Hours')

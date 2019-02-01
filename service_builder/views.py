@@ -610,8 +610,9 @@ def APIcreateInputFileForHCMRSpillSimulator(request):
             N_SPILL = "1"
             SPILL_NUM = "1"
             LATLON = request.GET['LATLON']
+            LATLON2 = request.GET['LATLON2']
             if 'DEPTH' in request.GET:
-                DEPTH = request.GET['LATLON']
+                DEPTH = request.GET['DEPTH']
             else:
                 DEPTH = "0"
             DATETIME = request.GET['DATETIME']
@@ -649,22 +650,10 @@ def APIcreateInputFileForHCMRSpillSimulator(request):
                 WAVE_MODEL = "201"
 
             #Create the file input in string format
-            OilSpillInputString = N_SPILL + "\n" + \
-                                  SPILL_NUM + "\n" + \
-                                  LATLON + "\n" + \
-                                  DEPTH + "\n" + \
-                                  DATETIME + "\n" + \
-                                  DURATION + "\n" + \
-                                  VOLUME + "\n" + \
-                                  SIMULATIONNAME + "\n" + \
-                                  DENSITYOILTYPE + "\n" + \
-                                  SIM_TYPE + "\n" + \
-                                  SIM_LENGTH + "\n" + \
-                                  STEP + "\n" + \
-                                  GRD_SIZE + "\n" + \
-                                  OCEAN_MODEL + "\n" + \
-                                  WIND_MODEL + "\n" + \
-                                  WAVE_MODEL + "\n"
+            OilSpillInputString = build_oil_spill_input_string(DATETIME, DENSITYOILTYPE, DEPTH, DURATION, GRD_SIZE,
+                                                               LATLON, LATLON2, N_SPILL, OCEAN_MODEL, SIMULATIONNAME, SIM_LENGTH,
+                                                               SIM_TYPE, SPILL_NUM, STEP, VOLUME, WAVE_MODEL,
+                                                               WIND_MODEL)
             print 'InputString:{0}'.format(OilSpillInputString)
             FTPSERVER, FTPUSERNAME, FTPPASS = '','', ''
 
@@ -692,6 +681,41 @@ def APIcreateInputFileForHCMRSpillSimulator(request):
             return HttpResponse(json.dumps({"filename": str(filename)}), content_type="application/json")
         else:
             return HttpResponse('LATLON, DATETIME, and VOLUME are required', status=400)
+
+
+def build_polygon_string(LATLON, LATLON2):
+    lat1, lon1 = LATLON.split(' ')
+    lat2, lon2 = LATLON2.split(' ')
+    result = LATLON + '\n' + lat1 +' '+ lon2+'\n'+LATLON2+'\n'+ lat2+ ' '+ lon1+ '\n'
+
+    return result
+
+def build_oil_spill_input_string(DATETIME, DENSITYOILTYPE, DEPTH, DURATION, GRD_SIZE, LATLON, LATLON2, N_SPILL, OCEAN_MODEL,
+                                 SIMULATIONNAME, SIM_LENGTH, SIM_TYPE, SPILL_NUM, STEP, VOLUME, WAVE_MODEL, WIND_MODEL):
+    latlon1 = LATLON
+    if LATLON2 != '':
+        latlon1 = '999'
+
+    inp_string = N_SPILL + "\n" + \
+                          SPILL_NUM + "\n" + \
+                          latlon1 + "\n" + \
+                          DEPTH + "\n" + \
+                          DATETIME + "\n" + \
+                          DURATION + "\n" + \
+                          VOLUME + "\n" + \
+                          SIMULATIONNAME + "\n" + \
+                          DENSITYOILTYPE + "\n" + \
+                          SIM_TYPE + "\n" + \
+                          SIM_LENGTH + "\n" + \
+                          STEP + "\n" + \
+                          GRD_SIZE + "\n" + \
+                          OCEAN_MODEL + "\n" + \
+                          WIND_MODEL + "\n" + \
+                          WAVE_MODEL + "\n"
+    if LATLON2 != '':
+        polygon_string = build_polygon_string(LATLON, LATLON2)
+        inp_string = inp_string+SPILL_NUM + "\n"'4\n'+polygon_string
+    return inp_string
 
 
 #Check if an output for the same user and date exists
