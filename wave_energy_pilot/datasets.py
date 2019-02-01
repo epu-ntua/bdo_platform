@@ -8,7 +8,7 @@ DATASETS = (
     dict(id="2345", title="Maritec - 1", variables=(dict(id=1, title="wave_period"),
                                                        dict(id=2, title="wave_height"),
                                                        dict(id=3, title="temperature")),
-             min_lat=-40.98585, max_lat=43.385090, min_lng=-4.215340, max_lng=174.50659, min_date="07/03/2018", max_date="07/03/2018",
+             min_lat=-40.98585, max_lat=43.385090, min_lng=-4.215340, max_lng=174.50659, min_date="07/03/2018", max_date="11/03/2018",
          application="wave_resource_assessment_single"),
     dict(id="3456", title="Dummy Name", variables=(dict(id=1, title="wave_period"),
                                                        dict(id=2, title="wave_height"),

@@ -240,6 +240,7 @@ $(document).ready(function() {
                     $(".leaflet-interactive").remove();
                     create_new_area_select([[parseFloat($('#lat_min').val()),parseFloat($('#lon_min').val())],[parseFloat($('#lat_max').val()),parseFloat($('#lon_max').val())]]);
                 });
+                set_app_dataset_date_pickers("select_dataset_wave_resource_assessment_area");
             }
             else {
                 mode = "location";
@@ -288,6 +289,7 @@ $(document).ready(function() {
                         })
                     }
                  });
+                set_app_dataset_date_pickers("select_dataset_data_visualisation");
             }
             else{
                 $('.data_visualisation').hide();
@@ -329,6 +331,7 @@ $(document).ready(function() {
                         })
                     }
                  });
+                 set_app_dataset_date_pickers("select_dataset_wave_resource_assessment_single");
             }
             else {
                     $('.wave_resource_assessment_single_dropdown').hide();
@@ -337,11 +340,11 @@ $(document).ready(function() {
         })
     });
 
-   $(function () {
-       $('#select_dataset_data_visualisation').change(function () {
+   function set_app_dataset_date_pickers(app_selector) {
+       $('#'+app_selector).change(function () {
            $('.variables-selector').hide();
-           var dataset_selection = $('#select_dataset_data_visualisation').dropdown('get text');
-           var dataset_id = $(`#select_dataset_data_visualisation .item[data-title="${dataset_selection}"]`).data("id");
+           var dataset_selection = $('#'+app_selector).dropdown('get text');
+           var dataset_id = $(`.item[data-title="${dataset_selection}"]`).data("id");
 
            $('#'+dataset_id+'-variables').show();
            $('.dataset').each(function (i, obj) {
@@ -371,6 +374,10 @@ $(document).ready(function() {
                }
            })
        })
+   }
+
+   $("#run-service-btn").click(function () {
+       alert("pathsa to koumpi yeaaa");
    })
 
 
