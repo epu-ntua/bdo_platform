@@ -63,13 +63,32 @@ def get_query_aggregates(query_id, var):
     new_from = []
     for agg in ['min', 'max', 'avg']:
         for _f in temp_q.document['from']:
+            new_select_list = list()
             if int(_f['type']) == int(var['variable_id']):
                 new_select = dict()
                 for key in _f['select'][0].keys():
                     new_select[key] = _f['select'][0][key]
                 new_select['name'] = new_select['name']
                 new_select['aggregate'] = agg
-                new_from.append({'select': [new_select], 'type': _f['type'], 'name': _f['name']})
+                new_select_list.append(new_select)
+                for _s in _f['select'][1:]:
+                    _s['exclude'] = True
+                    # _s['aggregate'] = 'AVG'
+                    _s['groupBy'] = False
+                    _s.pop('joined', None)
+                    new_select_list.append(_s)
+                new_from.append({'select': new_select_list, 'type': _f['type'], 'name': _f['name']})
+            else:
+                for _s in _f['select']:
+                    if _s['type'] == "VALUE":
+                        _s['exclude'] = True
+                        _s['groupBy'] = False
+                    else:
+                        _s['exclude'] = True
+                        # _s['aggregate'] = 'AVG'
+                        _s['groupBy'] = False
+                new_from.append(_f)
+
     temp_q.document['from'] = new_from
 
     # for _f in temp_q.document['from']:
