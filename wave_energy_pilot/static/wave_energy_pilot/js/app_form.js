@@ -133,15 +133,15 @@ $(document).ready(function() {
         }
 
         //select the dataset which the buoy belongs
-        var dataset_title = $('#select_dataset_data_visualisation .item[data-id="${dataset_id}"]').data("title");
-        $("#select_dataset_data_visualisation").dropdown("set selected", ['${dataset_title}']);
+        var dataset_title = $(`#select_dataset_data_visualisation .item[data-id="${dataset_id}"]`).data("title");
+        $("#select_dataset_data_visualisation").dropdown("set selected", [`${dataset_title}`]);
 
 
         $("#select_dataset_data_visualisation .item").each(function() {
 
             if ($(this).data("id") != dataset_id){
                 var dropwdown_id = $(this).data("id");
-               $('.item[data-id="${dropwdown_id}"]').addClass("disabled item");
+               $(`.item[data-id="${dropwdown_id}"]`).addClass("disabled item");
             }
         });
         var newIcon = new L.Icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png'});
@@ -319,7 +319,7 @@ $(document).ready(function() {
                             }
                         });
 
-                        user_marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup("AS4254").addTo(map);
+                        user_marker = L.marker([e.latlng.lat, e.latlng.lng],  {draggable:true}).bindPopup("AS4254").addTo(map);
                         single_marker_layer = L.layerGroup(user_marker);
                         map.addLayer(single_marker_layer);
                         user_marker.on('dragend', function (e) {
@@ -339,10 +339,9 @@ $(document).ready(function() {
 
    $(function () {
        $('#select_dataset_data_visualisation').change(function () {
-
            $('.variables-selector').hide();
            var dataset_selection = $('#select_dataset_data_visualisation').dropdown('get text');
-           var dataset_id = $('#select_dataset_data_visualisation .item[data-title="${dataset_selection}"]').data("id");
+           var dataset_id = $(`#select_dataset_data_visualisation .item[data-title="${dataset_selection}"]`).data("id");
 
            $('#'+dataset_id+'-variables').show();
            $('.dataset').each(function (i, obj) {
