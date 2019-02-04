@@ -88,71 +88,56 @@
 </div>
 
 <div class="dataset-selector" hidden>
-     <h4>Available Datasets</h4>
+    <h4>Available Datasets</h4>
     <div class="wave_resource_assessment_single_dropdown" hidden>
-{#        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_single">#}
-        <div class="ui selection dropdown" id="select_dataset_wave_resource_assessment_single">
-{#            <option value="">Available Datasets</option>#}
-            <input type="hidden" name="select_dataset_wave_resource_assessment_single-datasets">
-            <i class="dropdown icon"></i>
-            <div class="default text">Available Datasets</div>
-            <div class="menu">
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_single">
+            <option value="">Available Datasets</option>
             {% for dataset in datasets_list %}
                 {%  if dataset.application == "wave_resource_assessment_single" %}
-                        <div class="item" data-id="{{ dataset.id }}" data-title="{{ dataset.title }}">{{ dataset.title }}</div>
-{#                    <option value="{{ dataset.title }}">{{ dataset.title }}</option>#}
+                    <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}">{{ dataset.title }}</option>
                 {% endif %}
             {% endfor %}
-            </div>
-{#        </select>#}
-        </div>
+        </select>
     </div>
     <div class="wave_resource_assessment_area_dropdown" hidden>
-{#        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_area">#}
-{#            <option value="">Available Datasets</option>#}
-        <div class="ui selection dropdown" id="select_dataset_wave_resource_assessment_area">
-            <input type="hidden" name="data-visualisation-datasets">
-            <i class="dropdown icon"></i>
-            <div class="default text">Available Datasets</div>
-            <div class="menu">
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_area">
+            <option value="">Available Datasets</option>
                 {% for dataset in datasets_list %}
                     {%  if dataset.application == "wave_resource_assessment_area" %}
-                         <div class="item" data-id="{{ dataset.id }}" data-title="{{ dataset.title }}">{{ dataset.title }}</div>
-        {#                    <option value="{{ dataset.title }}">{{ dataset.title }}</option>#}
+                            <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}">{{ dataset.title }}</option>
                     {% endif %}
                 {% endfor %}
-{#        </select>#}
-            </div>
-        </div>
+        </select>
     </div>
-    <div class="data_visualisation" hidden>
-{#         <select name="dataset-selector" class="ui dropdown" id="select_dataset_data_visualisation">#}
-         <div class="ui selection dropdown" id="select_dataset_data_visualisation">
-             <input type="hidden" name="data-visualisation-datasets">
-             <i class="dropdown icon"></i>
-             <div class="default text">Available Datasets</div>
-{#            <option value="">Available Datasets</option>#}
-             <div class="menu">
+    <div class="wave_forecast_dropdown" hidden>
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_forecast">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {%  if dataset.title == "Copernicus" %}
+                    <option value="{{ dataset.id }}">{{ dataset.title }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="data_visualisation_dropdown" hidden>
+         <select name="dataset-selector" class="ui dropdown" id="select_dataset_data_visualisation">
+                <option value="">Available Datasets</option>
                 {% for dataset in datasets_list %}
                     {%  if dataset.application == "data_visualisation" %}
-                        <div class="item" data-id="{{ dataset.id }}" data-title="{{ dataset.title }}">{{ dataset.title }}</div>
-    {#                    <option value="{{ dataset.id }}">{{ dataset.title }}</option>#}
+                        <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}" >{{ dataset.title }}</option>
                     {% endif %}
                 {% endfor %}
-             </div>
-        </div>
+         </select>
     </div>
     <hr>
 </div>
 
 <div class="variable-selector" hidden>
     <h4>Available Variables</h4>
-
-
         {% for dataset in datasets_list %}
             {%  if dataset.application == "data_visualisation" %}
                    <div class="variables-selector" id="{{ dataset.id }}-variables" hidden>
-                       <select name="variables-selector" class="ui dropdown" >
+                       <select name="variables-selector" multiple="" class="ui dropdown" >
                             <option value="">Available Variables</option>
                             {% for variable in dataset.variables %}
                                  <option value="{{ variable.title }}">{{ variable.title }}</option>
@@ -161,7 +146,6 @@
                    </div>
                 {% endif %}
         {% endfor %}
-
     <hr>
 </div>
 
@@ -299,8 +283,8 @@
     </div>
 </div>
 
-<div class="button-container" hidden>
-    <div id="run-service-btn" class="btn btn-primary btn-sm btn-default">
+<div class="button-container" id="run-service-btn" hidden>
+    <div class="btn btn-primary btn-sm btn-default">
         <i class="fa fa-play-circle"></i> Run Service
     </div>
 </div>
