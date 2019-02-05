@@ -216,9 +216,9 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
         raise ValueError('The variable is missing from the selected query. The requested visualisation cannot be executed.')
     doc['limit'] = marker_limit
 
-    if use_color_col:
-        if not color_flag:
-            raise ValueError('A variable or dimension has to be selected, if color separation is enabled.')
+    # if use_color_col:
+    #     if not color_flag:
+    #         raise ValueError('A variable or dimension has to be selected, if color separation is enabled.')
 
     query.document = doc
     return query

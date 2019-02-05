@@ -22,8 +22,13 @@
       "limit":30,
       "default_bins":8
     },
+    "histogram_2d_am":{
+      "limit":30,
+      "default_bins":8
+    },
     "map_contour":{
-      "limit":1000
+      "limit":50,
+      "default_contours":20
     },
     "map_heatmap":{
       "limit":10000,
