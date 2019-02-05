@@ -54,6 +54,10 @@
             margin: 0 10% !important;
             width: 80% !important;
         }
+        .conf-error-message{
+            color: darkred;
+            font-size: small;
+        }
     </style>
 {% endblock %}
 
@@ -305,7 +309,7 @@
     <script src="{% static "/js/jplist.textbox-filter.min.js" %}"></script>
     <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}"></script>
     <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}"></script>
-
+    <script>var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');</script>
     <script>
         $(function() {
             window.QueryToolbox.addChart();

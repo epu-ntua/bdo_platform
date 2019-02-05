@@ -514,23 +514,6 @@ $("#select_data_popover").click(function () {
                 return allow_submit
             }
 
-            // function missing_variable(col_select, allow_submit){
-            //     if((col_select.val()=== null)||(col_select.val().length===0)){
-            //             if(allow_submit[0]===true) {
-            //                 $('#select_conf_ok').addClass('disabled');
-            //                 $("<div class='conf-error-message var_missing_error'>* Selection of variable is required.</div>").insertBefore("#select_conf_ok");
-            //             }
-            //             allow_submit[0] = false;
-            //         }
-            //         else{
-            //             allow_submit[0] = true;
-            //             $('.var_missing_error').remove();
-            //             if(check_list(allow_submit)){
-            //                 $('#select_conf_ok').removeClass('disabled');
-            //             }
-            //         }
-            //     return allow_submit
-            // }
 
             function missing_parameter(col_select, allow_submit,parameter_name,parameter_id){
                 if((col_select.val()=== null)||(col_select.val().length===0)){
