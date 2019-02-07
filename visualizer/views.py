@@ -216,9 +216,9 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
         raise ValueError('The variable is missing from the selected query. The requested visualisation cannot be executed.')
     doc['limit'] = marker_limit
 
-    if use_color_col:
-        if not color_flag:
-            raise ValueError('A variable or dimension has to be selected, if color separation is enabled.')
+    # if use_color_col:
+    #     if not color_flag:
+    #         raise ValueError('A variable or dimension has to be selected, if color separation is enabled.')
 
     query.document = doc
     return query
@@ -1903,9 +1903,7 @@ def get_histogram_chart_am(request):
     notebook_id = str(request.GET.get('notebook_id', ''))
 
     x_var = str(request.GET.get('x_var', ''))
-    # y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '5')))
-    agg_function = str(request.GET.get('agg_func', 'avg'))
 
     if query_pk != 0:
         query = AbstractQuery.objects.get(pk=query_pk)
@@ -1999,7 +1997,6 @@ def get_histogram_chart_am(request):
         x_var = 'startValues'
         # print data
         json_data = convert_unicode_json(json_data)
-        # print json_data
     else:
         bins += 1
 
@@ -2035,7 +2032,6 @@ def get_histogram_chart_am(request):
         for i in range(0, len(json_data) - 1):
             json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
         json_data = json_data[:-1]
-        # print json_data
         y_var = 'counts'
         x_var = 'startValues'
 
@@ -2234,7 +2230,7 @@ def get_histogram_2d_am(request):
 
 
 
-def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering = True):
+def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_type, ordering = True):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
@@ -2257,6 +2253,12 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
             doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
         else:
             raise ValueError('-Variable or Dimension for the X-Axis of Line-Charts and Column-Charts is needed.\n-Variable or Dimension for creating the sub-groups of the Pie-Chart is needed.')
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            json_data = json.load(f)
+        doc['limit'] = json_data['visualiser'][chart_type]['limit']
+    except:
+        pass
     query.document = doc
     return query
 
@@ -2282,7 +2284,7 @@ def load_modify_query_aggregate(query_pk, var, agg_function):
 
 
 
-def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, ordering = True):
+def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function,chart_type, ordering = True):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
@@ -2313,6 +2315,12 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
             doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
         else:
             raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            json_data = json.load(f)
+        doc['limit'] = json_data['visualiser'][chart_type]['limit']
+    except:
+        pass
     query.document = doc
     return query, order_var, min_period
 
@@ -2398,7 +2406,7 @@ def get_line_chart_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am')
             json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
             json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
@@ -2427,7 +2435,7 @@ def get_time_series_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function)
+            query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
             json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, order_var, y_var_list)
             min_chart_period = chart_min_period_finder(min_period)
         elif df != '':
@@ -2454,7 +2462,7 @@ def get_column_chart_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
             json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
             json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
@@ -2481,7 +2489,7 @@ def get_pie_chart_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function)
+            query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, key_var, [value_var])
         elif df !='':
             json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
@@ -2494,7 +2502,7 @@ def get_pie_chart_am(request):
 
 
 
-def load_execute_query_data_table(query_pk, offset, limit, column_choice):
+def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_type):
     query = AbstractQuery.objects.get(pk=query_pk)
     q = TempQuery(document=query.document)
     doc = q.document
@@ -2504,7 +2512,12 @@ def load_execute_query_data_table(query_pk, offset, limit, column_choice):
                 s['exclude'] = False
             else:
                 s['exclude'] = True
-    doc['limit'] = limit
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            json_data = json.load(f)
+        doc['limit'] = json_data['visualiser'][chart_type]['limit']
+    except:
+        pass
     doc['offset'] = offset
     q.document = doc
     try:
@@ -2547,7 +2560,7 @@ def get_data_table(request):
             raise ValueError('At least one column of the given query has to be selected.')
         if query_pk != 0:
             if column_choice.__len__() != 0:
-                data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice)
+                data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice,'data_table')
             else:
                 data = []
                 headers = []
