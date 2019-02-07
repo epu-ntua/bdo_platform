@@ -308,7 +308,7 @@ $(function () {
 
 
             // add group by and order by fields
-            var $queryControlsContainer = $('<div class="row after-data-selection" id="query-controls-container">').css('padding', '0').css('margin-left', '0').css('margin-top', '20px');
+            var $queryControlsContainer = $('<div class="row after-data-selection query-controls-container">').css('padding', '0').css('margin-left', '0').css('margin-top', '20px');
 
             // create group select
             var $groupSelectContainer = this.renderChartOptionsField({

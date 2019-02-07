@@ -235,6 +235,7 @@ $(function() {
     $('body').on('change', '#spatial_resolution', function (e) {
         // update spatial resolution
         QueryToolbox.spatial_resolution = $("#spatial_resolution").val();
+         update_group_by_when_spatial_resolution();
         // if spatial resolution is defined
         if($("#spatial_resolution").val() !== ''){
             // Each variable should have an aggregation function
@@ -247,8 +248,8 @@ $(function() {
                 $(this).attr('disabled', 'disabled');
             });
             // remove latitude and longitude from group by options
-            $("#id_category > option[data-title='longitude']").remove();
-            $("#id_category > option[data-title='latitude']").remove()
+            // $("#id_category > option[data-title='longitude']").remove();
+            // $("#id_category > option[data-title='latitude']").remove()
         }
         // if spatial resolution is NOT defined
         else{
@@ -274,7 +275,7 @@ $(function() {
     $('body').on('change', '#temporal_resolution', function (e) {
         // update temporal resolution
         QueryToolbox.temporal_resolution = $("#temporal_resolution").val();
-
+        update_group_by_when_temporal_resolution();
         if($("#temporal_resolution").val() !== ''){
             // Each variable should have an aggregation function
             $("select[name='field_aggregate']").each(function () {
@@ -286,7 +287,7 @@ $(function() {
                 $(this).attr('disabled', 'disabled');
             });
             // remove time from group by options
-            $("#id_category > option[data-title='time']").remove()
+            // $("#id_category > option[data-title='time']").remove()
         }
         else{
             // check if spatial resolution is defined
@@ -352,6 +353,7 @@ $(function() {
         }
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
+        update_fields_when_grouping();
     });
 
     /* On ordering field change */
@@ -408,6 +410,7 @@ $(function() {
         });
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
+        update_fields_when_ordering_asc_desc();
     });
 
     /* On aggregate change */
@@ -524,13 +527,14 @@ $(function() {
 
 
 function updateQDfields() {
-    updateGroupByField();
-    updateOrderByField();
+    var common_dimension_list = joined_datasets_common_dimensions_list();
+    updateGroupByField(common_dimension_list);
+    updateOrderByField(common_dimension_list);
     updateFilterByField();
 }
 
 
-function updateGroupByField() {
+function updateGroupByField(common_dimension_list) {
     // The groupby select field
     var $categorySelectField = $('[name="category"]');
 
@@ -540,12 +544,17 @@ function updateGroupByField() {
 
     $.each(QueryToolbox.variables, function (_, variable) {
         $.each(variable.dimensions, function (_, dimension) {
-            if ($categorySelectField.find("option[data-title='" + dimension.title + "']").length === 0) {
+            if (($categorySelectField.find("option[data-title='" + dimension.title + "']").length === 0)&&(common_dimension_list.includes(dimension.title))) {
                 // Create a DOM Option and pre-select by default
                 var newOption = new Option(dimension.title, dimension.id, false, false);
                 newOption.setAttribute('data-forVariable', variable.id);
                 newOption.setAttribute('data-dimension-id', dimension.id);
                 newOption.setAttribute('data-title', dimension.title);
+                if((dimension.title==='time')&&($('#temporal_resolution').val() !== '')){
+                    newOption.setAttribute('disabled','disabled');
+                }else if(((dimension.title==='latitude')||(dimension.title==='longitude'))&&($('#spatial_resolution').val() !== '')){
+                    newOption.setAttribute('disabled','disabled');
+                }
                 // if a dimensions was previously selected, then select it again
                 $.each(QueryToolbox.groupings, function (idx, elem) {
                     if(elem.dimension_title === dimension.title){
@@ -560,7 +569,7 @@ function updateGroupByField() {
     $categorySelectField.trigger('change');
 }
 
-function updateOrderByField() {
+function updateOrderByField(common_dimension_list) {
     // The orderby select field
     var $orderbySelectField = $('[name="orderby"]');
 
@@ -571,7 +580,7 @@ function updateOrderByField() {
     $.each(QueryToolbox.variables, function (idx, variable) {
         $.each(variable.dimensions, function (_, dimension) {
             // Append the dimensions
-            if ($orderbySelectField.find("option[data-title='" + dimension.title + "']").length === 0) {
+            if (($orderbySelectField.find("option[data-title='" + dimension.title + "']").length === 0)&&(common_dimension_list.includes(dimension.title))) {
                 //Ascending order
                 var newOption = new Option('<i class="fa fa-arrow-up"></i> ' + dimension.title, 'dimension__'+dimension.id+'__ASC', false, false);
                 newOption.setAttribute('data-forVariable', variable.id);
@@ -583,6 +592,7 @@ function updateOrderByField() {
                 $.each(QueryToolbox.orderings, function (idx, elem) {
                     if((elem.type === 'dimension') && (elem.title === dimension.title) && (elem.ordering === 'ASC')){
                         newOption.setAttribute('selected','selected');
+
                     }
                 });
                 $orderbySelectField.append(newOption);
@@ -632,6 +642,98 @@ function updateOrderByField() {
     });
     $orderbySelectField.trigger('change');
 }
+
+function joined_datasets_common_dimensions_list(){
+     //Create a list of only common dimensions of joined datasets
+    var common_dimensions_list=[];
+    var single_var;
+    if(QueryToolbox.variables.length>1) {
+        single_var = QueryToolbox.variables[0].dimensions;
+        for (var i = 0; i < single_var.length; i++) {
+            var common_dimension_flag = true;
+            var curr_var = QueryToolbox.variables;
+            for (var j_var = 1; j_var < curr_var.length; j_var++) {
+                var exists_in_var = false;
+                for (var i_dim = 0; i_dim < curr_var[j_var].dimensions.length; i_dim++) {
+                    if (single_var[i].title === curr_var[j_var].dimensions[i_dim].title) {
+                        exists_in_var = true;
+                    }
+                }
+                if (exists_in_var === false) {
+                    common_dimension_flag = false;
+                }
+            }
+            if (common_dimension_flag === true) {
+                common_dimensions_list.push(single_var[i].title);
+            }
+        }
+    }else{
+        single_var = QueryToolbox.variables[0].dimensions;
+        for (var i = 0; i < single_var.length; i++) {
+            common_dimensions_list.push(single_var[i].title);
+        }
+    }
+    return common_dimensions_list;
+}
+
+function update_fields_when_ordering_asc_desc() {
+    $('[name="orderby"] option').removeAttr('disabled');
+    var $opposite_ordering_option;
+    $.each(QueryToolbox.orderings, function (idx, elem) {
+        if (elem.ordering === 'ASC') {
+            $opposite_ordering_option = $('[name="orderby"] option[data-title="' + elem.title + '"][data-ordering="DESC"]');
+            $opposite_ordering_option.attr('disabled', 'disabled');
+        }else if(elem.ordering === 'DESC'){
+            $opposite_ordering_option = $('[name="orderby"] option[data-title="' + elem.title + '"][data-ordering="ASC"]');
+            $opposite_ordering_option.attr('disabled', 'disabled');
+        }
+    });
+    refresh_selects2();
+}
+
+function update_group_by_when_temporal_resolution() {
+    var $group_option = $('[name="category"] option[data-title="time"]');
+    $group_option.removeAttr('disabled');
+    if ($('#temporal_resolution').val() !== ''){
+        $group_option.attr('disabled', 'disabled');
+    }
+    refresh_selects2();
+}
+
+function update_group_by_when_spatial_resolution() {
+    var $group_option1 = $('[name="category"] option[data-title="latitude"]');
+    var $group_option2 = $('[name="category"] option[data-title="longitude"]');
+    $group_option1.removeAttr('disabled');
+    $group_option2.removeAttr('disabled');
+    if ($('#spatial_resolution').val() !== ''){
+        $group_option1.attr('disabled', 'disabled');
+        $group_option2.attr('disabled', 'disabled');
+    }
+    refresh_selects2();
+}
+
+function update_fields_when_grouping() {
+    $('#temporal_resolution').removeAttr('disabled');
+    $('#spatial_resolution').removeAttr('disabled');
+    $.each(QueryToolbox.groupings, function (idx, elem) {
+        if (elem.dimension_title === 'time') {
+            $('#temporal_resolution').attr('disabled', 'disabled');
+        } else if ((elem.dimension_title === 'latitude') || (elem.dimension_title === 'longitude')) {
+            $('#spatial_resolution').attr('disabled', 'disabled');
+        }
+    });
+}
+
+function refresh_selects2(){
+    $('.query-controls-container select').select2({
+        width: "100%",
+        escapeMarkup: function(markup) {
+            return markup;
+        }
+    });
+}
+
+
 
 function reset(){
         $('.value-remove-btn').click();

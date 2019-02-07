@@ -192,7 +192,7 @@ $(function () {
                 "limit": ($('#limit_container select').val() !== 'none')? parseInt($('#limit_container select').val()) : [],
                 "orderings": []
             };
-
+            this.create_grouping_list();
             // for each variable
             $.each(QueryToolbox.variables, function(idx, variable) {
                 var _from = {
@@ -378,7 +378,31 @@ $(function () {
             // first save
             QueryToolbox.save(runQuery, 1);
         },
+        create_grouping_list: function () {
+            var grouping_list=[];
+            $.each(QueryToolbox.groupings, function (_, elem) {
+                grouping_list.push(elem.dimension_title);
+            });
+            if (QueryToolbox.temporal_resolution !== ""){
+                grouping_list.push('time');
+            }
+            if (QueryToolbox.spatial_resolution !== "") {
+                grouping_list.push('latitude');
+                grouping_list.push('longitude');
+            }
+            if (grouping_list.length>0) {
+                $.each(QueryToolbox.orderings, function (index, elem) {
+                    if (!(grouping_list.includes(elem.title))) {
+                        QueryToolbox.orderings.splice(index,1);
+                        var $sel =  $('[name="orderby"] option[data-title="'+ String(elem.title) +'"]');
+                        $sel.prop('selected', false);
+                        $sel.removeAttr('disabled');
+                        refresh_selects2();
+                    }
+                });
+            }
 
+        },
 
 
         // *** TABS - LOAD - SAVE - RENAME ***
@@ -961,12 +985,22 @@ $(function () {
 
     // Add the select2 flieds
     $('#resolution select').select2();
-    $('#query-controls-container select').select2({
+    $('.query-controls-container select').select2({
         width: "100%",
         escapeMarkup: function(markup) {
             return markup;
         }
     });
+
+    // $('.query-controls-container [name="orderby"]').on("change", function(e) {
+    //     setTimeout(function(){ update_fields_when_ordering_asc_desc(); },100);
+    // });
+
+    // $('.query-controls-container [name="category"]').on("change", function(e) {
+    //     setTimeout(function(){ update_fields_when_grouping(); },100);
+    // });
+
+
     /* Filter dialog should always use select2 */
     $('#filters-modal select').select2();
     /* Limit input should use select2, with tags also */
