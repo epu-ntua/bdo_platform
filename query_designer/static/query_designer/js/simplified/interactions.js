@@ -633,6 +633,27 @@ function updateOrderByField() {
     $orderbySelectField.trigger('change');
 }
 
+function reset(){
+        $('.value-remove-btn').click();
+        $('#selected_dimensions > option').remove();
+        $('#id_category > option').remove();
+        $('#id_orderby > option').remove();
+        $('#resetMapBounds').click();
+        $('#chart-filters > .filter').remove();
+        QueryToolbox.objects[0].queryId = null;
+        $('#chart-name input').val('').trigger('change');
+        $('.queryTitle').text('');
+        $("#saveModal .modal-body").replaceWith('<div class="modal-body" style="height: inherit;margin-bottom: 20px; ">\n' +
+            '                    <div id="save-modal-text">Fill in the name and click on \'Save\' to store the current Query.</div>\n' +
+            '                    <input class="form-control" id="query-save-name" type="text" placeholder="Query Name" style="width: 100%; padding: 3px; height: 100%;margin-top: 20px">\n' +
+            '\n' +
+            '                </div>')
+
+
+        // $('#lat_min').val("").trigger('change');
+        // $('#lat_max').val("").trigger('change');
+    }
+
 function updateFilterByField(){
     var $filterSelectField = $('#new-filter-variable');
 

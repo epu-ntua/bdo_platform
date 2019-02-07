@@ -1002,17 +1002,17 @@ $(function () {
 
     }
 
-    function reset(){
-        $('.value-remove-btn').click();
-        $('#selected_dimensions > option').remove();
-        $('#id_category > option').remove();
-        $('#id_orderby > option').remove();
-        $('#resetMapBounds').click();
-        $('#chart-filters > .filter').remove();
-
-        // $('#lat_min').val("").trigger('change');
-        // $('#lat_max').val("").trigger('change');
-    }
+    // function reset(){
+    //     $('.value-remove-btn').click();
+    //     $('#selected_dimensions > option').remove();
+    //     $('#id_category > option').remove();
+    //     $('#id_orderby > option').remove();
+    //     $('#resetMapBounds').click();
+    //     $('#chart-filters > .filter').remove();
+    //
+    //     // $('#lat_min').val("").trigger('change');
+    //     // $('#lat_max').val("").trigger('change');
+    // }
     // export
     window.QueryToolbox = QueryToolbox;
 });
