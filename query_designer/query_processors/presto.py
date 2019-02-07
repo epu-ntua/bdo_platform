@@ -145,6 +145,8 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
 
         for s in _from['select']:
             if s['type'] != 'VALUE':
+                human_column_name = Dimension.objects.get(pk=s['type']).title
+                print human_column_name
                 dimension = Dimension.objects.get(pk=s['type'])
                 column_name = dimension.data_column_name
                 column_unit = dimension.unit
@@ -152,6 +154,8 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
                 column_step = dimension.step
                 sql_type = dimension.sql_type
             else:
+                human_column_name = Variable.objects.get(pk=_from['type']).title
+                print human_column_name
                 if v_obj.dataset.stored_at == 'UBITECH_PRESTO':
                     column_name = v_obj.name
                 else:
@@ -172,7 +176,7 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
             if not s.get('exclude', False):
                 header_sql_types.append(sql_type)
                 headers.append({
-                    'title': s['title'],
+                    'title': human_column_name,
                     'name': s['name'],
                     'unit': column_unit,
                     'step': column_step,

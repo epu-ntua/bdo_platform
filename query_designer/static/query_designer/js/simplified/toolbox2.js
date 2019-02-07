@@ -350,6 +350,7 @@ $(function () {
                         }
                         else {
                             var $header = $('<tr />');
+                            console.log(response);
                             $.each(response.headers.columns, function (idx, col) {
                                 $header.append($('<td />').text(col.title))
                             });
