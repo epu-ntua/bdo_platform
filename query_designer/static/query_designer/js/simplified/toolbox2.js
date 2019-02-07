@@ -148,6 +148,7 @@ $(function () {
                 var $table = $("#graph-data-table");
                 $table.find('thead').empty();
                 $table.find('tbody').empty();
+                reset();
             }
         },
 
