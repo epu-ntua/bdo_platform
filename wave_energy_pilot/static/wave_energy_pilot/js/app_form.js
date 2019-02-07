@@ -5,7 +5,7 @@ var user_marker = {};
 var buoys_markers = [];
 var mode=null;
 var dataset_id;
-var data_radius = 1.00
+
 $(document).ready(function() {
     
     function create_buoys_dataset_dict() {
@@ -107,7 +107,6 @@ $(document).ready(function() {
         $('#lon_max').val(bounds[3]);
 
     }
-
 
     function erase_user_marker(){
 
@@ -355,7 +354,7 @@ $(document).ready(function() {
         })
     });
 
-   function set_app_dataset_date_pickers(app_selector) {
+    function set_app_dataset_date_pickers(app_selector) {
        $('#'+app_selector).change(function () {
            $('.variables-selector').hide();
            var dataset_id = $('#'+app_selector+" :selected").val();
@@ -383,7 +382,7 @@ $(document).ready(function() {
        })
    }
 
-   function get_app_url() {
+    function get_app_url() {
 
         if($('.app-selector :selected').val() === "Wave_Resource_Assessment_single"){
             var url = "/wave-energy/evaluate_location/";
@@ -404,15 +403,17 @@ $(document).ready(function() {
         }
    }
 
-   function get_parameters(){
+    function get_parameters(){
 
         var lat = $("#lat").val();
         var lng = $("#lon").val();
 
-        var lat_to = lat + data_radius;
-        var lng_to = lng + data_radius;
-        var lat_from = lat - data_radius;
-        var lng_from = lng - data_radius;
+        var data_radius = $("#data-radius").data('value');
+
+        var lat_to = parseInt(lat) + parseInt(data_radius);
+        var lng_to = parseInt(lng) + parseInt(data_radius);
+        var lat_from = parseInt(lat) -  parseInt(data_radius);
+        var lng_from = parseInt(lng) -  parseInt(data_radius);
 
         var start_date = $( "#startdatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val();
         var enddate = $( "#enddatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val();
@@ -472,7 +473,7 @@ $(document).ready(function() {
 
    }
 
-   $("#run-service-btn").click(function () {
+    $("#run-service-btn").click(function () {
        // var execution_url = create_execution_url();
        var app_url = get_app_url();
        // alert(app_url);

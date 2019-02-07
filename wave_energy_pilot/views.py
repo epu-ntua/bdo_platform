@@ -204,7 +204,9 @@ def clean_up_new_note(notebook_id):
 
 
 def init(request):
-    return render(request, 'wave_energy_pilot/load_service.html', {'buoys_list': BUOYS, 'datasets_list': DATASETS})
+
+    return render(request, 'wave_energy_pilot/load_service.html', {'buoys_list': BUOYS, 'datasets_list': DATASETS, 'data_radius': DATA_RADIUS})
+
 
 
 def data_visualization_results(request):
