@@ -93,29 +93,35 @@
         <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_single">
             <option value="">Available Datasets</option>
             {% for dataset in datasets_list %}
-                {%  if dataset.application == "wave_resource_assessment_single" %}
-                    <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}">{{ dataset.title }}</option>
-                {% endif %}
+                {% for application in dataset.applications %}
+                    {%  if application == "wave_resource_assessment_single" %}
+                        <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}">{{ dataset.title }}</option>
+                    {% endif %}
+                {% endfor %}
             {% endfor %}
         </select>
     </div>
     <div class="wave_resource_assessment_area_dropdown" hidden>
         <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_resource_assessment_area">
             <option value="">Available Datasets</option>
-                {% for dataset in datasets_list %}
-                    {%  if dataset.application == "wave_resource_assessment_area" %}
+            {% for dataset in datasets_list %}
+                {% for application in dataset.applications %}
+                    {%  if application == "wave_resource_assessment_area" %}
                             <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}">{{ dataset.title }}</option>
                     {% endif %}
                 {% endfor %}
+            {% endfor %}
         </select>
     </div>
     <div class="wave_forecast_dropdown" hidden>
         <select name="dataset-selector" class="ui dropdown" id="select_dataset_wave_forecast">
             <option value="">Available Datasets</option>
             {% for dataset in datasets_list %}
-                {%  if dataset.title == "Copernicus" %}
-                    <option value="{{ dataset.id }}">{{ dataset.title }}</option>
-                {% endif %}
+                {% for application in dataset.applications %}
+                    {%  if application == "wave_forecast" %}
+                        <option value="{{ dataset.id }}">{{ dataset.title }}</option>
+                    {% endif %}
+                {% endfor %}
             {% endfor %}
         </select>
     </div>
@@ -123,9 +129,11 @@
          <select name="dataset-selector" class="ui dropdown" id="select_dataset_data_visualisation">
                 <option value="">Available Datasets</option>
                 {% for dataset in datasets_list %}
-                    {%  if dataset.application == "data_visualisation" %}
-                        <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}" >{{ dataset.title }}</option>
-                    {% endif %}
+                    {% for application in dataset.applications %}
+                        {%  if application == "data_visualisation" %}
+                            <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}" >{{ dataset.title }}</option>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
          </select>
     </div>
@@ -135,16 +143,18 @@
 <div class="variable-selector" hidden>
     <h4>Available Variables</h4>
         {% for dataset in datasets_list %}
-            {%  if dataset.application == "data_visualisation" %}
+            {% for application in dataset.applications %}
+                {%  if application == "data_visualisation" %}
                    <div class="variables-selector" id="{{ dataset.id }}-variables" hidden>
                        <select name="variables-selector" multiple="" class="ui dropdown" >
                             <option value="">Available Variables</option>
                             {% for variable in dataset.variables %}
                                  <option value="{{ variable.title }}">{{ variable.title }}</option>
-                           {% endfor %}
+                            {% endfor %}
                        </select>
                    </div>
                 {% endif %}
+            {% endfor %}
         {% endfor %}
     <hr>
 </div>

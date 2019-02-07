@@ -5,6 +5,7 @@ var user_marker = {};
 var buoys_markers = [];
 var mode=null;
 var dataset_id;
+var data_radius = 1.00
 $(document).ready(function() {
     
     function create_buoys_dataset_dict() {
@@ -382,10 +383,36 @@ $(document).ready(function() {
        })
    }
 
-   function create_execution_url(){
+   function get_app_url() {
+
+        if($('.app-selector :selected').val() === "Wave_Resource_Assessment_single"){
+            var url = "/wave-energy/evaluate_location/";
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "Wave_Forecast"){
+            var url = "/wave-energy/wave_forecast/";
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "Data_Visualisation"){
+            var url = "/wave-energy/data_visualisation/";
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "Wave_Resource_Assessment_area"){
+
+            var url = "/wave-energy/evaluate_area/";
+            return url;
+        }
+   }
+
+   function get_parameters(){
 
         var lat = $("#lat").val();
         var lng = $("#lon").val();
+
+        var lat_to = lat + data_radius;
+        var lng_to = lng + data_radius;
+        var lat_from = lat - data_radius;
+        var lng_from = lng - data_radius;
 
         var start_date = $( "#startdatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val();
         var enddate = $( "#enddatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val();
@@ -395,18 +422,18 @@ $(document).ready(function() {
 
             var dataset_id = $("#select_dataset_wave_resource_assessment_single :selected").val();
 
-            var url = "/wave-energy/evaluate_location/execute/?dataset_id="+dataset_id+"&start_date="+start_date+
-                "&end_date="+enddate+"&latitude_from="+lat+"&latitude_to="+lat+
-                "&longitude_from="+lng+"&longitude_to="+lng;
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
+                "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
+                "&longitude_from="+lng_to+"&longitude_to="+lng_from;
             return url;
         }
         else if($('.app-selector :selected').val() === "Wave_Forecast"){
 
-            var dataset_id = $('#'+app_selector+" :selected").val();
+            var dataset_id = $("#select_dataset_wave_forecast :selected").val();
 
-            var url = "wave-energy/wave_forecast/execute/?dataset_id="+dataset_id+"&start_date="+start_date+
-                "&end_date="+enddate+"&latitude_from="+lat+"&latitude_to="+lat+
-                "&longitude_from="+lng+"&longitude_to="+lng;
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
+                "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
+                "&longitude_from="+lng_from+"&longitude_to="+lng_to;
             return url;
         }
         else if($('.app-selector :selected').val() === "Data_Visualisation"){
@@ -417,14 +444,15 @@ $(document).ready(function() {
             $("#"+dataset_id+"-variables :selected").each(function () {
                 selected_variables.push($(this).val());
             })
-           var variables_str = "";
-           for(var i = 0; i < selected_variables.length; i++){
-               variables_str +="&variables[]="+selected_variables[i];
-           }
+            var variables_str = "";
+            for(var i = 0; i < selected_variables.length; i++){
+                variables_str +="&variables[]="+selected_variables[i];
+            }
 
-            var url = "/wave-energy/data_visualisation/execute/?dataset_id="+dataset_id+"&start_date="+start_date+
-                "&end_date="+enddate+"&latitude_from="+lat+"&latitude_to="+lat+"&longitude_from="+lng+
-                "&longitude_to="+lng+""+variables_str;
+
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
+                "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+"&longitude_from="+lng_from+
+                "&longitude_to="+lng_to+""+variables_str;
             return url;
        }
         else if($('.app-selector :selected').val() === "Wave_Resource_Assessment_area"){
@@ -433,9 +461,10 @@ $(document).ready(function() {
             var lat_to = $("#lat_max").val();
             var lng_from = $("#lon_min").val();
             var lng_to = $("#lon_max").val();
+
             var dataset_id = $("#select_dataset_wave_resource_assessment_area :selected").val();
 
-            var url = "wave-energy/evaluate_area/execute/?dataset_id=14&start_date="+start_date+
+            var url = "?dataset_id=14&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
                 "&longitude_from="+lng_from+"&longitude_to="+lng_to;
            return url;
@@ -444,12 +473,65 @@ $(document).ready(function() {
    }
 
    $("#run-service-btn").click(function () {
-       var execution_url = create_execution_url();
-       $.ajax({
-           "type": "GET",
-           "url": execution_url
-       })
-   })
+       // var execution_url = create_execution_url();
+       var app_url = get_app_url();
+       // alert(app_url);
+       var parameters = get_parameters();
+       
+       if (app_url === "/wave-energy/data_visualisation/") {
+            $(location).attr("href", app_url+"execute/"+parameters);
+       }
+       else{
+            $.ajax({
+            "type": "GET",
+            "url": app_url+"execute/"+parameters,
+            "data": {},
+            "success": function(result) {
+                    console.log(result);
+                    exec_instance = result['exec_instance'];
+                },
+                error: function () {
+                    alert('error');
+                }
+            })
+
+            window.setInterval(function(){
+
+            }, 1000);
+
+            var execution_status_interval = setInterval(check_execution_status, 5000);
+
+            function check_execution_status() {
+                $.ajax({
+                    "type": "GET",
+                    "url": app_url+"status/"+exec_instance+"/",
+                    "data": {},
+                    "success": function(result) {
+                        console.log(result["status"]);
+                        $("#execution_status").html(result["status"]);
+                        if(result["status"] === "done"){
+                            execution_status_stop();
+                            // similar behavior as clicking on a link
+                            window.location.href = app_url+"results/"+exec_instance+"/";
+                        }
+                        else if (result["status"] === "failed") {
+                            execution_status_stop();
+                            alert("execution failed");
+                        }
+                    },
+                    error: function () {
+                        execution_status_stop();
+                        alert('error');
+                    }
+                });
+            }
+
+            function execution_status_stop() {
+              clearInterval(execution_status_interval);
+            }
+       }
+
+   });
 
 });
 
