@@ -692,11 +692,15 @@ function joined_datasets_common_dimensions_list(){
                 common_dimensions_list.push(single_var[i].title);
             }
         }
-    }else{
+    }
+    else if (QueryToolbox.variables.length===1){
         single_var = QueryToolbox.variables[0].dimensions;
         for (var i = 0; i < single_var.length; i++) {
             common_dimensions_list.push(single_var[i].title);
         }
+    }
+    else{
+        common_dimensions_list = [];
     }
     return common_dimensions_list;
 }
@@ -769,6 +773,8 @@ function reset(){
         $('#chart-filters > .filter').remove();
         QueryToolbox.objects[0].queryId = null;
         $('#chart-name input').val('').trigger('change');
+        $('#temporal_resolution').val('').trigger('change');
+        $('#spatial_resolution').val('').trigger('change');
         $('.queryTitle').text('');
         $("#saveModal .modal-body").replaceWith('<div class="modal-body" style="height: inherit;margin-bottom: 20px; ">\n' +
             '                    <div id="save-modal-text">Fill in the name and click on \'Save\' to store the current Query.</div>\n' +
