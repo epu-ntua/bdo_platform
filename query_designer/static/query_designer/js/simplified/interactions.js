@@ -12,6 +12,16 @@ $(function() {
         // The new variable to be added for query
         var selection = window.getDataSelection();
         var included_vars = [];
+        var first_var = selection[0].dataset_id;
+        console.log('new dataset_id '+first_var);
+        var joined_flag = false;
+        for (var i=0; i<QueryToolbox.variables.length; i++) {
+            console.log('is '+ QueryToolbox.variables[i].dataset_id+ ' the same with '+ first_var + '?');
+            if (first_var !== QueryToolbox.variables[i].dataset_id) {
+                joined_flag = true;
+                console.log('Joined Datasets');
+            }
+        }
         $.each(QueryToolbox.variables, function (_, variable) {
             included_vars.push(parseInt(variable.id));
         });
@@ -32,7 +42,8 @@ $(function() {
                     id: newVariable.id,
                     unit: newVariable.unit,
                     dimensions: newVariable.dimensions,
-                    canDelete: true
+                    canDelete: true,
+                    dataset_id: newVariable.dataset_id
                 });
 
                 // Select2 for the aggregation function
@@ -52,10 +63,24 @@ $(function() {
                     title: newVariable.title,
                     unit: newVariable.unit,
                     aggregate: newVariable.aggregate,
-                    dimensions: newVariable.dimensions
+                    dimensions: newVariable.dimensions,
+                    dataset_id: newVariable.dataset_id
                 });
             }
         });
+
+
+        if (joined_flag){
+            //automatically fill spatial and temporal resolution when joining datasets
+            if( $('#temporal_resolution').val()==='') {
+                $('#temporal_resolution').val('hour');
+                $('#temporal_resolution').trigger('change');
+            }
+            if($('#spatial_resolution').val()==='') {
+                $('#spatial_resolution').val('0.1');
+                $('#spatial_resolution').trigger('change');
+            }
+        }
         // console.log(QueryToolbox.variables);
 
         // Update all the Query Designer fields (groupby, orderby, resolutions, filters according to the new set of selected variables
