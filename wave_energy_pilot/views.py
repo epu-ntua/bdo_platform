@@ -204,7 +204,13 @@ def clean_up_new_note(notebook_id):
 
 
 def init(request):
-    return render(request, 'wave_energy_pilot/load_service.html', {'buoys_list': BUOYS, 'datasets_list': DATASETS})
+    execution_steps = dict()
+    execution_steps['LOCATION_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS] + ['done']
+    execution_steps['WAVE_FORECAST_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.WAVE_FORECAST_SERVICE_PARAGRAPHS] + ['done']
+    return render(request, 'wave_energy_pilot/load_service.html',
+                  {'buoys_list': BUOYS,
+                   'datasets_list': DATASETS,
+                   'execution_steps': execution_steps})
 
 
 def data_visualization_results(request):

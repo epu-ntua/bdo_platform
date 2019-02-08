@@ -139,7 +139,7 @@ $(document).ready(function() {
             if ($(this).val() != dataset_id && $(this).val() !== ""){
                 var dropdown_id = $(this).val();
 
-                $(`.item[data-value="${dropdown_id}"]`).addClass("disabled");
+                $('.item[data-value="${dropdown_id}"]').addClass("disabled");
             }
 
         });
