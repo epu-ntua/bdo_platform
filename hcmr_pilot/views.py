@@ -56,8 +56,8 @@ def create_json_from_out_file(filename_output):
         print line
         first_line = f.readline()
         while first_line.strip() != '':
-            f.readline().split()
-            f.readline()
+            while is_integer_string(f.readline().split()[0]):
+                pass
             time, n, ev, srf, em, disp, cst, btm, max_visc, min_visc, dens = f.readline().split()
             datetime = start_datetime + timedelta(hours=float(time))
             spill_data.append(
@@ -95,8 +95,8 @@ def wait_until_output_ready(params):
 
 
 def create_inp_file_from_request_and_upload(request):
-    latitude, longitude, oil_volume, start_date, latitude2, longitude2 = parse_request_params(request)
-    url_params = build_request_params_for_file_creation(latitude, longitude, latitude2, longitude2, oil_volume, start_date)
+    spill_infos = parse_request_params(request)
+    url_params = build_request_params_for_file_creation(spill_infos)
     response = requests.get(
         "http://localhost:8000/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
@@ -107,28 +107,49 @@ def create_inp_file_from_request_and_upload(request):
     return filename, url_params
 
 
-def build_request_params_for_file_creation(latitude, longitude, latitude2, longitude2, oil_volume, start_date):
-    print(start_date)
-    date, daytime = start_date.split(' ')
-    print(date)
-    year, month, day = date.split('-')
-    hours, mins = daytime.split(':')
-    url_params = "LATLON=" + str(latitude) + '%20' + str(longitude)
-    latlon2 = "&LATLON2="
-    if latitude2!='' and longitude2!='':
-        latlon2 = "&LATLON2=" + str(latitude2) + '%20' + str(longitude2)
+def build_request_params_for_file_creation(spill_info_list):
+    url_params = ''
+    idx = 0
+    for point in spill_info_list:
+        start_date = point['start_date']
+        latitude = point['latitude']
+        longitude = point['longitude']
+        oil_volume = point['oil_volume']
+        date, daytime = start_date.split(' ')
+        print(date)
+        year, month, day = date.split('-')
+        hours, mins = daytime.split(':')
+        if idx == 0 :
+            url_params += "LATLON" + str(idx) + "=" + str(latitude) + '%20' + str(longitude)
+        else :
+            url_params += "&LATLON"+str(idx)+ "=" + str(latitude) + '%20' + str(longitude)
+        url_params += "&DATETIME"+str(idx)+"=" + year + '%20' + month + '%20' + day+'+'+hours+mins
+        url_params += "&VOLUME"+str(idx)+"=" + str(oil_volume)
+        idx += 1
 
-    url_params += latlon2
-    url_params += "&DATETIME=" + year + '%20' + month + '%20' + day+'+'+hours+mins
-    url_params += "&VOLUME=" + str(oil_volume)
     return url_params
 
 
 def parse_request_params(request):
-    latitude1 = request.GET.get('latitude1')
-    latitude2 = request.GET.get('latitude2')
-    longitude1 = request.GET.get('longitude1')
-    longitude2 = request.GET.get('longitude2')
-    start_date = request.GET.get('start_date')
-    oil_volume = request.GET.get('oil_volume')
-    return latitude1, longitude1, oil_volume, start_date, latitude2, longitude2
+    spill_infos = []
+    for i in range(1,6):
+        spill_info = {}
+        spill_info['latitude'] = latitude = request.GET.get('latitude'+str(i))
+        spill_info['longitude'] = longitude = request.GET.get('longitude'+str(i))
+        spill_info['start_date'] = start_date = request.GET.get('start_date'+str(i))
+        spill_info['oil_volume'] = oil_volume = request.GET.get('oil_volume'+str(i))
+        print (latitude,longitude, start_date, oil_volume)
+        if (latitude == '' or longitude == '' or start_date == '' or oil_volume == ''):
+            break
+        else:
+            spill_infos.append(spill_info)
+        print(spill_infos)
+    return spill_infos
+
+
+def is_integer_string(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
