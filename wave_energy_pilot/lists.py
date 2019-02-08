@@ -12,3 +12,4 @@ BUOYS = (
 )
 
 
+DATA_RADIUS = 1.00

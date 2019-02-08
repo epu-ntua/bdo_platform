@@ -15,19 +15,16 @@
 
 
         <div id="map" style="min-height: 800px; width: 100%; margin-top: 10px; z-index: 1; ">
-
         </div>
 
         <div id="buoys">
-
                 {% for buoy in buoys_list %}
                     <div class="buoy" data-id="{{ buoy.id }}" data-lat="{{ buoy.lat }}" data-lon="{{ buoy.lon }}" data-dataset_id="{{ buoy.dataset_id }}">
                     </div>
                 {% endfor %}
-
-
         </div>
 
+        <div id="data-radius" data-value="{{ data_radius }}"</div>
         <div id="app_form" class="form container " >
             {% include "wave_energy_pilot/utils/basic_form_tab.html" %}
         </div>

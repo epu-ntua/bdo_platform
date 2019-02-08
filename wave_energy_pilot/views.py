@@ -210,6 +210,7 @@ def init(request):
     return render(request, 'wave_energy_pilot/load_service.html',
                   {'buoys_list': BUOYS,
                    'datasets_list': DATASETS,
+                   'data_radius': DATA_RADIUS,
                    'execution_steps': execution_steps})
 
 

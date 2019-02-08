@@ -163,9 +163,9 @@ $(document).ready(function() {
 
 
     $('#lat_min, #lat_max, #lon_min, #lon_max').change(function () {
-        // $('#mapchoices option[value=-1]').prop('disabled', 'enabled');
-        // $('#mapchoices').val(-1);
-        // $('#mapchoices').trigger('change');
+        $('#mapchoices option[value=-1]').prop('disabled', 'enabled');
+        $('#mapchoices').val(-1);
+        $('#mapchoices').trigger('change');
         $('#mapchoices').val(null).trigger('change');
 
         bounds = [parseFloat($('#lat_min').val()),parseFloat($('#lon_min').val()),parseFloat($('#lat_max').val()),parseFloat($('#lon_max').val())];
