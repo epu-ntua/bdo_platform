@@ -32,9 +32,15 @@
             {% include "wave_energy_pilot/utils/basic_form_tab.html" %}
         </div>
         
-        <btn id="execution_btn" class="btn btn-success">Execute!</btn>
-        <span id="execution_status"></span>
+{#        <btn id="execution_btn" class="btn btn-success">Execute!</btn>#}
+{#        <span id="execution_status"></span>#}
+        {% for app_name, data in execution_steps.items %}
+            <btn id="execution_btn_{{ app_name }}" class="btn btn-success" data-toggle="modal" data-target="#{{ app_name }}_modal">Execute_{{ forloop.counter }}</btn>
+        {% endfor %}
+        <input hidden id="execution_status" type="text" value=""/>
     </div>
+
+
 
 {% endblock %}
 
@@ -47,7 +53,11 @@
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
     <script src="{% static 'wave_energy_pilot/js/app_form.js' %}"></script>
     <script src="{% static 'wave_energy_pilot/js/location_markers.js' %}"></script>
-    
+
+
+    {% include 'wave_energy_pilot/utils/status_modal.html' %}
+
+
     <script type="text/javascript">
         var exec_instance = '';
         $("#execution_btn").click(function () {
@@ -64,10 +74,6 @@
                 }
             });
 
-            window.setInterval(function(){
-
-            }, 1000);
-
             var execution_status_interval = setInterval(check_execution_status, 5000);
 
             function check_execution_status() {
@@ -77,7 +83,7 @@
                     "data": {},
                     "success": function(result) {
                         console.log(result["status"]);
-                        $("#execution_status").html(result["status"]);
+                        $("#execution_status").val(result["status"]);
                         if(result["status"] === "done"){
                             execution_status_stop();
                             // similar behavior as clicking on a link
@@ -85,12 +91,13 @@
                         }
                         else if (result["status"] === "failed") {
                             execution_status_stop();
-                            alert("execution failed");
+{#                            alert("execution failed");#}
                         }
                     },
                     error: function () {
+                        $("#execution_status").val("failed");
                         execution_status_stop();
-                        alert('error');
+{#                        alert('error');#}
                     }
                 });
             }
@@ -98,6 +105,72 @@
             function execution_status_stop() {
               clearInterval(execution_status_interval);
             }
-        })
+        });
+
+
+        window.setInterval(function () {
+            if($(".modal.in").length > 0) {
+                var old_status = $(" .modal.in #modal_status_input").val();
+                var new_status = $("#execution_status").val();
+                if (old_status !== new_status) {
+                    console.log(new_status);
+                    $(".modal.in #modal_status_input").val(new_status);
+                    $(".modal.in #modal_status_div").fadeOut("3000").html(new_status).fadeIn("3000");
+                    $(".modal.in .status_counter").each(function (index, elem) {
+                        console.log($(elem).data("status"));
+                        if ($(elem).attr("data-status") === new_status) {
+                            console.log('found');
+                            var new_step_counter = $(elem).attr("data-counter");
+                            $(elem).removeClass('label-default').addClass('label-primary');
+
+                            var $total = parseInt($(".modal.in #number_of_steps").val());
+                            var $current = parseInt(new_step_counter);
+                            var $percent = ($current / $total) * 100;
+                            $(".modal.in .progress-bar").css({width: $percent + '%'});
+                        }
+                    });
+
+                }
+                if (new_status === "failed"){
+                    $(".modal.in .progress-bar").css({width: '100%', background: '#db2828'});
+                    $(".modal.in .status_counter").each(function (index, elem) {
+                        $(elem).removeClass('label-default').addClass('label-primary');
+                    });
+                    $(".modal.in #modal_dismiss_btn_cancel").hide();
+                    $(".modal.in #modal_dismiss_btn_close").show();
+                }
+            }
+        }, 1000);
+
+        $('.modal').on('hidden.bs.modal', function () {
+            $(" .modal #modal_status_input").val('');
+            $("#execution_status").val('');
+            $(".modal #modal_dismiss_btn_cancel").show();
+            $(".modal #modal_dismiss_btn_close").hide();
+            $(".modal .status_counter").each(function (index, elem) {
+                $(elem).removeClass('label-default').removeClass('label-primary').addClass('label-default');
+            });
+            $(".modal .progress-bar").css({width: '0%', background: '#337ab7'});
+            $(".modal #modal_status_div").html('');
+        });
+
+        $("#modal_dismiss_btn_cancel").click(function () {
+            $.ajax({
+                "type": "GET",
+                "url": "/wave-energy/"+exec_instance+"/",
+                "data": {},
+                "success": function(result) {
+                    console.log('service cancelled');
+                },
+                error: function () {
+                    console.log('error cancelling service');
+                },
+                complete: function () {
+                    exec_instance = '';
+                }
+            });
+        });
     </script>
+
+
 {% endblock %}

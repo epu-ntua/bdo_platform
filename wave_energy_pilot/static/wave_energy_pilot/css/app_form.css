@@ -43,3 +43,15 @@
 #lon{
     width: 62%;
 }
+
+.label-default{
+    background-color: #989898 !important;
+}
+
+.label-primary{
+    background-color: #0e2b3f !important;
+}
+
+.modal-content{
+    height: 45vh;
+}
