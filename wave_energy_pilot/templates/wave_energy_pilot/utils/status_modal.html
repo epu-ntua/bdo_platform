@@ -1,3 +1,4 @@
+{% load static %}
 {% for app_name, data in execution_steps.items %}
     <div id="{{ app_name }}_modal" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog">
@@ -27,7 +28,8 @@
                             </input>
                         </div>
                         <div class="text-center">
-                            <h3 id="modal_status_div"></h3>
+                            <h3 id="modal_status_div" style="text-transform: capitalize; display: inline-block;"></h3>
+                            <img  alt="" src="{% static 'wave_energy_pilot/img/service_loading.gif' %}" style="width: 3vh;">
                         </div>
                     </div>
                 </div>

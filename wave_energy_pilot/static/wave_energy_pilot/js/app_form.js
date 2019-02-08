@@ -473,12 +473,24 @@ $(document).ready(function() {
 
    }
 
+    var exec_instance = '';
     $("#run-service-btn").click(function () {
        // var execution_url = create_execution_url();
        var app_url = get_app_url();
        // alert(app_url);
        var parameters = get_parameters();
-       
+       if (app_url === "/wave-energy/evaluate_location/"){
+           $("#execution_btn_LOCATION_EVALUATION_SERVICE").click();
+       }
+       if (app_url === "/wave-energy/wave_forecast/"){
+           $("#execution_btn_WAVE_FORECAST_SERVICE").click();
+       }
+       if (app_url === "/wave-energy/evaluate_area/"){
+           $("#execution_btn_AREA_EVALUATION_SERVICE").click();
+       }
+
+       $("#execution_status").val('starting service');
+
        if (app_url === "/wave-energy/data_visualisation/") {
             $(location).attr("href", app_url+"execute/"+parameters);
        }
@@ -494,13 +506,9 @@ $(document).ready(function() {
                 error: function () {
                     alert('error');
                 }
-            })
+            });
 
-            window.setInterval(function(){
-
-            }, 1000);
-
-            var execution_status_interval = setInterval(check_execution_status, 5000);
+            var execution_status_interval = setInterval(check_execution_status, 3000);
 
             function check_execution_status() {
                 $.ajax({
@@ -509,20 +517,21 @@ $(document).ready(function() {
                     "data": {},
                     "success": function(result) {
                         console.log(result["status"]);
-                        $("#execution_status").html(result["status"]);
+                        $("#execution_status").val(result["status"]);
                         if(result["status"] === "done"){
-                            execution_status_stop();
-                            // similar behavior as clicking on a link
-                            window.location.href = app_url+"results/"+exec_instance+"/";
+                            setTimeout(function() {
+                                execution_status_stop();
+                                window.location.href = app_url+"results/"+exec_instance+"/";
+                            }, 1000);
                         }
                         else if (result["status"] === "failed") {
                             execution_status_stop();
-                            alert("execution failed");
+                            // alert("execution failed");
                         }
                     },
                     error: function () {
                         execution_status_stop();
-                        alert('error');
+                        // alert('error');
                     }
                 });
             }
@@ -533,6 +542,73 @@ $(document).ready(function() {
        }
 
    });
+
+    window.setInterval(function () {
+        if($(".modal.in").length > 0) {
+            var old_status = $(" .modal.in #modal_status_input").val();
+            var new_status = $("#execution_status").val();
+            if (old_status !== new_status) {
+                console.log(new_status);
+                $(".modal.in #modal_status_input").val(new_status);
+                $(".modal.in #modal_status_div").fadeOut("2000").html(new_status).fadeIn("2000");
+                $(".modal.in .status_counter").each(function (index, elem) {
+                    console.log($(elem).data("status"));
+                    if ($(elem).attr("data-status") === new_status) {
+                        // console.log('found');
+                        var new_step_counter = $(elem).attr("data-counter");
+                        $(".modal.in .status_counter").each(function (i, e) {
+                            if(i <= index){
+                                $(e).removeClass('label-default').addClass('label-primary');
+                            }
+                        });
+
+                        var $total = parseInt($(".modal.in #number_of_steps").val());
+                        var $current = parseInt(new_step_counter);
+                        var $percent = ($current / $total) * 100;
+                        $(".modal.in .progress-bar").css({width: $percent + '%'});
+                    }
+                });
+
+            }
+            if (new_status === "failed"){
+                $(".modal.in .progress-bar").css({width: '100%', background: '#db2828'});
+                $(".modal.in .status_counter").each(function (index, elem) {
+                    $(elem).removeClass('label-default').addClass('label-primary');
+                });
+                $(".modal.in #modal_dismiss_btn_cancel").hide();
+                $(".modal.in #modal_dismiss_btn_close").show();
+            }
+        }
+    }, 1000);
+
+    $('.modal').on('hidden.bs.modal', function () {
+        $(" .modal #modal_status_input").val('');
+        $("#execution_status").val('');
+        $(".modal #modal_dismiss_btn_cancel").show();
+        $(".modal #modal_dismiss_btn_close").hide();
+        $(".modal .status_counter").each(function (index, elem) {
+            $(elem).removeClass('label-default').removeClass('label-primary').addClass('label-default');
+        });
+        $(".modal .progress-bar").css({width: '0%', background: '#337ab7'});
+        $(".modal #modal_status_div").html('');
+    });
+
+    $("#modal_dismiss_btn_cancel").click(function () {
+        $.ajax({
+            "type": "GET",
+            "url": "/wave-energy/"+exec_instance+"/",
+            "data": {},
+            "success": function(result) {
+                console.log('service cancelled');
+            },
+            error: function () {
+                console.log('error cancelling service');
+            },
+            complete: function () {
+                exec_instance = '';
+            }
+        });
+    });
 
 });
 
