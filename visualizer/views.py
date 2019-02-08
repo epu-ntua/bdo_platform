@@ -17,17 +17,17 @@ import os, re, time
 from nvd3 import pieChart, lineChart
 import psycopg2
 
-from matplotlib import use
-
 from django.template.loader import render_to_string
 
 from service_builder.models import ServiceInstance
 from service_builder.views import updateServiceInstanceVisualizations
+import numpy as np
 
-use('Agg')
+import matplotlib
+from matplotlib import use
+# import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.cm import get_cmap
-from matplotlib.colors import Normalize
+use('Agg')
 import matplotlib.pyplot as plt
 import pylab as pl
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -2099,13 +2099,270 @@ def get_histogram_chart_am(request):
     return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var, 'category_title': var_title})
 
 
-def get_histogram_2d_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
+def heatmap(data, row_labels, col_labels, ax=None,
+            cbar_kw={}, cbarlabel="", **kwargs):
+    """
+    Create a heatmap from a numpy array and two lists of labels.
 
+    Arguments:
+        data       : A 2D numpy array of shape (N,M)
+        row_labels : A list or array of length N with the labels
+                     for the rows
+        col_labels : A list or array of length M with the labels
+                     for the columns
+    Optional arguments:
+        ax         : A matplotlib.axes.Axes instance to which the heatmap
+                     is plotted. If not provided, use current axes or
+                     create a new one.
+        cbar_kw    : A dictionary with arguments to
+                     :meth:`matplotlib.Figure.colorbar`.
+        cbarlabel  : The label for the colorbar
+    All other arguments are directly passed on to the imshow call.
+    """
+
+    if not ax:
+        ax = plt.gca()
+
+    # Plot the heatmap
+    im = ax.imshow(data, **kwargs)
+
+    # Create colorbar
+    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+    # We want to show all ticks...
+    ax.set_xticks(np.arange(data.shape[1]))
+    ax.set_yticks(np.arange(data.shape[0]))
+    # ... and label them with the respective list entries.
+    ax.set_xticklabels(col_labels)
+    ax.set_yticklabels(row_labels)
+
+    # Let the horizontal axes labeling appear on top.
+    ax.tick_params(top=True, bottom=False,
+                   labeltop=True, labelbottom=False)
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right",
+             rotation_mode="anchor")
+
+    # Turn spines off and create white grid.
+    for edge, spine in ax.spines.items():
+        spine.set_visible(False)
+
+    ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
+    ax.set_yticks(np.arange(data.shape[0]+1)-.5, minor=True)
+    ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
+    ax.tick_params(which="minor", bottom=False, left=False)
+
+    return im, cbar
+
+
+def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
+                     textcolors=["black", "white"],
+                     threshold=None, **textkw):
+    """
+    A function to annotate a heatmap.
+
+    Arguments:
+        im         : The AxesImage to be labeled.
+    Optional arguments:
+        data       : Data used to annotate. If None, the image's data is used.
+        valfmt     : The format of the annotations inside the heatmap.
+                     This should either use the string format method, e.g.
+                     "$ {x:.2f}", or be a :class:`matplotlib.ticker.Formatter`.
+        textcolors : A list or array of two color specifications. The first is
+                     used for values below a threshold, the second for those
+                     above.
+        threshold  : Value in data units according to which the colors from
+                     textcolors are applied. If None (the default) uses the
+                     middle of the colormap as separation.
+
+    Further arguments are passed on to the created text labels.
+    """
+
+    if not isinstance(data, (list, np.ndarray)):
+        data = im.get_array()
+
+    # Normalize the threshold to the images color range.
+    if threshold is not None:
+        threshold = im.norm(threshold)
+    else:
+        threshold = im.norm(data.max())/2.
+
+    # Set default alignment to center, but allow it to be
+    # overwritten by textkw.
+    kw = dict(horizontalalignment="center",
+              verticalalignment="center")
+    kw.update(textkw)
+
+    # Get the formatter in case a string is supplied
+    if isinstance(valfmt, str):
+        valfmt = matplotlib.ticker.StrMethodFormatter(valfmt)
+
+    # Loop over the data and create a `Text` for each "pixel".
+    # Change the text's color depending on the data.
+    texts = []
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            kw.update(color=textcolors[im.norm(data[i, j]) > threshold])
+            # text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
+            # texts.append(text)
+            texts.append('')
+
+    return texts
+
+
+
+def get_histogram_2d_matplotlib(request):
+    query_pk = int(str(request.GET.get('query', '0')))
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '3')))
+    if query_pk != 0:
+        print('Loading/Modifying Query')
+        query = histogram2d_load_modify_query(query_pk, x_var, y_var)
+        print('Executing Query')
+        x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_execute_query(query, x_var, y_var)
+    else:
+        x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_dataframe(x_var, y_var)
 
+    print('Creating lists od data gor histogram-2d')
+    list_x = []
+    list_y = []
+    for el in result_data:
+        if el[x_var_index] is not None:
+            list_x.append(el[x_var_index])
+        else:
+            list_x.append(0)
+        if el[y_var_index] is not None:
+            list_y.append(el[y_var_index])
+        else:
+            list_y.append(0)
+    total = result_data.__len__()
+
+    print('Creating Histogram-2d')
+    freq, xedges, yedges = np.histogram2d(list_x, list_y, bins)
+    new_table = []
+    for el in freq:
+        hor_table = []
+        for i in el:
+            new_el = i/total
+            hor_table.append(new_el)
+        new_table.append(hor_table)
+    new_table = np.array(new_table)
+
+    xedges = [round(x,2) for x in xedges]
+    yedges = [round(y,2) for y in yedges]
+
+    # print('Creating X-Axis and Y-Axis different bins')
+    # bin_x_cont = []
+    # iter1 = iter(xedges)
+    # iter1.next()
+    # for el in xedges:
+    #     try:
+    #         temp = [round(el, 2), round(iter1.next(), 3)]
+    #     except:
+    #         break
+    #     bin_x_cont.append(temp)
+    #
+    # bin_y_cont = []
+    # iter1 = iter(yedges)
+    # iter1.next()
+    # for el in yedges:
+    #     try:
+    #         temp = [round(el, 2), round(iter1.next(),3)]
+    #     except:
+    #         break
+    #     bin_y_cont.append(temp)
+
+    fig, ax = plt.subplots()
+
+    im, cbar = heatmap(new_table, xedges , yedges, ax=ax,
+                       cmap="YlGn", cbarlabel="Percentage %")
+    texts = annotate_heatmap(im, valfmt="{x:.1f} t")
+    fig.tight_layout()
+    plt.draw()
+    ts = str(time.time()).replace(".", "")
+    html_path = ts + 'histogram2d.png'
+    histpath = 'visualizer/static/visualizer/img/temp/' + html_path
+    plt.savefig(histpath,  transparent=True, frameon=False, pad_inches=0)
+    return render(request, 'visualizer/histogram_2d_matplotlib.html',
+                  {'hist_path': html_path})
+
+
+def histogram2d_dataframe(x_var, y_var):
+    print ("dataframe")
+    with open('visualizer/static/visualizer/histogrammyfile.json', 'r') as json_fd:
+        jsonfile = json_fd.read()
+    print(jsonfile)
+    jsonfile = json.loads(jsonfile)
+    print jsonfile
+    jsondata = []
+    x_var_index = 0
+    y_var_index = 1
+    for idy, s in enumerate(jsonfile['data']):
+        jsondata.append([float(s[x_var].encode('ascii')), float(s[y_var].encode('ascii'))])
+    x_var_title = 'X Title'
+    y_var_title = 'Y Title'
+    result_data = jsondata
+    print result_data
+    return x_var_index, y_var_index, result_data, x_var_title, y_var_title
+
+
+
+def histogram2d_execute_query(query, x_var, y_var):
+    query_data = execute_query_method(query)
+    result_data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+    # TODO: find out why result_data SOMETIMES contains a [None,None] element in the last position
+    try:
+        result_data.remove([None, None])
+    except ValueError:
+        pass
+        print('Error element does not exist in list')
+
+    x_var_index = -1
+    y_var_index = -1
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'] == y_var:
+            y_var_index = idx
+            y_var_title = c['title']
+        elif c['name'] == x_var:
+            x_var_index = idx
+            x_var_title = c['title']
+    return x_var_index, y_var_index, result_data, x_var_title, y_var_title
+
+
+def histogram2d_load_modify_query(query_pk, x_var, y_var):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+
+    for f in doc['from']:
+        for s in f['select']:
+            if s['name'] == y_var:
+                # s['groupBy'] = False
+                # s['aggregate'] = ''
+                s['exclude'] = False
+            elif s['name'] == x_var:
+                # s['groupBy'] = False
+                s['exclude'] = False
+                # s['aggregate'] = ''
+            else:
+                s['exclude'] = True
+    print doc
+    doc['limit'] = []
+    # doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
+    query.document = doc
+    return query
+
+
+
+
+def get_histogram_2d_am(request):
+    query_pk = int(str(request.GET.get('query', '0')))
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+    bins = int(str(request.GET.get('bins', '3')))
     # agg_function = str(request.GET.get('agg_func', 'avg'))
     if query_pk != 0:
         query = AbstractQuery.objects.get(pk=query_pk)
