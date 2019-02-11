@@ -117,10 +117,14 @@ class Command(BaseCommand):
                     response = requests.post(settings.VARIABLE_LOOKUP_URL,
                                              data=json.dumps([{"name": var["name"], "canonicalName": var["canonicalName"]}]),
                                              headers=headers)
-                    var_info = response.json()[0]
-                    variable = Variable(name=var_info["canonicalName"], title=var_info["title"], original_column_name=var_info["name"],
+                    if len(response.json()) > 0:
+                        var_info = response.json()[0]
+                        variable = Variable(name=var_info["canonicalName"], title=var_info["title"], original_column_name=var_info["name"],
                                         unit=var_info["unit"], description=var_info["description"], sameAs=var_info["sameAs"],
                                         dataType=var_info["dataType"], dataset=dataset)
+                    else:
+                        variable = Variable(name=var["canonicalName"], title=var["name"], original_column_name=var["name"],
+                                            unit=var["unit"], dataset=dataset)
                     variable.save()
                     for dim in dataset_dimensions:
                         self.stdout.write('adding ' + str(dim["canonicalName"]))
@@ -130,10 +134,14 @@ class Command(BaseCommand):
                         headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
                         response = requests.post(settings.VARIABLE_LOOKUP_URL,
                                                  data=json.dumps([{"name": dim["name"], "canonicalName": dim["canonicalName"]}]), headers=headers)
-                        dim_info = response.json()[0]
-                        dimension = Dimension(name=dim_info["canonicalName"], title=dim_info["title"], original_column_name=dim_info["name"],
-                                              unit=dim_info["unit"], description=dim_info["description"], sameAs=dim_info["sameAs"],
-                                              dataType=dim_info["dataType"], variable=variable)
+                        if len(response.json()) > 0:
+                            dim_info = response.json()[0]
+                            dimension = Dimension(name=dim_info["canonicalName"], title=dim_info["title"], original_column_name=dim_info["name"],
+                                                  unit=dim_info["unit"], description=dim_info["description"], sameAs=dim_info["sameAs"],
+                                                  dataType=dim_info["dataType"], variable=variable)
+                        else:
+                            dimension = Dimension(name=dim["canonicalName"], title=dim["name"], original_column_name=dim["name"],
+                                                  unit=dim["unit"], variable=variable)
                         dimension.save()
             else:
                 if options['update_old']:
@@ -152,44 +160,72 @@ class Command(BaseCommand):
                         headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
                         response = requests.post(settings.VARIABLE_LOOKUP_URL,
                                                  data=json.dumps([{"name": var["name"], "canonicalName": var["canonicalName"]}]), headers=headers)
-                        var_info = response.json()[0]
-                        self.stdout.write('modifying '+str(var_info["canonicalName"]))
-                        try:
-                       	    variable = Variable.objects.get(dataset=dataset, name=var_info["canonicalName"])
-                        except Exception, e:
-                            variable = Variable(name=var_info["canonicalName"], title=var_info["title"], original_column_name=var_info["name"],
-                                        unit=var_info["unit"], description=var_info["description"], sameAs=var_info["sameAs"],
-                                        dataType=var_info["dataType"], dataset=dataset)
-                            pass
-                        variable.name = var_info["canonicalName"]
-                        variable.title = var_info["title"]
-                        variable.original_column_name = var_info["name"]
-                        variable.unit = var_info["unit"]
-                        variable.description = var_info["description"]
-                        variable.sameAs = var_info["sameAs"]
-                        variable.dataType = var_info["dataType"]
-                        variable.save()
+                        if len(response.json()) > 0:
+                            var_info = response.json()[0]
+                            self.stdout.write('modifying '+str(var_info["canonicalName"]))
+                            try:
+                                variable = Variable.objects.get(dataset=dataset, name=var_info["canonicalName"])
+                            except Exception, e:
+                                variable = Variable(name=var_info["canonicalName"], title=var_info["title"], original_column_name=var_info["name"],
+                                            unit=var_info["unit"], description=var_info["description"], sameAs=var_info["sameAs"],
+                                            dataType=var_info["dataType"], dataset=dataset)
+                                pass
+                            variable.name = var_info["canonicalName"]
+                            variable.title = var_info["title"]
+                            variable.original_column_name = var_info["name"]
+                            variable.unit = var_info["unit"]
+                            variable.description = var_info["description"]
+                            variable.sameAs = var_info["sameAs"]
+                            variable.dataType = var_info["dataType"]
+                            variable.save()
+                        else:
+                            self.stdout.write('modifying ' + str(var["canonicalName"]))
+                            try:
+                                variable = Variable.objects.get(dataset=dataset, name=var["canonicalName"])
+                            except Exception, e:
+                                variable = Variable(name=var["canonicalName"], title=var["name"], original_column_name=var["name"],
+                                                    unit=var["unit"], dataset=dataset)
+                                pass
+                            variable.name = var["canonicalName"]
+                            variable.title = var["name"]
+                            variable.original_column_name = var["name"]
+                            variable.unit = var["unit"]
+                            variable.save()
                         for dim in dataset_dimensions:
                             # GET one dimension info
                             headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
                             response = requests.post(settings.VARIABLE_LOOKUP_URL,
                                                      data=json.dumps([{"name": dim["name"], "canonicalName": dim["canonicalName"]}]), headers=headers)
-                            dim_info = response.json()[0]
-                            try:
-                                dimension = Dimension.objects.get(variable=variable, name=dim_info["canonicalName"])
-                            except Exception, e:
-                                dimension = Dimension(name=dim_info["canonicalName"], title=dim_info["title"], original_column_name=dim_info["name"],
-                                              unit=dim_info["unit"], description=dim_info["description"], sameAs=dim_info["sameAs"],
-                                              dataType=dim_info["dataType"], variable=variable)
-                                pass
-                            dimension.name = dim_info["canonicalName"]
-                            dimension.title = dim_info["title"]
-                            dimension.original_column_name = dim_info["name"]
-                            dimension.unit = dim_info["unit"]
-                            dimension.description = dim_info["description"]
-                            dimension.sameAs = dim_info["sameAs"]
-                            dimension.dataType = dim_info["dataType"]
-                            dimension.save()
+                            if len(response.json()) > 0:
+                                dim_info = response.json()[0]
+                                try:
+                                    dimension = Dimension.objects.get(variable=variable, name=dim_info["canonicalName"])
+                                except Exception, e:
+                                    dimension = Dimension(name=dim_info["canonicalName"], title=dim_info["title"], original_column_name=dim_info["name"],
+                                                  unit=dim_info["unit"], description=dim_info["description"], sameAs=dim_info["sameAs"],
+                                                  dataType=dim_info["dataType"], variable=variable)
+                                    pass
+                                dimension.name = dim_info["canonicalName"]
+                                dimension.title = dim_info["title"]
+                                dimension.original_column_name = dim_info["name"]
+                                dimension.unit = dim_info["unit"]
+                                dimension.description = dim_info["description"]
+                                dimension.sameAs = dim_info["sameAs"]
+                                dimension.dataType = dim_info["dataType"]
+                                dimension.save()
+                            else:
+                                try:
+                                    dimension = Dimension.objects.get(variable=variable, name=dim["canonicalName"])
+                                except Exception, e:
+                                    dimension = Dimension(name=dim["canonicalName"], title=dim["name"],
+                                                          original_column_name=dim["name"],
+                                                          unit=dim["unit"], variable=variable)
+                                    pass
+                                dimension.name = dim["canonicalName"]
+                                dimension.title = dim["name"]
+                                dimension.original_column_name = dim["name"]
+                                dimension.unit = dim["unit"]
+                                dimension.save()
 
             headers = {'Authorization': FILEHANDLER_JWT, 'Content-type': 'application/json'}
             response = requests.get(settings.PARSER_URL + '/fileHandler/table/' + dataset.table_name + '/lastUpdate', headers=headers)
