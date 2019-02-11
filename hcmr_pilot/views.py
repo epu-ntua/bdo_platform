@@ -7,6 +7,10 @@ from .forms import HCMRForm
 import calculate_red_points as red_points_calc
 
 
+def init(request):
+    form = HCMRForm()
+    return render(request, 'hcmr_pilot/load_service.html', {'form': form})
+
 def index(request):
     if request.method == 'GET':
         form = HCMRForm(request.GET)
