@@ -2128,7 +2128,7 @@ def heatmap(data, row_labels, col_labels, ax=None,
 
     # Create colorbar
     cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
-    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom", labelpad=10)
     # We want to show all ticks...
     ax.set_xticks(np.arange(data.shape[1]))
     ax.set_yticks(np.arange(data.shape[0]))
@@ -2141,7 +2141,7 @@ def heatmap(data, row_labels, col_labels, ax=None,
                    labeltop=True, labelbottom=False)
 
     # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right",
+    plt.setp(ax.get_xticklabels(), rotation=-50, ha="right",
              rotation_mode="anchor")
 
     # Turn spines off and create white grid.
@@ -2276,9 +2276,11 @@ def get_histogram_2d_matplotlib(request):
 
     fig, ax = plt.subplots()
 
-    im, cbar = heatmap(new_table, xedges , yedges, ax=ax,
+    im, cbar = heatmap(new_table, xedges, yedges, ax=ax,
                        cmap="YlGn", cbarlabel="Percentage %")
-    texts = annotate_heatmap(im, valfmt="{x:.1f} t")
+    
+    plt.xlabel(x_var_title, labelpad=10)
+    plt.ylabel(y_var_title,  labelpad=10)
     fig.tight_layout()
     plt.draw()
     ts = str(time.time()).replace(".", "")
