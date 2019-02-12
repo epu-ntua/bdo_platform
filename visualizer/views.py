@@ -17,17 +17,17 @@ import os, re, time
 from nvd3 import pieChart, lineChart
 import psycopg2
 
-from matplotlib import use
-
 from django.template.loader import render_to_string
 
 from service_builder.models import ServiceInstance
 from service_builder.views import updateServiceInstanceVisualizations
+import numpy as np
 
-use('Agg')
+import matplotlib
+from matplotlib import use
+# import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.cm import get_cmap
-from matplotlib.colors import Normalize
+use('Agg')
 import matplotlib.pyplot as plt
 import pylab as pl
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -743,6 +743,7 @@ def create_plotline_points(data, lat_index, lon_index):
 
 def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_points_limit, m, cached_file, request):
     dict = {}
+    max_intensity = 1.0
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_heatmap(query_pk, heat_col, heat_points_limit)
@@ -757,7 +758,7 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_
                 row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
                 heatmap_data.append(row)
 
-        heatmap_result_data, min_lat, min_lon, max_lat, max_lon = create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index)
+        heatmap_result_data, min_lat, min_lon, max_lat, max_lon, max_intensity = create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index)
         dict['min_lat'] = min_lat
         dict['max_lat'] = max_lat
         dict['min_lon'] = min_lon
@@ -776,7 +777,8 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_
         max_lon = cached_data['max_lon']
         heatmap_result_data = cached_data['heatmap_result_data']
 
-    HeatMap(heatmap_result_data, name="Heat Map - Layer: "+str(time.time()).replace(".","_")).add_to(m)
+    HeatMap(heatmap_result_data,max_val=1.0, radius = 15,name="Heat Map - Layer: "+str(time.time()).replace(".","_")).add_to(m)
+    # if needed use gradient above gradient={0: 'blue',0.2: 'lightblue',0.3:'cadetblue', 0.4: 'lightgreen',0.5:'green',0.6:'lime', 0.7:'yellow',0.9:'orange',1: 'red'}
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     ret_html = ""
     return m, ret_html
@@ -1124,6 +1126,8 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
             data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '')
         elif df != '':
             data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(df, lat_col, lon_col, notebook_id, request, variable)
+            var_title = 'title'
+            var_unit = 'unit'
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
 
@@ -1224,7 +1228,7 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
 
         folium.Marker(
             location=[d[lat_index], d[lon_index]],
-            popup=str(var_title) + ": " + str(d[var_index]) +" "+ str(var_unit)+"<br>Time: " + str(d[time_index]) + "<br>Latitude: " + str(
+            popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Time: " + str(d[time_index]) + "<br>Latitude: " + str(
                 d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),
             icon=folium.Icon(color=marker_color),
             # radius=2,
@@ -1260,7 +1264,7 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
             min_lon = d[lon_index]
         folium.Marker(
             location=[d[lat_index], d[lon_index]],
-            popup=str(var_title) + ": " + str(d[var_index]) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
+            popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
@@ -1763,6 +1767,7 @@ def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
     min_lon = 180
     max_lon = -180
     heatmap_result_data = []
+    maximum = 1.0
     if (heat_col == 'heatmap_frequency'):
         for d in data:
             heatmap_result_data.append(
@@ -1776,27 +1781,41 @@ def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
             if d[lon_index] < min_lon:
                 min_lon = d[lon_index]
     else:
-        maximum = -1000000
-        for d in data:
-            if d[heat_var_index] > maximum:
-                maximum = float(d[heat_var_index])
+        maximum = -999999999
+        minimum = 999999999
+
         for d in data:
             if d[heat_var_index] is not None:
-                heatmap_result_data.append((np.array([float(d[lat_index]), float(d[lon_index]), float(d[heat_var_index]) / maximum])).tolist())
-                if d[lat_index] > max_lat:
-                    max_lat = d[lat_index]
-                if d[lat_index] < min_lat:
-                    min_lat = d[lat_index]
-                if d[lon_index] > max_lon:
-                    max_lon = d[lon_index]
-                if d[lon_index] < min_lon:
-                    min_lon = d[lon_index]
+                if d[heat_var_index] > maximum:
+                    maximum = float(d[heat_var_index])
+                if d[heat_var_index] < minimum:
+                    minimum = float(d[heat_var_index])
+        if (len(data) != 1) and (maximum != minimum):
+            for d in data:
+                if d[heat_var_index] is not None:
+                    heatmap_result_data.append((np.array([float(d[lat_index]), float(d[lon_index]), float((d[heat_var_index]) - minimum )/( maximum - minimum)])).tolist())
+                    # heatmap_result_data.append((np.array([float(d[lat_index]), float(d[lon_index]),
+                    #                                       float(d[heat_var_index])])).tolist())
+
+                    if d[lat_index] > max_lat:
+                        max_lat = d[lat_index]
+                    if d[lat_index] < min_lat:
+                        min_lat = d[lat_index]
+                    if d[lon_index] > max_lon:
+                        max_lon = d[lon_index]
+                    if d[lon_index] < min_lon:
+                        min_lon = d[lon_index]
+        else:
+            for d in data:
+                heatmap_result_data.append((np.array([float(data[0][lat_index]), float(data[0][lon_index]),
+                                                  float(1)])).tolist())
+
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
     min_lon = float(min_lon)
 
-    return heatmap_result_data, min_lat, min_lon, max_lat, max_lon
+    return heatmap_result_data, min_lat, min_lon, max_lat, max_lon, maximum
 
 
 
@@ -1959,6 +1978,7 @@ def get_histogram_chart_am(request):
         for f in doc['from']:
             for s in f['select']:
                 if s['name'] == x_var:
+                    var_title = s['title']
                     if s['type'] == 'VALUE':
                         v_obj = Variable.objects.get(pk=int(f['type']))
                         if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
@@ -1998,22 +2018,30 @@ def get_histogram_chart_am(request):
             where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
         except:
             where_clause = ''
+        bins -= 1
+        if where_clause == '':
+            raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
+                        histogram as (select width_bucket({0}, min, max, {2}) ,
+                         (min({0}), max({0})) as range,
+                         count(*) as freq from {1}, drb_stats {3} where {0} IS NOT NULL
+    
+                         group by 1
+                         order by 1)
+                        select range, freq
+                        from histogram""".format(table_col, from_table, bins, where_clause)
+        else:
+            raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
+                                histogram as (select width_bucket({0}, min, max, {2}) ,
+                                 (min({0}), max({0})) as range,
+                                 count(*) as freq from {1}, drb_stats {3} AND {0} IS NOT NULL
 
-        raw_query = """with min_max as (select min({0}) as min,max({0}) as max from {1} {3}),
-                    x as (select width_bucket({0}, min, max+1e-10, {2}) as bucket, 
-                    count(*) as cnt
-                    from {1},min_max {3}
-                    group by 1
-                    order by 1)
-                    select 
-                      (min + ((bucket-1) * (max - min)/{2}), 
-                      (min + (bucket) * (max - min)/{2})), cnt  
-                    from x, min_max""".format(table_col, from_table, bins, where_clause)
-
-        print(raw_query)
+                                 group by 1
+                                 order by 1)
+                                select range, freq
+                                from histogram""".format(table_col, from_table, bins, where_clause)
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
-
-        result = execute_query_method(query)[0]
+        print raw_query
+        # result = execute_query_method(query)[0]
 
         cursor.execute(raw_query)
         data = cursor.fetchall()
@@ -2072,16 +2100,275 @@ def get_histogram_chart_am(request):
         y_var = 'counts'
         x_var = 'startValues'
 
-    return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var})
+    return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var, 'category_title': var_title})
+
+
+def heatmap(data, row_labels, col_labels, ax=None,
+            cbar_kw={}, cbarlabel="", **kwargs):
+    """
+    Create a heatmap from a numpy array and two lists of labels.
+
+    Arguments:
+        data       : A 2D numpy array of shape (N,M)
+        row_labels : A list or array of length N with the labels
+                     for the rows
+        col_labels : A list or array of length M with the labels
+                     for the columns
+    Optional arguments:
+        ax         : A matplotlib.axes.Axes instance to which the heatmap
+                     is plotted. If not provided, use current axes or
+                     create a new one.
+        cbar_kw    : A dictionary with arguments to
+                     :meth:`matplotlib.Figure.colorbar`.
+        cbarlabel  : The label for the colorbar
+    All other arguments are directly passed on to the imshow call.
+    """
+
+    if not ax:
+        ax = plt.gca()
+
+    # Plot the heatmap
+    im = ax.imshow(data, **kwargs)
+
+    # Create colorbar
+    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom", labelpad=10)
+    # We want to show all ticks...
+    ax.set_xticks(np.arange(data.shape[1]))
+    ax.set_yticks(np.arange(data.shape[0]))
+    # ... and label them with the respective list entries.
+    ax.set_xticklabels(col_labels)
+    ax.set_yticklabels(row_labels)
+
+    # Let the horizontal axes labeling appear on top.
+    ax.tick_params(top=True, bottom=False,
+                   labeltop=True, labelbottom=False)
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=-50, ha="right",
+             rotation_mode="anchor")
+
+    # Turn spines off and create white grid.
+    for edge, spine in ax.spines.items():
+        spine.set_visible(False)
+
+    ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
+    ax.set_yticks(np.arange(data.shape[0]+1)-.5, minor=True)
+    ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
+    ax.tick_params(which="minor", bottom=False, left=False)
+
+    return im, cbar
+
+
+def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
+                     textcolors=["black", "white"],
+                     threshold=None, **textkw):
+    """
+    A function to annotate a heatmap.
+
+    Arguments:
+        im         : The AxesImage to be labeled.
+    Optional arguments:
+        data       : Data used to annotate. If None, the image's data is used.
+        valfmt     : The format of the annotations inside the heatmap.
+                     This should either use the string format method, e.g.
+                     "$ {x:.2f}", or be a :class:`matplotlib.ticker.Formatter`.
+        textcolors : A list or array of two color specifications. The first is
+                     used for values below a threshold, the second for those
+                     above.
+        threshold  : Value in data units according to which the colors from
+                     textcolors are applied. If None (the default) uses the
+                     middle of the colormap as separation.
+
+    Further arguments are passed on to the created text labels.
+    """
+
+    if not isinstance(data, (list, np.ndarray)):
+        data = im.get_array()
+
+    # Normalize the threshold to the images color range.
+    if threshold is not None:
+        threshold = im.norm(threshold)
+    else:
+        threshold = im.norm(data.max())/2.
+
+    # Set default alignment to center, but allow it to be
+    # overwritten by textkw.
+    kw = dict(horizontalalignment="center",
+              verticalalignment="center")
+    kw.update(textkw)
+
+    # Get the formatter in case a string is supplied
+    if isinstance(valfmt, str):
+        valfmt = matplotlib.ticker.StrMethodFormatter(valfmt)
+
+    # Loop over the data and create a `Text` for each "pixel".
+    # Change the text's color depending on the data.
+    texts = []
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            kw.update(color=textcolors[im.norm(data[i, j]) > threshold])
+            # text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
+            # texts.append(text)
+            texts.append('')
+
+    return texts
+
+
+
+def get_histogram_2d_matplotlib(request):
+    query_pk = int(str(request.GET.get('query', '0')))
+    x_var = str(request.GET.get('x_var', ''))
+    y_var = str(request.GET.get('y_var', ''))
+    bins = int(str(request.GET.get('bins', '3')))
+    if query_pk != 0:
+        print('Loading/Modifying Query')
+        query = histogram2d_load_modify_query(query_pk, x_var, y_var)
+        print('Executing Query')
+        x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_execute_query(query, x_var, y_var)
+    else:
+        x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_dataframe(x_var, y_var)
+
+    print('Creating lists od data gor histogram-2d')
+    list_x = []
+    list_y = []
+    for el in result_data:
+        if el[x_var_index] is not None:
+            list_x.append(el[x_var_index])
+        else:
+            list_x.append(0)
+        if el[y_var_index] is not None:
+            list_y.append(el[y_var_index])
+        else:
+            list_y.append(0)
+    total = result_data.__len__()
+
+    print('Creating Histogram-2d')
+    freq, xedges, yedges = np.histogram2d(list_x, list_y, bins)
+    new_table = []
+    for el in freq:
+        hor_table = []
+        for i in el:
+            new_el = i/total
+            hor_table.append(new_el)
+        new_table.append(hor_table)
+    new_table = np.array(new_table)
+
+    xedges = [round(x,2) for x in xedges]
+    yedges = [round(y,2) for y in yedges]
+
+    # print('Creating X-Axis and Y-Axis different bins')
+    # bin_x_cont = []
+    # iter1 = iter(xedges)
+    # iter1.next()
+    # for el in xedges:
+    #     try:
+    #         temp = [round(el, 2), round(iter1.next(), 3)]
+    #     except:
+    #         break
+    #     bin_x_cont.append(temp)
+    #
+    # bin_y_cont = []
+    # iter1 = iter(yedges)
+    # iter1.next()
+    # for el in yedges:
+    #     try:
+    #         temp = [round(el, 2), round(iter1.next(),3)]
+    #     except:
+    #         break
+    #     bin_y_cont.append(temp)
+
+    fig, ax = plt.subplots()
+
+    im, cbar = heatmap(new_table, xedges, yedges, ax=ax,
+                       cmap="YlGn", cbarlabel="Percentage %")
+
+    plt.xlabel(x_var_title, labelpad=10)
+    plt.ylabel(y_var_title,  labelpad=10)
+    fig.tight_layout()
+    plt.draw()
+    ts = str(time.time()).replace(".", "")
+    html_path = ts + 'histogram2d.png'
+    histpath = 'visualizer/static/visualizer/img/temp/' + html_path
+    plt.savefig(histpath,  transparent=True, frameon=False, pad_inches=0)
+    return render(request, 'visualizer/histogram_2d_matplotlib.html',
+                  {'hist_path': html_path})
+
+
+def histogram2d_dataframe(x_var, y_var):
+    print ("dataframe")
+    with open('visualizer/static/visualizer/histogrammyfile.json', 'r') as json_fd:
+        jsonfile = json_fd.read()
+    print(jsonfile)
+    jsonfile = json.loads(jsonfile)
+    print jsonfile
+    jsondata = []
+    x_var_index = 0
+    y_var_index = 1
+    for idy, s in enumerate(jsonfile['data']):
+        jsondata.append([float(s[x_var].encode('ascii')), float(s[y_var].encode('ascii'))])
+    x_var_title = 'X Title'
+    y_var_title = 'Y Title'
+    result_data = jsondata
+    print result_data
+    return x_var_index, y_var_index, result_data, x_var_title, y_var_title
+
+
+
+def histogram2d_execute_query(query, x_var, y_var):
+    query_data = execute_query_method(query)
+    result_data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+    # TODO: find out why result_data SOMETIMES contains a [None,None] element in the last position
+    try:
+        result_data.remove([None, None])
+    except ValueError:
+        pass
+        print('Error element does not exist in list')
+
+    x_var_index = -1
+    y_var_index = -1
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'] == y_var:
+            y_var_index = idx
+            y_var_title = c['title']
+        elif c['name'] == x_var:
+            x_var_index = idx
+            x_var_title = c['title']
+    return x_var_index, y_var_index, result_data, x_var_title, y_var_title
+
+
+def histogram2d_load_modify_query(query_pk, x_var, y_var):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+
+    for f in doc['from']:
+        for s in f['select']:
+            if s['name'] == y_var:
+                # s['groupBy'] = False
+                # s['aggregate'] = ''
+                s['exclude'] = False
+            elif s['name'] == x_var:
+                # s['groupBy'] = False
+                s['exclude'] = False
+                # s['aggregate'] = ''
+            else:
+                s['exclude'] = True
+    print doc
+    doc['limit'] = []
+    # doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
+    query.document = doc
+    return query
+
+
 
 
 def get_histogram_2d_am(request):
     query_pk = int(str(request.GET.get('query', '0')))
-
     x_var = str(request.GET.get('x_var', ''))
     y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '3')))
-
     # agg_function = str(request.GET.get('agg_func', 'avg'))
     if query_pk != 0:
         query = AbstractQuery.objects.get(pk=query_pk)
@@ -2372,6 +2659,7 @@ def get_chart_query_data(query, x_var, y_var_list):
             y_title_list.insert(len(y_title_list), c['title'].encode('ascii'))
         elif c['name'] == x_var:
             x_var_index = idx
+            x_var_title = c['title'].encode('ascii')
 
     json_data = []
     for d in data:
@@ -2384,7 +2672,7 @@ def get_chart_query_data(query, x_var, y_var_list):
 
         dict.update({x_var: str(d[x_var_index])})
         json_data.append(dict)
-    return json_data, y_m_unit, y_title_list
+    return json_data, y_m_unit, y_title_list,x_var_title
 
 
 def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, ordering = True):
@@ -2417,8 +2705,9 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, orderi
         # TODO: use proper names
         y_title_list.insert(0, str(x))
         y_m_unit.insert(0, str('unknown unit'))
+    x_var_title = x_var
     print json_data[:2]
-    return json_data, y_m_unit, y_title_list
+    return json_data, y_m_unit, y_title_list, x_var_title
 
 
 
@@ -2432,9 +2721,9 @@ def get_line_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
-            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
+            json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
-            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+            json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
@@ -2446,7 +2735,7 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 
@@ -2461,10 +2750,10 @@ def get_time_series_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function)
-            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, order_var, y_var_list)
+            json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
             min_chart_period = chart_min_period_finder(min_period)
         elif df != '':
-            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
+            json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
             order_var = 'time'.encode('ascii')
             min_chart_period = 'ss'
         else:
@@ -2473,7 +2762,7 @@ def get_time_series_am(request):
         return render(request, 'error_page.html', {'message': e.message})
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'category_title':'time', 'min_period':min_chart_period})
 
 
 
@@ -2488,9 +2777,9 @@ def get_column_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
-            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, x_var, y_var_list)
+            json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
-            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+            json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
@@ -2502,7 +2791,7 @@ def get_column_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_pie_chart_am(request):
@@ -2510,20 +2799,20 @@ def get_pie_chart_am(request):
         query_pk, df, notebook_id = get_data_parameters(request, '')
         key_var = str(request.GET.get('key_var', ''))
         value_var = str(request.GET.get('value_var', ''))
-        agg_function = str(request.GET.get('agg_func', 'avg'))
+        agg_function = str(request.GET.get('agg_func', 'sum'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function)
-            json_data, y_m_unit, y_var_title_list = get_chart_query_data(query, key_var, [value_var])
+            json_data, y_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
         elif df !='':
-            json_data, y_m_unit, y_var_title_list = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
+            json_data, y_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
 
-    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var})
+    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': y_var_title_list[0],'category_title':key_var_title, 'agg_function': agg_function.capitalize(), 'unit':y_m_unit[0]})
 
 
 
@@ -2957,9 +3246,11 @@ def get_aggregate_query_data(query, variable):
         if c['name'] == variable:
             variable_index = idx
 
+
     value = round(data[0][variable_index], 3)
     unit = result_headers['columns'][variable_index]['unit']
-    return value, unit
+    var_title = result_headers['columns'][variable_index]['title']
+    return value, unit, var_title
 
 
 def get_aggregate_value(request):
@@ -2967,18 +3258,18 @@ def get_aggregate_value(request):
         query_pk, df, notebook_id = get_data_parameters(request, '')
 
         variable = str(request.GET.get('variable', ''))
-        agg_function = str(request.GET.get('agg_function', 'avg'))
+        agg_function = str(request.GET.get('agg_function', 'AVG'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_aggregate(query_pk, variable, agg_function)
-            value, unit = get_aggregate_query_data(query, variable)
+            value, unit, var_title = get_aggregate_query_data(query, variable)
         else:
-            value, unit, var_list = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
+            value, unit, var_list, var_title = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
 
-    return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit})
+    return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit, 'agg_func':agg_function, 'var_title': var_title})
 
 def myconverter(o):
     if isinstance(o, datetime):

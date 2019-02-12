@@ -59,7 +59,7 @@ $(document).ready(function() {
         // map.setView([0, 0], 0);
         //removes existing area-select
         $(".leaflet-interactive").remove();
-        create_new_area_select([[-83,-180],[83,180]]);
+        create_new_area_select([[-90,-180],[90,180]]);
         $('#lat_min').val("");
         $('#lat_max').val("");
         $('#lon_min').val("");
@@ -167,10 +167,11 @@ $(document).ready(function() {
         $('#mapchoices').val(-1);
         $('#mapchoices').trigger('change');
         $('#mapchoices').val(null).trigger('change');
-
-        bounds = [parseFloat($('#lat_min').val()),parseFloat($('#lon_min').val()),parseFloat($('#lat_max').val()),parseFloat($('#lon_max').val())];
-        $(".leaflet-interactive").remove();
-        create_new_area_select([[parseFloat($('#lat_min').val()),parseFloat($('#lon_min').val())],[parseFloat($('#lat_max').val()),parseFloat($('#lon_max').val())]]);
+        if ((!isNaN($('#lat_min').val())&&($('#lat_min').val()!=="")) && (!isNaN($('#lat_max').val())&&($('#lat_max').val()!=="")) && (!isNaN($('#lon_min').val())&&($('#lon_min').val()!=="")) && (!isNaN($('#lon_max').val())&&($('#lon_max').val()!==""))) {
+            bounds = [parseFloat($('#lat_min').val()), parseFloat($('#lon_min').val()), parseFloat($('#lat_max').val()), parseFloat($('#lon_max').val())];
+            $(".leaflet-interactive").remove();
+            create_new_area_select([[parseFloat($('#lat_min').val()), parseFloat($('#lon_min').val())], [parseFloat($('#lat_max').val()), parseFloat($('#lon_max').val())]]);
+        }
     });
 
     /*          Modal Open Button For Area Selection    */

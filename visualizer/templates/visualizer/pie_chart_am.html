@@ -49,45 +49,57 @@
 <script type="text/javascript">//<![CDATA[
 
 var chart = AmCharts.makeChart("chartdiv", {
-  "type": "pie",
-  "startDuration": 0,
-   "theme": "light",
-  "addClassNames": false,
+    "type": "pie",
+    "startDuration": 0,
+    "theme": "light",
+    "addClassNames": false,
+    "allLabels": [{
+        "text": "{{ agg_function }} of {{ var_title }} records grouped by {{ category_title }}",
+        "bold": true,
+        "x": "50%",
+        "y": "95%",
+        "rotation": 0,
+        "width": "100%",
+        "align": "middle",
+        "size": 15
+    }],
 {#  "legend":{#}
 {#   	"position":"right",#}
 {#    "marginRight":100,#}
 {#    "autoMargins":false#}
 {#  },#}
-  "innerRadius": "30%",
-  "defs": {
-    "filter": [{
-      "id": "shadow",
-      "width": "200%",
-      "height": "200%",
-      "feOffset": {
-        "result": "offOut",
-        "in": "SourceAlpha",
-        "dx": 0,
-        "dy": 0
-      },
-      "feGaussianBlur": {
-        "result": "blurOut",
-        "in": "offOut",
-        "stdDeviation": 5
-      },
-      "feBlend": {
-        "in": "SourceGraphic",
-        "in2": "blurOut",
-        "mode": "normal"
-      }
-    }]
-  },
-  "dataProvider": {{ data|safe }},
-  "valueField": "{{ value_var }}",
-  "titleField": "{{ key_var }}",
-  "export": {
-    "enabled": true
-  }
+    "innerRadius": "30%",
+    "defs": {
+        "filter": [{
+          "id": "shadow",
+          "width": "200%",
+          "height": "200%",
+          "feOffset": {
+            "result": "offOut",
+            "in": "SourceAlpha",
+            "dx": 0,
+            "dy": 0
+          },
+          "feGaussianBlur": {
+            "result": "blurOut",
+            "in": "offOut",
+            "stdDeviation": 5
+          },
+          "feBlend": {
+            "in": "SourceGraphic",
+            "in2": "blurOut",
+            "mode": "normal"
+          }
+        }]
+    },
+    "dataProvider": {{ data|safe }},
+    "valueField": "{{ value_var }}",
+    "titleField": "{{ key_var }}",
+    "balloonText": "{{ var_title }}: " + "[[value]] " + "{{ unit }}\n" + "{{ category_title }}:" + " [[title]] "+"\n([[percents]]%)",
+    "labelText": "[[percents]]%",
+    "export": {
+        "enabled": true
+    }
 });
 
 chart.addListener("init", handleInit);

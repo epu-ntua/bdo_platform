@@ -19,8 +19,9 @@
                 cursor:help;
             }
         </style>
-        <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}"/>
     {% endfor %}
+    <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}"/>
+
 
 {% endblock %}
 
@@ -44,10 +45,11 @@
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
         <span class="pull-left"><input type="checkbox" name="private" value="True" checked/> Private<br></span>
     </div>
+
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
                 data-target="#myModal">
-            <i class="fa fa-plus-circle o-white"></i> New widget
+            <i class="fa fa-plus-circle o-white"></i> New Widget
         </button>
 
         <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" style="display: none">
@@ -63,11 +65,11 @@
             <ul id="widgetParent">
                 <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems" ng-init="$last && finished()">
                     <div class='wrap1'></div>
-                    <header class="iframeHeader">
-                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
+                    <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
                         {% load  static %}
+                        <input id="widgetTitle[[::counter]]" class="form-control text-center" ng-model="item.title">
                         <input type='button' value='X' class='deletebtn'
-{#                               style="background-image: url({% static "images/exitBtn.png" %})"#}
+                               style="background-image: url({% static "img/exitBtn.png" %})"
                                ng-click="removeWidget(item);">
                     </header>
 
@@ -108,7 +110,25 @@
 
 
 {% block modal %}
+    <div id="editNoteModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h3 class="modal-title">Edit Widget Content</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="row" id="change_note"></div>
+                </div>
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-change-btn">Save
+                    </button>
+                    <button style="margin-left: 10px" type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-change-btn">Cancel
+                    </button>
+                </div>
 
+            </div>
+        </div>
+    </div>
 
     <div id="myModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog">
@@ -121,7 +141,6 @@
                     <div class="tab-content">
                         <div class="text-center">
                             <h4 class="modal-title">Add a new widget to the dashboard</h4>
-
                             <ul class="nav nav-pills">
                               <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
                               <li><a id="modal-tab-notes" data-toggle="pill" href="#viz_note">Note</a></li>
@@ -151,8 +170,9 @@
                                 </button>
                             </div>
 
-                            <div class="row" id="viz_config" style="display: none">
-                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
+                            <div class="row" id="viz_config" >
+
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%; display: none">
                                     {% for viz in available_viz %}
                                         <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
                                             <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
@@ -172,10 +192,11 @@
                                         </div>
                                     </div>
 
-                                    <div id="viz_container" class="col-sm-8" style="width: 85%">
-                                        <div class="loadingFrame">
-                                            <img src="{% static 'img/loading_gif.gif' %}"/>
-                                        </div>
+                                    <div hidden id="viz_container" class="col-sm-8" style="width: 85%">
+
+{#                                        <div id="loading_prebuilt" class="loadingFrame">#}
+{#                                            <img src="{% static 'img/loading_gif.gif' %}"/>#}
+{#                                        </div>#}
 
                                     </div>
                                 </div>
@@ -231,7 +252,6 @@
 
 
                         <div class="row tab-pane fade" id="viz_note"></div>
-
                         <input type="hidden" id="selected_query" value="">
                     </div>
 
@@ -262,6 +282,11 @@
         var img_source_path =  "{% static "img/loading_gif.gif" %}";
         var to_create_ = "{{ toCreate }}";
         $('#prebuilt_viz').val(to_create_);
+{#        if (to_create_ !== 'None'){#}
+{#            $('#viz-iframe').html('<div class="loadingFrame">' +#}
+{#                    '                    <img src="' + img_source_path + '"/>' +#}
+{#                    '                </div>');#}
+{#        }#}
     </script>
     <script type="text/javascript" src="{% static 'dashboard_builder/js/angular_dashboard_layout.js' %}"></script>
     <script type="text/javascript" src="{% static 'dashboard_builder/js/multilayer_viz_dashboard_ui.js' %}"></script>

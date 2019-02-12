@@ -3,353 +3,70 @@
 {% load static %}
 
 {% block css %}
-
-{#    <link rel="stylesheet" href={% static '/css/angular-gridster.css' %}/>#}
-    <style>
-        /**
-         * gridster.js - v0.2.1 - 2013-10-28 * http://gridster.net
-         * Copyright (c) 2013 ducksboard; Licensed MIT
-         */
-        .gridster {
-          position: relative;
-          margin: auto;
-          height: 0;
-        }
-        .gridster > ul {
-          margin: 0;
-          list-style: none;
-          padding: 0;
-        }
-        .gridster-item {
-          -webkit-box-sizing: border-box;
-          -moz-box-sizing: border-box;
-          box-sizing: border-box;
-          list-style: none;
-          z-index: 2;
-          position: absolute;
-          display: none;
-        }
-        .gridster-loaded {
-          -webkit-transition: height .3s;
-          -moz-transition: height .3s;
-          -o-transition: height .3s;
-          transition: height .3s;
-        }
-        .gridster-loaded .gridster-item {
-          display: block;
-          position: absolute;
-          -webkit-transition: opacity .3s, left .3s, top .3s, width .3s, height .3s;
-          -moz-transition: opacity .3s, left .3s, top .3s, width .3s, height .3s;
-          -o-transition: opacity .3s, left .3s, top .3s, width .3s, height .3s;
-          transition: opacity .3s, left .3s, top .3s, width .3s, height .3s;
-          -webkit-transition-delay: 50ms;
-          -moz-transition-delay: 50ms;
-          -o-transition-delay: 50ms;
-          transition-delay: 50ms;
-        }
-        .gridster-loaded .gridster-preview-holder {
-          display: none;
-          z-index: 1;
-          position: absolute;
-          background-color: #ddd;
-          border-color: #fff;
-          opacity: 0.2;
-        }
-        .gridster-loaded .gridster-item.gridster-item-moving,
-        .gridster-loaded .gridster-preview-holder {
-          -webkit-transition: none;
-          -moz-transition: none;
-          -o-transition: none;
-          transition: none;
-        }
-        .gridster-mobile {
-          height: auto !important;
-        }
-        .gridster-mobile .gridster-item {
-          height: auto;
-          position: static;
-          float: none;
-        }
-        .gridster-item.ng-leave.ng-leave-active {
-          opacity: 0;
-        }
-        .gridster-item.ng-enter {
-          opacity: 1;
-        }
-        .gridster-item-moving {
-          z-index: 3;
-        }
-        /* RESIZE */
-        .gridster-item-resizable-handler {
-          position: absolute;
-          font-size: 1px;
-          display: block;
-          z-index: 5;
-        }
-        .handle-se {
-          cursor: se-resize;
-          width: 0;
-          height: 0;
-          right: 1px;
-          bottom: 1px;
-          border-style: solid;
-          border-width: 0 0 12px 12px;
-          border-color: transparent;
-        }
-        .handle-ne {
-          cursor: ne-resize;
-          width: 12px;
-          height: 12px;
-          right: 1px;
-          top: 1px;
-        }
-        .handle-nw {
-          cursor: nw-resize;
-          width: 12px;
-          height: 12px;
-          left: 1px;
-          top: 1px;
-        }
-        .handle-sw {
-          cursor: sw-resize;
-          width: 0;
-          height: 0;
-          left: 1px;
-          bottom: 1px;
-          border-style: solid;
-          border-width: 0 12px 12px 0px;
-          border-color: transparent;
-        }
-        .handle-e {
-          cursor: e-resize;
-          width: 12px;
-          bottom: 0;
-          right: 1px;
-          top: 0;
-        }
-        .handle-s {
-          cursor: s-resize;
-          height: 12px;
-          right: 0;
-          bottom: 1px;
-          left: 0;
-        }
-        .handle-n {
-          cursor: n-resize;
-          height: 12px;
-          right: 0;
-          top: 1px;
-          left: 0;
-        }
-        .handle-w {
-          cursor: w-resize;
-          width: 12px;
-          left: 1px;
-          top: 0;
-          bottom: 0;
-        }
-        .gridster .gridster-item:hover .gridster-box {
-          border: 1.5px solid #B3B2B3;
-        }
-        .gridster .gridster-item:hover .handle-se {
-          border-color: transparent transparent #2172ac;
-        }
-
-        .gridster .gridster-item:hover .handle-sw {
-          border-color: transparent transparent #2172ac;
-        }
-
-    </style>
-{#    <link rel="stylesheet" href={% static 'dashboard_builder/css/dashboard_view.css' %}/>#}
-    <style>
-        #loadImg{position:absolute;z-index:999;}
-        #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
-
-        #dynamic_dashboard iframe{
-            background-color: white;
-            height: 96%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
-        .loadingFrame{position:absolute;z-index:999;display:block;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
-
-
-     {#Dashboard Additions#}
-        .gridster .gridster-item {
-            -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-            -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-            color: #004756;
-            background: white;
-            padding: 0px;
-        }
-        ul {
-            list-style: none;
-        }
-
-        .wrap1{
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 100000;
-            opacity: 0;
-            display: none;
-        }
-
-        .deletebtn{
-            position: absolute;
-            right: 0;
-            top: 0;
-            background: #2172ac url('/static/img/exitBtn.png') center ;
-            height: 37px;
-            border: none;
-            color: white;
-            width: 30px;
-        }
-
-        .deletebtn:hover{
-            background-color: red;
-            cursor: pointer;
-        }
-
-        .iframe1{
-            height: 90%;
-            width: 100%;
-        }
-
-        .iframeHeader{
-            height: 37px;
-            width: 100%;
-            background-color: #30526a;
-            text-align: center;
-        }
-
-        .iframe-class{
-            height: calc(100% - 37px)!important;
-            padding: 0px;
-            margin: 0% 0% 0% 0% !important;
-        }
-
-
-        .iframeHeader .form-group{
-            margin: 0px 0px 0px 0px !important;
-        }
-
-        .iframeHeader .form-group .form-control{
-            color: #FFFFFF;
-        }
-
-        #scroll_down_area{
-            display: none;
-            width: 100%;
-            height: 30%;
-            position: absolute;
-            bottom: 0;
-            z-index: 100000;
-            opacity: 100;
-            {#background-color: #0b2e13;#}
-            display: none;
-
-        }
-
-        .widget-title{
-            padding-top: 4px;
-            padding-left: 2px;
-            font-size: 150%;
-            color: white;
-
-        }
-
-        .modal-tab{
-            width:50%;
-            height: 30px;
-            background-color: #2172ac;
-            color: white;
-            float: left;
-            box-shadow: 0px -1px 5px grey;
-            border-bottom: 1px solid black;
-        }
-
-        .modal-tab:hover{
-            cursor: pointer;
-        }
-
-        #modal-tab-data{
-            border-right: 1px solid black;
-        }
-
-        #modal-tab-notes{
-            background-color: #617b8e;
-        }
-
-        .note_wrapper{
-            padding: 10px;
-            width: 100%;
-            height: calc(100% - 37px);
-            overflow: auto;
-        }
-
-        .ng-wrapper{
-            width: 100%;
-            height: calc(100%);
-            display: block;
-        }
-
-         .iframeHeaderNote{
-            background-color: #FFFFFF;
-        }
-
-        .titleNote{
-            display: none;
-        }
-
-        #edit_btn{
-            float: right;
-            position: relative;
-            right: 0px;
-            bottom: 23px ;
-        }
-    </style>
+    <link rel="stylesheet" href={% static '/css/services/view_dashboard.css' %}>
 {% endblock %}
 
 {% block content %}
 
-    <h1 class="text-center">{{ dashboard.title }}
-{#    <button type="button" id="edit_btn" class="btn btn-lg btn-primary" >#}
-{#            Edit#}
-{#        </button>#}
-    </h1>
-     <div ng-app="myApp" ng-controller="MainCtrl">
-        <div id="dynamic_dashboard" gridster="gridsterOpts">
-            <ul id="widgetParent">
-                <li id="widget[[::counter]]" gridster-item="item" ng-repeat="item in standardItems">
-                    <div class='wrap1'></div>
-                    <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
-                        <p class="widget-title" ng-class="{'titleNote': item.url == ''}" ng-bind="item.title"> </p>
-                    </header>
-                    <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" >
-                        <div class="ng-wrapper" ng-switch-when="false">
-                            <div class="loadingFrame"><img src="{% static 'img/loading_gif.gif' %}"/></div>
-                            <iframe  class="iframe-class" src=[[item.url]] frameborder='0' onLoad="hideGif( this, event )"></iframe>
+    <h2 class="text-center">{{ dashboard.title }}</h2>
+    {% if is_owner %}
+        <div class="row">
+            <a href="/dashboards/edit/{{ dashboard.id }}/" class="btn btn-default btn-md pull-left bg-color--blue" style="">
+                <i class="fas fa-edit"></i> Edit Dashboard
+            </a>
+             <button data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_dashboard_btn" style="float: right; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;" class="btn btn-md">
+                 <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Dashboard</span>
+            </button>
+        </div>
+    {% endif %}
+
+    <div>
+         <div ng-app="myApp" ng-controller="MainCtrl">
+            <div id="dynamic_dashboard" gridster="gridsterOpts">
+                <ul id="widgetParent">
+                    <li id="[[item.id]]" gridster-item="item" ng-repeat="item in standardItems">
+                        <div class='wrap1'></div>
+                        <header class="iframeHeader" ng-class="{'iframeHeaderNote': item.url == ''}">
+                            <p class="widget-title" ng-class="{'titleNote': item.url == ''}" ng-bind="item.title"> </p>
+                        </header>
+                        <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.noteData" >
+                            <div class="ng-wrapper" ng-switch-when="false">
+                                <div class="loadingFrame"><img src="{% static 'img/loading_gif.gif' %}"/></div>
+                                <iframe  class="iframe-class" src=[[item.url]] frameborder='0' onLoad="hideGif( this, event )"></iframe>
+                            </div>
                         </div>
-                    </div>
-                    <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" >
-                        <div class="ng-wrapper" ng-switch-when="false" ng-bind-html="[[item.noteData]]">
+                        <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" >
+                            <div class="ng-wrapper" ng-switch-when="false" ng-bind-html="[[item.noteData]]">
+                            </div>
                         </div>
-                    </div>
-                </li>
-            </ul>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
+
+
 
 {% endblock %}
 
 
 {% block modal %}
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="width: 50%;top:30vh; left:45vh;">
+      <div class="modal-dialog " role="document" style="width: 50%;">
+        <div class="modal-content" style="height: inherit; ">
+          <div class="modal-header">
+            <h4 style="margin-bottom: 15px; margin-left:10px; font-weight: bold" class="modal-title" id="deleteModalLabel">Delete Dashboard</h4>
+          </div>
+          <div class="modal-body" style="height: inherit;margin-top: 10px;margin-bottom: 30px">
+            Are you sure you want to delete this Dashboard?
+          </div>
+          <div class="modal-footer">
+              <a href="{% url 'delete_dashboard' pk=dashboard.id %}" id="confirm-dashboard-delete" type="button" class="btn btn-primary"  style=" background-color: rgb(160, 0, 0) !important ; margin-top: 0;" class="btn btn-md">Delete</a>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal"  style="float: right;">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
 {% endblock %}
 
@@ -437,64 +154,93 @@
 
             {#Initializing widgets from database and setting content#}
             var init = function (){
-                 {% for order, url in dashboard.viz_components.items %}
-                     var tempinfo= "{{ url }}";
-                     tempinfo = tempinfo.replace(/u&#39;/g, '"');
-                     tempinfo = tempinfo.replace(/&#39;/g, '"');
-                     tempinfo=tempinfo.replace(/u&quot;/,'"');
-                     tempinfo=tempinfo.replace(/&quot;/,'"');
+{#                 {% for order, url in dashboard.viz_components.items %}#}
+                var viz_components = JSON.parse('{{ dashboard_json |escapejs}}');
+                for (var key in viz_components) {
+                    if (viz_components.hasOwnProperty(key)) {
+                        console.log(key + " -> " + viz_components[key]);
+                        var count;
+                        $scope.counter++
+                        var array = viz_components[key];
+{#                        for (count=0; count< array.length;count++){#}
+{#                            console.log(String(count)+'. '+String(array[count]));#}
+{#                        }#}
+                        $scope.standardItems.push({
+                        sizeX: parseInt(array[1]),
+                        sizeY: parseInt(array[2]),
+                        row: parseInt(array[3]),
+                        col: parseInt(array[4]),
+                        url:array[0] ,
+                        noteData: array[6] ,
+                        title:array[5],
+                        id: array[7]
+                    });
+
+                    }
+                }
+
+            $scope.gridsterOpts.floating = true;
+            };
+{#            var init = function (){#}
+{#                 {% for order, url in dashboard.viz_components.items %}#}
+{#                     var tempinfo= "{{ url }}";#}
+{#                     tempinfo = tempinfo.replace(/u&#39;/g, '"');#}
+{#                     tempinfo = tempinfo.replace(/&#39;/g, '"');#}
+{#                     tempinfo=tempinfo.replace(/u&quot;/,'"');#}
+{#                     tempinfo=tempinfo.replace(/&quot;/,'"');#}
 {#                     tempinfo=tempinfo.replace("[","");#}
 {#                     tempinfo=tempinfo.replace("]","");#}
-                     tempinfo = tempinfo.slice(1,-1);
-                     var nth= 13;
-                     var toslice = 0;
-                     for(var i=0 ; i<tempinfo.length ;i++){
-                         if(tempinfo.charAt(i) == '"'){
-                             if(!--nth){
-                                 toslice = i;
-                             }
-                         }
-                     }
-
-                     var info = tempinfo.split("," , 6);
-
-                     tempinfo= tempinfo.slice(toslice + 1);
-
-
-                    $scope.counter++;
-
-                    var tempid="widget" + $scope.counter;
+{#                     tempinfo = tempinfo.slice(1,-1);#}
+{#                     var nth= 13;#}
+{#                     var toslice = 0;#}
+{#                     for(var i=0 ; i<tempinfo.length ;i++){#}
+{#                         if(tempinfo.charAt(i) == '"'){#}
+{#                             if(!--nth){#}
+{#                                 toslice = i;#}
+{#                             }#}
+{#                         }#}
+{#                     }#}
+{##}
+{#                     var info = tempinfo.split("," , 6);#}
+{##}
+{#                     tempinfo= tempinfo.slice(toslice + 1);#}
+{##}
+{##}
+{#                    $scope.counter++;#}
+{##}
+{#                    var tempid="widget" + $scope.counter;#}
                     {#$scope.iframeSource = info[0];#}
-                     var noteDataEncoded = tempinfo;
-                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();
+{#                     var noteDataEncoded = tempinfo;#}
+{#                     var noteDataDecoded= $('<textarea/>').html(noteDataEncoded).text();#}
                      {#noteDataDecoded= noteDataDecoded.substr(1);#}
                      {#if(noteDataDecoded.charAt(0)=="u"){#}
                      {#    if(noteDataDecoded.charAt(1)=="\""){#}
                      {#        noteDataDecoded= noteDataDecoded.substr(2);#}
                      {#    }#}
                      {# }#}
-                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);
-
+{#                     noteDataDecoded= noteDataDecoded.slice(0 ,-1);#}
+{##}
                                           {#alert(noteDataDecoded);#}
-
+{##}
                      {#noteDataDecode=noteDataDecode.encode("utf-8");#}
-
+{##}
                      {#alert(info[0]);#}
-                     for(var i=0 ; i < 6; i++)
-                     {
-                         if(i!= 0)
-                            info[i] = info[i].slice(2,-1);
-                         else
-                             info[i] = info[i].slice(1,-1);
-                     }
+{#                     for(var i=0 ; i < 6; i++)#}
+{#                     {#}
+{#                         if(i!= 0)#}
+{#                            info[i] = info[i].slice(2,-1);#}
+{#                         else#}
+{#                             info[i] = info[i].slice(1,-1);#}
+{#                     }#}
                      {#alert(info[0]);#}
-
-                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded ,title:info[5]});
-                {% endfor %}
-            };
+{##}
+{#                    $scope.standardItems.push({sizeX:info[1], sizeY:info[2],row:info[3],col:info[4],url:info[0] ,noteData: noteDataDecoded ,title:info[5]});#}
+{#                {% endfor %}#}
+{#            };#}
 
             init();
         });
+
 
 
 {#        $("iframe").on( "load", function(){#}

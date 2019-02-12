@@ -710,7 +710,7 @@ def APIcheckIfOutputExistsforHCMRSpillSimulator(request):
             # Check the out directory
             ftp = ftplib.FTP(FTPSERVER)
             ftp.login(FTPUSERNAME, FTPPASS)
-            ftp.cwd('/out/BDO/')
+            ftp.cwd('/out/')
             # Convert "2017 12 27 1000" to "171227_1000"
             LATLONNAME = LATLON.replace(".", "_").replace(" ", "__")
             SIMULATIONNAME = "USER" + str(request.user.id) + "BDO"

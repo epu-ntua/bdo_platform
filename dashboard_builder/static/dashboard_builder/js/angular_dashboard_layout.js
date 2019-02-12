@@ -73,16 +73,27 @@ function pageScroll() {
 
             });
 
+
+
             $("#myModal #submit-note-btn").click(function () {
                 var myData = textEditor.getData();
                 var tempid = "#widget" + $scope.counter;
                 var tempidJs = "widget" + $scope.counter;
                 var note_wrapper = "<div class='note_wrapper'>" + myData + " </div>"
                 $scope.standardItems[$scope.standardItems.length - 1].noteData = note_wrapper;
+                $(String(tempid)+" header").prepend('<input type="submit" id="'+String(tempidJs)+"_edit_btn"+'" class="editnotebtn far fa-edit" data-toggle="modal" data-target="#editNoteModal" value="&#xf044" style="z-index: 4">');
+                $(String(tempid)+"_edit_btn").click(function () {
+                    widget_open_edit_modal = tempid;
+                    widget_edit_id = tempidJs;
+                    var edit_data = $(this).parent().parent().find('.note_wrapper').html();
+                    textEditNote.setData(edit_data);
+
+                });
                 $(tempid).append(note_wrapper);
                 $('#save_dashboard_btn').show();
                 textEditor.destroy();
                 textEditor = null;
+                console.log($scope.standardItems);
                 $('#viz_config').show();
                 $('#model-button-row').show();
                 $('#submit-note-btn').hide();
@@ -109,12 +120,31 @@ function pageScroll() {
                     }
                 }
             });
+
+            $("#submit-note-change-btn").click(function () {
+                var edited_note_text = textEditNote.getData();
+                $(widget_open_edit_modal).find('.note_wrapper').empty();
+                $(widget_open_edit_modal).find('.note_wrapper').append(edited_note_text);
+                console.log($scope.standardItems);
+                for (var i=0; i<$scope.standardItems.length;i++){
+                    if ($scope.standardItems[i].id === widget_edit_id){
+                        $scope.standardItems[i].noteData = "<div class='note_wrapper'>" + edited_note_text + " </div>";
+                    }
+                }
+                widget_open_edit_modal = null;
+                widget_edit_id = null;
+            });
+            $("#dismiss-modal-change-btn").click(function () {
+                widget_open_edit_modal = null;
+                widget_edit_id = null;
+            });
+
             $("#dismiss-modal-btn").click(function () {
                 $scope.standardItems.pop();
                 $scope.$apply();
-                $('#myModal #viz_container').html('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' + '  </div>');
+                // $('#myModal #viz_container').html('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' + '  </div>');
                 $('.viz_item').popover('hide');
-                $('#myModal #viz_config').hide();
+                // $('#myModal #viz_config').hide();
                 $('#myModal #submit-modal-btn').hide();
             });
 
@@ -128,7 +158,8 @@ function pageScroll() {
                     col: 0,
                     url: "",
                     noteData: "",
-                    title: tempTitle
+                    title: tempTitle,
+                    id: "widget" + $scope.counter,
                 });
                 // setTimeout(function () {
                 //     console.log($scope);
@@ -167,6 +198,9 @@ function pageScroll() {
                 if (prebuiltViz != 'None') {
                     makeWidget();
                     var tempid = "#widget" + $scope.counter;
+                    $(tempid).append('<div class="loadingFrame">' + ' <img src="' + img_source_path + '"/>' +' </div>');
+                    $('#viz_container iframe').appendTo(tempid);
+                    $(tempid).find(".loadingFrame").css( "display", "block" );
                     var decodedViz = decodeURIComponent(prebuiltViz);
                     var prebuildIFrameString = "<iframe class='iframe-class' id='viz-iframe' " +
                     "src='" + decodedViz + "' frameborder='0' allowfullscreen='' " +
@@ -174,10 +208,14 @@ function pageScroll() {
                     var prebuildIFrameItem= $.parseHTML(prebuildIFrameString);
                     var helperfunc = function(){
                         $(tempid).append(prebuildIFrameItem[0]);
+                        $(tempid).find("iframe").on( "load", function(){
+                            $(this).siblings(".loadingFrame").css( "display", "none" );
+                        });
                     };
                     setTimeout(helperfunc ,250);
                     $scope.standardItems[$scope.standardItems.length - 1].url = decodedViz;
                     $('#save_dashboard_btn').show();
+
                 }
             });
 
@@ -191,7 +229,7 @@ function pageScroll() {
                 var tempcounter= 0;
                 for(var myindex in $scope.standardItems){
                     var tempTitleId= "widgetTitleModel" + myindex.toString();
-                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() , $scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString()];
+                    var temparray= [$scope.standardItems[myindex].url , $scope.standardItems[myindex].sizeX.toString() , $scope.standardItems[myindex].sizeY.toString() , $scope.standardItems[myindex].row.toString() , $scope.standardItems[myindex].col.toString() , $scope.standardItems[myindex].title.toString() ,$scope.standardItems[myindex].noteData.toString(),$scope.standardItems[myindex].id.toString()];
                     post_data_obj[String(tempcounter)] = temparray;
                     tempcounter++;
                 }
@@ -212,7 +250,8 @@ function pageScroll() {
                         console.log(result);
                         $('#dashboard_pk').val(result.pk);
                         var id = String(result.pk);
-                        window.history.replaceState({}, 'a_title', '/dashboards/create/' + result.pk + '/');
+                        window.history.replaceState({}, 'a_title', '/dashboards/edit/' + result.pk + '/');
+                        // window.location.replace("/dashboards/create/' + result.pk + '/'")
                         // alert('Dashboard saved successfully!');
                         // var message = "Dashboard saved successfully! <br/> You can view it <b><a style='text-decoration: underline;' href='/services/dashboard/"+id+"'/>here</a></b>!"
                         $.notify({

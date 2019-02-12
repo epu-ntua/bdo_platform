@@ -1,9 +1,13 @@
 $("#select_data_popover").click(function () {
             $('.viz_item').popover('hide');
         });
+        var widget_open_edit_modal = null;
+        var widget_edit_id = null;
+        var open_modal= false;
         var new_query_id;
         // {#Variable to store active ckeditor version #}
-        var textEditor = textEditor = CKEDITOR.appendTo('viz_note');
+        var textEditNote = CKEDITOR.appendTo('change_note');
+        var textEditor = CKEDITOR.appendTo('viz_note');
         // {#Function to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
             var viz_success = null;
@@ -29,7 +33,11 @@ $("#select_data_popover").click(function () {
             var vis_created_flag = false;
 
             $("#new_widget_btn").click(function () {
-                $('#submit-modal-btn').hide();
+                $("#myModal #viz_container").empty();
+                $('#myModal #submit-modal-btn').hide();
+                $('#myModal #add_layer_btn').parent().hide();
+                $('#myModal #layers-list').parent().hide();
+
             })
             $("#add_layer_btn").parent().click(function () {
                 $(this).hide();
@@ -117,7 +125,10 @@ $("#select_data_popover").click(function () {
                     $('#query_name_span').show();
                     $('#query_name_span').text(new_query_text);
                     $('#myModal #select_data_popover').popover("hide");
-                    $('#viz_config').show();
+                    $('#myModal #viz_config .list-group').show();
+                    $('#myModal #viz_config #viz_container').show();
+                    // $('#add_layer_btn').parent().hide();
+                    // $('#layers-list').parent().hide();
                     $(".list-group").css('visibility','visible');
                 })
                 $('.popover-content #select_data_cancel').click(function (e) {
@@ -167,6 +178,7 @@ $("#select_data_popover").click(function () {
 
                 var popver_id = '#' + $(component_selector).attr('aria-describedby');
                 $(popver_id + ' #select_conf_ok').click(function (e) {
+                    open_modal=true;
                     selected_visualization = $(component_selector).text();
                     $("#viz_config .list-group").children().each(function () {
                         $(this).find("#selected_viz_span").hide();
@@ -328,6 +340,7 @@ $("#select_data_popover").click(function () {
                 var myData;
                 $('#add_layer_btn').parent().hide();
                 $('#layers-list').parent().hide();
+                $('#myModal #submit-modal-btn').hide();
                 if(component_type!='map') {
                     var viz_request = "/visualizations/";
                     viz_request += $('#myModal').find('.modal-body').find('#action').val();
@@ -411,28 +424,31 @@ $("#select_data_popover").click(function () {
                     '></iframe>');
 
 
-                $('#myModal #submit-modal-btn').show();
+                // $('#myModal #submit-modal-btn').show();
                 $("#myModal #viz_container .loadingFrame").css( "display", "block" );
                 $("#myModal #viz_container iframe").on( "load", function(){
                     $(this).siblings(".loadingFrame").css( "display", "none" );
                     var execution_flag = $(this).contents().find('.visualisation_execution_input').val();
-                    if ((execution_flag === 'success')&&(comp_type === 'map')){
+                    if ((execution_flag === 'success')&&(comp_type === 'map')&&(open_modal === true)){
                         $('#add_layer_btn').parent().show();
                         $('#layers-list').parent().show();
+                        $('#myModal #submit-modal-btn').show();
                     }
                     else{
                         $('#add_layer_btn').parent().hide();
                         $('#layers-list').parent().hide();
+                        $('#myModal #submit-modal-btn').hide();
                     }
                 });
             }
+
             $("#dismiss-modal-btn").click(function m(e) {
                 refresh_visualisation_modal();
                 $('#select_viz_popover').prop('disabled', true);
                 $('#select_conf_popover').prop('disabled', true);
-                $('#myModal #viz_container').html('<div class="loadingFrame">' +
-                    '                    <img src="' + img_source_path + '"/>' +
-                    '                </div>');
+                // $('#myModal #viz_container').html('<div class="loadingFrame">' +
+                //     '                    <img src="' + img_source_path + '"/>' +
+                //     '                </div>');
             });
 
             $("#myModal #submit-modal-btn").click(function () {
@@ -447,6 +463,7 @@ $("#select_data_popover").click(function () {
             });
 
             function refresh_visualisation_modal(){
+                open_modal = false;
                 $('#layers-list ul').empty();
                 $("#query_name_span").text(null);
                 layer_count = 0;
@@ -454,8 +471,8 @@ $("#select_data_popover").click(function () {
                 selected_visualization = null;
                 first_time = true ;
                 vis_created_flag = false;
-                $('#add_layer_btn').parent().hide();
-                $('#layers-list').parent().hide();
+                $('#myModal #viz_config #add_layer_btn').parent().hide();
+                $('#myModal #viz_config #layers-list').parent().hide();
                 $("#viz_config .list-group").children().each(function () {
                     $(this).find("#selected_viz_span").hide();
                 });
@@ -463,7 +480,9 @@ $("#select_data_popover").click(function () {
                         $(this).removeClass('disabled');
                 });
                 $('.viz_item').popover('hide');
-                $('#myModal #viz_config').hide();
+                $('#myModal #viz_config .list-group').hide();
+                $('#myModal #viz_config #viz_container').hide();
+
 
             }
 

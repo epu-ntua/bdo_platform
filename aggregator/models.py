@@ -50,7 +50,8 @@ class Dataset(Model):
     sample_rows = JSONField(null=True)
     number_of_rows = CharField(max_length=200, null=True)
     size_in_gb = FloatField(null=True)
-    update_frequency = CharField(max_length=200, default='static file')
+    update_frequency = CharField(max_length=200, default='-')
+    last_updated = DateTimeField(null=True)
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
     metadata = JSONField(default={})
     arguments = JSONField(default={})
@@ -113,7 +114,10 @@ class BaseVariable(Model):
     name = CharField(max_length=256)
     title = CharField(max_length=256)
     unit = CharField(max_length=256)
-    # description = TextField(null=True)
+    description = TextField(null=True)
+    sameAs = CharField(null=True, max_length=256)
+    dataType = CharField(null=True, max_length=256)
+    original_column_name = CharField(null=True, max_length=256)
 
     class Meta:
         abstract = True
