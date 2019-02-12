@@ -802,7 +802,7 @@ def get_heatmap_query_data(query, heat_variable):
     return data, lat_index, lon_index, heat_var_index
 
 
-def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cached_file):
+def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cached_file, tries=0):
     try:
         round_num = get_contour_step_rounded(step)
         dict = {}
@@ -862,7 +862,10 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
     except Exception, e:
         print e
         traceback.print_exc()
-        raise Exception('An error occurred while creating the contours on map.')
+        if tries == 0:
+            return get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cached_file, tries=1)
+        else:
+            raise Exception('An error occurred while creating the contours on map.')
 
 
 def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname):
@@ -1069,7 +1072,7 @@ def get_contours_query_data(query, variable):
             lat_index = idx
         elif c['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
-    data = result_data
+    data = [row for row in result_data if row[var_index] is not None]
     return data, lat_index, lon_index, var_index
 
 
