@@ -333,9 +333,16 @@ def single_location_evaluation_execution_process(request, exec_instance):
     visualisations['v4'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
-                             'title': "Wave period",
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_zero_upcrossing_period&x_var=i1_time&query="+str(wave_height_query_id),
+                             'title': "Monthly availability of waves",
+                             'url': "/visualizations/get_time_series_am?viz_id=22&action=get_time_series_am&y_var[]=i0_sea_surface_wave_significant_height&temporal_resolution=date_trunc_month&agg_func=AVG&query="+str(wave_height_query_id),
                              'done': False})
+    # visualisations['v4'] = ({'notebook_id': '',
+    #                          'df': '',
+    #                          'query': wave_height_query_id,
+    #                          'title': "Wave period",
+    #                          'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_zero_upcrossing_period&x_var=i1_time&query=" + str(
+    #                              wave_height_query_id),
+    #                          'done': False})
     service_exec.dataframe_visualizations = visualisations
     service_exec.save()
     # CREATE NEW ARGUMENTS PARAGRAPH
