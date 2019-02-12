@@ -83,7 +83,7 @@
               function()
               {
                 $("#{{ key }}").find('iframe').attr({'src': '{{ viz.url| safe }}'});
-              }, {{ forloop.counter }} * 1500);
+              }, {{ forloop.counter }} * 2000);
         {% endfor %}
     </script>
 
