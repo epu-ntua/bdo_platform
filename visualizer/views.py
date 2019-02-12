@@ -32,7 +32,8 @@ import matplotlib.pyplot as plt
 import pylab as pl
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-
+import time
+import traceback
 from query_designer.models import TempQuery
 from visualizer.models import Visualization
 from aggregator.models import *
@@ -431,18 +432,24 @@ def load_modify_query_contours(agg_function, query_pk, round_num, variable):
     var_query_id = variable[:variable.find('_')]
     lat_flag = lon_flag = cont_var_flag = False
     for f in doc['from']:
+        right_var = False
         for s in f['select']:
+            # import pdb
+            # pdb.set_trace()
             if s['name'] == variable and (s['exclude'] is not True):
                 s['aggregate'] = agg_function
                 s['exclude'] = False
                 cont_var_flag = True
-            elif s['name'].split('_', 1)[1] == 'latitude' and str(s['name']).find(var_query_id) >= 0 and s['exclude'] is not True:
+                right_var = True
+            # elif s['name'].split('_', 1)[1] == 'latitude' and str(s['name']).find(var_query_id) >= 0 and s['exclude'] is not True:
+            elif s['name'].split('_', 1)[1] == 'latitude':
                 s['groupBy'] = True
                 s['aggregate'] = 'round' + str(round_num)
                 s['exclude'] = False
                 doc['orderings'].append({'name': str(s['name']), 'type': 'ASC'})
                 lat_flag = True
-            elif s['name'].split('_', 1)[1] == 'longitude' and str(s['name']).find(var_query_id) >= 0 and s['exclude'] is not True:
+            # elif s['name'].split('_', 1)[1] == 'longitude' and str(s['name']).find(var_query_id) >= 0 and s['exclude'] is not True:
+            elif s['name'].split('_', 1)[1] == 'longitude':
                 s['groupBy'] = True
                 s['aggregate'] = 'round' + str(round_num)
                 s['exclude'] = False
@@ -568,8 +575,9 @@ def map_visualizer(request):
         return render(request, 'error_page.html', {'message': e.message})
 
     folium.LayerControl().add_to(m)
-    m.save('templates/map1.html')
-    map_html = open('templates/map1.html', 'r').read()
+    temp_map = 'templates/map1'+str(int(time.time()))+'.html'
+    m.save(temp_map)
+    map_html = open(temp_map, 'r').read()
     soup = BeautifulSoup(map_html, 'html.parser')
     map_id = soup.find("div", {"class": "folium-map"}).get('id')
     js_all = soup.findAll('script')
@@ -802,9 +810,17 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
             query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
             data, lat_index, lon_index, var_index = get_contours_query_data(query, variable)
             Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val = get_contour_grid(data, lat_index, lon_index, step, var_index)
-            final_data, data_grid = get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index)
-            mappath = create_contour_image(Lats, Lons, final_data, max_val, min_val, n_contours)
-            legpath = get_contour_legend(max_val, min_val)
+            # final_data, data_grid = get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index)
+            data_grid = []
+            # mappath = create_contour_image(Lats, Lons, final_data, max_val, min_val, n_contours)
+
+            xi = np.arange(min_lon, max_lon + 0.00001, step)
+            yi = np.arange(min_lat, max_lat + 0.00001, step)
+            mappath = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
+            print 'mappath'
+            print mappath
+            # legpath = get_contour_legend(max_val, min_val)
+            legpath = ''
 
             dict['min_lat'] = min_lat
             dict['max_lat'] = max_lat
@@ -836,18 +852,21 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
             data_grid = cached_data['data_grid']
             data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
 
-        create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
+        mapname = create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
                                 max_lon, min_lat, min_lon, legpath)
+        print 'mapname ok'
         map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
-                                                  step)
+                                                  step, mapname)
         return m, ret_html, map_id
 
-    except Exception:
+    except Exception, e:
+        print e
+        traceback.print_exc()
         raise Exception('An error occurred while creating the contours on map.')
 
 
-def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step):
-    f = open('templates/map.html', 'r')
+def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname):
+    f = open(mapname, 'r')
     map_html = f.read()
     soup = BeautifulSoup(map_html, 'html.parser')
     map_id = soup.find("div", {"class": "folium-map"}).get('id')
@@ -897,7 +916,11 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
         .add_to(m) \
         .layer_name = 'Coastline - Layer'
     # Parse the HTML to pass to template through the render
-    m.save('templates/map.html')
+    mapname = 'templates/map'+str(mappath).split('/temp/')[1].split('.png')[0]+'.html'
+    print 'mapname'
+    print mapname
+    m.save(mapname)
+    return mapname
 
 
 def get_contour_legend(max_val, min_val):
@@ -917,18 +940,45 @@ def get_contour_legend(max_val, min_val):
     return legpath
 
 
-def create_contour_image(Lats, Lons, final_data, max_val, min_val, n_contours):
+def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_index, lon_index, var_index):
     levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
     print 'levels ok'
+    import matplotlib.tri as tri
+    x = np.array([i[lon_index] for i in final_data])
+    y = np.array([i[lat_index] for i in final_data])
+    z = np.array([i[var_index] for i in final_data])
+    min_x = min(x)
+    min_y = min(y)
+    max_x = max(x)
+    max_y = max(y)
+
+    triang = tri.Triangulation(x, y)
+    interpolator = tri.LinearTriInterpolator(triang, z)
+    Xi, Yi = np.meshgrid(xi, yi)
+    zi = interpolator(Xi, Yi)
+    # fig, ax1 = plt.subplots(nrows=1)
+    min_val = min(z)
+    max_val = max(z)
+    # levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+    # ax1.contour(xi, yi, zi, levels=levels, linewidths=0.5, colors='k')
+    # cntr1 = ax1.contourf(xi, yi, zi, levels=levels, cmap="RdBu_r")
+    # fig.colorbar(cntr1, ax=ax1)
+    # plt.show()
+
     fig = Figure()
     ax = fig.add_subplot(111)
-    plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
+    # plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
+    # ax1.contour(xi, yi, zi, levels=levels, linewidths=0.5, colors='k')
+    plt.contourf(xi, yi, zi, levels=levels, cmap="RdBu_r")
+    # plt.tricontourf(x, y, z, levels=levels, cmap="RdBu_r")
     plt.axis('off')
     extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
     plt.draw()
     ts = str(time.time()).replace(".", "")
     mappath = 'visualizer/static/visualizer/img/temp/' + ts + 'map.png'
+    print 'trying to save fig at '+str(mappath)
     plt.savefig(mappath, bbox_inches=extent, transparent=True, frameon=False, pad_inches=0)
+    print 'saved fig'
     plt.clf()
     plt.close()
     fig = None
@@ -937,6 +987,8 @@ def create_contour_image(Lats, Lons, final_data, max_val, min_val, n_contours):
 
 
 def get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index):
+    from mpl_toolkits.basemap import Basemap
+    bm = Basemap()
     final_data = []
     data_grid = []
     it = iter(data)
@@ -948,7 +1000,10 @@ def get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat
         row = list()
         pop_row = list()
         for lat in lats_bins:
-            row.append(None)
+            if bm.is_land(float(lon), float(lat)):
+                row.append(None)
+            else:
+                row.append(None)
             pop_row.append(('None').encode('ascii'))
         final_data.append(row)
         data_grid.append(pop_row)
@@ -983,7 +1038,7 @@ def get_contour_grid(data, lat_index, lon_index, step, var_index):
             min_lon = row[lon_index]
         if row[var_index] > max_val:
             max_val = row[var_index]
-        if row[var_index] < min_val:
+        if row[var_index] is not None and row[var_index] < min_val:
             min_val = row[var_index]
     max_lat = float(max_lat)
     min_lat = float(min_lat)
