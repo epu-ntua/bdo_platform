@@ -480,7 +480,11 @@ $(document).ready(function () {
 
 
     $(".viz_item").click(function () {
-        $('.popover').hide();
+        if($('.popover').length) {
+            $('.viz_item').popover('hide');
+            // $('#select_conf_cancel').trigger("click");
+            // $('.popover').hide();
+        }
         var component_id = $(this).attr('data-viz-id');
         var component_type = $(this).attr('data-viz-type');
         var component_selector = 'li[data-viz-id="' + component_id + '"]';
@@ -514,7 +518,9 @@ $(document).ready(function () {
 
         });
         populate_selects();
-        specific_viz_form_configuration();
+        setTimeout(function () {
+            specific_viz_form_configuration();
+        },150);
 
 
         var popver_id = '#' + $(component_selector).attr('aria-describedby');
