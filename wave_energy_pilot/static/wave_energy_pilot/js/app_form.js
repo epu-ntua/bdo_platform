@@ -7,7 +7,98 @@ var mode=null;
 var dataset_id;
 
 $(document).ready(function() {
-    
+
+    var wave_forecast_tour = new Tour({
+        storage: false,
+        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+            "<div class='arrow'></div>" +
+            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+            "<div class='popover-content'></div>" +
+            // "<div class='popover-navigation'>" +
+            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            // "<span data-role='separator'>|</span>" +
+            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            // "</div>" +
+            "</div>",
+    });
+    wave_forecast_tour.init();
+
+    var data_visualization_tour = new Tour({
+        storage: false,
+        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+            "<div class='arrow'></div>" +
+            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+            "<div class='popover-content'></div>" +
+            // "<div class='popover-navigation'>" +
+            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            // "<span data-role='separator'>|</span>" +
+            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            // "</div>" +
+            "</div>",
+    });
+    data_visualization_tour.init();
+
+    var wave_resource_assesment_single_tour = new Tour({
+        storage: false,
+        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+            "<div class='arrow'></div>" +
+            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+            "<div class='popover-content'></div>" +
+            // "<div class='popover-navigation'>" +
+            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            // "<span data-role='separator'>|</span>" +
+            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            // "</div>" +
+            "</div>",
+    });
+    wave_resource_assesment_single_tour.init();
+
+    var wave_resource_area_tour = new Tour({
+        storage: false,
+        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+            "<div class='arrow'></div>" +
+            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+            "<div class='popover-content'></div>" +
+            // "<div class='popover-navigation'>" +
+            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            // "<span data-role='separator'>|</span>" +
+            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            // "</div>" +
+            "</div>",
+    });
+    wave_resource_area_tour.init();
+
+    var tour = new Tour({
+        storage: false,
+        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+            "<div class='arrow'></div>" +
+            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+            "<div class='popover-content'></div>" +
+            // "<div class='popover-navigation'>" +
+            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            // "<span data-role='separator'>|</span>" +
+            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            // "</div>" +
+            "</div>",
+    });
+
+    tour.addStep({
+        element: ".app-selector",
+        placement: "left",
+        title: "Application selection",
+        content: "Please select the application for use",
+    });
+
+    tour.init();
+
+    tour.start(true);
+
+
     function create_buoys_dataset_dict() {
         var buoys_dict = [];
         $('.buoy').each(function(i, obj) {
@@ -159,16 +250,87 @@ $(document).ready(function() {
     }
 
     $(function () {
+        $(".wave_forecast_dropdown").change(function () {
+        wave_forecast_tour.addStep(
+                {
+                    element: "#run-service-btn",
+                    placement: "left",
+                    title: "Service Execution",
+                    content: "Ready to execute!",
+                });
+            wave_forecast_tour.next();
+        })
+    })
+
+    $(function () {
+        $(".wave_resource_assessment_single_dropdown").change(function () {
+               wave_resource_assesment_single_tour.addSteps([
+                    {
+                        element: ".coverage-date-filters",
+                        placement: "left",
+                        title: "Service timeframe",
+                        duration: 3500,
+                        content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected",
+                    },
+                    {
+                        element: "#run-service-btn",
+                        placement: "left",
+                        title: "Service Execution",
+                        content: "Ready to execute!",
+
+                    }]);
+                wave_resource_assesment_single_tour.next();
+        })
+    })
+
+    $(function () {
+        $(".wave_resource_assessment_area_dropdown").change(function () {
+               wave_resource_area_tour.addSteps([
+                    {
+                        element: ".coverage-date-filters",
+                        placement: "left",
+                        title: "Service timeframe",
+                        duration: 3500,
+                        content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected",
+                    },
+                    {
+                        element: "#run-service-btn",
+                        placement: "left",
+                        title: "Service Execution",
+                        content: "Ready to execute!",
+
+                    }]);
+                wave_resource_area_tour.next();
+        })
+    })
+
+    $(function () {
         $('.app-selector').change(function () {
 
             //Wave Forecast Scenario
             if ($('.app-selector :selected').val() == "Wave_Forecast") {
+                $('.wave_resource_assessment_area_dropdown').hide();
+                $('.wave_resource_assessment_single_dropdown').hide();
+                $('.data_visualisation_dropdown').hide();
+
+                // $('.variable-selector').hide();
                 $('.dataset-selector').show();
                 $('.coverage-date-filters').show();
                 $('#wave-forecast-results').show();
                 $('.single-spatial-selection').show();
                 $("#run-service-btn").show();
                 $(".wave_forecast_dropdown").show();
+
+                wave_forecast_tour.start(true);
+                wave_forecast_tour.addStep(
+                {
+                    element: ".single-spatial-selection",
+                    placement: "left",
+                    title: "Geographic selection",
+                    content: "Click on the map to place your marker or manually set your coordinates",
+                });
+                wave_forecast_tour.start(true);
+                wave_forecast_tour.next();
 
                 map.on('click', function(e){
                     if (mode == "location") {
@@ -188,6 +350,15 @@ $(document).ready(function() {
                              $('#lon').val(e.target._latlng.lng);
                         })
                     }
+                    if(wave_forecast_tour.getCurrentStep()	 == 0){
+                        wave_forecast_tour.addStep({
+                            element: ".dataset-selector",
+                            placement: "left",
+                            title: "Dataset selection",
+                            content: "Dataset selection for application's execution",
+                        });
+                    }
+                    wave_forecast_tour.next();
                  });
 
                 /* Set Up Time Pickers For Start/End Date  */
@@ -200,7 +371,7 @@ $(document).ready(function() {
                 $('#wave-forecast-results').hide();
                 $('#startdatepicker input').val('');
                 $('#enddatepicker input').val('');
-                $(".wave_forecast").hide();
+                $(".wave_forecast_dropdown").hide();
                 // $('#enddatepicker').datepicker('remove');
                 // $('#startdatepicker').datepicker('remove');
                 startdate = null;
@@ -208,6 +379,9 @@ $(document).ready(function() {
 
             }
             if ($('.app-selector :selected').val() == "Wave_Resource_Assessment_area"){
+                $('.wave_resource_assessment_single_dropdown').hide();
+                $('.data_visualisation_dropdown').hide();
+                $(".wave_forecast_dropdown").hide();
                 mode = "area";
                 $("#map").css("cursor", "grab");
                 $('.dataset-selector').show();
@@ -217,6 +391,27 @@ $(document).ready(function() {
                 $("#run-service-btn").show();
 
                 create_new_area_select([[29.2575,-24.2578],[49.479,37.0898]]);
+
+
+                     wave_resource_area_tour.addSteps([
+                    {
+                        element: ".spatial-selection",
+                        placement: "left",
+                        title: "Geographic selection",
+                        duration: 3000,
+                        content: "Move the area select to the area you wish to execute your service",
+                    },
+                     {
+                        element: ".dataset-selector",
+                        placement: "left",
+                        title: "Dataset selection",
+                        content: "Dataset selection for application's execution",
+                     }
+                         ]);
+
+                    wave_resource_area_tour.start(true);
+                    // wave_resource_area_tour.next();
+
 
                 $('.leaflet-edit-move').mouseup(function(){
                     area_bounds = areaSelect.getBounds();
@@ -261,6 +456,10 @@ $(document).ready(function() {
 
             }
             if ($('.app-selector :selected').val() == "Data_Visualisation"){
+                $('.wave_resource_assessment_area_dropdown').hide();
+                $('.wave_resource_assessment_single_dropdown').hide();
+
+                $(".wave_forecast_dropdown").hide();
                 $('.dataset-selector').show();
                 $('.data_visualisation_dropdown').show();
                 $('.single-spatial-selection').show();
@@ -268,6 +467,17 @@ $(document).ready(function() {
                 $('.variable-selector').show();
                 $("#run-service-btn").show();
 
+
+                data_visualization_tour.start(true);
+                data_visualization_tour.addStep(
+                {
+                    element: ".single-spatial-selection",
+                    placement: "left",
+                    title: "Geographic selection",
+                    content: "Click on the map to place your marker or manually set your coordinates",
+                });
+                data_visualization_tour.start(true);
+                data_visualization_tour.next();
                 create_buoys_plane();
 
                 map.on('click', function(e) {
@@ -298,6 +508,13 @@ $(document).ready(function() {
                              $('#lat').val(e.target._latlng.lat);
                              $('#lon').val(e.target._latlng.lng);
                         })
+                        data_visualization_tour.addStep({
+                            element: ".dataset-selector",
+                            placement: "left",
+                            title: "Dataset selection",
+                            content: "Dataset selection for application's execution",
+                        });
+                    data_visualization_tour.next();
                     }
                  });
                 set_app_dataset_date_pickers("select_dataset_data_visualisation");
@@ -314,11 +531,26 @@ $(document).ready(function() {
                 }
             }
              if ($('.app-selector :selected').val() == "Wave_Resource_Assessment_single"){
-                 $('.dataset-selector').show();
-                 $('.wave_resource_assessment_single_dropdown').show();
-                 $('#wave-resource-assessment').show();
-                 $('.single-spatial-selection').show();
-                 $("#run-service-btn").show();
+                $('.wave_resource_assessment_area_dropdown').hide();
+
+                $('.data_visualisation_dropdown').hide();
+                $(".wave_forecast_dropdown").hide();
+                $('.dataset-selector').show();
+                $('.wave_resource_assessment_single_dropdown').show();
+                $('#wave-resource-assessment').show();
+                $('.single-spatial-selection').show();
+                $("#run-service-btn").show();
+
+                wave_resource_assesment_single_tour.start(true);
+                wave_resource_assesment_single_tour.addStep(
+                {
+                    element: ".single-spatial-selection",
+                    placement: "left",
+                    title: "Geographic selection",
+                    content: "Click on the map to place your marker or manually set your coordinates",
+                });
+                wave_resource_assesment_single_tour.start();
+                wave_resource_assesment_single_tour.next();
 
                  map.on('click', function(e){
                     if (mode == "location") {
@@ -343,6 +575,14 @@ $(document).ready(function() {
                              $('#lat').val(e.target._latlng.lat);
                              $('#lon').val(e.target._latlng.lng);
                         })
+                         wave_resource_assesment_single_tour.addStep(
+                        {
+                            element: ".dataset-selector",
+                            placement: "left",
+                            title: "Dataset selection",
+                            content: "Dataset selection for application's execution",
+                        });
+                        wave_resource_assesment_single_tour.next();
                     }
                  });
                  set_app_dataset_date_pickers("select_dataset_wave_resource_assessment_single");
@@ -354,11 +594,40 @@ $(document).ready(function() {
         })
     });
 
+    $(".variable-selector").change(function () {
+        data_visualization_tour.addSteps([
+            {
+                element: ".coverage-date-filters",
+                placement: "left",
+                title: "Service timeframe",
+                duration: 5000,
+                content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected",
+            },
+            {
+                element: "#run-service-btn",
+                placement: "left",
+                title: "Service Execution",
+                content: "Ready to execute!",
+
+            }]);
+        data_visualization_tour.next();
+    })
+
     function set_app_dataset_date_pickers(app_selector) {
        $('#'+app_selector).change(function () {
            $('.variables-selector').hide();
            var dataset_id = $('#'+app_selector+" :selected").val();
-           $('#'+dataset_id+'-variables').show();
+
+           if(app_selector === "select_dataset_data_visualisation"){
+               $('#'+dataset_id+'-variables').show();
+                data_visualization_tour.addStep({
+                    element: ".variable-selector",
+                    placement: "left",
+                    title: "Variable selection",
+                    content: "Select at least one the available variables of the selected dataset",
+                });
+                data_visualization_tour.next();
+           }
 
            var startdate = new Date($('#'+app_selector+" :selected").data("startdate"));
            var enddate = new Date($('#'+app_selector+" :selected").data("enddate"));

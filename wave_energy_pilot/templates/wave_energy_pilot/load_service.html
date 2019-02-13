@@ -7,6 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
     <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
     <link href="{% static "wave_energy_pilot/css/app_form.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/bootstrap-tour/build/css/bootstrap-tour.css"%}" rel="stylesheet">
 
 {% endblock %}
 
@@ -45,7 +46,9 @@
     {% include 'wave_energy_pilot/utils/status_modal.html' %}
 
     {% leaflet_js %}
+
     <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+    <script src="{% static "vendor/bootstrap-tour/build/js/bootstrap-tour.js"%}"></script>
     <script src="{% static "wave_energy_pilot/js/area-select/simple-shape.js" %}"></script>
     <script src="{% static "wave_energy_pilot/js/area-select/rectangle.js" %}"></script>
     <script src="{% static 'wave_energy_pilot/js/spatio_temporal_filter.js'%}" ></script>
