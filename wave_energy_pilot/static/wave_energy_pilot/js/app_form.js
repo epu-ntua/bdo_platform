@@ -679,10 +679,10 @@ $(document).ready(function() {
 
         var data_radius = $("#data-radius").data('value');
 
-        var lat_to = parseInt(lat) + parseInt(data_radius);
-        var lng_to = parseInt(lng) + parseInt(data_radius);
-        var lat_from = parseInt(lat) -  parseInt(data_radius);
-        var lng_from = parseInt(lng) -  parseInt(data_radius);
+        var lat_to = parseFloat(lat) + parseFloat(data_radius);
+        var lng_to = parseFloat(lng) + parseFloat(data_radius);
+        var lat_from = parseFloat(lat) -  parseFloat(data_radius);
+        var lng_from = parseFloat(lng) -  parseFloat(data_radius);
 
         var start_date = $( "#startdatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val();
         var enddate = $( "#enddatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val();
@@ -694,7 +694,7 @@ $(document).ready(function() {
 
             var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
-                "&longitude_from="+lng_to+"&longitude_to="+lng_from;
+                "&longitude_from="+lng_from+"&longitude_to="+lng_to;
             return url;
         }
         else if($('.app-selector :selected').val() === "Wave_Forecast"){
@@ -713,7 +713,7 @@ $(document).ready(function() {
             var selected_variables = [];
             $("#"+dataset_id+"-variables :selected").each(function () {
                 selected_variables.push($(this).val());
-            })
+            });
             var variables_str = "";
             for(var i = 0; i < selected_variables.length; i++){
                 variables_str +="&variables[]="+selected_variables[i];

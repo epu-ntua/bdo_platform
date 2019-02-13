@@ -2063,7 +2063,7 @@ def get_histogram_chart_am(request):
         # print json_data
     else:
         bins += 1
-
+        var_title = x_var
         livy = False
         service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
         if len(service_exec) > 0:
@@ -2735,7 +2735,7 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 
