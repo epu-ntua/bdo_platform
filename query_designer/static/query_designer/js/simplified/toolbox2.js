@@ -96,6 +96,9 @@ $(function () {
                     if(aggregate.title === "(No aggregate)") {
                         $option.attr('disabled', 'disabled')
                     }
+                    if(aggregate.title === "Average") {
+                        $option.attr("selected","selected");
+                    }
                 }
                 // add to aggregate select
                 $aggregateSelect.append($option);

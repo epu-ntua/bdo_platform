@@ -62,7 +62,7 @@ $(function() {
                     name: newVariable.name,
                     title: newVariable.title,
                     unit: newVariable.unit,
-                    aggregate: newVariable.aggregate,
+                    aggregate: $fieldset.find('.col-prefix').find("select").val(),
                     dimensions: newVariable.dimensions,
                     dataset_id: newVariable.dataset_id
                 });
