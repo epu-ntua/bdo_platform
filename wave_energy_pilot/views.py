@@ -316,7 +316,8 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Sea surface wave significant height",
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
+                             # 'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
+                             'url': "/visualizations/get_histogram_2d_am?viz_id=17&action=get_histogram_2d_am&y_var=i0_sea_surface_wave_significant_height&x_var=i1_sea_surface_wave_zero_upcrossing_period&bins=10&query="+str(wave_height_query_id),
                              'done': False})
     visualisations['v2'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
