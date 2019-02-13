@@ -2680,7 +2680,7 @@ def get_chart_query_data(query, x_var, y_var_list):
 
         dict.update({x_var: str(d[x_var_index])})
         json_data.append(dict)
-    return json_data, y_m_unit, y_title_list,x_var_title
+    return json_data, y_m_unit, y_title_list, x_var_title
 
 
 def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, ordering = True):
@@ -2768,6 +2768,7 @@ def get_time_series_am(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
     if chart_type == 'line':
         return render(request, 'visualizer/line_chart_am.html',
