@@ -341,7 +341,7 @@
     <script type="text/javascript">
         $('#createPreBuildLink').click(function (e) {
             if($("input[name='chart-name']").val() === ""){
-                alert('Please give a name to your query!')
+                alert('Please save your query first!')
             }
             else {
                 if ($('#viz_container > iframe').length) {
@@ -359,7 +359,7 @@
 
         $('#createPreBuildLinkExisting').click(function (e) {
             if($("input[name='chart-name']").val() === ""){
-                alert('Please give a name to your query!')
+                alert('Please save your query first!')
             }
             else {
                 if ($('#viz_container > iframe').length) {
