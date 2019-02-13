@@ -7,6 +7,16 @@ from .forms import HCMRForm
 import calculate_red_points as red_points_calc
 
 
+def init(request):
+    form = HCMRForm()
+    return render(request, 'hcmr_pilot/load_service.html', {'form': form})
+
+
+def results(request):
+
+    return render(request, 'hcmr_pilot/oilspill-results.html')
+
+
 def index(request):
     if request.method == 'GET':
         form = HCMRForm(request.GET)
@@ -18,24 +28,34 @@ def index(request):
 
 
 def process(request):
+    # 1)Create input file
     filename, url_params = create_inp_file_from_request_and_upload(request)
+    # 2)Calculate oil spill
     wait_until_output_ready(url_params)
     filename_output = str(filename).replace("_F.inp", "_F.out")
     hcmr_data_filename = str(filename).replace("_F.inp", ".json")
     red_points_filename = str(filename).replace("_F.inp", ".txt")
+
+    # 3)Transform data to show in map
     spill_data, parcel_data = create_json_from_out_file(
         'service_builder/static/services_files/hcmr_service_1/' + filename_output)
 
     headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
     parcel_df = DataFrame(parcel_data, columns = headers_parcel)
-    # headers_spill = ["time", "N", "ev", "srf", "em", "disp", "cst", "btm", "max_visc", "min_visc", "dens"]
-    # spill_df = DataFrame(spill_data, columns=headers_spill)
+
     print(parcel_df.head(10))
     parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
+
+    # 4)Calculate red points
     red_points_calc.calculate(hcmr_data_filename, red_points_filename)
-    return redirect("http://localhost:8000/visualizations/map_markers_in_time_hcmr/"
-                    + "?notebook_id=2DX2PVRRQ&df=parcel_data_df&markerType=circle&lat_col=Lat&lon_col=Lon"
-                    + "&data_file="+hcmr_data_filename+"&red_points_file="+red_points_filename)
+
+    # 5)Create Visualization
+    visualization_url = "http://localhost:8000/visualizations/map_markers_in_time_hcmr/" + "?notebook_id=2DX2PVRRQ&df=parcel_data_df&markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
+    context = {
+        'url': visualization_url,
+    }
+    return render(request, 'hcmr_pilot/oilspill-results.html', context)
+
 
 
 def create_json_from_out_file(filename_output):
