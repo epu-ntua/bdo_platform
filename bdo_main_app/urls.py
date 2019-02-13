@@ -24,4 +24,10 @@ urlpatterns = [
     url('^services/$', views.services, name='services'), #Service Marketplace
     url('^services/dashboard/(?P<pk>\d+)/$', views.view_dashboard, name='view_dashboard'),
     url('^services/service/(?P<pk>\d+)/$', sb_views.load_service, name='load_service'),
+
+    url('^pilot/wave-energy/$', views.load_nester_service, name='wave-energy-pilot'),
+    url('^pilot/anomaly-detection/$', views.load_xmile_service, name='wave-energy-pilot'),
+    url('^pilot/oil-spill-simulation/$', views.load_hcmr_service, name='wave-energy-pilot'),
+    url('^pilot/fault-prediction-anek/$', views.load_anek_service, name='wave-energy-pilot'),
+    url('^pilot/fault-prediction-fnk/$', views.load_fnk_service, name='wave-energy-pilot'),
 ]
