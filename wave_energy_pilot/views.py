@@ -9,6 +9,7 @@ from datetime import datetime
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.views.decorators.cache import never_cache
 
 from aggregator.models import Variable, Dataset
 from lists import *
@@ -183,9 +184,9 @@ def create_service_livy_session(request, service_exec):
     return livy_session
 
 
-def execute_service_code(request, service_exec, new_arguments_paragraph):
+def execute_service_code(request, service_exec, new_arguments_paragraph, paragraphs):
     paragraph_list = [(new_arguments_paragraph, 'gathering user arguments')]
-    for p in settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS:
+    for p in paragraphs:
         paragraph_list.append((p['paragraph'], p['status']))
 
     for paragraph, status in paragraph_list:
@@ -203,10 +204,12 @@ def clean_up_new_note(notebook_id):
     delete_zep_notebook(notebook_id)
 
 
+@never_cache
 def init(request):
     execution_steps = dict()
     execution_steps['LOCATION_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS] + ['done']
     execution_steps['WAVE_FORECAST_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.WAVE_FORECAST_SERVICE_PARAGRAPHS] + ['done']
+    execution_steps['AREA_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.AREA_EVALUATION_SERVICE_PARAGRAPHS] + ['done']
     return render(request, 'wave_energy_pilot/load_service.html',
                   {'buoys_list': BUOYS,
                    'datasets_list': DATASETS,
@@ -214,6 +217,7 @@ def init(request):
                    'execution_steps': execution_steps})
 
 
+@never_cache
 def data_visualization_results(request):
     service = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
@@ -342,7 +346,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
     livy_session = create_service_livy_session(request, service_exec)
     try:
         # RUN THE SERVICE CODE
-        execute_service_code(request, service_exec, new_arguments_paragraph)
+        execute_service_code(request, service_exec, new_arguments_paragraph, settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
 
@@ -359,6 +363,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
                 close_livy_session(service_exec.livy_session)
 
 
+@never_cache
 def single_location_evaluation_results(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     # GET THE SERVICE RESULTS
@@ -385,6 +390,117 @@ def single_location_evaluation_results(request, exec_instance):
 
 
 def single_location_evaluation_status(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    return JsonResponse({'status': service_exec.status})
+
+
+def area_location_evaluation_execute(request):
+    service = Service.objects.get(pk=settings.AREA_EVALUATION_SERVICE_ID)
+    service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
+                                   status="starting service", dataframe_visualizations=[])
+    service_exec.save()
+    # Spawn thread to process the data
+    t = Thread(target=area_location_evaluation_execution_process, args=(request, service_exec.id))
+    t.start()
+    return JsonResponse({'exec_instance': service_exec.id})
+
+
+def area_location_evaluation_execution_process(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    service = Service.objects.get(pk=service_exec.service_id)
+    # GATHER THE SERVICE ARGUMENTS
+    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
+    args_to_note = gather_service_args(service_args, request, service_exec)
+    # CONFIGURE THE QUERY TO BE USED
+    dataset_id = request.GET["dataset_id"]
+    query_id = settings.AREA_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
+    wave_height_query_id = get_query_with_updated_filters(request, query_id)
+    # CLONE THE SERVICE NOTE
+    new_notebook_id = clone_service_note(request, service, service_exec)
+    # ADD THE VISUALISATIONS TO BE CREATED
+    visualisations = dict()
+    visualisations['v1'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': wave_height_query_id,
+                             'title': "Mean significant wave height",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=4&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=20&step0=0.01&agg_func=AVG&query0="+str(wave_height_query_id),
+                             'done': False})
+    visualisations['v2'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': wave_height_query_id,
+                             'title': "Mean wave period",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=4&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=20&step0=0.01&agg_func=AVG&query0=" + str(wave_height_query_id),
+                             'done': False})
+    visualisations['v3'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': wave_height_query_id,
+                             'title': "Maximum significant wave height",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=4&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=20&step0=0.01&agg_func=MAX&query0=" + str(
+                                 wave_height_query_id),
+                             'done': False})
+    visualisations['v4'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': wave_height_query_id,
+                             'title': "Maximum wave period",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=4&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=20&step0=0.01&agg_func=MAX&query0=" + str(
+                                 wave_height_query_id),
+                             'done': False})
+    service_exec.dataframe_visualizations = visualisations
+    service_exec.save()
+    # CREATE NEW ARGUMENTS PARAGRAPH
+    new_arguments_paragraph = create_args_paragraph(request, new_notebook_id, args_to_note, service)
+    # CREATE A LIVY SESSION
+    service_exec.status = "Initializing Spark Session"
+    service_exec.save()
+    livy_session = create_service_livy_session(request, service_exec)
+    try:
+        # RUN THE SERVICE CODE
+        execute_service_code(request, service_exec, new_arguments_paragraph, settings.AREA_EVALUATION_SERVICE_PARAGRAPHS)
+        service_exec.status = "done"
+        service_exec.save()
+
+    except Exception as e:
+        print 'exception in livy execution'
+        print '%s (%s)' % (e.message, type(e))
+        service_exec.status = "failed"
+        service_exec.save()
+        # clean_up_new_note(service_exec.notebook_id)
+        if 'livy_session' in request.GET.keys():
+            pass
+        else:
+            if service_exec.service.through_livy:
+                close_livy_session(service_exec.livy_session)
+
+
+@never_cache
+def area_location_evaluation_results(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    # GET THE SERVICE RESULTS
+    result = get_result_dict_from_livy(service_exec.livy_session, 'result')
+    print 'result: ' + str(result)
+    # clean_up_new_note(service_exec.notebook_id)
+
+    dataset_id = str(result['dataset_id'])
+    dataset_title = str(Dataset.objects.get(pk=dataset_id))
+    latitude_from = str(result['latitude_from'])
+    latitude_to = str(result['latitude_to'])
+    longitude_from = str(result['longitude_from'])
+    longitude_to = str(result['longitude_to'])
+    start_date = str(result['start_date'])
+    end_date = str(result['end_date'])
+
+    # SHOW THE SERVICE OUTPUT PAGE
+    return render(request, 'wave_energy_pilot/area_assessment result.html',
+                  {'result': result,
+                   'service_title': 'Wave Energy - Wave atlas of a region',
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': 'from (' + latitude_from + ', ' + longitude_from + ') to (' + latitude_to + ', ' + longitude_to + ')'},
+                                        {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
+                                        {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
+                   'no_viz': 'no_viz' in request.GET.keys(),
+                   'visualisations': service_exec.dataframe_visualizations})
+
+
+def area_location_evaluation_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
 
@@ -443,7 +559,7 @@ def wave_forecast_execution_process(request, exec_instance):
     livy_session = create_service_livy_session(request, service_exec)
     try:
         # RUN THE SERVICE CODE
-        execute_service_code(request, service_exec, new_arguments_paragraph)
+        execute_service_code(request, service_exec, new_arguments_paragraph, settings.WAVE_FORECAST_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
 
@@ -460,6 +576,7 @@ def wave_forecast_execution_process(request, exec_instance):
                 close_livy_session(service_exec.livy_session)
 
 
+@never_cache
 def wave_forecast_results(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     # GET THE SERVICE RESULTS

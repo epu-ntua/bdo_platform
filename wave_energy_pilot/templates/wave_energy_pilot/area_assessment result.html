@@ -9,6 +9,7 @@
         #location_assessment_statistics .panel-warning .panel-heading{background-color: #8a6d3b; color: white;}
         #location_assessment_statistics .panel-success .panel-heading{background-color: #3c763d; color: white;}
         #location_assessment_statistics .panel-default .panel-heading{background-color: #707070; color: white;}
+        #service_visualisations_container .viz_container{width: 49%; display: inline-block;}
     </style>
 
     <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}">
@@ -17,7 +18,7 @@
 {% block service_output_results %}
     <div id="location_assessment_statistics" class="text-center">
         <div class="col-sm-12" style="text-align: center;">
-            <h3> Location Assessment Statistics </h3>
+            <h3> Area Assessment Statistics </h3>
         </div>
         <div class="col-sm-9">
             <div class="col-sm-12">
@@ -32,7 +33,7 @@
                             <td>Wave Significant Height (m)</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.min_height }}</td>
                         </tr>
                         <tr>
-                            <td>Wave Mean Period (m)</td><td>{{ result.max_period }}</td><td>{{ result.av_period }}</td><td>{{ result.min_period }}</td>
+                            <td>Wave Mean Period (s)</td><td>{{ result.max_period }}</td><td>{{ result.av_period }}</td><td>{{ result.min_period }}</td>
                         </tr>
                         <tr>
                             <td>Wave Power (W)</td><td>{{ result.max_power }}</td><td>{{ result.av_power }}</td><td>{{ result.min_power }}</td>
@@ -51,39 +52,41 @@
     </div>
 
     <div id="service_visualisations_container" class="text-center">
-        <ul class="nav nav-pills">
-            {% for key, viz in visualisations.items %}
-                <li {% if forloop.counter == 1 %}class="active"{% endif %}><a data-toggle="pill" href="#{{ key }}">{{ viz.title }}</a></li>
-            {% endfor %}
-        </ul>
-        <div class="tab-content">
-            {% for key, viz in visualisations.items %}
-                <div class="viz_container row tab-pane fade {% if forloop.counter == 1 %} in active {% endif %}"  id="{{ key }}">
-{#                    <div class="loadingFrame">#}
-{#                        <img src="{% static 'img/loading_gif.gif' %}"/>#}
-{#                    </div>#}
-                    {% if no_viz %}
+        {% for key, viz in visualisations.items %}
+            <div class="viz_container" id="{{ key }}">
+                <h3>{{ viz.title }}</h3>
+                {% if no_viz %}
+                    <iframe src=""
+                            style="width: 100%; height: 100%; background-color: white;">
+                    </iframe>
+                {% else %}
+                    <div class="frame_container" style="position: relative; height: 100%;">
+                        <div class="loadingFrame">
+                            <img src="{% static 'img/loading_gif.gif' %}"/>
+                        </div>
                         <iframe src=""
                                 style="width: 100%; height: 100%; background-color: white;">
                         </iframe>
-                    {% else %}
-                        <div class="frame_container" style="position: relative; height: 100%;">
-                            <div class="loadingFrame">
-                                <img src="{% static 'img/loading_gif.gif' %}"/>
-                            </div>
-                            <iframe src="{{ viz.url }}" class="col-sm-6"
-                                style="width: 100%; height: 100%; background-color: white;">
-                            </iframe>
-                        </div>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
     </div>
 
 {% endblock %}
 
 {% block  js %}
+
+    <script type="text/javascript">
+        {% for key, viz in visualisations.items %}
+            setTimeout(
+              function()
+              {
+                $("#{{ key }}").find('iframe').attr({'src': '{{ viz.url| safe }}'});
+              }, {{ forloop.counter }} * 2000);
+        {% endfor %}
+    </script>
+
     <script type="text/javascript">
         $(".viz_container iframe").on( "load", function(){
             $(this).siblings(".loadingFrame").css( "display", "none" )

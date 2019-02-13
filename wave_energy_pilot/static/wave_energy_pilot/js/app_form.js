@@ -734,7 +734,7 @@ $(document).ready(function() {
 
             var dataset_id = $("#select_dataset_wave_resource_assessment_area :selected").val();
 
-            var url = "?dataset_id=14&start_date="+start_date+
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
                 "&longitude_from="+lng_from+"&longitude_to="+lng_to;
            return url;
