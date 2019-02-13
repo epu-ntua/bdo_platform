@@ -34,11 +34,12 @@
                         id="title-filter"
                     />
                     <span class="material-input"></span>
-                    <button class="btn btn-white btn-round btn-just-icon">
+                    <button class="btn btn-white btn-round btn-just-icon"  id="explore_btn2">
                         <i class="material-icons">search</i><div class="ripple-container"></div>
                     </button>
                 </div>
             </div>
+            <button id="explore_btn1" class="btn btn-success">View the platform's datasets</button>
         </div>
     </div>
 
@@ -95,7 +96,7 @@
             <div class="card">
               <img class="card-img-top" src="https://s3.amazonaws.com/engagefp7/BDO/pilot1b.jpg" alt="Card image cap">
               <div class="card-body">
-                <h4 class="card-text">Vessel Fault Prediction</h4>
+                <h4 class="card-text">Fault Detection and Predictive Maintenance</h4>
               </div>
             </div>
             <div class="card">
@@ -546,6 +547,14 @@
     <script>
         $("#title-filter").keyup(function(){
             $("#main-section").attr({"data-on-top": "true"});
+        });
+
+        $("#explore_btn1").click(function(){
+            $("#main-section").attr({'data-on-top': "true"});
+        });
+
+        $("#explore_btn2").click(function(){
+            $("#main-section").attr({'data-on-top': "true"});
         });
 
         $(".jplist-reset-btn").click(function(){
