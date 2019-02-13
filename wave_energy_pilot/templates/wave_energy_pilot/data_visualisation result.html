@@ -1,0 +1,67 @@
+{% extends "wave_energy_pilot/service_output.html" %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}">
+{% endblock %}
+
+{% block service_output_results %}
+    <h3 class="text-center"> Obtained Results </h3>
+    <div id="visualisation_statistics" class="col-sm-12" style="">
+        <div class="col-sm-12" style="text-align: center;">
+            <h3 class="pull-left"> Statistics </h3>
+        </div>
+        <div class="col-sm-12">
+            <div class="col-sm-12">
+                <table class="table" style="margin-bottom: 0;">
+                    <thead style="background-color: #30526a; color: white;">
+                        <tr>
+                            <th class="col-sm-5">Variable</th><th class="col-sm-2">Maximum</th><th class="col-sm-2">Average</th><th class="col-sm-2">Minimum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, var in result.items %}
+                            <tr>
+                                <td>{{ var.title }}</td>
+                                <td>{{ var.max|floatformat:3 }} {{ var.unit }}</td>
+                                <td>{{ var.avg|floatformat:3 }} {{ var.unit }}</td>
+                                <td>{{ var.min|floatformat:3 }} {{ var.unit }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="service_visualisations_container" class="text-center col-sm-12">
+        {% for key, viz in visualisations.items %}
+            <div class="viz_container" id="{{ key }}">
+                <h3 class="pull-left">{{ viz.title }}</h3>
+                {% if no_viz %}
+                    <iframe src=""
+                            style="width: 100%; height: 100%; background-color: white;">
+                    </iframe>
+                {% else %}
+                    <div class="frame_container" style="position: relative; height: 100%;">
+                        <div class="loadingFrame">
+                            <img src="{% static 'img/loading_gif.gif' %}"/>
+                        </div>
+                        <iframe src="{{ viz.url }}"
+                            style="width: 100%; height: 100%; background-color: white;">
+                        </iframe>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block  js %}
+    <script type="text/javascript">
+        $(".viz_container iframe").on( "load", function(){
+            $(this).siblings(".loadingFrame").css( "display", "none" )
+        });
+    </script>
+{% endblock %}

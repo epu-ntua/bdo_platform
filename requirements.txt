@@ -34,12 +34,12 @@ django-nvd3
 python-nvd3
 django-bower
 django-ckeditor
-
+geos=3.3
 
 # deployment
 dj-config-url==0.1.1
 newrelic
-whitenoise
+whitenoise==3.3.1
 gunicorn
 
 #cache

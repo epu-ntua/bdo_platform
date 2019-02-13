@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dashboard_builder', '0002_examplemodel_examplenonuploadmodel'),
+        ('dashboard_builder', '0001_initial'),
     ]
 
     operations = [

@@ -57,4 +57,7 @@ urlpatterns = [
     url(r'^s3direct/', include('s3direct.urls')),
 
     url(r'^feedback/', include('feedback_form.urls')),
+
+    # wave energy pilot urls
+    url(r'^wave-energy/', include('wave_energy_pilot.urls')),
 ]
