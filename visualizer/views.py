@@ -2060,7 +2060,7 @@ def get_histogram_chart_am(request):
         json_data = convert_unicode_json(json_data)
     else:
         bins += 1
-
+        var_title = x_var
         livy = False
         service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
         if len(service_exec) > 0:
@@ -2278,7 +2278,7 @@ def get_histogram_2d_matplotlib(request):
 
     im, cbar = heatmap(new_table, xedges, yedges, ax=ax,
                        cmap="YlGn", cbarlabel="Percentage %")
-    
+
     plt.xlabel(x_var_title, labelpad=10)
     plt.ylabel(y_var_title,  labelpad=10)
     fig.tight_layout()
@@ -2743,7 +2743,7 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 

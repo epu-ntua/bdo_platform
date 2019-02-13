@@ -55,3 +55,7 @@
 .modal-content{
     height: 45vh;
 }
+
+.dropdown.selection{
+    width: 100%;
+}
