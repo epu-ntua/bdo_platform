@@ -2754,6 +2754,7 @@ def get_time_series_am(request):
         temporal_resolution = str(request.GET.get('temporal_resolution', ''))
         y_var_list = request.GET.getlist('y_var[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
+        chart_type = str(request.GET.get('chart_type', 'line'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
@@ -2768,10 +2769,12 @@ def get_time_series_am(request):
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
-
-    return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'category_title':'time', 'min_period':min_chart_period})
-
+    if chart_type == 'line':
+        return render(request, 'visualizer/line_chart_am.html',
+                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
+    else:
+        return render(request, 'visualizer/column_chart_am.html',
+                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period': min_chart_period})
 
 
 def get_column_chart_am(request):
