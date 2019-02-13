@@ -25,8 +25,10 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     groups = []
     prejoin_groups = []
 
-    c_name, v_obj, data_table_names = preprocess_document(columns, groups, prejoin_groups,
+    c_name, v_obj, data_table_names, groups = preprocess_document(columns, groups, prejoin_groups,
                                                           header_sql_types, headers, selects, self)
+    # import pdb
+    # pdb.set_trace()
     prejoin_name = None
     if len(self.document['from']) > 1:
         prejoin_name = extract_prejoin_name(self.document['from'])
@@ -171,7 +173,9 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
             # if 'joined' not in s:
             c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
             if s.get('aggregate', '') != '':
-                c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+                c_name_with_agg = '%s(%s)' % (s.get('aggregate'), c_name)
+            else:
+                c_name_with_agg = c_name
 
             if not s.get('exclude', False):
                 header_sql_types.append(sql_type)
@@ -186,15 +190,19 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
                 })
 
                 # add fields to select clause
-                columns.append((c_name, '%s' % s['name'], '%s' % s['title'], s.get('aggregate')))
+                columns.append((c_name_with_agg, '%s' % s['name'], '%s' % s['title'], s.get('aggregate')))
 
             # add fields to grouping
             if s.get('groupBy', False):
-                groups.append(c_name)
-                prejoin_groups.append('%s(%s)' % (s.get('aggregate'), selects[s['name']]['column']))
+                if str(s.get('aggregate', '')).startswith('round') or str(s.get('aggregate', '')).startswith('date'):
+                    groups.append(c_name_with_agg)
+                    prejoin_groups.append('%s(%s)' % (s.get('aggregate'), selects[s['name']]['column']))
+                else:
+                    groups.append(c_name)
+                    prejoin_groups.append('%s' % (selects[s['name']]['column']))
         data_table_names.append(v_obj.data_table_name)
         groups = list(set(groups))
-    return c_name, v_obj, data_table_names
+    return c_name_with_agg, v_obj, data_table_names, groups
 
 
 def is_query_for_average(from_list):

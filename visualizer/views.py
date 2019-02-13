@@ -154,17 +154,19 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
     query = TempQuery(document=query.document)
     doc = query.document
     time_flag = platform_flag = lat_flag = lon_flag = var_flag = color_flag = False
-
+    # import pdb
+    # pdb.set_trace()
     for f in doc['from']:
         for s in f['select']:
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name']
                 s['groupBy'] = True
                 if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_minute'
+                    s['aggregate'] = 'date_trunc_hour'
                 time_flag = True
             elif s['name'] == color_col and (s['exclude'] is not True):
                 s['exclude'] = False
+                s['aggregate'] = agg_function
                 color_flag = True
             elif(s['name'] == variable) and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -189,7 +191,8 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
                 lon_flag = True
             else:
                 s['exclude'] = True
-
+    # import pdb
+    # pdb.set_trace()
     if not time_flag:
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
@@ -572,6 +575,7 @@ def map_visualizer(request):
             if (extra_js != ""):
                 js_list.append(extra_js)
     except (ValueError, Exception) as e:
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
 
     folium.LayerControl().add_to(m)
@@ -2713,7 +2717,7 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
                 s['exclude'] = False
                 x_flag = True
             else:
-                s['aggregate'] = ''
+                # s['aggregate'] = ''
                 s['groupBy'] = False
                 s['exclude'] = True
     if ordering == True:
