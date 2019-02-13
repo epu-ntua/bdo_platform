@@ -439,7 +439,7 @@
                               </div>
                               <div class="card-footer text-muted">
 {#                                  <span class="col-sm-10">last updated: 2 day ago</span>#}
-                                  <span class="col-sm-8">Size: {% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}  rows{% endif %}</span>
+                                  <span class="col-sm-8">Size: {% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}  rows{% endif %}, Last updated: {% if dataset.last_updated == None %}static{% else %}{{ dataset.last_updated }}{% endif %}</span>
                                   <span class="col-sm-4">
                                       {% if dataset.category != None %}
                                           <div class="dataset-category"><span class="badge">{{ dataset.category }}</span></div>
