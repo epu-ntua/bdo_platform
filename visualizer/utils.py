@@ -302,6 +302,7 @@ def delete_zep_notebook(notebook_id):
 
 
 def execute_code_on_livy(code, session_id, kind):
+    print 'executing code on livy'
     host = settings.LIVY_URL
     headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
@@ -863,7 +864,7 @@ def create_livy_session(notebook_id):
     headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
 
     data = { 'kind': 'pyspark',
-             'jars': ['/user/livy/jars/postgresql-42.2.2.jar'],
+             'jars': ['/user/livy/jars/postgresql-42.2.2.jar', '/user/livy/jars/presto-jdbc-0.213.jar'],
              'driverMemory': '2g',
              'driverCores': 2,
              'numExecutors': 1,
@@ -1022,4 +1023,5 @@ def get_result_dict_from_livy(session_id, dict_name):
 
 
 def close_livy_session(session_id):
-    requests.delete("{0}/sessions/{1}".format(settings.LIVY_URL, session_id))
+    headers = {'X-Requested-By': 'Admin'}
+    requests.delete("{0}/sessions/{1}".format(settings.LIVY_URL, session_id), headers=headers)

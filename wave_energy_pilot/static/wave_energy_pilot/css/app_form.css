@@ -1,0 +1,57 @@
+#app_form{
+    position: absolute;
+    right: 0;
+    z-index: 2;
+    background-color: white;
+    width: 19%;
+    top: 16%;
+    /*margin-top: 270px;*/
+}
+
+#chart-sidebar{
+    width: 100%;
+}
+
+
+
+.app-selector{
+    padding-top: 10px;
+}
+
+
+.ui-dropdown{
+    width: 100%;
+}
+#run-query-btn{
+    padding: 10px;
+}
+
+.form-check-label{
+    font-size: 14px;
+    color: #000000;
+}
+
+.form-group{
+    padding-bottom: 0px;
+    margin: 0 0 0 0;
+}
+
+#lat{
+    width: 62%;
+}
+
+#lon{
+    width: 62%;
+}
+
+.label-default{
+    background-color: #989898 !important;
+}
+
+.label-primary{
+    background-color: #0e2b3f !important;
+}
+
+.modal-content{
+    height: 45vh;
+}
