@@ -317,19 +317,26 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'title': "Sea surface wave significant height",
                              'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
                              'done': False})
-    visualisations['v2'] = ({'notebook_id': new_notebook_id,
+    visualisations['v2'] = ({'notebook_id': '',
+                             'df': '',
+                             'query': wave_height_query_id,
+                             'title': "Occurrence matrix",
+                             'url': "/visualizations/get_histogram_2d_am?viz_id=17&action=get_histogram_2d_am&y_var=i0_sea_surface_wave_significant_height&x_var=i1_sea_surface_wave_zero_upcrossing_period&bins=10&query=" + str(
+                                 wave_height_query_id),
+                             'done': False})
+    visualisations['v3'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
                              'title': "Power line chart",
                              'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
-    visualisations['v3'] = ({'notebook_id': new_notebook_id,
+    visualisations['v4'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
                              'title': "Power histogram",
                              'url': "/visualizations/get_histogram_chart_am/?bins=5&x_var=avg(power)&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
-    visualisations['v4'] = ({'notebook_id': '',
+    visualisations['v5'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Monthly availability of waves",
