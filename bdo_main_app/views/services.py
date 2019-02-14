@@ -50,7 +50,7 @@ def services(request):
     anek_service = {'title': 'Fault Detection and Predictive Maintenance',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot1b.jpg',
                       # 'targeturl': '/pilot/fault-prediction-anek/',
-                      'targeturl': '212.101.173.52:8065',
+                      'targeturl': 'http://212.101.173.52:8065',
                       'short_description': 'Design of better and more efficient risk maintenance management strategies facilitating the estimation of the failure effect probability and the estimated time-to-live of the equipment.',
                       'creator': 'ANEK',
                       'sharing': 'Private'}
@@ -58,7 +58,7 @@ def services(request):
     fnk_service = {'title': 'Fuel Consumption Reduction Investigation',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot3.jpg',
                       # 'targeturl': '/pilot/fault-prediction-fnk/',
-                      'targeturl': '212.101.173.52:8062',
+                      'targeturl': 'http://212.101.173.52:8062',
                       'short_description': 'Investigation of the impact of the environmental conditions and the operational decisions taken on the vessel\'s fuel consumption',
                       'creator': 'FOINIKAS',
                       'sharing': 'Private'}
