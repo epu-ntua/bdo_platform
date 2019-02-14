@@ -14,7 +14,7 @@ from access_controller.policy_enforcement_point import PEP
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ObjectDoesNotExist
 
-
+@never_cache
 def services(request):
     user = request.user
     if user.is_authenticated:
