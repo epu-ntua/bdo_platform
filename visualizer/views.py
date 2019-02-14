@@ -1260,15 +1260,16 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
     for d in data:
         if d[lat_index] > max_lat:
             max_lat = d[lat_index]
-        if d[lat_index] < min_lat:
+        if d[lat_index] < min_lat and d[lat_index] is not None:
             min_lat = d[lat_index]
         if d[lon_index] > max_lon:
             max_lon = d[lon_index]
-        if d[lon_index] < min_lon:
+        if d[lon_index] < min_lon and d[lon_index] is not None:
             min_lon = d[lon_index]
-        folium.Marker(
-            location=[d[lat_index], d[lon_index]],
-            popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
+        if d[var_index] is not None:
+            folium.Marker(
+                location=[d[lat_index], d[lon_index]],
+                popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
