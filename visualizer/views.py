@@ -402,14 +402,24 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
             if (s['name'] == heat_col) and (s['exclude'] is not True):
                 s['exclude'] = False
                 heat_col_flag = True
-            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'avg'
+            elif s['name'].split('_', 1)[1] == 'latitude':
                 s['exclude'] = False
                 lat_flag = True
-            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                # if heat_col == 'heatmap_frequency':
+                s['aggregate'] = 'round0'
+                s['groupBy'] = True
+            elif s['name'].split('_', 1)[1] == 'longitude':
                 s['exclude'] = False
                 lon_flag = True
-            # else:
-            #     s['exclude'] = True
+                # if heat_col == 'heatmap_frequency':
+                s['aggregate'] = 'round0'
+                s['groupBy'] = True
+            else:
+                s['exclude'] = True
+                s['aggregate'] = ''
+                s['groupBy'] = False
 
     if not heat_col_flag:
         if heat_col != 'heatmap_frequency':
