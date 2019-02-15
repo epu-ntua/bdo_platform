@@ -58,7 +58,7 @@ class Command(BaseCommand):
         self.stdout.write(str(tables_to_add))
         self.stdout.write(str(len(tables_to_add)))
 
-        for profile in profile_list:
+        for profile in profile_list[:2]:
             if profile["storageTable"] in tables_to_add:
                 dataset = Dataset(title=profile["title"],
                                   source=profile["source"],
@@ -235,7 +235,8 @@ class Command(BaseCommand):
             else:
                 dataset.last_updated = datetime.strptime(response.content, '%Y-%m-%dT%H:%M:%S.%f')
                 dataset.save()
-            if response.content != '' or profile["storageTable"] in tables_to_add:
+            if profile["storageTable"] in tables_to_add:
+            # if 1 == 1:
                 rows_to_render = []
                 variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
                 variable_list_units = [v.unit for v in Variable.objects.filter(dataset=dataset)]
@@ -247,6 +248,10 @@ class Command(BaseCommand):
                 for column in column_list_titles:
                     column_list_string += ", " + column
                 column_list_string = column_list_string[1:]
+                column_list_filter_string = ""
+                for column in column_list_titles[:5]:
+                    column_list_filter_string += "AND " + column + " is not NULL "
+                column_list_filter_string = column_list_filter_string[4:]
                 try:
                     presto_credentials = settings.DATABASES['UBITECH_PRESTO']
                     conn_presto = prestodb.dbapi.connect(
@@ -257,7 +262,7 @@ class Command(BaseCommand):
                         schema=presto_credentials['SCHEMA'],
                     )
                     cursor_presto = conn_presto.cursor()
-                    query = "SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " LIMIT 5"
+                    query = "SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " WHERE " + column_list_filter_string + " LIMIT 5"
                     print query
                     cursor_presto.execute(query)
                     rows_to_render = cursor_presto.fetchall()
@@ -281,6 +286,8 @@ class Command(BaseCommand):
                     print 'error'
                     print str(e)
                     pass
+
+            if response.content != '' or profile["storageTable"] in tables_to_add:
                 try:
                     presto_credentials = settings.DATABASES['UBITECH_PRESTO']
                     conn_presto = prestodb.dbapi.connect(
