@@ -276,6 +276,7 @@
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
     <script type="text/javascript">
         var img_source_path =  "{% static "img/loading_gif.gif" %}";
+        var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');
     </script>
     <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
     <script>

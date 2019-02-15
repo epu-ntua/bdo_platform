@@ -25,8 +25,10 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     groups = []
     prejoin_groups = []
 
-    c_name, v_obj, data_table_names = preprocess_document(columns, groups, prejoin_groups,
+    c_name, v_obj, data_table_names, groups = preprocess_document(columns, groups, prejoin_groups,
                                                           header_sql_types, headers, selects, self)
+    # import pdb
+    # pdb.set_trace()
     prejoin_name = None
     if len(self.document['from']) > 1:
         prejoin_name = extract_prejoin_name(self.document['from'])
@@ -145,6 +147,8 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
 
         for s in _from['select']:
             if s['type'] != 'VALUE':
+                human_column_name = Dimension.objects.get(pk=s['type']).title
+                print human_column_name
                 dimension = Dimension.objects.get(pk=s['type'])
                 column_name = dimension.data_column_name
                 column_unit = dimension.unit
@@ -152,6 +156,8 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
                 column_step = dimension.step
                 sql_type = dimension.sql_type
             else:
+                human_column_name = Variable.objects.get(pk=_from['type']).title
+                print human_column_name
                 if v_obj.dataset.stored_at == 'UBITECH_PRESTO':
                     column_name = v_obj.name
                 else:
@@ -167,12 +173,14 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
             # if 'joined' not in s:
             c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
             if s.get('aggregate', '') != '':
-                c_name = '%s(%s)' % (s.get('aggregate'), c_name)
+                c_name_with_agg = '%s(%s)' % (s.get('aggregate'), c_name)
+            else:
+                c_name_with_agg = c_name
 
             if not s.get('exclude', False):
                 header_sql_types.append(sql_type)
                 headers.append({
-                    'title': s['title'],
+                    'title': human_column_name,
                     'name': s['name'],
                     'unit': column_unit,
                     'step': column_step,
@@ -182,15 +190,19 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
                 })
 
                 # add fields to select clause
-                columns.append((c_name, '%s' % s['name'], '%s' % s['title'], s.get('aggregate')))
+                columns.append((c_name_with_agg, '%s' % s['name'], '%s' % s['title'], s.get('aggregate')))
 
             # add fields to grouping
             if s.get('groupBy', False):
-                groups.append(c_name)
-                prejoin_groups.append('%s(%s)' % (s.get('aggregate'), selects[s['name']]['column']))
+                if str(s.get('aggregate', '')).startswith('round') or str(s.get('aggregate', '')).startswith('date'):
+                    groups.append(c_name_with_agg)
+                    prejoin_groups.append('%s(%s)' % (s.get('aggregate'), selects[s['name']]['column']))
+                else:
+                    groups.append(c_name)
+                    prejoin_groups.append('%s' % (selects[s['name']]['column']))
         data_table_names.append(v_obj.data_table_name)
         groups = list(set(groups))
-    return c_name, v_obj, data_table_names
+    return c_name_with_agg, v_obj, data_table_names, groups
 
 
 def is_query_for_average(from_list):

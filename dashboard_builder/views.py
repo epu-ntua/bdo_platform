@@ -41,6 +41,13 @@ def build_dynamic_dashboard(request):
         num_of_dashboards = Dashboard.objects.count()
         toCreate = request.GET.get('toCreate', 'None')
         form_class = forms.CkEditorForm
+        conf_viz_json = ''
+        try:
+            with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+                conf_viz_json = json.dumps(json.load(f))
+        except:
+            pass
+
         return render(request, 'dashboard_builder/dashboardbuilder3.html', {
             'dashboard_title': num_of_dashboards+1,
             'sidebar_active': 'products',
@@ -52,6 +59,7 @@ def build_dynamic_dashboard(request):
             'toCreate': toCreate,
             'variables_list': variables_list,
             'dimensions_list': dimensions_list,
+            'visualisation_configuration': conf_viz_json
             # 'datasets_of_queries_lists': datasets,
         })
     else:
@@ -102,6 +110,12 @@ def edit_dashboard(request, pk=None):
         form_class = forms.CkEditorForm
         dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
         print dashboard.viz_components
+        conf_viz_json = ''
+        try:
+            with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+                conf_viz_json = json.dumps(json.load(f))
+        except:
+            pass
         return render(request, 'dashboard_builder/dashboard_editor_new.html', {
             'dashboard': dashboard,
             'dashboard_json': json.dumps(dashboard.viz_components),
@@ -114,6 +128,7 @@ def edit_dashboard(request, pk=None):
             # 'toCreate': toCreate,
             'variables_list': variables_list,
             'dimensions_list': dimensions_list,
+            'visualisation_configuration': conf_viz_json
         })
     return None
 

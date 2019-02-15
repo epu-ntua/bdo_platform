@@ -70,6 +70,7 @@ $(function() {
                     name: $(variable).data('variable-name'),
                     title: $(variable).data('variable-title'),
                     unit: $(variable).data('variable-unit'),
+                    dataset_id: $(variable).data('variable-dataset'),
                     aggregate: null,
                     groupBy: null,
                     dimensions: dims

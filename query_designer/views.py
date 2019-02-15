@@ -86,7 +86,11 @@ def clean(request, pk=None):
     #     if dataset.organization.title not in organization_list:
     #         organization_list.append(dataset.organization.title)
     variable_list = Variable.objects.all()
-
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            conf_viz_json = json.dumps(json.load(f))
+    except:
+        pass
     return render(request, 'query_designer/clean.html', {
         'organizations': organization_list,
         'publishers': publisher_list,
@@ -96,6 +100,7 @@ def clean(request, pk=None):
         # 'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
         'available_viz': Visualization.objects.filter(hidden=False).order_by('order'),
         'AGGREGATES': AGGREGATES,
+        'visualisation_configuration': conf_viz_json
     })
 
 

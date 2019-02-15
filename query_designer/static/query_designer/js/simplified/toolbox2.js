@@ -91,10 +91,18 @@ $(function () {
             $.each(obj.chartPolicy.aggregates, function(idx, aggregate) {
                 // create aggregate option
                 var $option = $('<option />').text(aggregate.title).attr('value', aggregate.value);
+                // if resolution or groupby is eneabled disable -noaggregate option and set default aggregate function AVG
+                if((QueryToolbox.groupings.length>0)||($("#spatial_resolution").val() !== '')||($("#temporal_resolution").val() !== '')){
+                    if(aggregate.title === "(No aggregate)") {
+                        $option.attr('disabled', 'disabled')
+                    }
+                    if(aggregate.title === "Average") {
+                        $option.attr("selected","selected");
+                    }
+                }
                 // add to aggregate select
                 $aggregateSelect.append($option);
             });
-
 
             var $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%;"/>')
             $fieldInputShown.attr('data-variable-id', config.id);
@@ -143,6 +151,7 @@ $(function () {
                 var $table = $("#graph-data-table");
                 $table.find('thead').empty();
                 $table.find('tbody').empty();
+                reset();
             }
         },
 
@@ -192,7 +201,7 @@ $(function () {
                 "limit": ($('#limit_container select').val() !== 'none')? parseInt($('#limit_container select').val()) : [],
                 "orderings": []
             };
-
+            this.create_grouping_list();
             // for each variable
             $.each(QueryToolbox.variables, function(idx, variable) {
                 var _from = {
@@ -344,6 +353,7 @@ $(function () {
                         }
                         else {
                             var $header = $('<tr />');
+                            console.log(response);
                             $.each(response.headers.columns, function (idx, col) {
                                 $header.append($('<td />').text(col.title))
                             });
@@ -378,7 +388,31 @@ $(function () {
             // first save
             QueryToolbox.save(runQuery, 1);
         },
+        create_grouping_list: function () {
+            var grouping_list=[];
+            $.each(QueryToolbox.groupings, function (_, elem) {
+                grouping_list.push(elem.dimension_title);
+            });
+            if (QueryToolbox.temporal_resolution !== ""){
+                grouping_list.push('time');
+            }
+            if (QueryToolbox.spatial_resolution !== "") {
+                grouping_list.push('latitude');
+                grouping_list.push('longitude');
+            }
+            if (grouping_list.length>0) {
+                $.each(QueryToolbox.orderings, function (index, elem) {
+                    if (!(grouping_list.includes(elem.title))) {
+                        QueryToolbox.orderings.splice(index,1);
+                        var $sel =  $('[name="orderby"] option[data-title="'+ String(elem.title) +'"]');
+                        $sel.prop('selected', false);
+                        $sel.removeAttr('disabled');
+                        refresh_selects2();
+                    }
+                });
+            }
 
+        },
 
 
         // *** TABS - LOAD - SAVE - RENAME ***
@@ -961,12 +995,22 @@ $(function () {
 
     // Add the select2 flieds
     $('#resolution select').select2();
-    $('#query-controls-container select').select2({
+    $('.query-controls-container select').select2({
         width: "100%",
         escapeMarkup: function(markup) {
             return markup;
         }
     });
+
+    // $('.query-controls-container [name="orderby"]').on("change", function(e) {
+    //     setTimeout(function(){ update_fields_when_ordering_asc_desc(); },100);
+    // });
+
+    // $('.query-controls-container [name="category"]').on("change", function(e) {
+    //     setTimeout(function(){ update_fields_when_grouping(); },100);
+    // });
+
+
     /* Filter dialog should always use select2 */
     $('#filters-modal select').select2();
     /* Limit input should use select2, with tags also */
@@ -1002,17 +1046,17 @@ $(function () {
 
     }
 
-    function reset(){
-        $('.value-remove-btn').click();
-        $('#selected_dimensions > option').remove();
-        $('#id_category > option').remove();
-        $('#id_orderby > option').remove();
-        $('#resetMapBounds').click();
-        $('#chart-filters > .filter').remove();
-
-        // $('#lat_min').val("").trigger('change');
-        // $('#lat_max').val("").trigger('change');
-    }
+    // function reset(){
+    //     $('.value-remove-btn').click();
+    //     $('#selected_dimensions > option').remove();
+    //     $('#id_category > option').remove();
+    //     $('#id_orderby > option').remove();
+    //     $('#resetMapBounds').click();
+    //     $('#chart-filters > .filter').remove();
+    //
+    //     // $('#lat_min').val("").trigger('change');
+    //     // $('#lat_max').val("").trigger('change');
+    // }
     // export
     window.QueryToolbox = QueryToolbox;
 });

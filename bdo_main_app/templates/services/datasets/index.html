@@ -46,6 +46,7 @@
                             <div class="col-xs-7">
                                 <div class="dataset-license">Observation Type: {{ dataset.observation }}</div>
                                 <div class="dataset-license">License: {{ dataset.license }}</div>
+                                <div class="dataset-last-update">Last updated: {% if dataset.last_updated == None %}static{% else %}{{ dataset.last_updated }}{% endif %}</div>
                             </div>
                             <div class="col-xs-2 pull-right">
                                 <div class="pull-right" style="text-align: right;">
@@ -86,6 +87,9 @@
 {#                        </li>#}
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="tab" href="#metadata" role="tab">Metadata</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#variables" role="tab">Variables</a>
                         </li>
                     </ul>
                     <!-- Tab panes -->
@@ -200,6 +204,29 @@
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+
+                        <div class="tab-pane" id="variables" role="tabpanel">
+                            <table class="table">
+                                <thead class="text-info">
+                                    <tr>
+                                        <th>Variable Name</th>
+                                        <th>Unit</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for var in dataset.variables.all %}
+                                        <tr>
+                                            <td>{{ var.title }}</td>
+                                            <td>{{ var.unit }}</td>
+                                            <td>{{ var.dataType }}</td>
+                                            <td>{{ var.description }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

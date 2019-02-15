@@ -248,3 +248,8 @@ ul {
             display: block;
         }
 
+
+.conf-error-message{
+    color: darkred;
+    font-size: small;
+}

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load static %}
+{% load leaflet_tags %}
+{% block css %}
+    <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+    <link href="{% static "wave_energy_pilot/css/app_form.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/bootstrap-tour/build/css/bootstrap-tour.css"%}" rel="stylesheet">
+
+{% endblock %}
+
+{% block content %}
+    <div class="app-container">
+
+
+        <div id="map" style="min-height: 800px; width: 100%; margin-top: 10px; z-index: 1; ">
+        </div>
+
+        <div id="buoys">
+                {% for buoy in buoys_list %}
+                    <div class="buoy" data-id="{{ buoy.id }}" data-lat="{{ buoy.lat }}" data-lon="{{ buoy.lon }}" data-dataset_id="{{ buoy.dataset_id }}">
+                    </div>
+                {% endfor %}
+        </div>
+
+        <div id="data-radius" data-value="{{ data_radius }}"></div>
+        <div id="app_form" class="form container " >
+            {% include "wave_energy_pilot/utils/basic_form_tab.html" %}
+        </div>
+        
+{#        <btn id="execution_btn" class="btn btn-success">Execute!</btn>#}
+{#        <span id="execution_status"></span>#}
+        {% for app_name, data in execution_steps.items %}
+            <btn id="execution_btn_{{ app_name }}" class="btn btn-success hidden" data-toggle="modal" data-target="#{{ app_name }}_modal">Execute_{{ forloop.counter }}</btn>
+        {% endfor %}
+        <input hidden id="execution_status" type="text" value=""/>
+    </div>
+
+
+
+{% endblock %}
+
+{% block  js %}
+    {% include 'wave_energy_pilot/utils/status_modal.html' %}
+
+    {% leaflet_js %}
+
+    <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+    <script src="{% static "vendor/bootstrap-tour/build/js/bootstrap-tour.js"%}"></script>
+    <script src="{% static "wave_energy_pilot/js/area-select/simple-shape.js" %}"></script>
+    <script src="{% static "wave_energy_pilot/js/area-select/rectangle.js" %}"></script>
+    <script src="{% static 'wave_energy_pilot/js/spatio_temporal_filter.js'%}" ></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script src="{% static 'wave_energy_pilot/js/app_form.js' %}"></script>
+    <script src="{% static 'wave_energy_pilot/js/location_markers.js' %}"></script>
+
+
+{#    <script type="text/javascript">#}
+{#        var exec_instance = '';#}
+{#        $("#execution_btn").click(function () {#}
+{#            $.ajax({#}
+{#                "type": "GET",#}
+{#                "url": "/wave-energy/evaluate_location/execute/?dataset_id=14&start_date=2019-01-05&end_date=2019-01-15&latitude_from=35.1&latitude_to=40.2&longitude_from=-11.3&longitude_to=-6.4",#}
+{#                "data": {},#}
+{#                "success": function(result) {#}
+{#                    console.log(result);#}
+{#                    exec_instance = result['exec_instance'];#}
+{#                },#}
+{#                error: function () {#}
+{#                    alert('error');#}
+{#                }#}
+{#            });#}
+{##}
+{#            var execution_status_interval = setInterval(check_execution_status, 5000);#}
+{##}
+{#            function check_execution_status() {#}
+{#                $.ajax({#}
+{#                    "type": "GET",#}
+{#                    "url": "/wave-energy/evaluate_location/status/"+exec_instance+"/",#}
+{#                    "data": {},#}
+{#                    "success": function(result) {#}
+{#                        console.log(result["status"]);#}
+{#                        $("#execution_status").val(result["status"]);#}
+{#                        if(result["status"] === "done"){#}
+{#                            execution_status_stop();#}
+{#                            // similar behavior as clicking on a link#}
+{#                            window.location.href = "/wave-energy/evaluate_location/results/"+exec_instance+"/";#}
+{#                        }#}
+{#                        else if (result["status"] === "failed") {#}
+{#                            execution_status_stop();#}
+{#                            alert("execution failed");#}
+{#                        }#}
+{#                    },#}
+{#                    error: function () {#}
+{#                        $("#execution_status").val("failed");#}
+{#                        execution_status_stop();#}
+{#                        alert('error');#}
+{#                    }#}
+{#                });#}
+{#            }#}
+{##}
+{#            function execution_status_stop() {#}
+{#              clearInterval(execution_status_interval);#}
+{#            }#}
+{#        });#}
+{##}
+{##}
+{#        window.setInterval(function () {#}
+{#            if($(".modal.in").length > 0) {#}
+{#                var old_status = $(" .modal.in #modal_status_input").val();#}
+{#                var new_status = $("#execution_status").val();#}
+{#                if (old_status !== new_status) {#}
+{#                    console.log(new_status);#}
+{#                    $(".modal.in #modal_status_input").val(new_status);#}
+{#                    $(".modal.in #modal_status_div").fadeOut("3000").html(new_status).fadeIn("3000");#}
+{#                    $(".modal.in .status_counter").each(function (index, elem) {#}
+{#                        console.log($(elem).data("status"));#}
+{#                        if ($(elem).attr("data-status") === new_status) {#}
+{#                            console.log('found');#}
+{#                            var new_step_counter = $(elem).attr("data-counter");#}
+{#                            $(elem).removeClass('label-default').addClass('label-primary');#}
+{##}
+{#                            var $total = parseInt($(".modal.in #number_of_steps").val());#}
+{#                            var $current = parseInt(new_step_counter);#}
+{#                            var $percent = ($current / $total) * 100;#}
+{#                            $(".modal.in .progress-bar").css({width: $percent + '%'});#}
+{#                        }#}
+{#                    });#}
+{##}
+{#                }#}
+{#                if (new_status === "failed"){#}
+{#                    $(".modal.in .progress-bar").css({width: '100%', background: '#db2828'});#}
+{#                    $(".modal.in .status_counter").each(function (index, elem) {#}
+{#                        $(elem).removeClass('label-default').addClass('label-primary');#}
+{#                    });#}
+{#                    $(".modal.in #modal_dismiss_btn_cancel").hide();#}
+{#                    $(".modal.in #modal_dismiss_btn_close").show();#}
+{#                }#}
+{#            }#}
+{#        }, 1000);#}
+{##}
+{#        $('.modal').on('hidden.bs.modal', function () {#}
+{#            $(" .modal #modal_status_input").val('');#}
+{#            $("#execution_status").val('');#}
+{#            $(".modal #modal_dismiss_btn_cancel").show();#}
+{#            $(".modal #modal_dismiss_btn_close").hide();#}
+{#            $(".modal .status_counter").each(function (index, elem) {#}
+{#                $(elem).removeClass('label-default').removeClass('label-primary').addClass('label-default');#}
+{#            });#}
+{#            $(".modal .progress-bar").css({width: '0%', background: '#337ab7'});#}
+{#            $(".modal #modal_status_div").html('');#}
+{#        });#}
+{##}
+{#        $("#modal_dismiss_btn_cancel").click(function () {#}
+{#            $.ajax({#}
+{#                "type": "GET",#}
+{#                "url": "/wave-energy/"+exec_instance+"/",#}
+{#                "data": {},#}
+{#                "success": function(result) {#}
+{#                    console.log('service cancelled');#}
+{#                },#}
+{#                error: function () {#}
+{#                    console.log('error cancelling service');#}
+{#                },#}
+{#                complete: function () {#}
+{#                    exec_instance = '';#}
+{#                }#}
+{#            });#}
+{#        });#}
+{#    </script>#}
+
+
+{% endblock %}
