@@ -17,6 +17,8 @@ import os, re, time
 from nvd3 import pieChart, lineChart
 import psycopg2
 
+from matplotlib import use
+
 from django.template.loader import render_to_string
 
 from service_builder.models import ServiceInstance
@@ -24,7 +26,6 @@ from service_builder.views import updateServiceInstanceVisualizations
 import numpy as np
 
 import matplotlib
-from matplotlib import use
 # import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 use('Agg')
@@ -154,8 +155,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
     query = TempQuery(document=query.document)
     doc = query.document
     time_flag = platform_flag = lat_flag = lon_flag = var_flag = color_flag = False
-    # import pdb
-    # pdb.set_trace()
+
     for f in doc['from']:
         for s in f['select']:
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
@@ -191,8 +191,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
                 lon_flag = True
             else:
                 s['exclude'] = True
-    # import pdb
-    # pdb.set_trace()
+
     if not time_flag:
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
@@ -220,9 +219,9 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
         raise ValueError('The variable is missing from the selected query. The requested visualisation cannot be executed.')
     doc['limit'] = marker_limit
 
-    # if use_color_col:
-    #     if not color_flag:
-    #         raise ValueError('A variable or dimension has to be selected, if color separation is enabled.')
+    if use_color_col:
+        if not color_flag:
+            raise ValueError('A variable or dimension has to be selected, if color separation is enabled.')
 
     query.document = doc
     return query
@@ -437,8 +436,6 @@ def load_modify_query_contours(agg_function, query_pk, round_num, variable):
     for f in doc['from']:
         right_var = False
         for s in f['select']:
-            # import pdb
-            # pdb.set_trace()
             if s['name'] == variable and (s['exclude'] is not True):
                 s['aggregate'] = agg_function
                 s['exclude'] = False
@@ -2805,7 +2802,7 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, orderi
         y_title_list.insert(0, str(x))
         y_m_unit.insert(0, str('unknown unit'))
     x_var_title = x_var
-    print json_data[:2]
+
     return json_data, y_m_unit, y_title_list, x_var_title
 
 
@@ -2907,7 +2904,7 @@ def get_pie_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
-            json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, key_var, [value_var])
+            json_data, y_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
         elif df !='':
             json_data, y_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
         else:
