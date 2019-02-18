@@ -29,6 +29,9 @@ urlpatterns = [
     # profiles
     url(r'^profile/', include('bdo_profile.urls')),
 
+    # profiles
+    url(r'^access_control/', include('access_controller.urls')),
+
     # query designer
     url(r'^queries/', include('query_designer.urls')),
 

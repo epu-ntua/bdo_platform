@@ -5,6 +5,8 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
+
+from access_controller.policy_enforcement_point import PEP
 from query_designer.models import Query
 from visualizer.models import Visualization
 from dashboard_builder.models import Dashboard
@@ -90,8 +92,15 @@ def edit_dashboard(request, pk=None):
             message = 'You cannot edit this Dashboard!\nThe Dashboard does not exist or has already been deleted!'
             return render(request, 'error_page.html', {'message': message})
 
+        # try:
+        #     if dashboard.user_id != user.id:
+        #         raise PermissionDenied
+        # except:
+        #     return HttpResponseForbidden()
+        # check for the access
         try:
-            if dashboard.user_id != user.id:
+            access_decision = PEP.access_to_edit_dashboard(request, dashboard.id)
+            if access_decision is False:
                 raise PermissionDenied
         except:
             return HttpResponseForbidden()
@@ -116,11 +125,18 @@ def edit_dashboard(request, pk=None):
                 conf_viz_json = json.dumps(json.load(f))
         except:
             pass
+
+        # check if user is the owner or just has been granted access
+        owner = False
+        if dashboard.user_id == user.id:
+            owner = True
+
         return render(request, 'dashboard_builder/dashboard_editor_new.html', {
             'dashboard': dashboard,
             'dashboard_json': json.dumps(dashboard.viz_components),
             'dashboard_pk': pk,
             'dashboard_title': dashboard.title,
+            'is_owner': owner,
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
             'available_viz': Visualization.objects.filter(hidden=False).order_by('-type', '-title'),
@@ -156,6 +172,7 @@ def get_visualization_form_fields_df(request):
 
 
 def save_dashboard(request, pk=None):
+
     # create or update
     if not pk:
         user = request.user
@@ -166,6 +183,13 @@ def save_dashboard(request, pk=None):
 
     else:
         dashboard = Dashboard.objects.get(pk=pk)
+        # check access
+        try:
+            access_decision = PEP.access_to_edit_dashboard(request, dashboard.id)
+            if access_decision is False:
+                raise PermissionDenied
+        except:
+            return HttpResponseForbidden()
 
     dashboard.title = 'BDO Dashboard'
     print request.POST

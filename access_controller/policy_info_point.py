@@ -17,6 +17,10 @@ class PIP:
         return [PublicResourcePolicy(), OwnerPolicy(), AccessGrantedPolicy()]
 
     @staticmethod
+    def getDashboardEditPolicies():
+        return [OwnerPolicy(), EditGrantedPolicy()]
+
+    @staticmethod
     def getServicePolicies():
         return [PublicResourcePolicy(), OwnerPolicy(), AccessGrantedPolicy()]
 
@@ -36,7 +40,7 @@ class PIP:
         dashboard = Dashboard.objects.get(pk=dashboard_id)
         response['dashboard_owner'] = dashboard.user
         response['dashboard_private'] = dashboard.private
-        response['access_list'] = [{"user": acc.user, "start": acc.start, "end": acc.end, "valid": acc.valid, }
+        response['access_list'] = [{"user": acc.user, "start": acc.start, "end": acc.end, "valid": acc.valid, "can_edit": acc.can_edit, }
                                    for acc in DashboardAccess.objects.filter(dashboard=dashboard)]
         return response
 

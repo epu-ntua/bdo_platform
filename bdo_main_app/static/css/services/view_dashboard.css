@@ -154,3 +154,7 @@
             padding-bottom: 5px;
             width: 90%;
         }
+
+        .checkbox .checkbox-material {
+            padding-left: 0 !important;
+        }

@@ -52,9 +52,11 @@
         <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" >
             Save Dashboard
         </button>
-        <button data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_dashboard_btn" style="float: right; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;" class="btn btn-md">
-             <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Dashboard</span>
-        </button>
+        {% if is_owner %}
+            <button data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_dashboard_btn" style="float: right; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;" class="btn btn-md">
+                 <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Dashboard</span>
+            </button>
+        {% endif %}
     </div>
 
 

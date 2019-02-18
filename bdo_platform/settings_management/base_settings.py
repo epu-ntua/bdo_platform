@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'on_demand',
     'data_parser',
     'feedback_form',
+    'access_controller',
     'wave_energy_pilot'
 ]
 

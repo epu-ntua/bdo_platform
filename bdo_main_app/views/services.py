@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.utils.timezone import now
 
 # from bdo_main_app.models import Service
-from dashboard_builder.models import Dashboard
+from dashboard_builder.models import Dashboard, DashboardAccess
 from service_builder.models import Service
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
@@ -97,17 +97,25 @@ def view_dashboard(request, pk):
             raise PermissionDenied
     except:
         return HttpResponseForbidden()
+
     # check if user is the owner or just has been granted access
     owner = False
     if dashboard.user_id == user.id:
         owner = True
+
+    # check if user has rights to edit
+    can_edit = False
+    for da in DashboardAccess.objects.filter(dashboard=dashboard, user=user):
+        if da.can_edit:
+            can_edit = True
     dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
     print dashboard.viz_components
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
         'dashboard_json': json.dumps(dashboard.viz_components),
         'pk': pk,
-        'is_owner': owner
+        'is_owner': owner,
+        'can_edit': can_edit
     })
 
 

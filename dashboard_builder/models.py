@@ -35,11 +35,10 @@ class DashboardAccess(Model):
     start = DateField()
     end = DateField()
     valid = BooleanField()
+    can_edit = BooleanField(default=False)
 
 
-class ExampleModel(Model):
-    content = RichTextUploadingField()
+class DashboardAccessRequest(Model):
+    user = ForeignKey(User, on_delete=CASCADE)
+    dashboard = ForeignKey(Dashboard, on_delete=CASCADE)
 
-
-class ExampleNonUploadModel(Model):
-    content = RichTextField()
