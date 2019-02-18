@@ -27,6 +27,12 @@ class Organization(Model):
         return u'%s' % self.title
 
 
+class Vessel_Identifier(Model):
+    dataset = ForeignKey('Dataset', related_name='vessel_identifiers', on_delete=CASCADE)
+    column_name = CharField(max_length=200)
+    values_list = JSONField()
+
+
 class Dataset(Model):
     title = TextField()
     source = TextField()

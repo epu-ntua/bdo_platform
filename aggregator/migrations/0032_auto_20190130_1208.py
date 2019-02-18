@@ -12,17 +12,17 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name='dataset',
-            old_name='spatiaNorth',
-            new_name='spatialNorth',
-        ),
-        migrations.RemoveField(
-            model_name='dimension',
-            name='description',
-        ),
-        migrations.RemoveField(
-            model_name='variable',
-            name='description',
-        ),
+        # migrations.RenameField(
+        #     model_name='dataset',
+        #     old_name='spatiaNorth',
+        #     new_name='spatialNorth',
+        # ),
+        # migrations.RemoveField(
+        #     model_name='dimension',
+        #     name='description',
+        # ),
+        # migrations.RemoveField(
+        #     model_name='variable',
+        #     name='description',
+        # ),
     ]

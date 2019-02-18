@@ -155,7 +155,7 @@ $("#select_data_popover").click(function () {
                 });
 
 
-                updateVariables();
+                updateVariables(populate_selects);
 
                 $(component_selector).popover('show');
                 var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
@@ -164,7 +164,7 @@ $("#select_data_popover").click(function () {
                     viz_info_text = viz_info_text + "\n-"+$(this).text()+": " + $(this).attr('title');
                 });
                 $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
-                
+
                 $(component_selector).on("hidden.bs.popover", function(e) {
                     selected_val = null;
                     var_list = null;
@@ -176,7 +176,7 @@ $("#select_data_popover").click(function () {
                     $(component_selector).popover('destroy');
 
                 });
-                populate_selects();
+
                 setTimeout(function () {
                     specific_viz_form_configuration();
                 },150);
@@ -200,11 +200,13 @@ $("#select_data_popover").click(function () {
                 });
             });
 
-            function updateVariables(){
+            function updateVariables(_callback){
                 $('#myModal .variable-select').find('option').remove();
                 $('#myModal .variables-select ').find('option').remove();
                 $('#myModal .column-select ').find('option').remove();
                 $('#myModal .columns-select ').find('option').remove();
+                $('#myModal .vessel-id-columns-select ').find('option').remove();
+                $('#myModal .vessel-id-selectt ').find('option').remove();
                 $('#myModal .ais-select ').find('option').remove();
                 var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
                 var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
@@ -214,6 +216,27 @@ $("#select_data_popover").click(function () {
                 $('#myModal .column-select ').html(variables_content + dimensions_content);
                 $('#myModal .columns-select ').html(variables_content + dimensions_content);
                 // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
+
+                $.ajax({
+                    "type": "GET",
+                    "url": "/visualizations/get_vessel_ids_info/"+String(new_query_id)+"/",
+                    "success": function(result) {
+                            console.log(result);
+                            $.each(result, function (col_name, values_list) {
+                                $('#myModal .vessel-id-columns-select').append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                $.each(values_list, function (_, id_value) {
+                                    $('#myModal .vessel-id-select').append("<option value='"+id_value+"'>"+id_value+"</option>");
+                                });
+                            });
+                        },
+                    "error": function () {
+                        console.log('error getting vessel identifiers');
+                    },
+                    "complete": function(data) {
+                        _callback();
+                    }
+                });
+
             }
             function populate_selects(){
 
@@ -267,10 +290,21 @@ $("#select_data_popover").click(function () {
                     placeholder: 'Select Variable(s)',
                 });
 
-                 $(".popover-content .columns-select").dropdown({
+                $(".popover-content .columns-select").dropdown({
                     clearable: true,
                     placeholder: 'Select Variables or Dimensions',
                 });
+
+                $(".popover-content .vessel-id-columns-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select the column to use as vessel identifier',
+                });
+
+                $(".popover-content .vessel-id-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select the vessel identifier',
+                });
+
 
                 $(".popover-content .aggregate-select").dropdown({
                     placeholder: 'Select an Aggregate Function'
@@ -709,6 +743,7 @@ $("#select_data_popover").click(function () {
                 plotline_vessel_course_input.on('input',function () {
                     allow_plotline_submit = limit_points(plotline_vessel_course_input,viz_conf_plotline,allow_plotline_submit,'positions',0);
                 });
+                aggregate_value_col_select.parent().dropdown('clear');
 
 
                 //CONTOURS
@@ -778,6 +813,9 @@ $("#select_data_popover").click(function () {
                 });
                 markers_vessel_col_select.dropdown('refresh');
                 markers_vessel_col_select.parent().dropdown('clear');
+                var markers_vessel_col_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-columns-select');
+                markers_vessel_col_id_select.parent().dropdown('clear');
+
 
 
                  //MAP MARKERS GRID

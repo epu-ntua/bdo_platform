@@ -2,7 +2,7 @@ from __future__ import unicode_literals, division
 # -*- coding: utf-8 -*-
 import prestodb
 from django.conf import settings
-from django.http.response import HttpResponseNotFound
+from django.http.response import HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, redirect
 from django.db import connection, connections
 from rest_framework.views import APIView
@@ -50,6 +50,19 @@ FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige'
                  'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
 
 AGGREGATE_VIZ = ['max', 'min', 'avg', 'sum', 'count']
+
+
+def get_vessel_ids_info(request, query_id):
+    return_dict = dict()
+    q = AbstractQuery.objects.get(pk=int(query_id))
+    dataset_list = []
+    for el in q.document['from']:
+        dataset_list.append(Variable.objects.get(id=int(el['type'])).dataset)
+    for dataset in set(dataset_list):
+        for vi in dataset.vessel_identifiers.all():
+            return_dict[vi.column_name] = [x[0] for x in vi.values_list]
+
+    return JsonResponse(return_dict)
 
 
 def get_data_parameters(request, layer_count):

@@ -15,6 +15,15 @@ class Command(BaseCommand):
                                                                 'variables and dimensions without creating new ones')
 
     def handle(self, *args, **options):
+        presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+        conn_presto = prestodb.dbapi.connect(
+            host=presto_credentials['HOST'],
+            port=presto_credentials['PORT'],
+            user=presto_credentials['USER'],
+            catalog=presto_credentials['CATALOG'],
+            schema=presto_credentials['SCHEMA'],
+        )
+
         # GET JWT for fileHandler
         response = requests.post(settings.PARSER_LOG_IN_URL,
                                  data=json.dumps({"username": settings.PARSER_USERNAME, "password": settings.PARSER_PASSWORD}))
@@ -58,7 +67,7 @@ class Command(BaseCommand):
         self.stdout.write(str(tables_to_add))
         self.stdout.write(str(len(tables_to_add)))
 
-        for profile in profile_list[:2]:
+        for profile in profile_list[:]:
             if profile["storageTable"] in tables_to_add:
                 dataset = Dataset(title=profile["title"],
                                   source=profile["source"],
@@ -92,11 +101,18 @@ class Command(BaseCommand):
                     metadata[key] = profile[key]
             dataset.metadata = metadata
             dataset.save()
+            possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
+                                   "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
+                                   "timestamp", "ship_id", "ship_name", "imo_id", "mmsi", 'imo']
+            possible_vessel_identifiers = ["platform_id", "ship_id", "ship_name", "imo_id", "mmsi", 'imo', "voyage_number", "trip_identifier"]
+
+            ### REMOVE IT
+            # column_list_titles = [var["canonicalName"] for var in profile["variables"]]
+            # dataset_vessel_identifiers = [col for col in column_list_titles if col in possible_vessel_identifiers]
+            ###/ REMOVE IT
 
             if profile["storageTable"] in tables_to_add:
-                possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
-                                       "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
-                                       "timestamp", "ship_id"]
+            # if profile["storageTable"] in tables_to_add and len(dataset_vessel_identifiers)>0:
                 dataset_variables = []
                 dataset_dimensions = []
                 for var in profile["variables"]:
@@ -144,10 +160,8 @@ class Command(BaseCommand):
                                                   unit=dim["unit"], variable=variable)
                         dimension.save()
             else:
+            # if profile["storageTable"] not in tables_to_add and len(dataset_vessel_identifiers) > 0:
                 if options['update_old']:
-                    possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
-                                           "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
-                                           "timestamp", "ship_id"]
                     dataset_variables = []
                     dataset_dimensions = []
                     for var in profile["variables"]:
@@ -236,6 +250,7 @@ class Command(BaseCommand):
                 dataset.last_updated = datetime.strptime(response.content, '%Y-%m-%dT%H:%M:%S.%f')
                 dataset.save()
             if profile["storageTable"] in tables_to_add:
+            # if profile["storageTable"] in tables_to_add and len(dataset_vessel_identifiers)>0:
             # if 1 == 1:
                 rows_to_render = []
                 variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
@@ -253,14 +268,6 @@ class Command(BaseCommand):
                     column_list_filter_string += "AND " + column + " is not NULL "
                 column_list_filter_string = column_list_filter_string[4:]
                 try:
-                    presto_credentials = settings.DATABASES['UBITECH_PRESTO']
-                    conn_presto = prestodb.dbapi.connect(
-                        host=presto_credentials['HOST'],
-                        port=presto_credentials['PORT'],
-                        user=presto_credentials['USER'],
-                        catalog=presto_credentials['CATALOG'],
-                        schema=presto_credentials['SCHEMA'],
-                    )
                     cursor_presto = conn_presto.cursor()
                     query = "SELECT " + column_list_string + " FROM " + str(dataset.table_name) + " WHERE " + column_list_filter_string + " LIMIT 5"
                     print query
@@ -287,16 +294,10 @@ class Command(BaseCommand):
                     print str(e)
                     pass
 
+            # UPDATE DATASET SIZE
             if response.content != '' or profile["storageTable"] in tables_to_add:
+            # if (len(dataset_vessel_identifiers)>0) and (response.content != '' or profile["storageTable"] in tables_to_add):
                 try:
-                    presto_credentials = settings.DATABASES['UBITECH_PRESTO']
-                    conn_presto = prestodb.dbapi.connect(
-                        host=presto_credentials['HOST'],
-                        port=presto_credentials['PORT'],
-                        user=presto_credentials['USER'],
-                        catalog=presto_credentials['CATALOG'],
-                        schema=presto_credentials['SCHEMA'],
-                    )
                     cursor_presto = conn_presto.cursor()
                     query = "SELECT COUNT(*) FROM " + str(dataset.table_name)
                     print query
@@ -305,6 +306,34 @@ class Command(BaseCommand):
                     print number_of_rows
                     dataset.number_of_rows = number_of_rows
                     dataset.save()
+                except Exception, e:
+                    print 'error'
+                    print str(e)
+                    pass
+
+            # UPDATE DATASET SIZE
+            if response.content != '' or profile["storageTable"] in tables_to_add:
+            # if 1==1:
+                try:
+                    variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
+                    dimension_list_canonical = [d.name for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
+                    column_list_titles = variable_list_canonical + dimension_list_canonical
+                    dataset_vessel_identifiers = [col for col in column_list_titles if col in possible_vessel_identifiers]
+                    for vessel_identifier in dataset_vessel_identifiers:
+                        try:
+                            cursor_presto = conn_presto.cursor()
+                            # query = "SELECT DISTINCT " + vessel_identifier + " FROM " + str(dataset.table_name) + " LIMIT 5"
+                            query = "SELECT DISTINCT " + vessel_identifier + " FROM " + str(dataset.table_name)
+                            print query
+                            cursor_presto.execute(query)
+                            distinct_identifiers = cursor_presto.fetchall()
+                            if len(distinct_identifiers) > 0:
+                                vi = Vessel_Identifier(dataset=dataset, column_name=vessel_identifier, values_list=distinct_identifiers)
+                                vi.save()
+                        except Exception, e:
+                            print 'error'
+                            print str(e)
+                            pass
                 except Exception, e:
                     print 'error'
                     print str(e)

@@ -53,4 +53,5 @@ urlpatterns = [
     url('^get_line_chart/$', views.get_line_chart, name='get_line_chart'),
     url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium-heat'),
 
+    url('^get_vessel_ids_info/(?P<query_id>\d+)/$', views.get_vessel_ids_info, name='get_vessel_ids_info'),
 ]
