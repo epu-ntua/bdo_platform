@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block css %}
+
+{% endblock %}
+
+
+{% block content %}
+
+    {% for request in my_requests_dashboard_view %}
+        <div class="panel panel-primary">
+            For dashboard: {{ request.dashboard.title }}, by {{ request.user.username }} ({{ request.user.email }})
+        </div>
+    {% endfor %}
+
+{% endblock %}
+
+
+{% block js %}
+
+{% endblock %}

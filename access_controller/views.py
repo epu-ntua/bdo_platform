@@ -4,10 +4,17 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied, ValidationError
-from dashboard_builder.models import Dashboard, DashboardAccess
+from dashboard_builder.models import Dashboard, DashboardAccess, DashboardAccessRequest
 import datetime
 import traceback
 from django.http import HttpResponse, JsonResponse
+
+
+def requests(request):
+    my_requests_dashboard_view = DashboardAccessRequest.objects.filter(user=request.user)
+    return render(request, 'access_controller/requests_page.html', {
+        'my_requests_dashboard_view': my_requests_dashboard_view
+    })
 
 
 def share_access_to_dashboard(request):

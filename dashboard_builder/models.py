@@ -11,6 +11,10 @@ from django.db import models
 from ckeditor.fields import RichTextField
 from ckeditor_uploader.fields import RichTextUploadingField
 
+ACCESS_REQUEST_STATUS_CHOICES = (('open', 'open'),
+                                 ('accepted', 'accepted'),
+                                 ('rejected', 'rejected'))
+
 
 class Dashboard(Model):
     created = DateTimeField(auto_now_add=True)
@@ -41,4 +45,4 @@ class DashboardAccess(Model):
 class DashboardAccessRequest(Model):
     user = ForeignKey(User, on_delete=CASCADE)
     dashboard = ForeignKey(Dashboard, on_delete=CASCADE)
-
+    status = models.CharField(max_length=20, choices=ACCESS_REQUEST_STATUS_CHOICES, default='open')

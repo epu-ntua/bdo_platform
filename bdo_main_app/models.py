@@ -74,3 +74,9 @@ class Service(Model):
 
     def __unicode__(self):
         return self.title
+
+
+class Notification(Model):
+    text = TextField()
+    seen = BooleanField(default=False)
+    for_user = ForeignKey(User)
