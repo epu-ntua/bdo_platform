@@ -1,21 +1,233 @@
 {% extends 'base.html' %}
 
 {% block css %}
+    <style>
+        .nav-pills > li > a{
+            background-color: #d1d1d1;
+        }
+        .nav-pills > li {
+            float: none;
+            display: inline-block;
+        }
+        .btn{
+            margin: 0;
+        }
 
+        .panel-heading, .panel-body, .panel-footer{
+            padding: 8px 8px 8px 20px;
+        }
+
+        .panel-body{
+            min-height: 5vh;
+        }
+
+        .panel-body p{
+            margin: 0;
+            padding: 5px;
+        }
+
+        .panel-footer {
+            background-color: #ffffff !important;
+        }
+
+        .label{
+            font-size: 10pt;
+            padding: 5px 8px;
+            width: 20%;
+        }
+
+        .btn-danger, .label-danger{
+            background-color: #aa1010 !important;
+        }
+    </style>
 {% endblock %}
 
 
 {% block content %}
-
-    {% for request in my_requests_dashboard_view %}
-        <div class="panel panel-primary">
-            For dashboard: {{ request.dashboard.title }}, by {{ request.user.username }} ({{ request.user.email }})
+    {% csrf_token %}
+    <h2 style="text-align: center;">Requests for BDO Resources</h2>
+    <div id="requests_container" style="margin-top: 2vh;">
+        <div style="text-align: center; margin-bottom: 3vh;">
+            <ul class="nav nav-pills">
+                <li class="active" style="min-width: 15vw; width: 15vw;"><a data-toggle="pill" href="#my_requests">My requests</a></li>
+                <li style="min-width: 15vw; width: 15vw;"><a data-toggle="pill" href="#my_resources_requests">Requests for my resources</a></li>
+            </ul>
         </div>
-    {% endfor %}
 
+        <div class="tab-content">
+            <div id="my_requests" class="tab-pane fade in active">
+                {% for request in my_requests %}
+                    <div class="panel panel-default" style="width: 50%; margin-left: 25%;">
+                        <div class="panel-heading row">
+                            <h3 class="panel-title col-sm-6" style="padding-left: 0;" >{{ request.type|title  }} access request</h3>
+                            <span class="col-sm-6" style="padding-right: 0;"><a href="#" class="label {% if request.status == "open" %} label-primary {% elif request.status == "rejected" %} label-danger  %}{% elif request.status == "accepted" %} label-success {% endif %} pull-right ">{{ request.status }}</a></span>
+                        </div>
+                        <div class="panel-body">
+                            <p>
+                                For {{ request.type  }}: {{ request.resource.title }}
+                            </p>
+                            {% if request.status == "accepted" %}
+                                {% if request.type == "dashboard" %}
+                                    <a href="/services/dashboard/{{ request.resource.id }}/" class="btn btn-primary btn-sm">Visit {{ request.type  }}</a>
+                                {% elif request.type == "service" %}
+                                    <a href="" class="btn btn-primary btn-sm">Visit {{ request.type  }}</a>
+                                {% elif request.type == "dataset" %}
+                                    <a href="/datasets/{{ request.resource.id }}/" class="btn btn-primary btn-sm">Visit {{ request.type  }}</a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="panel-footer clearfix">
+                            <span class="pull-left">
+                                Requested at: {{ request.creation_date|date:"M d, Y" }}
+                            </span>
+                            <span class="pull-right">
+                                {% if request.status != "open" %}
+                                    Responed at: {{ request.response_date|date:"M d, Y" }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div id="my_resources_requests" class="tab-pane fade">
+                {% for request in my_resources_requests %}
+                    <div id="request_{{ request.type }}_{{ request.id }}" class="panel panel-default" style="width: 50%; margin-left: 25%;">
+                        <div class="panel-heading row">
+                            <h3 class="panel-title col-sm-6" style="padding-left: 0;" >{{ request.type|title  }} access request</h3>
+                            <span class="col-sm-6" style="padding-right: 0;"><a href="#" class="status-label label {% if request.status == "open" %} label-primary {% elif request.status == "rejected" %} label-danger  %}{% elif request.status == "accepted" %} label-success {% endif %} pull-right ">{{ request.status }}</a></span>
+                        </div>
+                        <div class="panel-body">
+                            <p>
+                                For {{ request.type  }}: {{ request.resource.title }}
+                                {% if request.type == "dashboard" %}
+                                    <a href="/services/dashboard/{{ request.resource.id }}/" style="text-decoration: underline;">(link)</a>
+                                {% elif request.type == "service" %}
+                                    <a href="" style="text-decoration: underline;">(link)</a>
+                                {% elif request.type == "dataset" %}
+                                    <a href="/datasets/{{ request.resource.id }}/" style="text-decoration: underline;">(link)</a>
+                                {% endif %}
+                            </p>
+                            <p>
+                                By user: {{ request.user.username }} {% if request.user.email != "" %} - {{ request.user.email }} {% endif %} <a href="/profile/{{ request.user.username }}/" style="text-decoration: underline;">(profile)</a>
+                            </p>
+                        </div>
+                        <div class="panel-footer clearfix">
+                            <span class="pull-left">
+                                Requested at: {{ request.creation_date|date:"M d, Y" }}
+                            </span>
+                            <span class="pull-right">
+                                {% if request.status == "open" %}
+                                    <button class="btn btn-sm btn-success accept-request-btn" data-request-id="{{ request.id }}" data-request-type="{{ request.type }}">Accept</button>
+                                    <button class="btn btn-sm btn-danger reject-request-btn" data-request-id="{{ request.id }}" data-request-type="{{ request.type }}">Decline</button>
+                                {% else %}
+                                    Responed at: {{ request.response_date|date:"M d, Y" }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 
 {% block js %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(".accept-request-btn").click(function() {
+                manage_access_request($(this).data('request-id'), 'accept', $(this).data("request-type"));
+            });
 
+            $(".reject-request-btn").click(function() {
+                manage_access_request($(this).data('request-id'), 'reject', $(this).data("request-type"));
+            });
+
+            function manage_access_request(request_id, action, request_type) {
+                var csrftoken = getCookie('csrftoken');
+                var url = '';
+                if (action === 'accept'){
+                    url = "/access_control/share_access_to_resource/"+String(request_type)+"/";
+                }
+                else {
+                    url = "/access_control/reject_access_to_resource/"+String(request_type)+"/";
+                }
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        request_id: request_id,
+                        csrfmiddlewaretoken: csrftoken
+                    },
+                    success: function (result) {
+                        console.log(result);
+                        var message = '';
+                        var new_class = '';
+                        var new_status = '';
+                        if (action === 'accept'){
+                            message = "Request accepted successfully!";
+                            new_class = 'label-success';
+                            new_status = 'accepted';
+                        }
+                        else {
+                            message = "Request rejected successfully!";
+                            new_class = 'label-danger';
+                            new_status = 'rejected';
+                        }
+                        $("#request_"+request_type+"_"+request_id).find(".status-label").removeClass('label-primary').removeClass('label-danger').removeClass('label-success').addClass(new_class).html(new_status);
+                        $("#request_"+request_type+"_"+request_id).find(".panel-footer").find('.btn').remove();
+                        $("#request_"+request_type+"_"+request_id).find(".panel-footer").find('.pull-right').html("Responded at: now");
+                        $.notify({
+                              icon: "add_alert",
+                              message: message
+
+                        },{
+                              type: 'success',
+                              timer: 2000,
+                              placement: {
+                                  from: 'top',
+                                  align: 'right'
+                              }
+                        });
+                    },
+                    error: function (result) {
+                        console.log(result);
+                        $.notify({
+                              icon: "add_alert",
+                              message: result.responseJSON.error
+
+                        },{
+                              type: 'danger',
+                              timer: 2000,
+                              placement: {
+                                  from: 'top',
+                                  align: 'right'
+                              }
+                        });
+                    }
+                });
+            }
+
+
+            // using jQuery
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+
+    </script>
 {% endblock %}

@@ -131,10 +131,10 @@
         $("#confirm-dashboard-share").click(function () {
             var csrftoken = getCookie('csrftoken');
             $.ajax({
-                url: '/access_control/share_access_to_dashboard/',
+                url: '/access_control/share_access_to_resource/dashboard/',
                 type: 'POST',
                 data: {
-                    dashboard_id: {{ dashboard.id }},
+                    resource_id: {{ dashboard.id }},
                     username_or_email: $("#share_user_input").val(),
                     can_edit: $('#can_edit_input:checkbox:checked').length > 0,
                     csrfmiddlewaretoken: csrftoken
