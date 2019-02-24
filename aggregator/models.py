@@ -11,6 +11,11 @@ import math
 
 from netCDF4._netCDF4 import num2date
 from django.contrib.postgres.fields import JSONField
+from datetime import datetime
+
+ACCESS_REQUEST_STATUS_CHOICES = (('open', 'open'),
+                                 ('accepted', 'accepted'),
+                                 ('rejected', 'rejected'))
 
 DATASET_STORAGES = (
     ('LOCAL_POSTGRES', 'Local PostgreSQL instance'),
@@ -102,6 +107,19 @@ class DatasetAccess(Model):
     start = DateField()
     end = DateField()
     valid = BooleanField()
+
+
+class DatasetAccessRequest(Model):
+    user = ForeignKey(User, on_delete=CASCADE)
+    resource = ForeignKey(Dataset, on_delete=CASCADE, related_name='resource')
+    status = CharField(max_length=20, choices=ACCESS_REQUEST_STATUS_CHOICES, default='open')
+    creation_date = DateTimeField(default=datetime.now())
+    response_date = DateTimeField(null=True)
+
+    @property
+    def type(self):
+        return 'dataset'
+
 
 
 class JoinOfDatasets(Model):

@@ -5,23 +5,48 @@ from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied, ValidationError
 
-from aggregator.models import Dataset, DatasetAccess
+from aggregator.models import Dataset, DatasetAccess, DatasetAccessRequest
 from dashboard_builder.models import Dashboard, DashboardAccess, DashboardAccessRequest
 import datetime
 import traceback
 from django.http import HttpResponse, JsonResponse
-
-from service_builder.models import Service, ServiceAccess
+from itertools import chain
+from service_builder.models import Service, ServiceAccess, ServiceAccessRequest
 
 
 def requests(request):
-    my_requests_dashboard_view = DashboardAccessRequest.objects.filter(user=request.user)
+    my_requests_dashboard = DashboardAccessRequest.objects.filter(user=request.user)
     my_resources_requests_dashboard = DashboardAccessRequest.objects.select_related('resource').filter(user=request.user)
 
-    my_requests = my_requests_dashboard_view
-    my_requests = my_requests.order_by('-creation_date')
-    my_resources_requests = my_resources_requests_dashboard
-    my_resources_requests = my_resources_requests.order_by('-creation_date')
+    my_requests_service = ServiceAccessRequest.objects.filter(user=request.user)
+    my_resources_requests_service = ServiceAccessRequest.objects.select_related('resource').filter(user=request.user)
+
+    my_requests_dataset = DatasetAccessRequest.objects.filter(user=request.user)
+    my_resources_requests_dataset = DatasetAccessRequest.objects.select_related('resource').filter(user=request.user)
+
+    my_requests = [{"id": x.id,
+                    "type": x.type,
+                    "resource_id": x.resource.id,
+                    "resource_title": x.resource.title,
+                    "user_username": x.user.username,
+                    "user_email": x.user.email,
+                    "status": x.status,
+                    "creation_date": x.creation_date,
+                    "response_date": x.response_date}
+                   for x in chain(my_requests_dashboard, my_requests_service, my_requests_dataset)]
+
+    # my_requests = my_requests.order_by('-creation_date')
+    my_resources_requests = [{"id": x.id,
+                              "type": x.type,
+                              "resource_id": x.resource.id,
+                              "resource_title": x.resource.title,
+                              "user_username": x.user.username,
+                              "user_email": x.user.email,
+                              "status": x.status,
+                              "creation_date": x.creation_date,
+                              "response_date": x.response_date}
+                             for x in chain(my_resources_requests_dashboard, my_resources_requests_service, my_resources_requests_dataset)]
+    # my_resources_requests = my_resources_requests.order_by('-creation_date')
 
     return render(request, 'access_controller/requests_page.html', {
         'my_requests': my_requests,
@@ -30,7 +55,37 @@ def requests(request):
 
 
 def request_access_to_resource(request, type):
-    return 1
+    if request.method == "POST" and request.user.is_authenticated():
+        try:
+            if 'resource_id' in request.POST.keys():
+                resource_id = int(request.POST.get('resource_id'))
+                try:
+                    if type == "dashboard":
+                        resource = Dashboard.objects.get(pk=resource_id)
+                        access_request = DashboardAccessRequest(resource=resource, user=request.user)
+                    elif type == "service":
+                        resource = Service.objects.get(pk=resource_id)
+                        access_request = ServiceAccessRequest(resource=resource, user=request.user)
+                    elif type == "dataset":
+                        resource = Dataset.objects.get(pk=resource_id)
+                        access_request = DatasetAccessRequest(resource=resource, user=request.user)
+                    else:
+                        raise Exception
+                    access_request.save()
+                    return HttpResponse('')
+                except:
+                    response = JsonResponse({"error": "Resource not found."})
+                    response.status_code = 404
+                    return response
+        except:
+            traceback.print_exc()
+            response = JsonResponse({"error": "Request failed."})
+            response.status_code = 500  # To announce that the user isn't allowed to publish
+            return response
+    else:
+        response = JsonResponse({"error": "Permission Denied"})
+        response.status_code = 403  # To announce that the user isn't allowed to publish
+        return response
 
 
 def share_access_to_resource(request, type):
@@ -42,9 +97,9 @@ def share_access_to_resource(request, type):
                     if type == "dashboard":
                         access_request = DashboardAccessRequest.objects.get(pk=request_id)
                     elif type == "service":
-                        access_request = DashboardAccessRequest.objects.get(pk=request_id)
+                        access_request = ServiceAccessRequest.objects.get(pk=request_id)
                     elif type == "dataset":
-                        access_request = DashboardAccessRequest.objects.get(pk=request_id)
+                        access_request = DatasetAccessRequest.objects.get(pk=request_id)
                     else:
                         raise Exception
                     resource = access_request.resource

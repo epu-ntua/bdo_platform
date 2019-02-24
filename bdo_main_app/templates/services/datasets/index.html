@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block content %}
+    {% csrf_token %}
     <div class="row">
         <div class="col-xs-12">
             <div class="card">
@@ -56,6 +57,8 @@
     {#                                <span class="dataset-private"><span class="badge">{{ dataset.category }}</span></span>#}
                                     {% if dataset.private %}
                                         <button class="btn btn-danger btn-sm" style="margin: 0;">Private</button>
+                                        <br/>
+                                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#request_access_modal" style="">Request Access</button>
                                     {%  else %}
                                         <button class="btn btn-success btn-sm" style="margin: 0;">Open</button>
                                     {% endif %}
@@ -235,6 +238,36 @@
     </div>
 {% endblock %}
 
+
+{% block modal %}
+    <div class="modal fade" id="request_access_modal" tabindex="-1" role="dialog" aria-hidden="true" style="width: 50%;left:45vh;">
+      <div class="modal-dialog " role="document" style="width: 50%;">
+        <div class="modal-content" style="height: inherit; ">
+          <div class="modal-header">
+            <h4 style="margin-bottom: 15px; margin-left:10px; font-weight: bold; text-align: center;" class="modal-title" id="deleteModalLabel">Access Request</h4>
+          </div>
+          <div class="modal-body" style="height: inherit;margin-top: 10px;margin-bottom: 30px">
+              <div class="form-group label-floating">
+                    <p>
+                        Do you want to create a request to access this private dataset?
+                    </p>
+                    <p>
+                        The owner of the dataset will be notified and he will accept or decline you request.
+                    </p>
+                    <p>
+                        You will then get notified about the outcome of your request.
+                    </p>
+              </div>
+          </div>
+          <div class="modal-footer" style="text-align: center;">
+              <button id="confirm-create-request-btn" type="button" class="btn btn-success btn-md"  data-dismiss="modal" style="margin-top: 0; margin-bottom: 0;" >Make request</button>
+              <button type="button" class="btn btn-secondary btn-md" data-dismiss="modal"  style="">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
 {% block js %}
     <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.min.js"></script>
     <script>
@@ -322,5 +355,71 @@
             //start animation for the Emails Subscription Chart
             md.startAnimationForBarChart(emailsSubscriptionChart);
         };
+
+
+        $("#confirm-create-request-btn").click(function(){
+           var csrftoken = getCookie('csrftoken');
+            $.ajax({
+                url: '/access_control/request_access_to_resource/dataset/',
+                type: 'POST',
+                data: {
+                    resource_id: {{ dataset.id }},
+                    csrfmiddlewaretoken: csrftoken
+                },
+                success: function (result) {
+                    console.log(result);
+                    var message = 'Your request has been created successfully!';
+                    $.notify({
+                          icon: "add_alert",
+                          message: message
+
+                    },{
+                          type: 'success',
+                          timer: 2000,
+                          placement: {
+                              from: 'top',
+                              align: 'right'
+                          }
+                    });
+                },
+                error: function (result) {
+                    console.log(result);
+                    var message = 'An error occured. Your request failed.';
+                    $.notify({
+                          icon: "add_alert",
+                          message: message
+
+                    },{
+                          type: 'danger',
+                          timer: 2000,
+                          placement: {
+                              from: 'top',
+                              align: 'right'
+                          }
+                    });
+                }
+            });
+        });
+
+
+        // using jQuery
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
     </script>
+
 {% endblock %}
+

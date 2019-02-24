@@ -64,15 +64,15 @@
                         </div>
                         <div class="panel-body">
                             <p>
-                                For {{ request.type  }}: {{ request.resource.title }}
+                                For {{ request.type  }}: {{ request.resource_title }}
                             </p>
                             {% if request.status == "accepted" %}
                                 {% if request.type == "dashboard" %}
-                                    <a href="/services/dashboard/{{ request.resource.id }}/" class="btn btn-primary btn-sm">Visit {{ request.type  }}</a>
+                                    <a href="/services/dashboard/{{ request.resource_id }}/" class="btn btn-primary btn-sm">Visit {{ request.type  }}</a>
                                 {% elif request.type == "service" %}
                                     <a href="" class="btn btn-primary btn-sm">Visit {{ request.type  }}</a>
                                 {% elif request.type == "dataset" %}
-                                    <a href="/datasets/{{ request.resource.id }}/" class="btn btn-primary btn-sm">Visit {{ request.type  }}</a>
+                                    <a href="/datasets/{{ request.resource_id }}/" class="btn btn-primary btn-sm">Visit {{ request.type  }}</a>
                                 {% endif %}
                             {% endif %}
                         </div>
@@ -99,17 +99,17 @@
                         </div>
                         <div class="panel-body">
                             <p>
-                                For {{ request.type  }}: {{ request.resource.title }}
+                                For {{ request.type  }}: {{ request.resource_title }}
                                 {% if request.type == "dashboard" %}
-                                    <a href="/services/dashboard/{{ request.resource.id }}/" style="text-decoration: underline;">(link)</a>
+                                    <a href="/services/dashboard/{{ request.resource_id }}/" style="text-decoration: underline;">(link)</a>
                                 {% elif request.type == "service" %}
                                     <a href="" style="text-decoration: underline;">(link)</a>
                                 {% elif request.type == "dataset" %}
-                                    <a href="/datasets/{{ request.resource.id }}/" style="text-decoration: underline;">(link)</a>
+                                    <a href="/datasets/{{ request.resource_id }}/" style="text-decoration: underline;">(link)</a>
                                 {% endif %}
                             </p>
                             <p>
-                                By user: {{ request.user.username }} {% if request.user.email != "" %} - {{ request.user.email }} {% endif %} <a href="/profile/{{ request.user.username }}/" style="text-decoration: underline;">(profile)</a>
+                                By user: {{ request.user_username }} {% if request.user_email != "" %} - {{ request.user_email }} {% endif %} <a href="/profile/{{ request.user_username }}/" style="text-decoration: underline;">(profile)</a>
                             </p>
                         </div>
                         <div class="panel-footer clearfix">
