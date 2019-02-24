@@ -191,7 +191,7 @@
                                             <ul class="list-group">
                                                 {% for dimension in dataset.variables.first.dimensions.all %}
                                                     <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
-                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
+                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
                                                     </li>
                                                 {% endfor %}
                                             </ul>
@@ -204,13 +204,14 @@
                                                         data-variable-unit="{{ variable.unit }}"
                                                         data-variable-id="{{ variable.id }}"
                                                         data-variable-title="{{ variable.title }}"
+                                                        data-variable-datatype="{{ variable.dataType }}"
                                                         data-selected="False"
                                                         data-variable-dataset="{{ dataset.id }}">
-                                                        <span class="variable-id " hidden>{{ variable.id }}</span>
+                                                        <span class="variable-id" hidden>{{ variable.id }}</span>
                                                         <ul class="variable-dimensions" hidden>
                                                             {% for dimension in variable.dimensions.all %}
                                                                 <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
-                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
+                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
                                                                 </li>
                                                             {% endfor %}
                                                         </ul>

@@ -11,6 +11,7 @@ $(function() {
     $('#selection-confirm-btn').on('click', function() {
         // The new variable to be added for query
         var selection = window.getDataSelection();
+        console.log(selection);
         var included_vars = [];
         var first_var = selection[0].dataset_id;
         console.log('new dataset_id '+first_var);
@@ -40,6 +41,7 @@ $(function() {
                     name: newVariable.name,
                     title: newVariable.title,
                     id: newVariable.id,
+                    datatype: newVariable.datatype,
                     unit: newVariable.unit,
                     dimensions: newVariable.dimensions,
                     canDelete: true,
@@ -62,6 +64,7 @@ $(function() {
                     name: newVariable.name,
                     title: newVariable.title,
                     unit: newVariable.unit,
+                    datatype: newVariable.datatype,
                     aggregate: $fieldset.find('.col-prefix').find("select").val(),
                     dimensions: newVariable.dimensions,
                     dataset_id: newVariable.dataset_id
@@ -265,7 +268,7 @@ $(function() {
         if($("#spatial_resolution").val() !== ''){
             // Each variable should have an aggregation function
             $("select[name='field_aggregate']").each(function () {
-                $(this).val("AVG");
+                $(this).val($(this).find('option').eq(1).val());
                 $(this).trigger("change");
             });
             // Disable the 'no-aggregate' option
@@ -304,7 +307,7 @@ $(function() {
         if($("#temporal_resolution").val() !== ''){
             // Each variable should have an aggregation function
             $("select[name='field_aggregate']").each(function () {
-                $(this).val("AVG");
+                $(this).val($(this).find('option').eq(1).val());
                 $(this).trigger("change");
             });
             // Disable the 'no-aggregate' option
@@ -353,7 +356,7 @@ $(function() {
         if($("select[name='category']").val().length > 0){
             // Each variable should have an aggregation function
             $("select[name='field_aggregate']").each(function () {
-                $(this).val("AVG");
+                $(this).val($(this).find('option').eq(1).val());
                 $(this).trigger("change");
             });
             // Disable the 'no-aggregate' option

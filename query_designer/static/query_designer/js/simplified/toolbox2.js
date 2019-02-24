@@ -88,20 +88,24 @@ $(function () {
 
             // create the aggregation options on the left of each new variable
             var $aggregateSelect = $('<select name="field_aggregate" />');
+            var cnt = 0;
             $.each(obj.chartPolicy.aggregates, function(idx, aggregate) {
-                // create aggregate option
-                var $option = $('<option />').text(aggregate.title).attr('value', aggregate.value);
-                // if resolution or groupby is eneabled disable -noaggregate option and set default aggregate function AVG
-                if((QueryToolbox.groupings.length>0)||($("#spatial_resolution").val() !== '')||($("#temporal_resolution").val() !== '')){
-                    if(aggregate.title === "(No aggregate)") {
-                        $option.attr('disabled', 'disabled')
+                if (aggregate.typelist.indexOf(config.datatype) >= 0){
+                    cnt+=1;
+                    // create aggregate option
+                    var $option = $('<option />').text(aggregate.title).attr('value', aggregate.value);
+                    // if resolution or groupby is eneabled disable -noaggregate option and set default aggregate function AVG
+                    if ((QueryToolbox.groupings.length > 0) || ($("#spatial_resolution").val() !== '') || ($("#temporal_resolution").val() !== '')) {
+                        if (aggregate.title === "(No aggregate)") {
+                            $option.attr('disabled', 'disabled')
+                        }
+                        if (cnt === 2) {
+                            $option.attr("selected", "selected");
+                        }
                     }
-                    if(aggregate.title === "Average") {
-                        $option.attr("selected","selected");
-                    }
+                    // add to aggregate select
+                    $aggregateSelect.append($option);
                 }
-                // add to aggregate select
-                $aggregateSelect.append($option);
             });
 
             var $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%;"/>')
@@ -110,6 +114,7 @@ $(function () {
 
             var $fieldInput = $('<input class="hidden" style="width: 100%; height: 100%;"/>').attr('name', 'variable_field');
             $fieldInput.attr('data-variable-id', config.id);
+            $fieldInput.attr('data-datatype-id', config.datatype);
             $fieldInput.val(config.name);
 
 

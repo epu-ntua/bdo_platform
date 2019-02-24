@@ -293,12 +293,15 @@ def get_field_policy(user):
             'name': variable.safe_name,
             'title': variable.title,
             'id': variable.pk,
+            'description': variable.description,
+            'dataType': variable.dataType,
         })
 
     for aggregate in AGGREGATES:
         field_policy['aggregates'].append({
             'title': aggregate[1],
             'value': aggregate[0],
+            'typelist': aggregate[2],
         })
 
     return field_policy

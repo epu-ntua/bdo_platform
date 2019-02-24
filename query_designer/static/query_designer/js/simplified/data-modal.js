@@ -62,7 +62,8 @@ $(function() {
                $(this).find(".dimension-section span").each(function (_, dim) {
                    dims.push({
                         id: $(dim).data('type'),
-                        title: $(this).data('name')
+                        title: $(this).data('name'),
+                        datatype: $(this).data('datatype')
                     })
                });
                selection.push({
@@ -70,6 +71,7 @@ $(function() {
                     name: $(variable).data('variable-name'),
                     title: $(variable).data('variable-title'),
                     unit: $(variable).data('variable-unit'),
+                    datatype: $(variable).data('variable-datatype'),
                     dataset_id: $(variable).data('variable-dataset'),
                     aggregate: null,
                     groupBy: null,

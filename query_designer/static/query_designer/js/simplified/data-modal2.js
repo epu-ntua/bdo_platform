@@ -34,13 +34,15 @@ $(function() {
         $modal.find('.variable-section.selected').find('.dimensions span').each(function () {
             dims.push({
                 id: $(this).data('type'),
-                title: $(this).data('name')
+                title: $(this).data('name'),
+                datatype: $(this).data('datatype')
             })
         });
         return {
             id: $modal.find('.variable-section.selected').find('.variable-id').text(),
             name: $modal.find('.variable-section.selected').find('.variable-name').text(),
             title: $modal.find('.variable-section.selected').find('.variable-title').text(),
+            datatype: $modal.find('.variable-section.selected').find('.variable-datatype').text(),
             unit: $modal.find('.variable-section.selected').find('.variable-unit').text(),
             aggregate: $modal.find('#selection-aggregate').val(),
             groupBy: $modal.find('#group-by-select').val(),
