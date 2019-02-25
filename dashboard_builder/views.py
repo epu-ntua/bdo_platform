@@ -29,16 +29,41 @@ def build_dynamic_dashboard(request):
         else:
             saved_queries = []
 
-        variables_list = []
-        dimensions_list = []
-        var_list = Variable.objects.all()
-        dim_list = Dimension.objects.all()
-        for el in var_list:
-            if not (el.name in variables_list):
-                variables_list.append(el.name.encode('ascii'))
-        for el in dim_list:
-            if not (el.name in dimensions_list):
-                dimensions_list.append(el.name.encode('ascii'))
+        for q in saved_queries:
+            doc = q.document
+            changed = False
+            for f in doc['from']:
+                for s in f['select']:
+                    if s['type'] == "VALUE":
+                        if 'datatype' not in s.keys():
+                            try:
+                                s['datatype'] = Variable.objects.get(pk=int(f['type'])).dataType
+                                changed = True
+                            except:
+                                s['datatype'] = 'FLOAT'
+                                pass
+                    else:
+                        if 'datatype' not in s.keys():
+                            try:
+                                s['datatype'] = Dimension.objects.get(pk=int(s['type'])).dataType
+                                changed = True
+                            except:
+                                s['datatype'] = 'FLOAT'
+                                pass
+            if changed:
+                q.document = doc
+                q.save()
+
+        # variables_list = []
+        # dimensions_list = []
+        # var_list = Variable.objects.all()
+        # dim_list = Dimension.objects.all()
+        # for el in var_list:
+        #     if not (el.name in variables_list):
+        #         variables_list.append(el.name.encode('ascii'))
+        # for el in dim_list:
+        #     if not (el.name in dimensions_list):
+        #         dimensions_list.append(el.name.encode('ascii'))
 
         num_of_dashboards = Dashboard.objects.count()
         toCreate = request.GET.get('toCreate', 'None')
@@ -59,8 +84,8 @@ def build_dynamic_dashboard(request):
             # 'components': Visualization.objects.all().order_by('order'),
             'form': form_class,
             'toCreate': toCreate,
-            'variables_list': variables_list,
-            'dimensions_list': dimensions_list,
+            # 'variables_list': variables_list,
+            # 'dimensions_list': dimensions_list,
             'visualisation_configuration': conf_viz_json
             # 'datasets_of_queries_lists': datasets,
         })
@@ -86,6 +111,32 @@ def edit_dashboard(request, pk=None):
             saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
         else:
             saved_queries = []
+
+        for q in saved_queries:
+            doc = q.document
+            changed = False
+            for f in doc['from']:
+                for s in f['select']:
+                    if s['type'] == "VALUE":
+                        if 'datatype' not in s.keys():
+                            try:
+                                s['datatype'] = Variable.objects.get(pk=int(f['type'])).dataType
+                                changed = True
+                            except:
+                                s['datatype'] = 'FLOAT'
+                                pass
+                    else:
+                        if 'datatype' not in s.keys():
+                            try:
+                                s['datatype'] = Dimension.objects.get(pk=int(s['type'])).dataType
+                                changed = True
+                            except:
+                                s['datatype'] = 'FLOAT'
+                                pass
+            if changed:
+                q.document = doc
+                q.save()
+
         try:
             dashboard = Dashboard.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -105,16 +156,16 @@ def edit_dashboard(request, pk=None):
         except:
             return HttpResponseForbidden()
 
-        variables_list = []
-        dimensions_list = []
-        var_list = Variable.objects.all()
-        dim_list = Dimension.objects.all()
-        for el in var_list:
-            if not (el.name in variables_list):
-                variables_list.append(el.name.encode('ascii'))
-        for el in dim_list:
-            if not (el.name in dimensions_list):
-                dimensions_list.append(el.name.encode('ascii'))
+        # variables_list = []
+        # dimensions_list = []
+        # var_list = Variable.objects.all()
+        # dim_list = Dimension.objects.all()
+        # for el in var_list:
+        #     if not (el.name in variables_list):
+        #         variables_list.append(el.name.encode('ascii'))
+        # for el in dim_list:
+        #     if not (el.name in dimensions_list):
+        #         dimensions_list.append(el.name.encode('ascii'))
         # toCreate = dashboard.title
         form_class = forms.CkEditorForm
         dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
@@ -142,8 +193,8 @@ def edit_dashboard(request, pk=None):
             'available_viz': Visualization.objects.filter(hidden=False).order_by('-type', '-title'),
             'form': form_class,
             # 'toCreate': toCreate,
-            'variables_list': variables_list,
-            'dimensions_list': dimensions_list,
+            # 'variables_list': variables_list,
+            # 'dimensions_list': dimensions_list,
             'visualisation_configuration': conf_viz_json
         })
     return None

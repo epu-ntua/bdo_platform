@@ -223,6 +223,7 @@ $(function () {
                    type: 'VALUE',
                    name: 'i' + String(idx) + '_' + variable.name,
                    title: variable.name,
+                   datatype: variable.datatype,
                    aggregate: variable.aggregate,
                    groupBy: false,
                    exclude: false
@@ -269,6 +270,7 @@ $(function () {
                         type: dim.id,
                         name: 'i' + String(idx) + '_' + name,
                         title: dim.title,
+                        datatype: dim.datatype,
                         groupBy: groupBy,
                         aggregate: dimAggregate,
                         exclude: !groupBy && variable.aggregate

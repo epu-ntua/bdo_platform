@@ -205,14 +205,34 @@ $("#select_data_popover").click(function () {
                 $('#myModal .variables-select ').find('option').remove();
                 $('#myModal .column-select ').find('option').remove();
                 $('#myModal .columns-select ').find('option').remove();
+                $('#myModal .variable-numeric-select').find('option').remove();
+                $('#myModal .variables-numeric-select ').find('option').remove();
+                $('#myModal .column-numeric-select ').find('option').remove();
+                $('#myModal .columns-numeric-select ').find('option').remove();
                 $('#myModal .ais-select ').find('option').remove();
                 var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
                 var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
+                var variables_numeric_content = '';
+                var dimensions_numeric_content = '';
+                $.each($('#query-variables-select-container #'+String(new_query_id)).find('option'), function (i, el) {
+                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")){
+                        variables_numeric_content += $(el).prop('outerHTML');
+                    }
+                });
+                $.each($('#query-dimensions-select-container #'+String(new_query_id)).find('option'), function (i, el) {
+                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")){
+                        dimensions_numeric_content += $(el).prop('outerHTML');
+                    }
+                });
                 // var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
                 $('#myModal .variable-select ').html(variables_content);
                 $('#myModal .variables-select ').html(variables_content);
                 $('#myModal .column-select ').html(variables_content + dimensions_content);
                 $('#myModal .columns-select ').html(variables_content + dimensions_content);
+                $('#myModal .variable-numeric-select ').html(variables_numeric_content);
+                $('#myModal .variables-numeric-select ').html(variables_numeric_content);
+                $('#myModal .column-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
+                $('#myModal .columns-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
                 // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
             }
             function populate_selects(){
@@ -268,6 +288,28 @@ $("#select_data_popover").click(function () {
                 });
 
                  $(".popover-content .columns-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select Variables or Dimensions',
+                });
+
+                $(".popover-content .variable-numeric-select").dropdown({
+                        clearable: true,
+                        placeholder: 'Select a Variable',
+                    });
+                $(".popover-content .variable-numeric-select").dropdown('clear');
+
+                $(".popover-content .column-numeric-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select a Variable or Dimension',
+
+                });
+                $(".popover-content .column-numeric-select").dropdown('clear');
+                $(".popover-content .variables-numeric-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select Variable(s)',
+                });
+
+                 $(".popover-content .columns-numeric-select").dropdown({
                     clearable: true,
                     placeholder: 'Select Variables or Dimensions',
                 });
@@ -338,7 +380,7 @@ $("#select_data_popover").click(function () {
                             alert('Please choose a variable that is not already in use.');
                         }
                     }
-                 })
+                })
             }
 
             function submit_conf(component_selector,component_type) {

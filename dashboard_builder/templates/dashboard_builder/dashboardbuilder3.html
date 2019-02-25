@@ -213,7 +213,7 @@
                                             {% for var in el.select %}
                                                 {% if var.exclude == False or var.exclude == ''%}
                                                      {% if var.type == 'VALUE' %}
-                                                             <option value="{{ var.name }}">{{ var.title }}</option>
+                                                             <option value="{{ var.name }}" data-datatype="{{ var.datatype }}">{{ var.title }}</option>
                                                      {% endif %}
 
                                                 {% endif %}
@@ -229,7 +229,7 @@
                                             {% for var in el.select %}
                                                 {% if var.exclude == False or var.exclude == ''%}
                                                     {% if var.type != 'VALUE' %}
-                                                             <option value="{{ var.name }}">{{ var.title }}</option>
+                                                             <option value="{{ var.name }}" data-datatype="{{ var.datatype }}">{{ var.title }}</option>
                                                      {% endif %}
                                                 {% endif %}
                                             {% endfor %}
