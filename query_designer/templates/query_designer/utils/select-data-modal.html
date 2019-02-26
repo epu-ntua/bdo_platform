@@ -142,6 +142,7 @@
                                     </div>
                                     <div class="dataset-info hidden">
                                         <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
+                                            <div style="padding: 13px 7px;"><strong>Description: </strong>{% if dataset.description is None or dataset.description == '' %}No description available{% else %}{{ dataset.description }}{% endif %}</div>
                                             <table class="table table-condensed table-striped">
                                                 <thead>
                                                     <tr>
@@ -176,9 +177,29 @@
                                                         <td>{{ dataset.observation }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Description</td>
-                                                        <td>{{ dataset.description }}</td>
+                                                        <td>Source</td>
+                                                        <td>{{ dataset.source }}</td>
                                                     </tr>
+                                                    <tr>
+                                                        <td>Size</td>
+                                                        <td>{{ dataset.number_of_rows_formated }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Source</td>
+                                                        <td>{{ dataset.source }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Last updated</td>
+                                                        <td>{% if dataset.last_updated is None %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</td>
+                                                    </tr>
+                                                    {% for key, value in dataset.metadata.items %}
+                                                        {% if value is not None and value != "" %}
+                                                            <tr>
+                                                                <td>{{ key }}</td>
+                                                                <td>{{ value }}</td>
+                                                            </tr>
+                                                        {% endif %}
+                                                    {% endfor %}
                                                     <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
 
                                                     </tr>
@@ -188,12 +209,39 @@
                                             </table>
                                         </div>
                                         <div class="dataset-coverage-div">
+                                            <table class="table table-condensed table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="col-sm-4" style="text-align: center; font-weight: bold;">Property</th>
+                                                        <th style="text-align: center; font-weight: bold;">From</th>
+                                                        <th style="text-align: center; font-weight: bold;">To</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Spatial coverage (latitude)</td>
+                                                        <td>{{ dataset.spatialSouth }}</td>
+                                                        <td>{{ dataset.spatialNorth }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Spatial coverage (longitude)</td>
+                                                        <td>{{ dataset.spatialEast }}</td>
+                                                        <td>{{ dataset.spatialWest }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Temporal coverage</td>
+                                                        <td>{{ dataset.temporalCoverageBegin }}</td>
+                                                        <td>{{ dataset.temporalCoverageEnd }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                             {% if dataset.hascoverage_img%}
                                                 {% with 'aggregator/img/coverage/'|add:dataset.title|add:'.PNG' as image_static %}
                                                     <img src="{% static image_static %}" alt="coverage image">
                                                 {% endwith %}
                                             {% else %}
-                                                <p>Coverage info not available</p>
+{#                                                <p>Coverage info not available</p>#}
+                                                <p>Coverage image not available</p>
                                             {% endif %}
                                         </div>
                                         <div class="dataset-dimensions-div">

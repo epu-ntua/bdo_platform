@@ -3,6 +3,10 @@
     max-height: 50%;
 }
 
+#dataset-coverage-div th, #dataset-coverage-div td{
+    padding: 5px 1px;
+}
+
 #dataset-coverage-div{
     text-align: center;
 }
