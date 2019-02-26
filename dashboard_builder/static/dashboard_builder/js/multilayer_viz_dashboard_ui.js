@@ -22,7 +22,7 @@ $("#select_data_popover").click(function () {
             $('#layers-list').dropdown();
             $('#layers-list-title-button').click(function () {
                 $('#layers-list').trigger('click');
-            })
+            });
 
             $("#query_name_span").text(null);
             var layer_count = 0;
@@ -38,7 +38,7 @@ $("#select_data_popover").click(function () {
                 $('#myModal #add_layer_btn').parent().hide();
                 $('#myModal #layers-list').parent().hide();
 
-            })
+            });
             $("#add_layer_btn").parent().click(function () {
                 $(this).hide();
                 if((new_query_id!=null)&&(selected_visualization!=null)) {
@@ -51,7 +51,7 @@ $("#select_data_popover").click(function () {
                     $(".list-group").css('visibility','hidden');
                     $("#viz_config .list-group").children().each(function () {
                         $(this).find("#selected_viz_span").hide();
-                    })
+                    });
                     layer_json = [];
                     for (var i = 0; i < json.length; i++) {
                         var obj = json[i];
@@ -64,7 +64,7 @@ $("#select_data_popover").click(function () {
                     $(".layer_list_element #layer_list_element_btn"+String(layer_count)).click(function () {
                          $("#viz_config .list-group").children().each(function () {
                                 $(this).find("#selected_viz_span").hide();
-                         })
+                         });
                         var del_id = $(this).closest('li').attr('id');
                         for (var i = 0; i < layer_json.length; i++) {
                             var obj = layer_json[i];
@@ -83,7 +83,7 @@ $("#select_data_popover").click(function () {
                             }
                         }
                         mapVizUrlCreator(layer_json,layer_count,'map');
-                    })
+                    });
                     layer_count = layer_count+1;
                 }
                 else{
@@ -139,33 +139,362 @@ $("#select_data_popover").click(function () {
             $(".viz_item").click(function (element) {
                 if($('.popover').length) {
                     $('.viz_item').popover('hide');
-                    // $('#select_conf_cancel').trigger("click");
-                    // $('.popover').hide();
+
                 }
-                var component_id = $(this).attr('data-viz-id');
-                var component_type = $(this).attr('data-viz-type');
-                var component_selector = 'li[data-viz-id="' + component_id + '"]';
-                $(component_selector).popover({
-                    html: true,
-                    title: $(this).text()+' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="'+$(this).attr('data-description') +'"></i>',
-                    trigger:'manual',
-                    content: function () {
-                        return $('.all_viz_forms  #viz_' + String(component_id)).clone();
+                else {
+                    var component_id = $(this).attr('data-viz-id');
+                    var component_type = $(this).attr('data-viz-type');
+                    var component_selector = 'li[data-viz-id="' + component_id + '"]';
+                    $(component_selector).popover({
+                        html: true,
+                        title: $(this).text() + ' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="' + $(this).attr('data-description') + '"></i>',
+                        trigger: 'manual',
+                        content: function () {
+                            return $('.all_viz_forms  #viz_' + String(component_id)).clone();
+                        }
+                    });
+                    var chosen_viz = $(this).attr('data-viz-name');
+                    updateVariables(chosen_viz, component_id, component_type, component_selector, createPopover);
+                    // createPopover(component_id, component_type, component_selector, populate_selects(specific_viz_form_configuration));
+                }
+
+            });
+
+            function specific_viz_form_configuration(){
+
+                //AGGREGATE-VALUE
+                var allow_aggregate_value_submit = [true];
+                var aggregate_value_id = $('#viz_config ul li[data-viz-name="get_aggregate_value"]').attr('data-viz-id');
+                var aggregate_value_col_select = $('.popover-content #viz_'+aggregate_value_id+' #variable');
+                aggregate_value_col_select.on('change',function () {
+                    allow_aggregate_value_submit = missing_parameter(aggregate_value_col_select,allow_aggregate_value_submit,'variable',0);
+                });
+                aggregate_value_col_select.dropdown('refresh');
+                aggregate_value_col_select.parent().dropdown('clear');
+
+
+                //DATA-TABLE
+                $('.popover-content #select_all_columns').parent().checkbox().first().checkbox({
+                    onChecked: function(){
+                        const options = $('.popover-content .columns-select #column_choice> option').toArray().map(
+                        (obj) => obj.value
+                      );
+                      $('.popover-content .columns-select #column_choice').dropdown('set exactly', options);
+                    },
+                    onUnchecked: function() {
+                      $('.popover-content .columns-select #column_choice').dropdown('clear');
+
+                    },
+                });
+                var allow_datatable_submit = [true];
+                var datatable_id = $('#viz_config ul li[data-viz-name="get_data_table"]').attr('data-viz-id');
+                var datatable_col_select = $('.popover-content #viz_'+datatable_id+' #column_choice');
+                datatable_col_select.on('change',function () {
+                    allow_datatable_submit = missing_parameter(datatable_col_select,allow_datatable_submit,'column',0);
+                });
+                datatable_col_select.dropdown('set selected',datatable_col_select.find('option').val());
+                datatable_col_select.dropdown('refresh');
+                datatable_col_select.parent().dropdown('clear');
+
+
+                //HISTOGRAM
+                var allow_histogram_submit = [true,true];
+                var histogram_id = $('#viz_config ul li[data-viz-name="get_histogram_chart_am"]').attr('data-viz-id');
+                var histogramm_select = $('.popover-content #viz_'+histogram_id+' .column-select');
+                var histogram_input = $('.popover-content #viz_'+histogram_id+' #bins');
+                var viz_conf_histogram = viz_conf_json['visualiser']['histogram_chart_am'];
+                histogram_input.val(viz_conf_histogram['default_bins']);
+                histogram_input.on('input',function () {
+                    allow_histogram_submit = limit_points(histogram_input,viz_conf_histogram,allow_histogram_submit,'bins',1)
+                });
+                histogramm_select.find('option').each(function () {
+                    if ($(this).val().includes('time')){
+                        $(this).remove();
                     }
                 });
-
-
-                updateVariables(populate_selects);
-
-                $(component_selector).popover('show');
-                var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
-                var viz_info_text = "";
-                $(popover_component).find('label.form_field_info').each(function () {
-                    viz_info_text = viz_info_text + "\n-"+$(this).text()+": " + $(this).attr('title');
+                var histogram_variable_select = $('.popover-content #viz_'+histogram_id+' #x_var');
+                histogram_variable_select.on('change',function () {
+                    allow_histogram_submit = missing_parameter(histogram_variable_select,allow_histogram_submit,'variable',0);
                 });
-                $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
+                histogram_variable_select.dropdown('refresh');
+                histogram_variable_select.parent().dropdown('clear');
 
+
+                 //HISTOGRAM2D
+                var allow_histogram2d_submit = [true,true,true];
+                var histogram2d_id = $('#viz_config ul li[data-viz-name="get_histogram_2d_am"]').attr('data-viz-id');
+                var histogramm2d_select = $('.popover-content #viz_'+histogram2d_id+' .column-select');
+                var histogram2d_input = $('.popover-content #viz_'+histogram2d_id+' #bins');
+                var viz_conf_histogram2d = viz_conf_json['visualiser']['histogram_2d_am'];
+                histogram2d_input.val(viz_conf_histogram2d['default_bins']);
+                histogram2d_input.on('input',function () {
+                    allow_histogram2d_submit = limit_points(histogram2d_input,viz_conf_histogram2d,allow_histogram2d_submit,'bins',0)
+                });
+                histogramm2d_select.find('option').each(function () {
+                    if ($(this).val().includes('time')){
+                        $(this).remove();
+                    }
+                });
+                var histogram2d_yvariable_select = $('.popover-content #viz_'+histogram2d_id+' #y_var');
+                histogram2d_yvariable_select.on('change',function () {
+                    allow_histogram2d_submit = missing_parameter(histogram2d_yvariable_select,allow_histogram2d_submit,'Y-Axis-Variable',1);
+                });
+                histogram2d_yvariable_select.dropdown('refresh');
+                histogram2d_yvariable_select.parent().dropdown('clear');
+
+                var histogram2d_xvariable_select = $('.popover-content #viz_'+histogram2d_id+' #x_var');
+                histogram2d_xvariable_select.on('change',function () {
+                    allow_histogram2d_submit = missing_parameter(histogram2d_xvariable_select,allow_histogram2d_submit,'X-Axis-Variable',2);
+                });
+                histogram2d_xvariable_select.dropdown('refresh');
+                histogram2d_xvariable_select.parent().dropdown('clear');
+
+
+                //PIE CHART
+                var allow_pie_chart_submit = [true,true];
+                var pie_chart_id = $('#viz_config ul li[data-viz-name="get_pie_chart_am"]').attr('data-viz-id');
+                var pie_chart_agg_select = $('.popover-content #viz_'+pie_chart_id+' .aggregate-select');
+                pie_chart_agg_select.dropdown('set selected' , 'COUNT');
+                pie_chart_agg_select.find('option[value= "MAX"]').remove();
+                pie_chart_agg_select.find('option[value= "MIN"]').remove();
+                pie_chart_agg_select.find('option[value= "AVG"]').remove();
+                var pie_chart_col_select = $('.popover-content #viz_'+pie_chart_id+' #value_var');
+                pie_chart_col_select.on('change',function () {
+                    allow_pie_chart_submit = missing_parameter(pie_chart_col_select,allow_pie_chart_submit,'variable',0);
+                });
+                pie_chart_col_select.dropdown('refresh');
+                pie_chart_col_select.parent().dropdown('clear');
+                var pie_chart_separator_select = $('.popover-content #viz_'+pie_chart_id+' #key_var');
+                pie_chart_separator_select.on('change',function () {
+                    allow_pie_chart_submit = missing_parameter(pie_chart_separator_select,allow_pie_chart_submit,'separator',1);
+                });
+                pie_chart_separator_select.dropdown('set selected',pie_chart_separator_select.find('option').val());
+                pie_chart_separator_select.dropdown('refresh');
+                pie_chart_separator_select.parent().dropdown('clear');
+
+
+                //LINE-CHART
+                var allow_line_chart_submit = [true,true];
+                var line_chart_id = $('#viz_config ul li[data-viz-name="get_line_chart_am"]').attr('data-viz-id');
+                var line_chart_y_select = $('.popover-content #viz_'+line_chart_id+' #y_var');
+                line_chart_y_select.on('change',function () {
+                    allow_line_chart_submit = missing_parameter(line_chart_y_select,allow_line_chart_submit,'Y-Axis-Variable',0);
+                });
+                line_chart_y_select.dropdown('set selected',line_chart_y_select.find('option').val());
+                line_chart_y_select.dropdown('refresh');
+                line_chart_y_select.parent().dropdown('clear');
+                var line_chart_x_select = $('.popover-content #viz_'+line_chart_id+' #x_var');
+                line_chart_x_select.on('change',function () {
+                    allow_line_chart_submit = missing_parameter(line_chart_x_select,allow_line_chart_submit,'X-Axis-Variable',1);
+                });
+                line_chart_x_select.dropdown('refresh');
+                line_chart_x_select.parent().dropdown('clear');
+
+
+                //COLUMN-CHART
+                var allow_column_chart_submit = [true,true];
+                var column_chart_id = $('#viz_config ul li[data-viz-name="get_column_chart_am"]').attr('data-viz-id');
+                var column_chart_y_select = $('.popover-content #viz_'+column_chart_id+' #y_var');
+                column_chart_y_select.on('change',function () {
+                    allow_column_chart_submit = missing_parameter(column_chart_y_select,allow_column_chart_submit,'Y-Axis-Variable',0);
+                });
+                column_chart_y_select.dropdown('set selected',column_chart_y_select.find('option').val());
+                column_chart_y_select.dropdown('refresh');
+                column_chart_y_select.parent().dropdown('clear');
+                var column_chart_x_select = $('.popover-content #viz_'+column_chart_id+' #x_var');
+                column_chart_x_select.on('change',function () {
+                    allow_column_chart_submit = missing_parameter(column_chart_x_select,allow_column_chart_submit,'X-Axis-Variable',1);
+                });
+                column_chart_x_select.dropdown('refresh');
+                column_chart_x_select.parent().dropdown('clear');
+
+
+                //TIME SERIES
+                 $('.popover-content #use_existing_temp_res').parent().checkbox().first().checkbox({
+                    onChecked: function(){
+                        $('.popover-content #temporal_resolution').parent().addClass('disabled');
+                    },
+                    onUnchecked: function () {
+                        $('.popover-content #temporal_resolution').parent().removeClass('disabled');
+                    }
+                });
+                $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
+
+                // $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
+                var allow_time_series_submit = [true];
+                var time_series_id = $('#viz_config ul li[data-viz-name="get_time_series_am"]').attr('data-viz-id');
+                var time_series_checkbox = $('.popover-content #viz_'+time_series_id+' #use_existing_temp_res');
+                time_series_checkbox.parent().checkbox('check');
+                var time_series_col_select = $('.popover-content #viz_'+time_series_id+' #y_var');
+                time_series_col_select.on('change',function () {
+                    allow_time_series_submit = missing_parameter(time_series_col_select,allow_time_series_submit,'variable',0);
+                });
+                time_series_col_select.dropdown('set selected',time_series_col_select.find('option').val());
+                time_series_col_select.dropdown('refresh');
+                time_series_col_select.parent().dropdown('clear');
+
+
+                // PLOTLINE VESSEL COURSE
+                var allow_plotline_submit = [true, true, true];
+                var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
+                var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
+                var plotline_platform_id_input = $('.popover-content #viz_'+ plotline_vessel_course_id+' #platform_id');
+                var viz_conf_plotline = viz_conf_json['visualiser']['map_plotline_vessel_course'];
+                plotline_platform_id_input.val(' ');
+                plotline_vessel_course_input.val(viz_conf_plotline['default_points']);
+                plotline_vessel_course_input.on('input',function () {
+                    allow_plotline_submit = limit_points(plotline_vessel_course_input,viz_conf_plotline,allow_plotline_submit,'positions',0);
+                });
+                aggregate_value_col_select.parent().dropdown('clear');
+                var plotline_vessel_col_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id-columns-select');
+                plotline_vessel_col_id_select.on('change', function(){
+                    allow_plotline_submit = missing_parameter(plotline_vessel_col_id_select, allow_plotline_submit, 'Vessel-ID-Column',1 )
+                });
+                plotline_vessel_col_id_select.parent().dropdown('clear');
+                var plotline_vessel_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id-select');
+                plotline_vessel_id_select.on('change', function(){
+                    allow_plotline_submit = missing_parameter(plotline_vessel_id_select, allow_plotline_submit, 'Vessel-ID', 2 )
+                });
+                plotline_vessel_id_select.parent().dropdown('clear');
+
+
+                //CONTOURS
+                var allow_contour_submit = [true,true];
+                var contour_id = $('#viz_config ul li[data-viz-name="get_map_contour"]').attr('data-viz-id');
+                var contours_input = $('.popover-content #viz_'+contour_id+' #n_contours');
+                var viz_conf_contour = viz_conf_json['visualiser']['map_contour'];
+                contours_input.val(viz_conf_contour['default_contours']);
+                contours_input.on('input',function () {
+                    allow_contour_submit = limit_points(contours_input, viz_conf_contour, allow_contour_submit, 'contours',1);
+                });
+                var contour_col_select = $('.popover-content #viz_'+contour_id+' #contour_var');
+                contour_col_select.on('change',function () {
+                    allow_contour_submit = missing_parameter(contour_col_select,allow_contour_submit,'variable',0);
+                });
+                contour_col_select.dropdown('refresh');
+                contour_col_select.parent().dropdown('clear');
+
+
+                // POLYGON LINE
+                var allow_polygon_submit = [true];
+                var polygon_id = $('#viz_config ul li[data-viz-name="get_map_polygon"]').attr('data-viz-id');
+                var polygon_input = $('.popover-content #viz_'+polygon_id+' #points_limit');
+                var viz_conf_polygon = viz_conf_json['visualiser']['map_polygon'];
+                polygon_input.val(viz_conf_polygon['default_points']);
+                polygon_input.on('input',function () {
+                        allow_polygon_submit = limit_points(polygon_input,viz_conf_polygon,allow_polygon_submit,'points',0);
+                });
+
+
+                //HEATMAP
+                var allow_heatmap_submit = [true,true];
+                var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
+                var heatmap_points_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
+                var viz_conf_heatmap = viz_conf_json['visualiser']['map_heatmap'];
+                heatmap_points_input.val(viz_conf_heatmap['default_points']);
+                heatmap_points_input.on('input',function () {
+                    allow_heatmap_submit = limit_points(heatmap_points_input, viz_conf_heatmap, allow_heatmap_submit, 'points',1);
+                });
+                var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
+                heatmap_col_select.append('<option value="heatmap_frequency">Frequency</option>');
+                heatmap_col_select.on('change',function () {
+                    allow_heatmap_submit = missing_parameter(heatmap_col_select,allow_heatmap_submit,'variable',0);
+                });
+                heatmap_col_select.dropdown('refresh');
+                heatmap_col_select.parent().dropdown('clear');
+
+
+                 //MAP MARKERS VESSEL COURSE
+                var markers_checkbox_flag = false;
+                var allow_markers_vessel_submit = [true, true, true, true, true];
+                 $('.popover-content #use_color_column').parent().checkbox().first().checkbox({
+                    onChecked: function(){
+                        $('.popover-content #color_var').parent().removeClass('disabled');
+                        markers_checkbox_flag = true;
+                        allow_markers_vessel_submit = missing_parameter(markers_vessel_color_var, allow_markers_vessel_submit, 'color-column', 4);
+
+                    },
+                    onUnchecked: function () {
+                        $('.popover-content #color_var').parent().addClass('disabled');
+                        $('.popover-content #color_var').dropdown('clear');
+                        markers_checkbox_flag = false;
+                        allow_markers_vessel_submit[4] = true;
+                        $('.color-column_missing_error').remove();
+
+                        var flag = true;
+                        for (var el=0; el<allow_markers_vessel_submit.length;el++){
+                            if (allow_markers_vessel_submit[el]===false){
+                                flag = false;
+                            }
+                        }
+                        if (flag=== true){
+                            $('#select_conf_ok').removeClass('disabled');
+                        }
+
+                    }
+                });
+                var markers_vessel_id = $('#viz_config ul li[data-viz-name="get_map_markers_vessel_course"]').attr('data-viz-id');
+                var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
+                var viz_conf_markers_vessel = viz_conf_json['visualiser']['map_markers_vessel_course'];
+                markers_vessel_input.val(viz_conf_markers_vessel['default_points']);
+                markers_vessel_input.on('input',function () {
+                    allow_markers_vessel_submit = limit_points(markers_vessel_input,viz_conf_markers_vessel,allow_markers_vessel_submit,'markers',1)
+                });
+                var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var');
+                markers_vessel_color_var.find('option[value= "i0_longitude"]').remove();
+                markers_vessel_color_var.find('option[value= "i0_latitude"]').remove();
+                markers_vessel_color_var.find('option[value= "i0_time"]').remove();
+                $('.popover-content #color_var').parent().addClass('disabled');
+                markers_vessel_color_var.on('change',function () {
+                    if (markers_checkbox_flag) {
+                        allow_markers_vessel_submit = missing_parameter(markers_vessel_color_var, allow_markers_vessel_submit, 'color-column', 4);
+                    }
+                });
+                markers_vessel_color_var.dropdown('clear');
+                var markers_vessel_col_select = $('.popover-content #viz_'+markers_vessel_id+' #variable');
+                markers_vessel_col_select.on('change',function () {
+                    allow_markers_vessel_submit = missing_parameter(markers_vessel_col_select, allow_markers_vessel_submit,'variable',0);
+                });
+                markers_vessel_col_select.dropdown('refresh');
+                markers_vessel_col_select.parent().dropdown('clear');
+                var markers_vessel_col_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-columns-select');
+                markers_vessel_col_id_select.on('change', function(){
+                    allow_markers_vessel_submit = missing_parameter(markers_vessel_col_id_select, allow_markers_vessel_submit, 'Vessel-ID-Column',2 )
+                });
+                markers_vessel_col_id_select.parent().dropdown('clear');
+                var markers_vessel_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-select');
+                markers_vessel_id_select.on('change', function(){
+                    allow_markers_vessel_submit = missing_parameter(markers_vessel_id_select, allow_markers_vessel_submit, 'Vessel-ID', 3 )
+                });
+                markers_vessel_id_select.dropdown('set selected',markers_vessel_id_select.find('option').val());
+                markers_vessel_id_select.dropdown('refresh');
+                markers_vessel_id_select.parent().dropdown('clear');
+
+
+
+
+                 //MAP MARKERS GRID
+                var allow_markers_grid_submit = [true,true];
+                var markers_grid_id = $('#viz_config ul li[data-viz-name="get_map_markers_grid"]').attr('data-viz-id');
+                var markers_grid_input = $('.popover-content #viz_'+ markers_grid_id+' #marker_limit');
+                var viz_conf_markers_grid = viz_conf_json['visualiser']['map_markers_grid'];
+                markers_grid_input.val(viz_conf_markers_grid['default_points']);
+                markers_grid_input.on('input',function () {
+                    allow_markers_grid_submit = limit_points(markers_grid_input,viz_conf_markers_grid,allow_markers_grid_submit,'markers',1);
+                });
+
+                var markers_grid_col_select = $('.popover-content #viz_'+markers_grid_id+' #variable');
+                markers_grid_col_select.on('change',function () {
+                    allow_markers_grid_submit = missing_parameter(markers_grid_col_select,allow_markers_grid_submit,'variable',0);
+                });
+                markers_grid_col_select.dropdown('refresh');
+                markers_grid_col_select.parent().dropdown('clear');
+
+            }
+
+            function createPopover(component_id, component_type, component_selector){
                 $(component_selector).on("hidden.bs.popover", function(e) {
+                    $(".viz_item").removeClass('waiting-disable');
                     selected_val = null;
                     var_list = null;
                     var_select = null;
@@ -176,10 +505,22 @@ $("#select_data_popover").click(function () {
                     $(component_selector).popover('destroy');
 
                 });
+                $(component_selector).on("shown.bs.popover", function(e) {
+                    $(".viz_item").removeClass('waiting-disable');
+                    populate_selects(specific_viz_form_configuration);
+                });
+                $(component_selector).popover('show');
+                var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
+                var viz_info_text = "";
+                $(popover_component).find('label.form_field_info').each(function () {
+                    viz_info_text = viz_info_text + "\n-"+$(this).text()+": " + $(this).attr('title');
+                });
+                $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
 
-                setTimeout(function () {
-                    specific_viz_form_configuration();
-                },150);
+
+                // setTimeout(function () {
+                //     specific_viz_form_configuration();
+                // },150);
 
 
 
@@ -198,15 +539,16 @@ $("#select_data_popover").click(function () {
                 $(popver_id + ' #select_conf_cancel').click(function (e) {
                     $(component_selector).popover("hide");
                 });
-            });
 
-            function updateVariables(_callback){
+            }
+
+            function updateVariables(chosen_viz,component_id, component_type, component_selector,_callback){
                 $('#myModal .variable-select').find('option').remove();
                 $('#myModal .variables-select ').find('option').remove();
                 $('#myModal .column-select ').find('option').remove();
                 $('#myModal .columns-select ').find('option').remove();
                 $('#myModal .vessel-id-columns-select ').find('option').remove();
-                $('#myModal .vessel-id-selectt ').find('option').remove();
+                $('#myModal .vessel-id-select ').find('option').remove();
                 $('#myModal .ais-select ').find('option').remove();
                 var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
                 var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
@@ -216,62 +558,34 @@ $("#select_data_popover").click(function () {
                 $('#myModal .column-select ').html(variables_content + dimensions_content);
                 $('#myModal .columns-select ').html(variables_content + dimensions_content);
                 // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
-
-                $.ajax({
-                    "type": "GET",
-                    "url": "/visualizations/get_vessel_ids_info/"+String(new_query_id)+"/",
-                    "success": function(result) {
+                if((chosen_viz =='get_map_plotline_vessel_course')||(chosen_viz=='get_map_markers_vessel_course')) {
+                    $(".viz_item").addClass('waiting-disable');
+                    $.ajax({
+                        "type": "GET",
+                        "url": "/visualizations/get_vessel_ids_info/" + String(new_query_id) + "/",
+                        "success": function (result) {
                             console.log(result);
                             $.each(result, function (col_name, values_list) {
-                                $('#myModal .vessel-id-columns-select').append("<option value='"+col_name+"'>"+col_name+"</option>");
+                                $('#myModal .vessel-id-columns-select').append("<option value='" + col_name + "'>" + col_name + "</option>");
                                 $.each(values_list, function (_, id_value) {
-                                    $('#myModal .vessel-id-select').append("<option value='"+id_value+"'>"+id_value+"</option>");
+                                    $('#myModal .vessel-id-select').append("<option value='" + id_value + "'>" + id_value + "</option>");
                                 });
                             });
                         },
-                    "error": function () {
-                        console.log('error getting vessel identifiers');
-                    },
-                    "complete": function(data) {
-                        _callback();
-                    }
-                });
+                        "error": function () {
+                            console.log('error getting vessel identifiers');
+                        },
+                        "complete": function (data) {
+                            _callback(component_id, component_type, component_selector);
+                        }
+                    });
+                }else{
+                    _callback(component_id, component_type, component_selector);
+                }
 
             }
-            function populate_selects(){
+            function populate_selects(_mycallback){
 
-                $('.popover-content #use_existing_temp_res').parent().checkbox().first().checkbox({
-                    onChecked: function(){
-                        $('.popover-content #temporal_resolution').parent().addClass('disabled');
-                    },
-                    onUnchecked: function () {
-                        $('.popover-content #temporal_resolution').parent().removeClass('disabled');
-                    }
-                });
-                $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
-
-                $('.popover-content #use_color_column').parent().checkbox().first().checkbox({
-                    onChecked: function(){
-                        $('.popover-content #color_var').parent().removeClass('disabled');
-                    },
-                    onUnchecked: function () {
-                        $('.popover-content #color_var').parent().addClass('disabled');
-                        $('.popover-content #color_var').dropdown('clear');
-                    }
-                });
-                // $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
-
-                $('.popover-content #select_all_columns').parent().checkbox().first().checkbox({
-                    onChecked: function(){
-                        const options = $('.popover-content .columns-select #column_choice> option').toArray().map(
-                        (obj) => obj.value
-                      );
-                      $('.popover-content .columns-select #column_choice').dropdown('set exactly', options);
-                    },
-                    onUnchecked: function() {
-                      $('.popover-content .columns-select #column_choice').dropdown('clear');
-                    },
-                });
 
                  $(".popover-content .variable-select").dropdown({
                         clearable: true,
@@ -373,6 +687,8 @@ $("#select_data_popover").click(function () {
                         }
                     }
                  })
+                _mycallback();
+
             }
 
             function submit_conf(component_selector,component_type) {
@@ -442,7 +758,13 @@ $("#select_data_popover").click(function () {
                 for (var i = 0; i < json.length; i++) {
                     var obj =json[i];
                     for (var key in obj) {
-                        url = url + "&" + (key)+obj['layer_id'] + "=" + (obj[key]);
+                        if (key.includes('[]')){
+                            for (var jcount = 0; jcount<obj[key].length; jcount++) {
+                                url = url + "&" + (key.replace('[]', '')) + obj['layer_id'] + "[]" + "=" + (obj[key][jcount]);
+                            }
+                        }else {
+                            url = url + "&" + (key) + obj['layer_id'] + "=" + (obj[key]);
+                        }
                     }
                 }
                 url = url.replace("&","");
@@ -453,7 +775,15 @@ $("#select_data_popover").click(function () {
                 var unindexed_array = form.serializeArray();
                 var indexed_array = {};
                 $.map(unindexed_array, function(n, i){
-                    indexed_array[n['name']] = n['value'];
+                    if(n['name'].includes('[]')){
+                        if(indexed_array.hasOwnProperty(n['name'])){
+                            indexed_array[n['name']].push(n['value']);
+                        }else{
+                            indexed_array[n['name']] = [n['value']];
+                        }
+                    }else {
+                        indexed_array[n['name']] = n['value'];
+                    }
                 });
                 indexed_array['query'] = query;
                 indexed_array['layer_id'] = String(count);
@@ -581,260 +911,6 @@ $("#select_data_popover").click(function () {
             }
 
 
-
-            function specific_viz_form_configuration(){
-                //AGGREGATE-VALUE
-                var allow_aggregate_value_submit = [true];
-                var aggregate_value_id = $('#viz_config ul li[data-viz-name="get_aggregate_value"]').attr('data-viz-id');
-                var aggregate_value_col_select = $('.popover-content #viz_'+aggregate_value_id+' #variable');
-                aggregate_value_col_select.on('change',function () {
-                    allow_aggregate_value_submit = missing_parameter(aggregate_value_col_select,allow_aggregate_value_submit,'variable',0);
-                });
-                aggregate_value_col_select.dropdown('refresh');
-                aggregate_value_col_select.parent().dropdown('clear');
-
-
-                //DATA-TABLE
-                var allow_datatable_submit = [true];
-                var datatable_id = $('#viz_config ul li[data-viz-name="get_data_table"]').attr('data-viz-id');
-                var datatable_col_select = $('.popover-content #viz_'+datatable_id+' #column_choice');
-                datatable_col_select.on('change',function () {
-                    allow_datatable_submit = missing_parameter(datatable_col_select,allow_datatable_submit,'column',0);
-                });
-                datatable_col_select.dropdown('set selected',datatable_col_select.find('option').val());
-                datatable_col_select.dropdown('refresh');
-                datatable_col_select.parent().dropdown('clear');
-
-
-                //HISTOGRAM
-                var allow_histogram_submit = [true,true];
-                var histogram_id = $('#viz_config ul li[data-viz-name="get_histogram_chart_am"]').attr('data-viz-id');
-                var histogramm_select = $('.popover-content #viz_'+histogram_id+' .column-select');
-                var histogram_input = $('.popover-content #viz_'+histogram_id+' #bins');
-                var viz_conf_histogram = viz_conf_json['visualiser']['histogram_chart_am'];
-                histogram_input.val(viz_conf_histogram['default_bins']);
-                histogram_input.on('input',function () {
-                    allow_histogram_submit = limit_points(histogram_input,viz_conf_histogram,allow_histogram_submit,'bins',1)
-                });
-                histogramm_select.find('option').each(function () {
-                    if ($(this).val().includes('time')){
-                        $(this).remove();
-                    }
-                });
-                var histogram_variable_select = $('.popover-content #viz_'+histogram_id+' #x_var');
-                histogram_variable_select.on('change',function () {
-                    allow_histogram_submit = missing_parameter(histogram_variable_select,allow_histogram_submit,'variable',0);
-                });
-                histogram_variable_select.dropdown('refresh');
-                histogram_variable_select.parent().dropdown('clear');
-
-
-                 //HISTOGRAM2D
-                var allow_histogram2d_submit = [true,true,true];
-                var histogram2d_id = $('#viz_config ul li[data-viz-name="get_histogram_2d_am"]').attr('data-viz-id');
-                var histogramm2d_select = $('.popover-content #viz_'+histogram2d_id+' .column-select');
-                var histogram2d_input = $('.popover-content #viz_'+histogram2d_id+' #bins');
-                var viz_conf_histogram2d = viz_conf_json['visualiser']['histogram_2d_am'];
-                histogram2d_input.val(viz_conf_histogram2d['default_bins']);
-                histogram2d_input.on('input',function () {
-                    allow_histogram2d_submit = limit_points(histogram2d_input,viz_conf_histogram2d,allow_histogram2d_submit,'bins',0)
-                });
-                histogramm2d_select.find('option').each(function () {
-                    if ($(this).val().includes('time')){
-                        $(this).remove();
-                    }
-                });
-                var histogram2d_yvariable_select = $('.popover-content #viz_'+histogram2d_id+' #y_var');
-                histogram2d_yvariable_select.on('change',function () {
-                    allow_histogram2d_submit = missing_parameter(histogram2d_yvariable_select,allow_histogram2d_submit,'Y-Axis-Variable',1);
-                });
-                histogram2d_yvariable_select.dropdown('refresh');
-                histogram2d_yvariable_select.parent().dropdown('clear');
-
-                var histogram2d_xvariable_select = $('.popover-content #viz_'+histogram2d_id+' #x_var');
-                histogram2d_xvariable_select.on('change',function () {
-                    allow_histogram2d_submit = missing_parameter(histogram2d_xvariable_select,allow_histogram2d_submit,'X-Axis-Variable',2);
-                });
-                histogram2d_xvariable_select.dropdown('refresh');
-                histogram2d_xvariable_select.parent().dropdown('clear');
-
-
-                //PIE CHART
-                var allow_pie_chart_submit = [true,true];
-                var pie_chart_id = $('#viz_config ul li[data-viz-name="get_pie_chart_am"]').attr('data-viz-id');
-                var pie_chart_agg_select = $('.popover-content #viz_'+pie_chart_id+' .aggregate-select');
-                pie_chart_agg_select.dropdown('set selected' , 'COUNT');
-                pie_chart_agg_select.find('option[value= "MAX"]').remove();
-                pie_chart_agg_select.find('option[value= "MIN"]').remove();
-                pie_chart_agg_select.find('option[value= "AVG"]').remove();
-                var pie_chart_col_select = $('.popover-content #viz_'+pie_chart_id+' #value_var');
-                pie_chart_col_select.on('change',function () {
-                    allow_pie_chart_submit = missing_parameter(pie_chart_col_select,allow_pie_chart_submit,'variable',0);
-                });
-                pie_chart_col_select.dropdown('refresh');
-                pie_chart_col_select.parent().dropdown('clear');
-                var pie_chart_separator_select = $('.popover-content #viz_'+pie_chart_id+' #key_var');
-                pie_chart_separator_select.on('change',function () {
-                    allow_pie_chart_submit = missing_parameter(pie_chart_separator_select,allow_pie_chart_submit,'separator',1);
-                });
-                pie_chart_separator_select.dropdown('set selected',pie_chart_separator_select.find('option').val());
-                pie_chart_separator_select.dropdown('refresh');
-                pie_chart_separator_select.parent().dropdown('clear');
-
-
-                //LINE-CHART
-                var allow_line_chart_submit = [true,true];
-                var line_chart_id = $('#viz_config ul li[data-viz-name="get_line_chart_am"]').attr('data-viz-id');
-                var line_chart_y_select = $('.popover-content #viz_'+line_chart_id+' #y_var');
-                line_chart_y_select.on('change',function () {
-                    allow_line_chart_submit = missing_parameter(line_chart_y_select,allow_line_chart_submit,'Y-Axis-Variable',0);
-                });
-                line_chart_y_select.dropdown('set selected',line_chart_y_select.find('option').val());
-                line_chart_y_select.dropdown('refresh');
-                line_chart_y_select.parent().dropdown('clear');
-                var line_chart_x_select = $('.popover-content #viz_'+line_chart_id+' #x_var');
-                line_chart_x_select.on('change',function () {
-                    allow_line_chart_submit = missing_parameter(line_chart_x_select,allow_line_chart_submit,'X-Axis-Variable',1);
-                });
-                line_chart_x_select.dropdown('refresh');
-                line_chart_x_select.parent().dropdown('clear');
-
-
-                //COLUMN-CHART
-                var allow_column_chart_submit = [true,true];
-                var column_chart_id = $('#viz_config ul li[data-viz-name="get_column_chart_am"]').attr('data-viz-id');
-                var column_chart_y_select = $('.popover-content #viz_'+column_chart_id+' #y_var');
-                column_chart_y_select.on('change',function () {
-                    allow_column_chart_submit = missing_parameter(column_chart_y_select,allow_column_chart_submit,'Y-Axis-Variable',0);
-                });
-                column_chart_y_select.dropdown('set selected',column_chart_y_select.find('option').val());
-                column_chart_y_select.dropdown('refresh');
-                column_chart_y_select.parent().dropdown('clear');
-                var column_chart_x_select = $('.popover-content #viz_'+column_chart_id+' #x_var');
-                column_chart_x_select.on('change',function () {
-                    allow_column_chart_submit = missing_parameter(column_chart_x_select,allow_column_chart_submit,'X-Axis-Variable',1);
-                });
-                column_chart_x_select.dropdown('refresh');
-                column_chart_x_select.parent().dropdown('clear');
-
-
-                //TIME SERIES
-                var allow_time_series_submit = [true];
-                var time_series_id = $('#viz_config ul li[data-viz-name="get_time_series_am"]').attr('data-viz-id');
-                var time_series_checkbox = $('.popover-content #viz_'+time_series_id+' #use_existing_temp_res');
-                time_series_checkbox.parent().checkbox('check');
-                var time_series_col_select = $('.popover-content #viz_'+time_series_id+' #y_var');
-                time_series_col_select.on('change',function () {
-                    allow_time_series_submit = missing_parameter(time_series_col_select,allow_time_series_submit,'variable',0);
-                });
-                time_series_col_select.dropdown('set selected',time_series_col_select.find('option').val());
-                time_series_col_select.dropdown('refresh');
-                time_series_col_select.parent().dropdown('clear');
-
-
-                // PLOTLINE VESSEL COURSE
-                var allow_plotline_submit = [true];
-                var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
-                var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
-                var plotline_platform_id_input = $('.popover-content #viz_'+ plotline_vessel_course_id+' #platform_id');
-                var viz_conf_plotline = viz_conf_json['visualiser']['map_plotline_vessel_course'];
-                plotline_platform_id_input.val(' ');
-                plotline_vessel_course_input.val(viz_conf_plotline['default_points']);
-                plotline_vessel_course_input.on('input',function () {
-                    allow_plotline_submit = limit_points(plotline_vessel_course_input,viz_conf_plotline,allow_plotline_submit,'positions',0);
-                });
-                aggregate_value_col_select.parent().dropdown('clear');
-
-
-                //CONTOURS
-                var allow_contour_submit = [true,true];
-                var contour_id = $('#viz_config ul li[data-viz-name="get_map_contour"]').attr('data-viz-id');
-                var contours_input = $('.popover-content #viz_'+contour_id+' #n_contours');
-                var viz_conf_contour = viz_conf_json['visualiser']['map_contour'];
-                contours_input.val(viz_conf_contour['default_contours']);
-                contours_input.on('input',function () {
-                    allow_contour_submit = limit_points(contours_input, viz_conf_contour, allow_contour_submit, 'contours',1);
-                });
-                var contour_col_select = $('.popover-content #viz_'+contour_id+' #contour_var');
-                contour_col_select.on('change',function () {
-                    allow_contour_submit = missing_parameter(contour_col_select,allow_contour_submit,'variable',0);
-                });
-                contour_col_select.dropdown('refresh');
-                contour_col_select.parent().dropdown('clear');
-
-
-                // POLYGON LINE
-                var allow_polygon_submit = [true];
-                var polygon_id = $('#viz_config ul li[data-viz-name="get_map_polygon"]').attr('data-viz-id');
-                var polygon_input = $('.popover-content #viz_'+polygon_id+' #points_limit');
-                var viz_conf_polygon = viz_conf_json['visualiser']['map_polygon'];
-                polygon_input.val(viz_conf_polygon['default_points']);
-                polygon_input.on('input',function () {
-                        allow_polygon_submit = limit_points(polygon_input,viz_conf_polygon,allow_polygon_submit,'points',0);
-                });
-
-
-                //HEATMAP
-                var allow_heatmap_submit = [true,true];
-                var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
-                var heatmap_points_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
-                var viz_conf_heatmap = viz_conf_json['visualiser']['map_heatmap'];
-                heatmap_points_input.val(viz_conf_heatmap['default_points']);
-                heatmap_points_input.on('input',function () {
-                    allow_heatmap_submit = limit_points(heatmap_points_input, viz_conf_heatmap, allow_heatmap_submit, 'points',1);
-                });
-                var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
-                heatmap_col_select.append('<option value="heatmap_frequency">Frequency</option>');
-                heatmap_col_select.on('change',function () {
-                    allow_heatmap_submit = missing_parameter(heatmap_col_select,allow_heatmap_submit,'variable',0);
-                });
-                heatmap_col_select.dropdown('refresh');
-                heatmap_col_select.parent().dropdown('clear');
-
-
-                 //MAP MARKERS VESSEL COURSE
-                var allow_markers_vessel_submit = [true,true];
-                var markers_vessel_id = $('#viz_config ul li[data-viz-name="get_map_markers_vessel_course"]').attr('data-viz-id');
-                var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
-                var markers_platform_id_input = $('.popover-content #viz_'+ markers_vessel_id+' #platform_id');
-                markers_platform_id_input.val(' ');
-                var viz_conf_markers_vessel = viz_conf_json['visualiser']['map_markers_vessel_course'];
-                markers_vessel_input.val(viz_conf_markers_vessel['default_points']);
-                markers_vessel_input.on('input',function () {
-                    allow_markers_vessel_submit = limit_points(markers_vessel_input,viz_conf_markers_vessel,allow_markers_vessel_submit,'markers',1)
-                });
-                var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var').parent();
-                markers_vessel_color_var.find('option[value= "i0_platform_id"]').remove();
-                $('.popover-content #color_var').parent().addClass('disabled');
-
-                var markers_vessel_col_select = $('.popover-content #viz_'+markers_vessel_id+' #variable');
-                markers_vessel_col_select.on('change',function () {
-                    allow_markers_vessel_submit = missing_parameter(markers_vessel_col_select, allow_markers_vessel_submit,'variable',0);
-                });
-                markers_vessel_col_select.dropdown('refresh');
-                markers_vessel_col_select.parent().dropdown('clear');
-                var markers_vessel_col_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-columns-select');
-                markers_vessel_col_id_select.parent().dropdown('clear');
-
-
-
-                 //MAP MARKERS GRID
-                var allow_markers_grid_submit = [true,true];
-                var markers_grid_id = $('#viz_config ul li[data-viz-name="get_map_markers_grid"]').attr('data-viz-id');
-                var markers_grid_input = $('.popover-content #viz_'+ markers_grid_id+' #marker_limit');
-                var viz_conf_markers_grid = viz_conf_json['visualiser']['map_markers_grid'];
-                markers_grid_input.val(viz_conf_markers_grid['default_points']);
-                markers_grid_input.on('input',function () {
-                    allow_markers_grid_submit = limit_points(markers_grid_input,viz_conf_markers_grid,allow_markers_grid_submit,'markers',1);
-                });
-
-                var markers_grid_col_select = $('.popover-content #viz_'+markers_grid_id+' #variable');
-                markers_grid_col_select.on('change',function () {
-                    allow_markers_grid_submit = missing_parameter(markers_grid_col_select,allow_markers_grid_submit,'variable',0);
-                });
-                markers_grid_col_select.dropdown('refresh');
-                markers_grid_col_select.parent().dropdown('clear');
-            }
         });
 
 

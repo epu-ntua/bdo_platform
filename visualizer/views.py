@@ -61,7 +61,7 @@ def get_vessel_ids_info(request, query_id):
     for dataset in set(dataset_list):
         for vi in dataset.vessel_identifiers.all():
             return_dict[vi.column_name] = [x[0] for x in vi.values_list]
-
+    print return_dict
     return JsonResponse(return_dict)
 
 
@@ -103,7 +103,8 @@ def get_markers_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
     marker_limit = str(request.GET.get("marker_limit" + str(count), '1'))
     try:
-        platform_id = int(request.GET.get("platform_id" + str(count), 0))
+        vessel_id_column = str(request.GET.get("vessel-id-columns-select" + str(count), ''))
+        vessel_id = request.GET.getlist("vessel-id-select" + str(count)+'[]', '')
     except ValueError:
         raise ValueError('Platform ID has a numeric value.(cannot be empty)')
     try:
@@ -122,13 +123,14 @@ def get_markers_parameters(request, count):
     color_col = str(request.GET.get('color_var'+str(count), ''))
     lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
     lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
-    return cached_file, variable, platform_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col
+    return cached_file, variable, vessel_id_column, vessel_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col
 
 
 def get_plotline_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
     try:
-        platform_id = int(request.GET.get("platform_id" + str(count), 0))
+        vessel_id_column = str(request.GET.get("vessel-id-columns-select" + str(count), ''))
+        vessel_id = str(request.GET.get("vessel-id-select" + str(count), ''))
     except ValueError:
         raise ValueError('Platform ID has a numeric value.(cannot be empty)')
     color = str(request.GET.get('plotline_color' + str(count), 'blue'))
@@ -143,7 +145,7 @@ def get_plotline_parameters(request, count):
         raise ValueError('Number of positions has to be a positive number.')
     lat_col = str(request.GET.get('lat_col' + str(count), 'lat'))
     lon_col = str(request.GET.get('lon_col' + str(count), 'lon'))
-    return cached_file, marker_limit, platform_id, color, lat_col, lon_col
+    return cached_file, marker_limit, vessel_id_column, vessel_id, color, lat_col, lon_col
 
 def get_heatmap_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
@@ -162,13 +164,12 @@ def get_heatmap_parameters(request, count):
     return cached_file, heat_col, heat_points_limit, lat_col,lon_col
 
 
-def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_id, color_col, agg_function, use_color_col):
+def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_column, vessel_id, color_col, agg_function, use_color_col):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
     time_flag = platform_flag = lat_flag = lon_flag = var_flag = color_flag = False
-    # import pdb
-    # pdb.set_trace()
+
     for f in doc['from']:
         for s in f['select']:
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
@@ -179,13 +180,17 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
                 time_flag = True
             elif s['name'] == color_col and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = agg_function
+                # s['aggregate'] = agg_function
+                s['groupBy'] = True
                 color_flag = True
+                if (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
+                    platform_id_filtername = str(s['name'])
+                    platform_flag = True
             elif(s['name'] == variable) and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['aggregate'] = agg_function
                 var_flag = True
-            elif (s['name'].split('_', 1)[1] == 'platform_id') and (s['exclude'] is not True):
+            elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
                 s['exclude'] = True
                 platform_flag = True
@@ -204,8 +209,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
                 lon_flag = True
             else:
                 s['exclude'] = True
-    # import pdb
-    # pdb.set_trace()
+
     if not time_flag:
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
@@ -220,12 +224,11 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
     if not platform_flag:
         raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
-        if doc['filters'].__len__() == 0:
-            doc['filters'] = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
-        else:
-            alpha_argument = doc["filters"]
-            beta_argument = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": '+ str(platform_id) + ', "op": "eq"}')
-            doc['filters'] = json.loads('{"a":' + json.dumps(alpha_argument) + ', "b": ' + json.dumps(beta_argument) + ', "op": "AND"}')
+        if vessel_id == '':
+            vessel_id = []
+
+        doc['filters'] = filtering_vessels(doc, vessel_id, platform_id_filtername)
+
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
@@ -285,7 +288,7 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
     return query
 
 
-def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
+def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, vessel_id):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
@@ -298,7 +301,7 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
                 if s['aggregate'] == '':
                     s['aggregate'] = 'date_trunc_minute'
                 time_flag = True
-            elif (s['name'].split('_', 1)[1] == 'platform_id') and (s['exclude'] is not True):
+            elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
                 s['exclude'] = True
                 platform_flag = True
@@ -316,7 +319,6 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
                 lon_flag = True
             else:
                 s['exclude'] = True
-
     if not time_flag:
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
@@ -325,12 +327,12 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
     if not platform_flag:
         raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
-        if doc['filters'].__len__() == 0:
-            doc['filters'] = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
+        if vessel_id == '':
+            vessel_id = []
         else:
-            alpha_argument = doc["filters"]
-            beta_argument = json.loads('{"a":"' + str(platform_id_filtername) + '", "b": ' + str(platform_id) + ', "op": "eq"}')
-            doc['filters'] = json.loads('{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "AND"}')
+            vessel_id = [vessel_id]
+        doc['filters'] = filtering_vessels(doc, vessel_id, platform_id_filtername)
+
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
@@ -338,6 +340,30 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
 
     query.document = doc
     return query
+
+
+def filtering_vessels(doc, vessel_id, platform_id_filtername):
+    if vessel_id.__len__() > 0:
+        vessel_argument = ''
+        for vessel in vessel_id:
+            if vessel_argument.__len__() == 0:
+                vessel_argument = json.loads(
+                    '{"a":"' + str(platform_id_filtername) + '", "b": ' + str(vessel) + ', "op": "eq"}')
+            else:
+                alpha_argument = vessel_argument
+                beta_argument = json.loads(
+                    '{"a":"' + str(platform_id_filtername) + '", "b": ' + str(vessel) + ', "op": "eq"}')
+                vessel_argument = json.loads(
+                    '{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "OR"}')
+        if doc['filters'].__len__() == 0:
+            doc['filters'] = vessel_argument
+        else:
+            alpha_argument = doc["filters"]
+            beta_argument = vessel_argument
+            doc['filters'] = json.loads(
+                '{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "AND"}')
+    return doc['filters']
+
 
 def load_modify_query_polygon(query_pk, marker_limit):
     query = AbstractQuery.objects.get(pk=query_pk)
@@ -542,15 +568,15 @@ def map_visualizer(request):
             # Plotline VesselCourse
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_plotline_vessel_course').id):
-                    cached_file, marker_limit, platform_id, color, lat_col, lon_col = get_plotline_parameters(request, count)
-                    m, extra_js = get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col,
+                    cached_file, marker_limit, vessel_column, vessel_id, color, lat_col, lon_col = get_plotline_parameters(request, count)
+                    m, extra_js = get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color, query_pk, df, notebook_id, lat_col,
                                                lon_col, m, request, cached_file)
             except ObjectDoesNotExist:
                 pass
             # Map Polygon - Line
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_polygon').id):
-                    cached_file, marker_limit, null_var1, color, lat_col, lon_col = get_plotline_parameters(
+                    cached_file, marker_limit, null_var1, null_var2, color, lat_col, lon_col = get_plotline_parameters(
                         request, count)
                     m, extra_js = get_map_polygon(marker_limit, color, query_pk, df,
                                                                  notebook_id, lat_col,
@@ -578,15 +604,15 @@ def map_visualizer(request):
                 # Map Markers Course Vessel
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_vessel_course').id):
-                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
-                    m, extra_js = get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, platform_id, variable, agg_function,
+                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
+                    m, extra_js = get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, agg_function,
                                              lat_col, lon_col, color_col, use_color_column, m, request, cached_file)
             except ObjectDoesNotExist:
                 pass
                 # Map Markers Grid
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid').id):
-                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(
+                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(
                         request, count)
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
                                                                 variable, agg_function,
@@ -651,11 +677,11 @@ def get_map_plotline_vessel_query_data(query):
 
 
 
-def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
+def get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
     dict = {}
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
-            query = load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id)
+            query = load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, vessel_id)
             data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
             points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
 
@@ -686,7 +712,7 @@ def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, d
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + ' / Ship ID: ' + str(platform_id), overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + ' / Ship ID: ' + str(vessel_id), overlay=True,
                                               control=True).add_to(m)
     folium.PolyLine(points, color=color, weight=2.5, opacity=0.8,
                     ).add_to(pol_group_layer)
@@ -1182,11 +1208,11 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
 
 
 
-def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, platform_id, variable, agg_function, lat_col, lon_col, color_col, use_color_col, m, request,cached_file):
+def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, agg_function, lat_col, lon_col, color_col, use_color_col, m, request,cached_file):
     dic = {}
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
-            query = load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_id, color_col, agg_function, use_color_col)
+            query = load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_column, vessel_id, color_col, agg_function, use_color_col)
             data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_query_data(query, variable, color_col)
         elif df != '':
             data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, notebook_id, request, variable)
@@ -1217,13 +1243,13 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, platf
         var_unit = cached_data['var_unit']
 
     ret_html = create_marker_vessel_points(color_col, color_index, data, lat_index, lon_index, m, time_index,
-                                           var_index, var_title, var_unit, platform_id)
+                                           var_index, var_title, var_unit, vessel_id)
     return m, ret_html
 
 
 def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_index, m, time_index, var_index,
-                                var_title, var_unit, platform_id):
-    pol_group_layer = folium.map.FeatureGroup(name='Markers - Vessel Course Layer : ' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(platform_id),
+                                var_title, var_unit, vessel_id):
+    pol_group_layer = folium.map.FeatureGroup(name='Markers - Vessel Course Layer : ' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(vessel_id),
                                               overlay=True,
                                               control=True).add_to(m)
     color_dict = dict()
@@ -1232,6 +1258,7 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
     max_lat = -90
     min_lon = 180
     max_lon = -180
+
     for d in data:
         if color_col != '':
             if d[color_index] not in color_dict.keys():
