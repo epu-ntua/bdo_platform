@@ -113,60 +113,70 @@
             <div>
                 <div class="row">
                     <div class="col-md-3" id="chart-sidebar">
-
+                        <div class="row btn-container" style="margin-left:0; padding: 0;">
+                            <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal" style="">
+                                <i class="fa fa-plus"></i> Select data
+                            </div>
+                            <div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;">
+                                <i class="fa fa-play-circle"></i> Run
+                            </div>
+                        </div>
                         <div id="chart-control-list">
-                            <div class="row btn-container" style="margin-left:0; padding: 0;">
-                                <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal" style="">
-                                    <i class="fa fa-plus"></i> Select data
+                            <ul class="nav nav-pills">
+                                <li class="active"><a data-toggle="pill" href="#variables_div">Variables</a></li>
+                                <li><a data-toggle="pill" href="#filters_div">Filters</a></li>
+                                <li><a data-toggle="pill" href="#operations_div">Operations</a></li>
+                            </ul>
+                            <div class="tab-content">
+                                <div id="variables_div" class="tab-pane fade">
+                                    <div class="chart-control"></div>
                                 </div>
-                                <div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;">
-                                    <i class="fa fa-play-circle"></i> Run
+                                <div id="operations_div" class="tab-pane fade">
+                                    <div class="row after-data-selection query-controls-container"  style="padding: 0; margin-left: 0; margin-top: 20px;">
+                                        <div class="fieldset">
+                                            <div class="col-xs-3 col-prefix" style="padding: 0">
+                                                Group
+                                            </div>
+                                            <div class="col-xs-8 col-main">
+                                                <select id="id_category" name="category"  multiple="multiple"></select>
+                                            </div>
+                                            <div class="col-xs-1 col-suffix">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row after-data-selection query-controls-container"  style="padding: 0; margin-left: 0; margin-top: 20px;">
+                                        <div class="fieldset">
+                                            <div class="col-xs-3 col-prefix" style="padding: 0">
+                                                Sort
+                                            </div>
+                                            <div class="col-xs-8 col-main">
+                                                <select id="id_order" name="orderby"  multiple="multiple"></select>
+                                            </div>
+                                            <div class="col-xs-1 col-suffix">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="resolution" class="clearfix after-data-selection">
+                                        {% include "query_designer/utils/resolution_editor.html" %}
+                                    </div>
+                                </div>
+                                <div id="filters_div" class="tab-pane fade in active">
+                                    <div class="clearfix after-data-selection">
+                                        <div class="btn-edit-filters pull-left btn btn-sm btn-primary filter-edit-open" >
+                                            <i class="fa fa-cog"></i> {% trans 'Data filters' %} (<span class="filter-counter">0</span>)
+                                        </div>
+                                    </div>
+
+
+                                    <div id="bounds" class="text-center " style="margin-top: 0px;">
+                                        {% include "query_designer/utils/bounds-modals.html" %}
+                                    </div>
+
+                                    <div id="chart-filters" class="hidden">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="chart-control"></div>
-                            <div class="row after-data-selection query-controls-container"  style="padding: 0; margin-left: 0; margin-top: 20px;">
-                                <div class="fieldset">
-                                    <div class="col-xs-3 col-prefix" style="padding: 0">
-                                        Group
-                                    </div>
-                                    <div class="col-xs-8 col-main">
-                                        <select id="id_category" name="category"  multiple="multiple"></select>
-                                    </div>
-                                    <div class="col-xs-1 col-suffix">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row after-data-selection query-controls-container"  style="padding: 0; margin-left: 0; margin-top: 20px;">
-                                <div class="fieldset">
-                                    <div class="col-xs-3 col-prefix" style="padding: 0">
-                                        Sort
-                                    </div>
-                                    <div class="col-xs-8 col-main">
-                                        <select id="id_order" name="orderby"  multiple="multiple"></select>
-                                    </div>
-                                    <div class="col-xs-1 col-suffix">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div id="resolution" class="clearfix after-data-selection">
-                            {% include "query_designer/utils/resolution_editor.html" %}
-                        </div>
-
-
-                        <div class="clearfix after-data-selection">
-                            <div class="btn-edit-filters pull-left btn btn-sm btn-primary filter-edit-open" >
-                                <i class="fa fa-cog"></i> {% trans 'Data filters' %} (<span class="filter-counter">0</span>)
-                            </div>
-                        </div>
-
-
-                        <div id="bounds" class="text-center " style="margin-top: 0px;">
-                            {% include "query_designer/utils/bounds-modals.html" %}
-                        </div>
-
-                        <div id="chart-filters" class="hidden">
                         </div>
                     </div>
                     <div class="col-md-9">

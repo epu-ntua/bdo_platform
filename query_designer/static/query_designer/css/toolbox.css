@@ -101,6 +101,13 @@ select {
     display: none;
 }
 
+#chart-control-list li{
+    float: none !important;
+    width: 30% !important;
+    display: inline-block !important;
+    padding: 5px !important;
+}
+
 .coverage-date-filters .form-group{
     margin-top: -7px;
 }

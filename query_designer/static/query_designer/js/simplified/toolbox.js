@@ -1313,7 +1313,7 @@ $(function () {
         if (newField.value != ""){
 
 
-            var $chartControls = $('#chart-control-list > .chart-control');
+            var $chartControls = $('#chart-control-list  .chart-control');
             var label = 'Metric #<span class="metric-cnt">' + ($chartControls.find('> *').length ) + '</span>';
 
             var obj = QueryToolbox.objects[QueryToolbox.current()];

@@ -29,7 +29,7 @@ $(function() {
         $.each(selection, function (_, newVariable) {
             if(included_vars.indexOf(newVariable.id) < 0){
                 // Get the area of the Query Desinger where the new variable field will be added
-                var $chartControls = $('#chart-control-list > .chart-control');
+                var $chartControls = $('#chart-control-list  .chart-control');
                 // Add the label
                 var label = 'Metric #<span class="metric-cnt">' + (QueryToolbox.variables.length + 1) + '</span>';
                 var obj = QueryToolbox.objects[0];
