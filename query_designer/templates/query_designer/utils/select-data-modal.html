@@ -187,6 +187,15 @@
                                                 </tbody>
                                             </table>
                                         </div>
+                                        <div class="dataset-coverage-div">
+                                            {% if dataset.hascoverage_img%}
+                                                {% with 'aggregator/img/coverage/'|add:dataset.title|add:'.PNG' as image_static %}
+                                                    <img src="{% static image_static %}" alt="coverage image">
+                                                {% endwith %}
+                                            {% else %}
+                                                <p>Coverage info not available</p>
+                                            {% endif %}
+                                        </div>
                                         <div class="dataset-dimensions-div">
                                             <ul class="list-group">
                                                 {% for dimension in dataset.variables.first.dimensions.all %}
@@ -233,14 +242,16 @@
                     </div>
                     <div id="dataset-info-section" class="col-sm-4">
                         <h3>Dataset Info</h3>
+
                         <div id="dataset_info_div" class="hidden">
                             <div id="dataset_basic_info_div">
 
                             </div>
                             <div id="pills_div">
                                 <ul class="nav nav-pills nav-justified">
-                                  <li class="active"><a href="#dataset_var_dim_div" data-toggle="pill" >Columns</a></li>
-                                  <li><a href="#dataset_metadata_div" data-toggle="pill" >Info</a></li>
+                                    <li class="active"><a href="#dataset_var_dim_div" data-toggle="pill" >Columns</a></li>
+                                    <li><a href="#dataset_metadata_div" data-toggle="pill" >Info</a></li>
+                                    <li><a href="#dataset-coverage-div" data-toggle="pill" >Coverage</a></li>
                                 </ul>
                             </div>
                             <div class="tab-content">
@@ -269,7 +280,8 @@
                                     </div>
                                 </div>
                                 <div id="dataset_metadata_div" class="tab-pane fade">
-
+                                </div>
+                                <div id="dataset-coverage-div"  class="tab-pane fade">
                                 </div>
                             </div>
                         </div>

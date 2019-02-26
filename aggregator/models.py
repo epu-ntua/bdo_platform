@@ -59,6 +59,7 @@ class Dataset(Model):
     last_updated = DateTimeField(null=True)
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
     metadata = JSONField(default={})
+    hascoverage_img = BooleanField(default=False)
     arguments = JSONField(default={})
     joined_with_dataset = models.ManyToManyField("self",through = 'JoinOfDatasets',
                                                          symmetrical=False,

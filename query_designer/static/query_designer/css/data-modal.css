@@ -1,3 +1,12 @@
+#dataset-coverage-div img{
+    max-width: 80%;
+    max-height: 50%;
+}
+
+#dataset-coverage-div{
+    text-align: center;
+}
+
 .modal-backdrop{
     z-index: 0 !important;
 }

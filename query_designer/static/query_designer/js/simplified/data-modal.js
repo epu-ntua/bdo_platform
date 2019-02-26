@@ -11,11 +11,13 @@ $(function() {
          $datasetInfoDiv.find("#dataset_basic_info_div").empty();
          $datasetInfoDiv.find("#dataset-variables-div").empty();
          $datasetInfoDiv.find("#dataset-dimensions-div").empty();
+         $datasetInfoDiv.find("#dataset-coverage-div").empty();
          $datasetInfoDiv.find("#dataset_metadata_div").empty();
          // Append the new dataset info
          $(this).find('.dataset-info .dataset-metadata').clone().appendTo($datasetInfoDiv.find("#dataset_metadata_div"));
          $(this).find('.dataset-info .dataset-variables-div').clone().appendTo($datasetInfoDiv.find("#dataset-variables-div"));
          $(this).find('.dataset-info .dataset-dimensions-div').clone().appendTo($datasetInfoDiv.find("#dataset-dimensions-div"));
+         $(this).find('.dataset-info .dataset-coverage-div').clone().appendTo($datasetInfoDiv.find("#dataset-coverage-div"));
          $(this).find('.dataset-name').clone().appendTo($datasetInfoDiv.find("#dataset_basic_info_div"));
 
          $datasetInfoDiv.removeClass("hidden");

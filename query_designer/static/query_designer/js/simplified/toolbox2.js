@@ -90,7 +90,7 @@ $(function () {
             var $aggregateSelect = $('<select name="field_aggregate" />');
             var cnt = 0;
             $.each(obj.chartPolicy.aggregates, function(idx, aggregate) {
-                if (aggregate.typelist.indexOf(config.datatype) >= 0){
+                if ((aggregate.typelist.indexOf(config.datatype) >= 0) || (config.datatype === "None") ){
                     cnt+=1;
                     // create aggregate option
                     var $option = $('<option />').text(aggregate.title).attr('value', aggregate.value);

@@ -326,6 +326,7 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
     query.document = doc
     return query
 
+
 def load_modify_query_polygon(query_pk, marker_limit):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
@@ -347,6 +348,30 @@ def load_modify_query_polygon(query_pk, marker_limit):
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
     doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
+def load_modify_query_polygon_for_dataset_coverage(query_pk, aggregate):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    lat_flag = lon_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = aggregate
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = aggregate
+                lon_flag = True
+            else:
+                s['exclude'] = True
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
     query.document = doc
     return query
@@ -544,6 +569,27 @@ def map_visualizer(request):
                                                                  lon_col, m, request, cached_file)
             except ObjectDoesNotExist:
                 pass
+            # Map Polygon - For dataset coverage
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_polygon_for_dataset_coverage').id):
+                    dataset_id = str(request.GET.get('dataset_id'))
+                    m, extra_js = get_map_polygon_for_dataset_coverage(dataset_id, m)
+            except ObjectDoesNotExist:
+                pass
+            # Map Grid - For dataset coverage
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid_for_dataset_coverage').id):
+                    dataset_id = str(request.GET.get('dataset_id'))
+                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
+                    query_pk = load_modify_query_for_grid_coverage(dataset_id, marker_limit)
+                    variable = AbstractQuery.objects.get(pk=int(query_pk)).document['from'][0]['select'][0]['name']
+                    m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
+                                                       variable, agg_function,
+                                                       lat_col, lon_col, m,
+                                                       request, cached_file, dataset_id)
+            except ObjectDoesNotExist:
+                pass
+
             # Heatmap
             try:
                 if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id:
@@ -616,7 +662,6 @@ def map_visualizer(request):
     return HttpResponse(html1)
 
 
-
 def get_map_plotline_vessel_query_data(query):
     try:
         query_data = execute_query_method(query)
@@ -634,8 +679,6 @@ def get_map_plotline_vessel_query_data(query):
         elif c['name'].split('_', 1)[1] == 'time':
             time_index = idx
     return data, lat_index, lon_index, time_index
-
-
 
 
 def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
@@ -725,6 +768,120 @@ def get_map_polygon(marker_limit, color, query_pk, df, notebook_id, lat_col, lon
     ret_html = ""
     return m, ret_html
 
+
+def load_modify_query_for_polygon_coverage(dataset_id):
+    doc = {
+        'distinct': False,
+        'filters': {},
+        'from': [{'name': 'sea_surface_wave_significant_height_0',
+                  'select': [{'aggregate': '',
+                              'datatype': 'None',
+                              'exclude': True,
+                              'groupBy': False,
+                              'name': 'i0_sea_surface_wave_significant_height',
+                              'title': 'sea_surface_wave_significant_height',
+                              'type': 'VALUE'},
+                             {'aggregate': '',
+                              'datatype': 'None',
+                              'exclude': '',
+                              'groupBy': False,
+                              'name': 'i0_longitude',
+                              'title': 'longitude',
+                              'type': 7140},
+                             {'aggregate': '',
+                              'datatype': 'None',
+                              'exclude': '',
+                              'groupBy': False,
+                              'name': 'i0_latitude',
+                              'title': 'latitude',
+                              'type': 7141}],
+                  'type': 2191}],
+        'limit': '',
+        'offset': 0,
+        'orderings': []}
+    var = Variable.objects.filter(dataset=Dataset.objects.get(pk=int(dataset_id))).first()
+    doc['from'][0]['type'] = var.id
+    doc['from'][0]['select'][0]['title'] = var.title
+    doc['from'][0]['select'][0]['name'] = 'i0_' + var.name
+    lat_dim = Dimension.objects.filter(variable=var, name='latitude').first().pk
+    lon_dim = Dimension.objects.filter(variable=var, name='longitude').first().pk
+    doc['from'][0]['select'][1]['type'] = lon_dim
+    doc['from'][0]['select'][2]['type'] = lat_dim
+    query = TempQuery(document=doc, user=User.objects.get(username='BigDataOcean'))
+    query.save()
+    query_pk = query.id
+    return query_pk
+
+
+def load_modify_query_for_grid_coverage(dataset_id, marker_limit=100):
+    doc = {
+        'distinct': False,
+        'filters': {},
+        'from': [{'name': 'sea_surface_wave_significant_height_0',
+                  'select': [{'aggregate': '',
+                              'datatype': 'None',
+                              'exclude': True,
+                              'groupBy': False,
+                              'name': 'i0_sea_surface_wave_significant_height',
+                              'title': 'sea_surface_wave_significant_height',
+                              'type': 'VALUE'},
+                             {'aggregate': 'round2',
+                              'datatype': 'None',
+                              'exclude': '',
+                              'groupBy': True,
+                              'name': 'i0_longitude',
+                              'title': 'longitude',
+                              'type': 7140},
+                             {'aggregate': 'round2',
+                              'datatype': 'None',
+                              'exclude': '',
+                              'groupBy': True,
+                              'name': 'i0_latitude',
+                              'title': 'latitude',
+                              'type': 7141}],
+                  'type': 2191}],
+        'limit': marker_limit,
+        'offset': 0,
+        'orderings': []}
+    var = Variable.objects.filter(dataset=Dataset.objects.get(pk=int(dataset_id))).first()
+    doc['from'][0]['type'] = var.id
+    doc['from'][0]['select'][0]['title'] = var.title
+    doc['from'][0]['select'][0]['name'] = 'i0_' + var.name
+    lat_dim = Dimension.objects.filter(variable=var, name='latitude').first().pk
+    lon_dim = Dimension.objects.filter(variable=var, name='longitude').first().pk
+    doc['from'][0]['select'][1]['type'] = lon_dim
+    doc['from'][0]['select'][2]['type'] = lat_dim
+    query = TempQuery(document=doc, user=User.objects.get(username='BigDataOcean'))
+    query.save()
+    query_pk = query.id
+    return query_pk
+
+
+# def get_map_polygon_for_dataset_coverage(query_pk, m):
+def get_map_polygon_for_dataset_coverage(dataset_id, m):
+    query_pk = load_modify_query_for_polygon_coverage(dataset_id)
+    query = load_modify_query_polygon_for_dataset_coverage(query_pk, 'MIN')
+    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+    min_lat = data[0][lat_index]
+    min_lon = data[0][lon_index]
+    query = load_modify_query_polygon_for_dataset_coverage(query_pk, 'MAX')
+    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+    max_lat = data[0][lat_index]
+    max_lon = data[0][lon_index]
+    points = list()
+    points.append([min_lat, min_lon])
+    points.append([min_lat, max_lon])
+    points.append([max_lat, max_lon])
+    points.append([max_lat, min_lon])
+    points.append([min_lat, min_lon])
+
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+
+    pol_group_layer = folium.map.FeatureGroup(name='Polygon - Layer:' + str(time.time()).replace(".","_") , overlay=True,
+                                              control=True).add_to(m)
+    folium.PolyLine(points, color='green', weight=2.0, opacity=0.8, fill='green').add_to(pol_group_layer)
+    ret_html = ""
+    return m, ret_html
 
 
 def create_plotline_points(data, lat_index, lon_index):
@@ -1132,11 +1289,15 @@ def get_marker_query_data(query, variable, color_col):
 
 
 
-def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request,cached_file):
+def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request, cached_file, dataset_id=None):
     dic = {}
+    print variable
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
-            query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
+            if dataset_id is not None:
+                query = AbstractQuery.objects.get(pk=int(load_modify_query_for_grid_coverage(dataset_id, marker_limit)))
+            else:
+                query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
             data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '')
         elif df != '':
             data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(df, lat_col, lon_col, notebook_id, request, variable)
@@ -1279,7 +1440,10 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
         if d[var_index] is not None:
             folium.Marker(
                 location=[d[lat_index], d[lon_index]],
-                popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
+                popup=str(var_title) + ": " + str(round(d[var_index], 3)) + " " + str(var_unit) + "<br>Latitude: " + str(
+                    d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),
+                icon=folium.Icon(color=marker_color)) \
+                .add_to(pol_group_layer)
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)

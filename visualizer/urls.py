@@ -41,6 +41,9 @@ urlpatterns = [
     url('^get_aggregate_value/$', views.get_aggregate_value, name='get_aggregate_value'),
 
 
+    url('^get_map_polygon_for_dataset_coverage/$', views.get_map_polygon_for_dataset_coverage, name='get_map_polygon_for_dataset_coverage'),
+    url('^get_map_markers_grid_for_dataset_coverage/$', views.get_map_markers_grid, name='get_map_markers_grid_for_dataset_coverage'),
+
 
     url('^get_table_zep/$', views.get_table_zep, name='get_table_zep'),
     url('^get_line_chart_zep/$', views.get_line_chart_zep, name='get_line_chart_zep'),
