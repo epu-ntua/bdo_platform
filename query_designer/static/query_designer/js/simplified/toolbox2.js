@@ -621,27 +621,48 @@ $(function () {
             $.each(filters, function (fdx, filter) {
                     // var filter = QueryToolbox.filters[fkey];
                     var aName;
+                    var datatype='';
                     $.each(queryDocument.from, function (idx, _from) {
                         $.each(_from.select, function (jdx, attr) {
                             if (attr.type === "VALUE") {
                                 // if (String(attr.name).split(new RegExp("i[0-9]+_"))[1] === filter.a) {
                                 if ((filter.a_type === "variable") && (parseInt(_from.type) === parseInt(filter.a))) {
                                     aName = attr.name;
+                                    datatype = attr.datatype;
                                 }
                             }
                             else {
                                 if ((filter.a_type === "dimension") && (parseInt(attr.type) === parseInt(filter.a))) {
                                     aName = attr.name;
+                                    datatype = attr.datatype;
                                 }
                             }
                         })
                     });
-                    var newFilter = {
-                        a: aName,
-                        op: filter.op,
-                        // b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
-                        b: parseFloat(filter.b)
-                    };
+                    var newFilter;
+                    if (datatype == "STRING" ){
+                        newFilter = {
+                            a: aName,
+                            op: filter.op,
+                            b: "'"+filter.b+"'"
+                        };
+                    }
+                    else if(datatype == "TIMESTAMP" ){
+                        newFilter = {
+                            a: aName,
+                            op: filter.op,
+                            b: " timestamp '"+filter.b+"'"
+                        };
+                    }
+                    else{
+                        newFilter = {
+                            a: aName,
+                            op: filter.op,
+                            // b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
+                            b: parseFloat(filter.b)
+                        };
+                    }
+
                     if (exprType === 'CUSTOM') {
                         var mapIndex = fdx + 1;
                         customExpressionMap["F" + mapIndex] = newFilter;
