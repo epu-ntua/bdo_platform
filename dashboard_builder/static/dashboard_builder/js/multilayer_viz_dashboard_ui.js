@@ -340,6 +340,7 @@ $("#select_data_popover").click(function () {
                 var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
                 var plotline_platform_id_input = $('.popover-content #viz_'+ plotline_vessel_course_id+' #platform_id');
                 var viz_conf_plotline = viz_conf_json['visualiser']['map_plotline_vessel_course'];
+                var plotline_vessel_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id');
                 plotline_platform_id_input.val(' ');
                 plotline_vessel_course_input.val(viz_conf_plotline['default_points']);
                 plotline_vessel_course_input.on('input',function () {
@@ -349,13 +350,23 @@ $("#select_data_popover").click(function () {
                 var plotline_vessel_col_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id-columns-select');
                 plotline_vessel_col_id_select.on('change', function(){
                     allow_plotline_submit = missing_parameter(plotline_vessel_col_id_select, allow_plotline_submit, 'Vessel-ID-Column',1 )
+                    if ((plotline_vessel_col_id_select.val()!== '')&&(plotline_vessel_col_id_select.val()!==null)){
+                        plotline_vessel_id_select.parent().removeClass('disabled');
+                        plotline_vessel_id_select.find('option').remove();
+                        $('.vessel-id-select option[data-type="'+ String(plotline_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+                        plotline_vessel_id_select.parent().dropdown('clear');
+                    }else{
+                        plotline_vessel_id_select.find('option').remove();
+                        plotline_vessel_id_select.parent().dropdown('clear');
+                        plotline_vessel_id_select.parent().addClass('disabled');
+                    }
                 });
                 plotline_vessel_col_id_select.parent().dropdown('clear');
-                var plotline_vessel_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id-select');
                 plotline_vessel_id_select.on('change', function(){
                     allow_plotline_submit = missing_parameter(plotline_vessel_id_select, allow_plotline_submit, 'Vessel-ID', 2 )
                 });
                 plotline_vessel_id_select.parent().dropdown('clear');
+                plotline_vessel_id_select.parent().addClass('disabled');
 
 
                 //CONTOURS
@@ -436,6 +447,9 @@ $("#select_data_popover").click(function () {
                 var markers_vessel_id = $('#viz_config ul li[data-viz-name="get_map_markers_vessel_course"]').attr('data-viz-id');
                 var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
                 var viz_conf_markers_vessel = viz_conf_json['visualiser']['map_markers_vessel_course'];
+                var markers_vessel_col_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-columns-select');
+                var markers_vessel_col_select = $('.popover-content #viz_'+markers_vessel_id+' #variable');
+                var markers_vessel_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id');
                 markers_vessel_input.val(viz_conf_markers_vessel['default_points']);
                 markers_vessel_input.on('input',function () {
                     allow_markers_vessel_submit = limit_points(markers_vessel_input,viz_conf_markers_vessel,allow_markers_vessel_submit,'markers',1)
@@ -451,24 +465,34 @@ $("#select_data_popover").click(function () {
                     }
                 });
                 markers_vessel_color_var.dropdown('clear');
-                var markers_vessel_col_select = $('.popover-content #viz_'+markers_vessel_id+' #variable');
                 markers_vessel_col_select.on('change',function () {
                     allow_markers_vessel_submit = missing_parameter(markers_vessel_col_select, allow_markers_vessel_submit,'variable',0);
                 });
                 markers_vessel_col_select.dropdown('refresh');
                 markers_vessel_col_select.parent().dropdown('clear');
-                var markers_vessel_col_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-columns-select');
+
+
                 markers_vessel_col_id_select.on('change', function(){
                     allow_markers_vessel_submit = missing_parameter(markers_vessel_col_id_select, allow_markers_vessel_submit, 'Vessel-ID-Column',2 )
+                    if ((markers_vessel_col_id_select.val()!== '')&&(markers_vessel_col_id_select.val()!==null)){
+                        markers_vessel_id_select.parent().removeClass('disabled');
+                        markers_vessel_id_select.find('option').remove();
+                        $('.vessel-id-select option[data-type="'+ String(markers_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+                    }else{
+                        $('.popover-content #vessel-id').append('<option value=1>test</option>');
+                        setTimeout(function() {
+                            markers_vessel_id_select.dropdown('set selected',markers_vessel_id_select.find('option').val());
+                            markers_vessel_id_select.parent().dropdown('clear');
+                            markers_vessel_id_select.find('option').remove();
+                            markers_vessel_id_select.parent().addClass('disabled');
+                        }, 20);
+                    }
                 });
                 markers_vessel_col_id_select.parent().dropdown('clear');
-                var markers_vessel_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-select');
                 markers_vessel_id_select.on('change', function(){
                     allow_markers_vessel_submit = missing_parameter(markers_vessel_id_select, allow_markers_vessel_submit, 'Vessel-ID', 3 )
                 });
-                markers_vessel_id_select.dropdown('set selected',markers_vessel_id_select.find('option').val());
-                markers_vessel_id_select.dropdown('refresh');
-                markers_vessel_id_select.parent().dropdown('clear');
+
 
 
 
@@ -558,7 +582,7 @@ $("#select_data_popover").click(function () {
                 $('#myModal .column-select ').html(variables_content + dimensions_content);
                 $('#myModal .columns-select ').html(variables_content + dimensions_content);
                 // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
-                if((chosen_viz =='get_map_plotline_vessel_course')||(chosen_viz=='get_map_markers_vessel_course')) {
+                if((chosen_viz ==='get_map_plotline_vessel_course')||(chosen_viz==='get_map_markers_vessel_course')) {
                     $(".viz_item").addClass('waiting-disable');
                     $.ajax({
                         "type": "GET",
@@ -568,7 +592,7 @@ $("#select_data_popover").click(function () {
                             $.each(result, function (col_name, values_list) {
                                 $('#myModal .vessel-id-columns-select').append("<option value='" + col_name + "'>" + col_name + "</option>");
                                 $.each(values_list, function (_, id_value) {
-                                    $('#myModal .vessel-id-select').append("<option value='" + id_value + "'>" + id_value + "</option>");
+                                    $('#myModal .vessel-id-select').append("<option data-type='"+ String(col_name) +"' value='" + id_value + "'>" + id_value + "</option>");
                                 });
                             });
                         },
@@ -614,7 +638,7 @@ $("#select_data_popover").click(function () {
                     placeholder: 'Select the column to use as vessel identifier',
                 });
 
-                $(".popover-content .vessel-id-select").dropdown({
+                $(".popover-content .vessel-id").dropdown({
                     clearable: true,
                     placeholder: 'Select the vessel identifier',
                 });
