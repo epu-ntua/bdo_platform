@@ -52,8 +52,9 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         }
 
         def _count():
-            cursor.execute(subquery_cnt)
-            self.count = cursor.fetchone()[0]
+            pass
+            # cursor.execute(subquery_cnt)
+            # self.count = cursor.fetchone()[0]
 
         self.count = None
         count_failed = False
@@ -174,13 +175,24 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
             c_name = '%s.%s' % (_from['name'], selects[s['name']]['column'])
             if s.get('aggregate', '') != '':
                 c_name_with_agg = '%s(%s)' % (s.get('aggregate'), c_name)
+                if str(s.get('aggregate')).startswith('date_trunc'):
+                    human_column_name_with_agg = '%s(%s)' % (str(s.get('aggregate')).split('date_trunc_')[1], human_column_name)
+                elif str(s.get('aggregate')).startswith('round0'):
+                    human_column_name_with_agg = '%\n(%s)' % (human_column_name, 'resolution 1 deg')
+                elif str(s.get('aggregate')).startswith('round1'):
+                    human_column_name_with_agg = '%s\n(%s)' % (human_column_name, 'resolution 0.1 deg')
+                elif str(s.get('aggregate')).startswith('round2'):
+                    human_column_name_with_agg = '%s\n(%s)' % (human_column_name, 'resolution 0.01 deg')
+                else:
+                    human_column_name_with_agg = '%s(%s)' % (str(s.get('aggregate')), human_column_name)
             else:
                 c_name_with_agg = c_name
+                human_column_name_with_agg = human_column_name
 
             if not s.get('exclude', False):
                 header_sql_types.append(sql_type)
                 headers.append({
-                    'title': human_column_name,
+                    'title': human_column_name_with_agg.lower().title(),
                     'name': s['name'],
                     'unit': column_unit,
                     'step': column_step,
