@@ -219,6 +219,16 @@
     display: inline-block;
 }
 
+i.fa-info{
+    margin-left: 5px;
+    display: none;
+    font-size: small;
+}
+
+#select-data-modal #dataset_info_div .variable-section:hover  i.fa-info{
+    display: inline-block;
+}
+
 #select-data-modal #dataset_info_div .variable-section[data-selected="True"]{
     background-color: #2a8898;
     color: white;
@@ -228,7 +238,7 @@
     background-color: #9fbabd;
 }
 
-#select-data-modal #dataset_info_div .variable-section[data-selected="False"] i{
+#select-data-modal #dataset_info_div .variable-section[data-selected="False"] i.fa-check{
     display: none;
 }
 
