@@ -114,18 +114,18 @@
                 <div class="row">
                     <div class="col-md-3" id="chart-sidebar">
                         <div class="row btn-container" style="margin-left:0; padding: 0;">
-                            <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal" style="">
+                            <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal"  style="float: left; width: 26%">
                                 <i class="fa fa-plus"></i> Select data
                             </div>
-                            <div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important;">
+                            <div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important; float: right; width: 32%">
                                 <i class="fa fa-play-circle"></i> Run
                             </div>
                         </div>
                         <div id="chart-control-list">
                             <ul class="nav nav-pills">
-                                <li class="active"><a data-toggle="pill" href="#variables_div">Variables</a></li>
-                                <li><a data-toggle="pill" href="#filters_div">Filters</a></li>
-                                <li><a data-toggle="pill" href="#operations_div">Operations</a></li>
+                                <li style="float: left; width: 32%" class="active"><a data-toggle="pill" href="#variables_div">Variables</a></li>
+                                <li style="width: 34%"><a data-toggle="pill" href="#filters_div">Filters</a></li>
+                                <li style="float: right; width: 32%" ><a data-toggle="pill" href="#operations_div">Operations</a></li>
                             </ul>
                             <div class="tab-content">
                                 <div id="variables_div" class="tab-pane fade">
@@ -134,26 +134,26 @@
                                 <div id="operations_div" class="tab-pane fade">
                                     <div class="row after-data-selection query-controls-container"  style="padding: 0; margin-left: 0; margin-top: 20px;">
                                         <div class="fieldset">
-                                            <div class="col-xs-3 col-prefix" style="padding: 0">
+                                            <div class="col-xs-4 col-prefix" style="padding: 0">
                                                 Group
                                             </div>
                                             <div class="col-xs-8 col-main">
                                                 <select id="id_category" name="category"  multiple="multiple"></select>
                                             </div>
-                                            <div class="col-xs-1 col-suffix">
-                                            </div>
+{#                                            <div class="col-xs-1 col-suffix">#}
+{#                                            </div>#}
                                         </div>
                                     </div>
                                     <div class="row after-data-selection query-controls-container"  style="padding: 0; margin-left: 0; margin-top: 20px;">
                                         <div class="fieldset">
-                                            <div class="col-xs-3 col-prefix" style="padding: 0">
+                                            <div class="col-xs-4 col-prefix" style="padding: 0">
                                                 Sort
                                             </div>
                                             <div class="col-xs-8 col-main">
                                                 <select id="id_order" name="orderby"  multiple="multiple"></select>
                                             </div>
-                                            <div class="col-xs-1 col-suffix">
-                                            </div>
+{#                                            <div class="col-xs-1 col-suffix">#}
+{#                                            </div>#}
                                         </div>
                                     </div>
                                     <div id="resolution" class="clearfix after-data-selection">
@@ -204,8 +204,8 @@
                                     </table>
                                 </div>
                                 <div id="paginationDiv" page="0" style="display: none;">
-                                    <button id="dataPrevBtn" class="btn btn-default btn-sm">Previous</button>
-                                    <button id="dataNextBtn" class="btn btn-default btn-sm">Next</button>
+                                    <button id="dataPrevBtn" class="btn btn-primary btn-sm">Previous</button>
+                                    <button id="dataNextBtn" class="btn btn-primary btn-sm">Next</button>
                                 </div>
                             </div>
                         </div>
