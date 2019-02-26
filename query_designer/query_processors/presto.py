@@ -178,7 +178,7 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
                 if str(s.get('aggregate')).startswith('date_trunc'):
                     human_column_name_with_agg = '%s(%s)' % (str(s.get('aggregate')).split('date_trunc_')[1], human_column_name)
                 elif str(s.get('aggregate')).startswith('round0'):
-                    human_column_name_with_agg = '%\n(%s)' % (human_column_name, 'resolution 1 deg')
+                    human_column_name_with_agg = '%s\n(%s)' % (human_column_name, 'resolution 1 deg')
                 elif str(s.get('aggregate')).startswith('round1'):
                     human_column_name_with_agg = '%s\n(%s)' % (human_column_name, 'resolution 0.1 deg')
                 elif str(s.get('aggregate')).startswith('round2'):
