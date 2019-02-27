@@ -80,8 +80,10 @@ def clean(request, pk=None):
     user_datasets = user_datasets | public_datasets
     dataset_list = public_datasets | user_datasets | user_with_access_datasets
     # dataset_list.order_by('order')
-    organization_list = list(set([dataset.organization for dataset in dataset_list]))
-    publisher_list = list(set([dataset.publisher for dataset in dataset_list]))
+    publisher_list = set([d.publisher for d in dataset_list])
+    organization_list = set([d.publisher for d in dataset_list])
+    observation_list = set([d.observations for d in dataset_list])
+    license_list = set([d.license for d in dataset_list])
     # for dataset in dataset_list:
     #     if dataset.organization.title not in organization_list:
     #         organization_list.append(dataset.organization.title)
@@ -94,6 +96,8 @@ def clean(request, pk=None):
     return render(request, 'query_designer/clean.html', {
         'organizations': organization_list,
         'publishers': publisher_list,
+        'observations': observation_list,
+        'licenses': license_list,
         'variables': variable_list,
         'datasets': dataset_list.order_by('order'),
         'dimensions': Dimension.objects.all(),

@@ -13,7 +13,19 @@
 
                 <div id="dataset-all-section" class="row">
                     <form id="dataset-filter-section" class="col-sm-2">
-                        <h3>Filters</h3>
+                        <div id="filter-head-div" style="text-align: center">
+                            <h3 style="">Filters</h3>
+                        </div>
+                        <span class="">
+                            <button style="display: inline-block; padding: 2px 10px; position: absolute; top: 0;"
+                                type="button"
+                                class="jplist-reset-btn btn btn-default btn-sm"
+                                data-control-type="reset"
+                                data-control-name="reset"
+                                data-control-action="reset">
+                                Reset  <i class="fa fa-undo" style="font-size: 8pt; top: 1px; margin-left: 3px;"></i>
+                            </button>
+                        </span>
                         <!-- text filter control -->
                         <div class="form-group label-floating is-empty">
                             <label for="title-filter" class="control-label">Search in title: </label>
@@ -21,7 +33,7 @@
                                 data-control-type="textbox"
                                 data-control-action="filter"
                                 data-control-name="title-filter"
-                                data-path=".dataset-name"
+                                data-path=".dataset-title, .dataset-publisher, .dataset-description"
                                 type="text"
                                 value=""
                                 class="form-control full-width border-input"
@@ -45,18 +57,52 @@
                             </select>
                         </div>
                         <div class="form-group ">
-                            <label for="publisher-filter" class="control-label">Publisher: </label>
+                            <label for="organization-filter" class="control-label">Publisher: </label>
                             <select
-                                title="select publisher"
+                                title="select organization"
                                 data-control-type="filter-select"
                                 data-control-action="filter"
-                                data-control-name="publisher-filter"
+                                data-control-name="organization-filter"
                                 class="form-control full-width"
-                                id="publisher-filter"
+                                id="organization-filter"
                             >
                                 <option value="0" data-path="default" selected>All</option>
-                                {% for publisher in publishers %}
-                                        <option value="{{ publisher }}" data-path="[data-publisher='{{ publisher }}']">{{ publisher }}</option>
+                                {% for org in organizations %}
+                                    {% if org.id != 1 %}
+                                        <option value="{{ org.id }}" data-path="[data-publisher-id='{{ org }}']">{{ org }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group ">
+                            <label for="observation-filter" class="control-label">Observation Type: </label>
+                            <select
+                                title="select observation type"
+                                data-control-type="filter-select"
+                                data-control-action="filter"
+                                data-control-name="observation-filter"
+                                class="form-control full-width"
+                                id="observation-filter"
+                            >
+                                <option value="0" data-path="default" selected>All</option>
+                                {% for observation in observations %}
+                                    <option value="{{ observation }}" data-path="[data-observations='{{ observation }}']">{{ observation }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group ">
+                            <label for="license-filter" class="control-label">License: </label>
+                            <select
+                                title="select license type"
+                                data-control-type="filter-select"
+                                data-control-action="filter"
+                                data-control-name="license-filter"
+                                class="form-control full-width"
+                                id="license-filter"
+                            >
+                                <option value="0" data-path="default" selected>All</option>
+                                {% for license in licenses %}
+                                    <option value="{{ license }}" data-path="[data-license='{{ license }}']">{{ license }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -81,6 +127,27 @@
 {#                                Is private dataset#}
 {#                            </label>#}
 {#                        </div>#}
+
+                        <div
+                            class="jplist-group checkbox"
+                            data-control-type="checkbox-group-filter"
+                            data-control-action="filter"
+                            data-control-name="is-updating-filter">
+
+                            <label class="form-check-label">
+                                <input
+                                    data-path="[data-is-updating='True']"
+                                    id="is-updating-filter"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    value=""
+                                />
+                                <span class="form-check-sign">
+                                    <span class="check"></span>
+                                </span>
+                                Is updating dataset
+                            </label>
+                        </div>
 
                         <div
                             class="jplist-group checkbox"
@@ -137,7 +204,7 @@
                                             {{ dataset.title }}
                                         </div>
                                         <div class="dataset-publisher">
-                                            {{ dataset.publisher }}
+                                            By {{ dataset.publisher }}
                                         </div>
                                     </div>
                                     <div class="dataset-info hidden">
@@ -155,7 +222,7 @@
                                                         <td>Title</td>
                                                         <td>{{ dataset.title }}</td>
                                                     </tr>
-                                                    <tr class="dataset-publisher" data-publisher="{{ dataset.publisher }}">
+                                                    <tr class="dataset-organization" data-publisher-id="{{ dataset.publisher }}">
                                                         <td>Publisher</td>
                                                         <td>{{ dataset.publisher }}</td>
                                                     </tr>
@@ -168,13 +235,13 @@
                                                             {% endif %}
                                                         </td>
                                                     </tr>
-                                                    <tr>
+                                                    <tr class="dataset-license" data-license="{{ dataset.license }}">
                                                         <td>License</td>
                                                         <td>{{ dataset.license }}</td>
                                                     </tr>
-                                                    <tr>
+                                                    <tr class="dataset-observations" data-observations="{{ dataset.observations }}">
                                                         <td>Observation type</td>
-                                                        <td>{{ dataset.observation }}</td>
+                                                        <td>{{ dataset.observations }}</td>
                                                     </tr>
                                                     <tr>
                                                         <td>Source</td>
@@ -203,6 +270,8 @@
                                                     <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
 
                                                     </tr>
+                                                    <tr class="is-updating" data-is-updating='{% if dataset.last_updated == '' or dataset.last_updated == None %}False{% else %}True{% endif %}'>
+                                                    </tr>
                                                     <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
                                                     </tr>
                                                 </tbody>
@@ -219,19 +288,19 @@
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td>Spatial coverage (latitude)</td>
-                                                        <td>{{ dataset.spatialSouth }}</td>
-                                                        <td>{{ dataset.spatialNorth }}</td>
+                                                        <td>Spatial coverage (lat)</td>
+                                                        <td>{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-{% else %}{{ dataset.spatialSouth }}{% endif %}</td>
+                                                        <td>{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}-{% else %}{{ dataset.spatialNorth }}{% endif %}</td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Spatial coverage (longitude)</td>
-                                                        <td>{{ dataset.spatialEast }}</td>
-                                                        <td>{{ dataset.spatialWest }}</td>
+                                                        <td>Spatial coverage (lon)</td>
+                                                        <td>{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-{% else %}{{ dataset.spatialWest }}{% endif %}</td>
+                                                        <td>{% if dataset.spatialEast is None or dataset.spatialEast == '' %}-{% else %}{{ dataset.spatialEast }}{% endif %}</td>
                                                     </tr>
                                                     <tr>
                                                         <td>Temporal coverage</td>
-                                                        <td>{{ dataset.temporalCoverageBegin }}</td>
-                                                        <td>{{ dataset.temporalCoverageEnd }}</td>
+                                                        <td>{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}-{% else %}{{ dataset.temporalCoverageBegin }}{% endif %}</td>
+                                                        <td>{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}-{% else %}{{ dataset.temporalCoverageBegin }}{% endif %}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -370,3 +439,4 @@
         </div>
     </div>
 </div>
+

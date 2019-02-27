@@ -48,7 +48,7 @@ class Dataset(Model):
     temporalCoverageBegin = DateTimeField(null=True)
     temporalCoverageEnd = DateTimeField(null=True)
     license = CharField(max_length=200, null=True)
-    observation = CharField(max_length=200, null=True)
+    observations = CharField(max_length=200, null=True)
     publisher = TextField()
     category = CharField(max_length=200, null=True)
     image_uri = TextField(default='/static/img/logo.png')

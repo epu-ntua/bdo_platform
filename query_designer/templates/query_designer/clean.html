@@ -114,7 +114,7 @@
                 <div class="row">
                     <div class="col-md-3" id="chart-sidebar">
                         <div class="row btn-container" style="margin-left:0; padding: 0;">
-                            <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal"  style="float: left; width: 26%">
+                            <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal"  style="float: left; ">
                                 <i class="fa fa-plus"></i> Select data
                             </div>
                             <div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important; float: right; width: 32%">
@@ -319,6 +319,11 @@
     <script src="{% static "/js/jplist.textbox-filter.min.js" %}"></script>
     <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}"></script>
     <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.ext-animation.min.js" %}"></script>
+    <script src="{% static "/js/jplist.pagination-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.history-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.bootstrap-sort-dropdown.min.js" %}"></script>
+
     <script>var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');</script>
     <script>
         $(function() {

@@ -45,7 +45,7 @@
 {#                                </a>#}
                             </div>
                             <div class="col-xs-7">
-                                <div class="dataset-license">Observation Type: {{ dataset.observation }}</div>
+                                <div class="dataset-license">Observation Type: {{ dataset.observations }}</div>
                                 <div class="dataset-license">License: {{ dataset.license }}</div>
                                 <div class="dataset-last-update">Last updated: {% if dataset.last_updated == None %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</div>
                             </div>
@@ -180,7 +180,7 @@
                                         </tr>
                                         <tr>
                                             <td>Observation</td>
-                                            <td>{{ dataset.observation }}</td>
+                                            <td>{{ dataset.observations }}</td>
                                         </tr>
                                         <tr>
                                             <td>Spatial Coverage North </td>

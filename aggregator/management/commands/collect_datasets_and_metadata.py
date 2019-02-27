@@ -71,7 +71,7 @@ class Command(BaseCommand):
                 dataset = Dataset.objects.filter(stored_at="UBITECH_PRESTO", table_name=profile["storageTable"]).first()
                 self.stdout.write('modifying dataset ' + str(dataset.title))
             basic_info = ['title', 'source', 'storageTable', 'publisher', 'description', 'spatialEast', 'spatialSouth', 'spatialNorth', 'spatialWest',
-                          'temporalCoverageBegin', 'temporalCoverageEnd', 'license', 'observation']
+                          'temporalCoverageBegin', 'temporalCoverageEnd', 'license', 'observations']
             for field in basic_info:
                 try:
                     self.stdout.write('setting' + str(field))

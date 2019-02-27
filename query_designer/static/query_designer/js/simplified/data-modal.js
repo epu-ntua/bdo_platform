@@ -83,5 +83,10 @@ $(function() {
            // console.log(selection);
            return selection;
        };
-   })
+   });
+
+
+    $(".jplist-reset-btn").click(function(){
+        setTimeout(function(){$('#dataset-filter-section select').trigger("change");}, 100);
+    });
 });
