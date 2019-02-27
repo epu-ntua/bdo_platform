@@ -253,6 +253,14 @@ i.fa-info{
     margin-bottom: 2%;
 }
 
+#dataset_info_div #dataset_basic_info_div .last_updated_in_title{
+    display: none;
+}
+
+#dataset_info_div #dataset_basic_info_div .dataset-publisher{
+    display: block !important;
+}
+
 #dataset_info_div #dataset_basic_info_div .dataset-publisher{
     text-align: center;
     font-size: 100%;

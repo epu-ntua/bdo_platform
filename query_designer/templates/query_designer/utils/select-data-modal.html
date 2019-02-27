@@ -302,8 +302,8 @@
                                         <div class="dataset-title">
                                             {{ dataset.title }}
                                         </div>
-                                        <div class="dataset-publisher">
-                                            By {{ dataset.publisher }}
+                                        <div>
+                                            <div style="display: inline-block;" class="dataset-publisher">By {{ dataset.publisher }}</div> <span class="pull-right last_updated_in_title">{% if dataset.last_updated is None or dataset.last_updated == '' %}Static dataset{% else %}Last updated: {{ dataset.last_updated }}{% endif %}</span>
                                         </div>
                                     </div>
                                     <div class="dataset-info hidden">
@@ -357,7 +357,7 @@
                                                     <tr>
                                                     <tr class="dataset-last_updated" last_updated="{{ dataset.last_updated }}">
                                                         <td>Last Updated</td>
-                                                        <td>{% if dataset.last_updated is None %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</td>
+                                                        <td>{% if dataset.last_updated is None  or dataset.last_updated == '' %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</td>
                                                     </tr>
                                                     {% for key, value in dataset.metadata.items %}
                                                         {% if value is not None and value != "" %}
