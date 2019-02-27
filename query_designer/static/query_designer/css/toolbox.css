@@ -101,6 +101,10 @@ select {
     display: none;
 }
 
+.before-data-selection{
+    display: block;
+}
+
 #chart-control-list ul.nav li{
     /*float: none !important;*/
     /*width: 32% !important;*/

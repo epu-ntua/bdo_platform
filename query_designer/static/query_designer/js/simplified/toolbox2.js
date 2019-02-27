@@ -151,6 +151,9 @@ $(function () {
                 $('.after-data-selection').each(function () {
                     $(this).hide();
                 });
+                $('.before-data-selection').each(function () {
+                    $(this).show();
+                });
                 $('.chartdiv').hide();
                 $('#paginationDiv').hide();
                 var $table = $("#graph-data-table");

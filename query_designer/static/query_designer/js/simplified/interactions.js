@@ -57,6 +57,9 @@ $(function() {
                     $('.after-data-selection').each(function () {
                         $(this).show();
                     });
+                    $('.before-data-selection').each(function () {
+                        $(this).hide();
+                    });
                 }
 
                 QueryToolbox.variables.push({
