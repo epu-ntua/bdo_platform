@@ -258,7 +258,12 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
                 # if s['aggregate'] == '':
                 s['aggregate'] = 'MAX'
             else:
-                s['aggregate'] = 'AVG'
+                if s['datatype'] == 'STRING':
+                    s['aggregate'] = 'MIN'
+                elif s['datatype'] == 'TIMESTAMP':
+                    s['aggregate'] = 'MIN'
+                else:
+                    s['aggregate'] = 'AVG'
                 # s['exclude'] = True
 
     if not lat_flag or not lon_flag:
@@ -428,7 +433,12 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
                 s['exclude'] = False
                 heat_col_flag = True
                 if s['aggregate'] == '':
-                    s['aggregate'] = 'avg'
+                    if s['datatype'] == 'STRING':
+                        s['aggregate'] = 'MIN'
+                    elif s['datatype'] == 'TIMESTAMP':
+                        s['aggregate'] = 'MIN'
+                    else:
+                        s['aggregate'] = 'AVG'
             elif s['name'].split('_', 1)[1] == 'latitude':
                 s['exclude'] = False
                 lat_flag = True
