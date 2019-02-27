@@ -406,12 +406,15 @@ $(function() {
                 $orderingSelectField.find("option").filter("[data-variable-id='"+variable_id+"']").not("[data-ordering='"+ordering+"']").attr('disabled', 'disabled');
             }
         });
+
+
+
         // $orderingSelectField.select2();
         // $orderingSelectField.select2({
-            // width: "100%",
-            // escapeMarkup: function(markup) {
-            //     return markup;
-            // }
+        //     width: "100%",
+        //     escapeMarkup: function(markup) {
+        //         return markup;
+        //     }
         // });
 
 
@@ -720,7 +723,9 @@ function update_fields_when_ordering_asc_desc() {
             $opposite_ordering_option.attr('disabled', 'disabled');
         }
     });
-    refresh_selects2();
+
+
+    setTimeout(refresh_selects2, 500);
 }
 
 function update_group_by_when_temporal_resolution() {
