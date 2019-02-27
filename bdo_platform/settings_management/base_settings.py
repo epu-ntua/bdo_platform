@@ -226,7 +226,7 @@ CKEDITOR_UPLOAD_PATH ='uploads/'
 
 CKEDITOR_CONFIGS = {
     'default': {
-        # 'skin': 'moono',
+        'toolbar': 'full',
     },
 }
 
