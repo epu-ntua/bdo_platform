@@ -643,28 +643,39 @@ $(function () {
                         })
                     });
                     var newFilter;
-                    if (datatype == "STRING" ){
+                    if (filter.op === "not_null"){
                         newFilter = {
                             a: aName,
                             op: filter.op,
-                            b: "'"+filter.b+"'"
-                        };
-                    }
-                    else if(datatype == "TIMESTAMP" ){
-                        newFilter = {
-                            a: aName,
-                            op: filter.op,
-                            b: " timestamp '"+filter.b+"'"
+                            b: ""
                         };
                     }
                     else{
-                        newFilter = {
-                            a: aName,
-                            op: filter.op,
-                            // b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
-                            b: parseFloat(filter.b)
-                        };
+                        if (datatype == "STRING" ) {
+                            newFilter = {
+                                a: aName,
+                                op: filter.op,
+                                b: "'" + filter.b + "'"
+                            };
+
+                        }
+                        else if(datatype == "TIMESTAMP" ){
+                            newFilter = {
+                                a: aName,
+                                op: filter.op,
+                                b: " timestamp '"+filter.b+"'"
+                            };
+                        }
+                        else{
+                            newFilter = {
+                                a: aName,
+                                op: filter.op,
+                                // b: typeof(filter.b) === 'string' ? "'" + filter.b + "'" : filter.b
+                                b: parseFloat(filter.b)
+                            };
+                        }
                     }
+
 
                     if (exprType === 'CUSTOM') {
                         var mapIndex = fdx + 1;
@@ -897,6 +908,16 @@ $(function () {
                         }
                         else {
                             $input = $('<input type="text" name="new-filter-value" />');
+                        }
+                        if($filterOperand.val() === "not_null"){
+                            $input.val("");
+                            $input.prop("readonly", true);
+                            $input.css({"display": "none"});
+                        }
+                        else{
+                            $input.val("");
+                            $input.prop("readonly", false);
+                            $input.css({"display": "block"});
                         }
 
                         // enable/disable operators

@@ -474,12 +474,31 @@ $(function() {
     $('body').on('change', '#new-filter-variable', function () {
         QueryToolbox.filterManager.getFilterOptions();
     });
+    $('body').on('change', '#new-filter-operator', function () {
+        $filterOperand = $('#new-filter-operator');
+        $input = $("[name='new-filter-value']");
+        if($filterOperand.val() === "not_null"){
+            $input.val("");
+            $input.prop("readonly", true);
+            $input.css({"display": "none"});
+        }
+        else{
+            $input.val("");
+            $input.prop("readonly", false);
+            $input.css({"display": "block"});
+        }
+    });
 
     /* On chart add new filter */
     $('body').on('click', '.add-new-filter', function () {
         var filter_input = $("#new-filter-value-container input").val();
         if((filter_input === null)||(filter_input.trim() ==='')||typeof(filter_input) === 'undefined'){
-            alert('The value of the new filter cannot be empty!')
+            if ($('#new-filter-operator').val() !== "not_null") {
+                alert('The value of the new filter cannot be empty!')
+            }
+            else{
+                QueryToolbox.filterManager.addFilter();
+            }
         }else {
             QueryToolbox.filterManager.addFilter();
         }
