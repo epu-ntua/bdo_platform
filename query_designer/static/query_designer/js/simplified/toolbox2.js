@@ -52,7 +52,7 @@ $(function () {
             };
             this.objects=[obj];
             // add tab
-            $('#chart-picker').html('<li class="active"><a href="#"><span class="queryTitle">'+queryTitle+'</span></a></li>');
+            $('#chart-picker').html('<p style="display: inline-block;"><span class="queryTitle">'+queryTitle+'</span></p>');
             // mark tab as unsaved for new charts
             if (typeof(queryId) === 'undefined') {
                 this.tabMarker.currentUnsaved();
@@ -428,16 +428,16 @@ $(function () {
         // *** TABS - LOAD - SAVE - RENAME ***
         tabMarker: {
             currentUnsaved: function () {
-                var $active = $('#chart-picker li.active');
+                var $active = $('#chart-picker p');
                 // check if already marked
                 if ($active.find('.unsaved').length > 0) {
                     return
                 }
                 // mark as unsaved
-                $active.find('a').append('<span class="unsaved">*</span>');
+                $active.append('<span class="unsaved">*</span>');
             },
             currentSaved: function () {
-                $('#chart-picker li.active').find('.unsaved').remove();
+                $('#chart-picker p').find('.unsaved').remove();
             }
         },
 
@@ -521,7 +521,7 @@ $(function () {
 
         rename: function (title) {
             this.objects[0].queryTitle = title;
-            $('#chart-picker li.active a .queryTitle').text(title);
+            $('#query-name-li a #query--title').text(title);
             this.tabMarker.currentUnsaved();
         },
 

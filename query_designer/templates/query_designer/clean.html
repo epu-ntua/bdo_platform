@@ -73,7 +73,7 @@
         <div class="col-lg-12">
             <div class="row">
                 <div class="text-center">
-                    <h1 class="o-blue" style="margin: 0; font-size: 30pt">Query Designer</h1>
+                    <h1 class="" style="margin: 0; font-size: 30pt; color: #30526a;">Query Designer</h1>
                     <h5 style="display: inline-block; margin: 0;">Create queries and explore the data available on BigDataOcean.</h5>
                 </div>
             </div>
@@ -89,20 +89,28 @@
     <!-- /.row -->
     <!-- end PAGE TITLE AREA -->
 
-    <ul id="chart-picker" class="nav nav-tabs">
 
-    </ul>
+    <div style="background-color: #30526a; width: 100%; height: 13px;" ></div>
+    <div id="chart-file-controls" style="text-align: center;" class="row">
+        <div class="col-sm-3" style="padding: 0;">
+            <div id="new-query" class="chart-file-control" title="Create new chart (Ctrl+Alt+N)" style="margin-right: 10px"><i class="fa fa-plus-circle"></i> {% trans 'New' %}</div>
+    {#        <div id="chart-open" class="chart-file-control" title="Open existing chart (Ctrl+O)"><i class="fa fa-file-o"></i> {% trans 'Open' %}</div>#}
+            <div id="front-chart-save" type="button" data-target="#saveModal" data-toggle="modal" class="chart-file-control"  style="margin-right: 10px;"><i class="fa fa-save"></i> {% trans 'Save' %}</div>
+            <div id="front-chart-save-as" type="button" data-target="#saveAsModal" data-toggle="modal" class="chart-file-control" ><i class="far fa-save" ></i> {% trans 'Save As' %}</div>
 
-    <div id="chart-file-controls">
-        <div id="new-query" class="chart-file-control" title="Create new chart (Ctrl+Alt+N)" style="margin-right: 10px"><i class="fa fa-plus-circle"></i> {% trans 'New' %}</div>
-{#        <div id="chart-open" class="chart-file-control" title="Open existing chart (Ctrl+O)"><i class="fa fa-file-o"></i> {% trans 'Open' %}</div>#}
-        <div id="front-chart-save" type="button" data-target="#saveModal" data-toggle="modal" class="chart-file-control"  style="margin-right: 10px;"><i class="fa fa-save"></i> {% trans 'Save' %}</div>
-        <div id="front-chart-save-as" type="button" data-target="#saveAsModal" data-toggle="modal" class="chart-file-control" ><i class="far fa-save" ></i> {% trans 'Save As' %}</div>
-        {#        <button id="run-query-btn" class="btn btn-sm btn-primary after-data-selection"> Run </button>#}
-
+            {#        <button id="run-query-btn" class="btn btn-sm btn-primary after-data-selection"> Run </button>#}
+        </div>
+        <div class="col-sm-6">
+            <div class="add-value-field btn btn-success btn-md " data-toggle="modal" data-target="#select-data-modal"  style="margin: 0; padding: 9px 27px; ">
+                <i class="fa fa-plus"></i> Select data
+            </div>
+        </div>
 {#        <div id="chart-status-msg" class="pull-right"></div>#}
-        <div id="chart-name" class="pull-right hidden">
-            {% trans 'Query name' %}: <input type="text" name="chart-name" val=""/>
+        <div id="chart-name" class="col-sm-3">
+            <span class="hidden">{% trans 'Query name' %}: <input type="text" name="chart-name" val=""/> </span>
+            <div id="run-query-btn" class="btn btn-md btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important; float: right; padding: 9px 27px; margin: 2px;">
+                <i class="fa fa-play-circle"></i> Run
+            </div>
         </div>
         <input type="number" class="hidden" id="offset_input" value="0" />
     </div>
@@ -114,12 +122,12 @@
                 <div class="row">
                     <div class="col-md-3" id="chart-sidebar">
                         <div class="row btn-container" style="margin-left:0; padding: 0;">
-                            <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal"  style="float: left; ">
-                                <i class="fa fa-plus"></i> Select data
-                            </div>
-                            <div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important; float: right; width: 32%">
-                                <i class="fa fa-play-circle"></i> Run
-                            </div>
+{#                            <div class="add-value-field btn btn-default btn-sm pull-left bg-color--blue" data-toggle="modal" data-target="#select-data-modal"  style="float: left; ">#}
+{#                                <i class="fa fa-plus"></i> Select data#}
+{#                            </div>#}
+{#                            <div id="run-query-btn" class="btn btn-sm btn-default pull-right bg-color--blue after-data-selection" style="background: #a00000 !important; float: right; width: 32%">#}
+{#                                <i class="fa fa-play-circle"></i> Run#}
+{#                            </div>#}
                         </div>
                         <div id="chart-control-list">
                             <ul class="nav nav-pills">
@@ -165,8 +173,8 @@
                                 <div id="filters_div" class="tab-pane fade in active">
                                     <p class="before-data-selection"> Select data first </p>
                                     <div class="clearfix after-data-selection">
-                                        <div class="btn-edit-filters pull-left btn btn-sm btn-primary filter-edit-open" >
-                                            <i class="fa fa-cog"></i> {% trans 'Data filters' %} (<span class="filter-counter">0</span>)
+                                        <div class="btn-edit-filters pull-left btn btn-sm btn-primary filter-edit-open" style="padding: 7px 20px; font-size: 11px; margin: 5px;">
+                                            <i class="fa fa-filter" style="font-size: 14px;"></i> {% trans 'Data filters' %} (<span class="filter-counter">0</span>)
                                         </div>
                                     </div>
 
@@ -187,7 +195,9 @@
                             <ul id="chart-content-tabs" class="nav nav-pills" data-tabs="tabs">
                                 <li class="active"><a href="#dataDiv" data-toggle="tab">{% trans 'Data' %}</a></li>
                                 <li><a href="#chart" data-toggle="tab">{% trans 'Chart' %}</a></li>
+                                <li id="query-name-li" style="float: right"><a href="#" style="display: inline-block;">{% trans 'Query name:' %}<span id="query--title"></span></a><span id="chart-picker" style="height: 5px;"></span></li>
                             </ul>
+
                         </div>
                         <div id="chart-tab-content" class="tab-content">
                             <div class="tab-pane toggle-chart" id="chart">
