@@ -418,7 +418,7 @@ def area_location_evaluation_execute(request):
     t.start()
     return JsonResponse({'exec_instance': service_exec.id})
 
-@never_cache
+
 def area_location_evaluation_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
@@ -486,7 +486,7 @@ def area_location_evaluation_execution_process(request, exec_instance):
                 close_livy_session(service_exec.livy_session)
 
 
-@never_cache
+
 def area_location_evaluation_results(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     # GET THE SERVICE RESULTS
