@@ -286,7 +286,7 @@ def data_visualization_results(request):
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
-
+@never_cache
 def single_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
@@ -297,7 +297,7 @@ def single_location_evaluation_execute(request):
     t.start()
     return JsonResponse({'exec_instance': service_exec.id})
 
-
+@never_cache
 def single_location_evaluation_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
@@ -402,12 +402,12 @@ def single_location_evaluation_results(request, exec_instance):
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
-
+@never_cache
 def single_location_evaluation_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
 
-
+@never_cache
 def area_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.AREA_EVALUATION_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
@@ -418,7 +418,7 @@ def area_location_evaluation_execute(request):
     t.start()
     return JsonResponse({'exec_instance': service_exec.id})
 
-
+@never_cache
 def area_location_evaluation_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
@@ -513,12 +513,12 @@ def area_location_evaluation_results(request, exec_instance):
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
-
+@never_cache
 def area_location_evaluation_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
 
-
+@never_cache
 def wave_forecast_execute(request):
     service = Service.objects.get(pk=settings.WAVE_FORECAST_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
@@ -529,7 +529,7 @@ def wave_forecast_execute(request):
     t.start()
     return JsonResponse({'exec_instance': service_exec.id})
 
-
+@never_cache
 def wave_forecast_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
@@ -615,7 +615,7 @@ def wave_forecast_results(request, exec_instance):
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
-
+@never_cache
 def wave_forecast_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
