@@ -1,5 +1,5 @@
 import requests
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 import time
 from pandas import DataFrame
@@ -31,31 +31,34 @@ def process(request):
     # 1)Create input file
     filename, url_params = create_inp_file_from_request_and_upload(request)
     # 2)Calculate oil spill
-    wait_until_output_ready(url_params)
-    filename_output = str(filename).replace("_F.inp", "_F.out")
-    hcmr_data_filename = str(filename).replace("_F.inp", ".json")
-    red_points_filename = str(filename).replace("_F.inp", ".txt")
+    found = wait_until_output_ready(url_params)
+    if found:
+        filename_output = str(filename).replace("_F.inp", "_F.out")
+        hcmr_data_filename = str(filename).replace("_F.inp", ".json")
+        red_points_filename = str(filename).replace("_F.inp", ".txt")
 
-    # 3)Transform data to show in map
-    spill_data, parcel_data = create_json_from_out_file(
-        'service_builder/static/services_files/hcmr_service_1/' + filename_output)
+        # 3)Transform data to show in map
+        spill_data, parcel_data = create_json_from_out_file(
+            'service_builder/static/services_files/hcmr_service_1/' + filename_output)
 
-    headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
-    parcel_df = DataFrame(parcel_data, columns = headers_parcel)
+        headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
+        parcel_df = DataFrame(parcel_data, columns = headers_parcel)
 
-    print(parcel_df.head(10))
-    parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
+        print(parcel_df.head(10))
+        parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
 
-    # 4)Calculate red points
-    red_points_calc.calculate(hcmr_data_filename, red_points_filename)
+        # 4)Calculate red points
+        red_points_calc.calculate(hcmr_data_filename, red_points_filename)
 
-    # 5)Create Visualization
-    visualization_url = "http://localhost:8000/visualizations/map_markers_in_time_hcmr/" + "?notebook_id=2DX2PVRRQ&df=parcel_data_df&markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
-    context = {
-        'url': visualization_url,
-    }
-    return render(request, 'hcmr_pilot/oilspill-results.html', context)
-
+        # 5)Create Visualization
+        visualization_url = "http://localhost:8000/visualizations/map_markers_in_time_hcmr/" + "?notebook_id=2DX2PVRRQ&df=parcel_data_df&markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
+        context = {
+            'url': visualization_url,
+        }
+        return render(request, 'hcmr_pilot/oilspill-results.html', context)
+    else:
+        html = "<html><body>Something went wrong. Please, try again.</body></html>"
+        return HttpResponse(html)
 
 
 def create_json_from_out_file(filename_output):
@@ -107,16 +110,16 @@ def wait_until_output_ready(params):
         print(response)
         print "<status>" + str(response.status_code) + "</status>"
         if int(response.status_code) == 200:
-            return
+            return True
         elif int(response.status_code) == 300:
             continue
         else:
-            return
+            return False
 
 
 def create_inp_file_from_request_and_upload(request):
-    spill_infos = parse_request_params(request)
-    url_params = build_request_params_for_file_creation(spill_infos)
+    spill_infos, wave_model, ocean_model = parse_request_params(request)
+    url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model)
     response = requests.get(
         "http://localhost:8000/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
@@ -127,7 +130,7 @@ def create_inp_file_from_request_and_upload(request):
     return filename, url_params
 
 
-def build_request_params_for_file_creation(spill_info_list):
+def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_model):
     url_params = ''
     idx = 0
     for point in spill_info_list:
@@ -146,7 +149,8 @@ def build_request_params_for_file_creation(spill_info_list):
         url_params += "&DATETIME"+str(idx)+"=" + year + '%20' + month + '%20' + day+'+'+hours+mins
         url_params += "&VOLUME"+str(idx)+"=" + str(oil_volume)
         idx += 1
-
+    url_params += '&WAVE_MODEL='+str(wave_model)
+    url_params += '&OCEAN_MODEL='+ str(ocean_model)
     return url_params
 
 
@@ -164,7 +168,9 @@ def parse_request_params(request):
         else:
             spill_infos.append(spill_info)
         print(spill_infos)
-    return spill_infos
+    wave_model = request.GET.get('wave_model')
+    ocean_model = request.GET.get('hd_model')
+    return spill_infos, wave_model, ocean_model
 
 
 def is_integer_string(s):
