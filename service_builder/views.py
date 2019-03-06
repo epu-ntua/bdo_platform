@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 
 from background_task import background
+from django.utils.datastructures import MultiValueDictKeyError
 
 from query_designer.models import Query, TempQuery
 from service_builder.forms import ServiceForm
@@ -607,22 +608,25 @@ import ftplib,time,io
 # @login_required
 def APIcreateInputFileForHCMRSpillSimulator(request):
     if request.method == 'GET':
-        if 'LATLON' in request.GET and 'DATETIME' in request.GET and 'VOLUME' in request.GET:
+        print(request.GET)
+        if 'LATLON0' in request.GET and 'DATETIME0' in request.GET and 'VOLUME0' in request.GET:
             #Initialisation with defaults or GET parameters
             N_SPILL = "1"
-            SPILL_NUM = "1"
-            LATLON = request.GET['LATLON']
-            if 'DEPTH' in request.GET:
-                DEPTH = request.GET['LATLON']
+            SPILL_NUM = 1
+            LATLON = request.GET['LATLON0']
+            if 'DEPTH0' in request.GET:
+                DEPTH = request.GET['DEPTH0']
             else:
                 DEPTH = "0"
-            DATETIME = request.GET['DATETIME']
-            if 'DURATION' in request.GET:
-                DURATION = request.GET['DURATION']
+            DATETIME = request.GET['DATETIME0']
+            if 'DURATION0' in request.GET:
+                DURATION = request.GET['DURATION0']
             else:
                 DURATION = "0"
-            VOLUME = request.GET['VOLUME']
+            VOLUME = request.GET['VOLUME0']
             SIMULATIONNAME = "USER" + str(request.user.id) + "BDO"
+            SPILL_NUM, point_info_list = find_additional_point_info(SPILL_NUM, request)
+
             if 'DENSITYOILTYPE' in request.GET:
                 DENSITYOILTYPE = request.GET['DENSITYOILTYPE']
             else:
@@ -651,24 +655,12 @@ def APIcreateInputFileForHCMRSpillSimulator(request):
                 WAVE_MODEL = "201"
 
             #Create the file input in string format
-            OilSpillInputString = N_SPILL + "\n" + \
-                                  SPILL_NUM + "\n" + \
-                                  LATLON + "\n" + \
-                                  DEPTH + "\n" + \
-                                  DATETIME + "\n" + \
-                                  DURATION + "\n" + \
-                                  VOLUME + "\n" + \
-                                  SIMULATIONNAME + "\n" + \
-                                  DENSITYOILTYPE + "\n" + \
-                                  SIM_TYPE + "\n" + \
-                                  SIM_LENGTH + "\n" + \
-                                  STEP + "\n" + \
-                                  GRD_SIZE + "\n" + \
-                                  OCEAN_MODEL + "\n" + \
-                                  WIND_MODEL + "\n" + \
-                                  WAVE_MODEL + "\n"
+            OilSpillInputString = build_oil_spill_input_string(DATETIME, DENSITYOILTYPE, DEPTH, DURATION, GRD_SIZE,
+                                                               LATLON, N_SPILL, OCEAN_MODEL, SIMULATIONNAME, SIM_LENGTH,
+                                                               SIM_TYPE, str(SPILL_NUM), STEP, VOLUME, WAVE_MODEL,
+                                                               WIND_MODEL, point_info_list)
             print 'InputString:{0}'.format(OilSpillInputString)
-            from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME, FTPPASS
+            FTPSERVER, FTPUSERNAME, FTPPASS = '','', ''
 
             #Save Oil Spill Simulation input string to a text file in ftp
             ftp = ftplib.FTP(FTPSERVER)
@@ -696,16 +688,83 @@ def APIcreateInputFileForHCMRSpillSimulator(request):
             return HttpResponse('LATLON, DATETIME, and VOLUME are required', status=400)
 
 
+def find_additional_point_info(SPILL_NUM, request):
+    point_info_list = []
+    for i in range(1, 5):
+        point_info = {}
+        try:
+            point_info['LATLON'] = latloni = request.GET['LATLON' + str(i)]
+        except MultiValueDictKeyError:
+            break
+        SPILL_NUM += 1
+        if latloni == '':
+            break
+        if ('DEPTH' + str(i)) in request.GET:
+            point_info['DEPTH'] = request.GET['DEPTH' + str(i)]
+        else:
+            point_info['DEPTH'] = "0"
+        point_info['DATETIME'] = request.GET['DATETIME' + str(i)]
+        if 'DURATION' + str(i) in request.GET:
+            point_info['DURATION'] = request.GET['DURATION' + str(i)]
+        else:
+            point_info['DURATION'] = "0"
+        point_info['VOLUME'] = request.GET['VOLUME' + str(i)]
+        point_info['SIMULATIONNAME'] = "USER" + str(request.user.id) + "BDO"
+        point_info_list.append(point_info)
+    return SPILL_NUM, point_info_list
+
+
+def build_polygon_string(LATLON, LATLON2):
+    lat1, lon1 = LATLON.split(' ')
+    lat2, lon2 = LATLON2.split(' ')
+    result = LATLON + '\n' + lat1 +' '+ lon2+'\n'+LATLON2+'\n'+ lat2+ ' '+ lon1+ '\n'
+
+    return result
+
+def build_oil_spill_input_string(DATETIME, DENSITYOILTYPE, DEPTH, DURATION, GRD_SIZE, LATLON, N_SPILL, OCEAN_MODEL,
+                                 SIMULATIONNAME, SIM_LENGTH, SIM_TYPE, SPILL_NUM, STEP, VOLUME, WAVE_MODEL, WIND_MODEL,
+                                 point_list):
+    latlon1 = str(LATLON)
+    inp_string = SPILL_NUM + "\n" + \
+                          '1' + "\n" + \
+                          latlon1 + "\n" + \
+                          DEPTH + "\n" + \
+                          DATETIME + "\n" + \
+                          DURATION + "\n" + \
+                          VOLUME + "\n"
+    idx = 1
+    if point_list != '':
+        for p in point_list:
+            idx += 1
+            inp_string += str(idx) + "\n" + \
+                              str(p['LATLON']) + "\n" + \
+                              str(p['DEPTH']) + "\n" + \
+                              str(p['DATETIME']) + "\n" + \
+                              str(p['DURATION'])+ "\n" + \
+                              str(p['VOLUME']) + "\n"
+
+    inp_string += SIMULATIONNAME + "\n" + \
+                          DENSITYOILTYPE + "\n" + \
+                          SIM_TYPE + "\n" + \
+                          SIM_LENGTH + "\n" + \
+                          STEP + "\n" + \
+                          GRD_SIZE + "\n" + \
+                          OCEAN_MODEL + "\n" + \
+                          WIND_MODEL + "\n" + \
+                          WAVE_MODEL + "\n"
+    return inp_string
+
+
 #Check if an output for the same user and date exists
 #example http://localhost:8000/requests/api/checkIfOutputExistsforHCMRSpillSimulator/?LATLON=37.3778%2025.9595&DATETIME=2017%2012%2027%201000&VOLUME=2500
 # @login_required
 def APIcheckIfOutputExistsforHCMRSpillSimulator(request):
     if request.method == 'GET':
-        if 'LATLON' in request.GET and 'DATETIME' in request.GET:
-            LATLON = request.GET['LATLON']
-            DATETIME = request.GET['DATETIME']
+        if 'LATLON0' in request.GET and 'DATETIME0' in request.GET:
+            LATLON = request.GET['LATLON0']
+            DATETIME = request.GET['DATETIME0']
 
-            from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME, FTPPASS
+            FTPSERVER, FTPUSERNAME, FTPPASS = '','', ''
 
             # Check the out directory
             ftp = ftplib.FTP(FTPSERVER)

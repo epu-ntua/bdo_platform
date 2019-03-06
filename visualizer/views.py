@@ -3272,8 +3272,8 @@ def map_markers_in_time_hcmr(request):
     # m = map_routes(m)
     m, shapely_polygons = map_oil_spill_hcmr(m)
 
-    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk = hcmr_service_parameters(
-        request)
+    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file = \
+        hcmr_service_parameters(request)
 
     if query_pk != 0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
@@ -3350,7 +3350,7 @@ def map_markers_in_time_hcmr(request):
             # data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
             # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
             data = []
-            with open('visualizer/static/visualizer/files/hcmr_data.json') as json_data:
+            with open('visualizer/static/visualizer/files/' + data_file) as json_data:
                 data = json.load(json_data)
                 print(data[:3])
         min_lat = 90
@@ -3369,7 +3369,7 @@ def map_markers_in_time_hcmr(request):
         #         count_inters = count_inters + 1
         # print 'intersects:' + str(count_inters)
         red_points = []
-        with open('visualizer/static/visualizer/files/red_points.txt', 'r') as file:
+        with open('visualizer/static/visualizer/files/'+ rp_file, 'r') as file:
             line = file.readline()
             while line:
                 red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
@@ -3437,7 +3437,9 @@ def hcmr_service_parameters(request):
     markerType = str(request.GET.get('markerType', ''))
     FMT = '%Y-%m-%d %H:%M:%S'
     duration = 'PT0H'
-    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk
+    data_file = str(request.GET.get('data_file', ''))
+    rp_file = str(request.GET.get('red_points_file', ''))
+    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):

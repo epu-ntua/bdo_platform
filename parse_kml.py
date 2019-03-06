@@ -84,7 +84,7 @@ def build_inner_boundaries_for_map(p):
         coords = extract_coordinates(i)
         if coords != '':
             coordinates = coords.split('\n')
-            coord_map = build_coord_map(coordinates)
+            coord_map = build_coord_map_and_range(coordinates)
             inner_boundary_list.append(coord_map)
 
     return inner_boundary_list
@@ -99,22 +99,39 @@ def build_outer_boundary_for_map(p):
 
     if coords != '':
         coordinates = coords.split('\n')
-        coord_map = build_coord_map(coordinates)
+        coord_map = build_coord_map_and_range(coordinates)
 
     return coord_map
 
 
-def build_coord_map(coordinates):
+def build_coord_map_and_range(coordinates):
     coord_map = {}
     coor_list = []
+    min_lat = max_lat = float(coordinates[0].strip().split(',')[1])
+    min_lon = max_lon = float(coordinates[0].strip().split(',')[0])
     for c in coordinates:
         coor_map = {}
         longitude, latitude, altitude = c.strip().split(',')
+        longitude = float(longitude)
+        latitude = float(latitude)
         coor_map['longitude'] = float(longitude)
         coor_map['latitude'] = float(latitude)
         # coor_map['altitude'] = float(altitude)
         coor_list.append(coor_map)
+        if latitude < min_lat :
+            min_lat = latitude
+        elif latitude > max_lat:
+            max_lat = latitude
+        if longitude < min_lon:
+            min_lon = longitude
+        elif longitude > max_lon:
+            max_lon = longitude
+
     coord_map['coordinates'] = coor_list
+    coord_map['min_lat'] = min_lat
+    coord_map['max_lat'] = max_lat
+    coord_map['min_lon'] = min_lon
+    coord_map['max_lon'] = max_lon
     return coord_map
 
 
