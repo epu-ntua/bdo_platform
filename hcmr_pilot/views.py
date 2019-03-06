@@ -38,8 +38,9 @@ def process(request):
         red_points_filename = str(filename).replace("_F.inp", ".txt")
 
         # 3)Transform data to show in map
+        output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
         spill_data, parcel_data = create_json_from_out_file(
-            'service_builder/static/services_files/hcmr_service_1/' + filename_output)
+            output_path)
 
         headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
         parcel_df = DataFrame(parcel_data, columns = headers_parcel)
@@ -54,6 +55,7 @@ def process(request):
         visualization_url = "http://localhost:8000/visualizations/map_markers_in_time_hcmr/" + "?notebook_id=2DX2PVRRQ&df=parcel_data_df&markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
         context = {
             'url': visualization_url,
+            'out_filepath': filename_output,
         }
         return render(request, 'hcmr_pilot/oilspill-results.html', context)
     else:
@@ -179,3 +181,11 @@ def is_integer_string(s):
         return True
     except ValueError:
         return False
+
+
+def download(request):
+    out = request.GET.get('file')
+    content = open('service_builder/static/services_files/hcmr_service_1/'+out).read()
+    print(content)
+    response = HttpResponse(content, content_type='text/plain')
+    return response

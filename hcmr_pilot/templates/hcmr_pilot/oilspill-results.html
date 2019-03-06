@@ -261,11 +261,20 @@
             <div class="container-fluid">
                 <div class="container" style="width: 100%; text-align: center;">
                     <h2 style="text-align: center">Oil Spill Simulation Service Results</h2>
-                    <object type="text/html" data="{{ url }}" width="800px" height="600px" style="overflow:auto;border:5px ridge blue">
+                    <object type="text/html" data="{{ url }}" width="800px" height="600px"
+                            style="overflow:auto;border:5px ridge blue">
                     </object>
-            <div>
-
-         </div>
+                    <div>
+                        <div class="button-container" style="width:100%">
+                            <div id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
+                                 style="width:40%">
+                                <i class="fa fa-download"></i> <a href="http://localhost:8000/oilspill/download?file={{ out_filepath }}" download style="color:#ffffff">Download out file</a>
+                            </div>
+                            <div id="download-report" class="btn btn-primary btn-sm btn-default" style="width:40%">
+                                <i class="fa fa-download"></i> Download report
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
