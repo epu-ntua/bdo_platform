@@ -27,9 +27,12 @@
 
     <div id="chartdiv" style="overflow: visible; text-align: center; margin-top: 0px">
 {#        <img src="{{ hist_path }}" alt="Histogram2D">#}
-        <img src="../../static/visualizer/img/temp/{{ hist_path }}" alt="Histogram2D">
-    </div>
+{#        <img src="/static/visualiser/img/temp/{{ hist_path }}" alt="Histogram2D">#}
 
+        {% with 'visualizer/img/temp/'|add:hist_path as image_static %}
+            <img src="{% static image_static %}" alt="Histogram2D">
+        {% endwith %}
+    </div>
 
 {% endblock %}
 

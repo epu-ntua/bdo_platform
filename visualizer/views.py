@@ -2486,8 +2486,10 @@ def get_histogram_2d_matplotlib(request):
     plt.draw()
     ts = str(time.time()).replace(".", "")
     html_path = ts + 'histogram2d.png'
-    histpath = 'visualizer/static/visualizer/img/temp/' + html_path
+    histpath = settings.VISUALISER_STATIC + html_path
     plt.savefig(histpath,  transparent=True, frameon=False, pad_inches=0)
+    # print 'SAVED AT'
+    # print histpath
     return render(request, 'visualizer/histogram_2d_matplotlib.html',
                   {'hist_path': html_path})
 
