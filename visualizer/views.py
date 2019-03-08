@@ -1130,6 +1130,8 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
     print 'levels ok'
     import matplotlib.tri as tri
+    from mpl_toolkits.basemap import Basemap
+    bm = Basemap()
     x = np.array([i[lon_index] for i in final_data])
     y = np.array([i[lat_index] for i in final_data])
     z = np.array([i[var_index] for i in final_data])
@@ -1142,6 +1144,17 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     interpolator = tri.LinearTriInterpolator(triang, z)
     Xi, Yi = np.meshgrid(xi, yi)
     zi = interpolator(Xi, Yi)
+    # print zi[:1]
+    # print xi[:3]
+    # print yi[:3]
+    # print len(zi)  # rows
+    # print len(yi)
+    # print len(zi[0])  # columns
+    # print len(xi)
+    for x_index, x in enumerate(xi):
+        for y_index, y in enumerate(yi):
+            if bm.is_land(x, y):
+                zi[y_index][x_index] = None
     # fig, ax1 = plt.subplots(nrows=1)
     min_val = min(z)
     max_val = max(z)

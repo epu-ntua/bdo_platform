@@ -316,7 +316,8 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Sea surface wave significant height",
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
+                             # 'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
+                             'url': "/visualizations/get_histogram_2d_am?viz_id=17&action=get_histogram_2d_am&y_var=i0_sea_surface_wave_significant_height&x_var=i1_sea_surface_wave_zero_upcrossing_period&bins=10&query="+str(wave_height_query_id),
                              'done': False})
     visualisations['v2'] = ({'notebook_id': '',
                              'df': '',
@@ -437,26 +438,26 @@ def area_location_evaluation_execution_process(request, exec_instance):
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Mean significant wave height",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=4&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=20&step0=0.01&agg_func=AVG&query0="+str(wave_height_query_id),
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=80&step0=0.1&agg_func=AVG&query0="+str(wave_height_query_id),
                              'done': False})
     visualisations['v2'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Mean wave period",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=4&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=20&step0=0.01&agg_func=AVG&query0=" + str(wave_height_query_id),
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=80&step0=0.1&agg_func=AVG&query0=" + str(wave_height_query_id),
                              'done': False})
     visualisations['v3'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Maximum significant wave height",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=4&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=20&step0=0.01&agg_func=MAX&query0=" + str(
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=80&step0=0.1&agg_func=MAX&query0=" + str(
                                  wave_height_query_id),
                              'done': False})
     visualisations['v4'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Maximum wave period",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=4&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=20&step0=0.01&agg_func=MAX&query0=" + str(
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=80&step0=0.1&agg_func=MAX&query0=" + str(
                                  wave_height_query_id),
                              'done': False})
     service_exec.dataframe_visualizations = visualisations
