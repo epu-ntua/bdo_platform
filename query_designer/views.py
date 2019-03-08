@@ -80,22 +80,31 @@ def clean(request, pk=None):
     user_datasets = user_datasets | public_datasets
     dataset_list = public_datasets | user_datasets | user_with_access_datasets
     # dataset_list.order_by('order')
-    organization_list = list(set([dataset.organization for dataset in dataset_list]))
-    publisher_list = list(set([dataset.publisher for dataset in dataset_list]))
+    publisher_list = set([d.publisher for d in dataset_list])
+    organization_list = set([d.publisher for d in dataset_list])
+    observation_list = set([d.observations for d in dataset_list])
+    license_list = set([d.license for d in dataset_list])
     # for dataset in dataset_list:
     #     if dataset.organization.title not in organization_list:
     #         organization_list.append(dataset.organization.title)
     variable_list = Variable.objects.all()
-
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            conf_viz_json = json.dumps(json.load(f))
+    except:
+        pass
     return render(request, 'query_designer/clean.html', {
         'organizations': organization_list,
         'publishers': publisher_list,
+        'observations': observation_list,
+        'licenses': license_list,
         'variables': variable_list,
         'datasets': dataset_list.order_by('order'),
         'dimensions': Dimension.objects.all(),
         # 'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
         'available_viz': Visualization.objects.filter(hidden=False).order_by('order'),
         'AGGREGATES': AGGREGATES,
+        'visualisation_configuration': conf_viz_json
     })
 
 
@@ -288,12 +297,15 @@ def get_field_policy(user):
             'name': variable.safe_name,
             'title': variable.title,
             'id': variable.pk,
+            'description': variable.description,
+            'dataType': variable.dataType,
         })
 
     for aggregate in AGGREGATES:
         field_policy['aggregates'].append({
             'title': aggregate[1],
             'value': aggregate[0],
+            'typelist': aggregate[2],
         })
 
     return field_policy

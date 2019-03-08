@@ -42,6 +42,7 @@ $(document).ready(function() {
         mapprev.scrollWheelZoom.disable();
         mapprev.boxZoom.disable();
         mapprev.keyboard.disable();
+
     }
 
     function set_bounds_filters() {
@@ -98,6 +99,9 @@ $(document).ready(function() {
 
     map_init();
 
+    // FOR MAPPREV RIGHT DISPLAY
+    $('#filters_div').removeClass('in').removeClass('active');
+    $('#variables_div').addClass('in').addClass('active');
 
     //
     $('#bounds').addClass('after-data-selection');

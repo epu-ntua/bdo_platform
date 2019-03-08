@@ -32,6 +32,23 @@
                                 <select id="{{ argument.name }}" class="ui dropdown full-width columns-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
 
                                 </select>
+
+                            {% elif argument.type == 'COLUMN_NUMERIC' %}
+                                <select id="{{ argument.name }}" class=" ui dropdown full-width column-numeric-select" name="{{ argument.name }}" style="width: 250px" >
+
+                                </select>
+                            {% elif argument.type == 'VARIABLE_NUMERIC' %}
+                                <select id="{{ argument.name }}" class="ui dropdown full-width variable-numeric-select" name="{{ argument.name }}" style="width: 250px" >
+
+                                </select>
+                            {% elif argument.type == 'VARIABLE_LIST_NUMERIC' %}
+                                <select id="{{ argument.name }}" class="ui dropdown full-width variables-numeric-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
+
+                                </select>
+                            {% elif argument.type == 'COLUMN_LIST_NUMERIC' %}
+                                <select id="{{ argument.name }}" class="ui dropdown full-width columns-numeric-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
+
+                                </select>
                             {% elif argument.type == 'AGG_FUNCTION' %}
                                 <select id="{{ argument.name }}" class="ui dropdown full-width aggregate-select" name="{{ argument.name }}" >
 {#                                    <option value="">Select Aggregation Function</option>#}

@@ -308,7 +308,7 @@ $(function () {
 
 
             // add group by and order by fields
-            var $queryControlsContainer = $('<div class="row after-data-selection" id="query-controls-container">').css('padding', '0').css('margin-left', '0').css('margin-top', '20px');
+            var $queryControlsContainer = $('<div class="row after-data-selection query-controls-container">').css('padding', '0').css('margin-left', '0').css('margin-top', '20px');
 
             // create group select
             var $groupSelectContainer = this.renderChartOptionsField({
@@ -1313,7 +1313,7 @@ $(function () {
         if (newField.value != ""){
 
 
-            var $chartControls = $('#chart-control-list > .chart-control');
+            var $chartControls = $('#chart-control-list  .chart-control');
             var label = 'Metric #<span class="metric-cnt">' + ($chartControls.find('> *').length ) + '</span>';
 
             var obj = QueryToolbox.objects[QueryToolbox.current()];

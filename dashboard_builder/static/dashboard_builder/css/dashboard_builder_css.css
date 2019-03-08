@@ -1,4 +1,4 @@
-#cke_editor1 .cke_contents{
+#cke_editor2 .cke_contents{
     height: 350px !important;
 }
 
@@ -248,3 +248,8 @@ ul {
             display: block;
         }
 
+
+.conf-error-message{
+    color: darkred;
+    font-size: small;
+}

@@ -94,11 +94,27 @@ select {
 
 #run-query-btn{
     /*margin-top: 0;*/
-    margin-right: 15px;
+    /*margin-right: 15px;*/
 }
 
 .after-data-selection{
     display: none;
+}
+
+.before-data-selection{
+    display: block;
+}
+
+#chart-control-list ul.nav li{
+    /*float: none !important;*/
+    /*width: 32% !important;*/
+    display: inline-block !important;
+    padding: 0px !important;
+}
+
+#chart-control-list li a{
+    padding: 5px !important;
+    border-radius: 5%;
 }
 
 .coverage-date-filters .form-group{
@@ -106,7 +122,7 @@ select {
 }
 
 .clearfix{
-    border-top: thin dashed #2171ac73;
+    /*border-top: thin dashed #2171ac73;*/
     margin-top: 10px;
 }
 
@@ -139,13 +155,18 @@ select {
     padding: 5px 10px;
 }
 
+.btn-success{
+    background-color: #22550d !important;
+}
+
 #chart-file-controls .chart-file-control {
-    color: #777;
+    color: #3e3e3e;
     display: inline-block;
     padding: 5px;
     border: 1px solid transparent;
     border-radius: 2px;
     cursor: pointer;
+    float: left;
 }
 
 #chart-file-controls .chart-file-control:not(.disabled):hover {
@@ -290,10 +311,10 @@ select {
 .chart-control .value-remove-btn {
     cursor: pointer;
     display: inline-block;
-    margin: 0px 2px;
+    margin: 0px 2px 0px 10px;
     padding: 5px;
     font-size: 14px;
-    color: #777;
+    color: #a00000;
 }
 
 .chart-control .value-options-btn:hover,
@@ -308,6 +329,18 @@ select {
     color: white;
 }
 
+#chart-content-tabs #query-name-li a:hover{
+    background: none !important;
+    color: black;
+}
+
+#chart-content-tabs #query-name-li a{
+    text-transform: none;
+    font-size: 12px;
+    border: none;
+    box-shadow: none;
+}
+
 #chart-content-tabs.nav-pills:not(.nav-pills-icons) > li > a {
     border-radius: 0;
     padding: 5px 10px;
@@ -318,8 +351,8 @@ select {
 #chart-picker {
     margin-bottom: 0;
     padding-left: 0;
-    min-height: 42px;
-    background: #30526a;
+    /*min-height: 42px;*/
+    background: none;
 }
 
 #chart-picker .unsaved {

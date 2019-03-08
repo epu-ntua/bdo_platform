@@ -158,10 +158,10 @@
   border-color: #06651b;
 }
 .slider.slider-warning .noUi-connect, .slider.slider-warning.noUi-connect {
-  background-color: #ff9800;
+  background-color: #aa7424;
 }
 .slider.slider-warning .noUi-handle {
-  border-color: #ff9800;
+  border-color: #aa7424;
 }
 .slider.slider-danger .noUi-connect, .slider.slider-danger.noUi-connect {
   background-color: #f44336;
@@ -397,7 +397,7 @@ h2.title {
 }
 
 .text-warning {
-  color: #ff9800;
+  color: #aa7424;
 }
 
 .text-primary {
@@ -613,7 +613,7 @@ h2.title {
 }
 .sidebar[data-color="orange"] .nav li.active a,
 .off-canvas-sidebar[data-color="orange"] .nav li.active a {
-  background-color: #ff9800;
+  background-color: #aa7424;
   box-shadow: 0 12px 20px -10px rgba(255, 152, 0, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(255, 152, 0, 0.2);
 }
 .sidebar[data-color="red"] .nav li.active a,
@@ -1024,7 +1024,7 @@ h2.title {
 .navbar .navbar-nav > li > a.btn.btn-warning.dropdown-toggle, .open >
 .navbar .navbar-nav > li > a.btn.btn-warning.dropdown-toggle:focus, .open >
 .navbar .navbar-nav > li > a.btn.btn-warning.dropdown-toggle:hover {
-  background-color: #ff9800;
+  background-color: #aa7424;
   color: #FFFFFF;
 }
 .btn.btn-warning:focus, .btn.btn-warning:active, .btn.btn-warning:hover,
@@ -1063,7 +1063,7 @@ h2.title {
 .btn.btn-warning.btn-simple,
 .navbar .navbar-nav > li > a.btn.btn-warning.btn-simple {
   background-color: transparent;
-  color: #ff9800;
+  color: #aa7424;
   box-shadow: none;
 }
 .btn.btn-warning.btn-simple:hover, .btn.btn-warning.btn-simple:focus, .btn.btn-warning.btn-simple:active,
@@ -1071,7 +1071,7 @@ h2.title {
 .navbar .navbar-nav > li > a.btn.btn-warning.btn-simple:focus,
 .navbar .navbar-nav > li > a.btn.btn-warning.btn-simple:active {
   background-color: transparent;
-  color: #ff9800;
+  color: #aa7424;
 }
 .btn.btn-danger,
 .navbar .navbar-nav > li > a.btn.btn-danger {
@@ -1404,7 +1404,7 @@ h2.title {
 }
 .btn-group.open > .dropdown-toggle.btn.btn-warning,
 .btn-group-vertical.open > .dropdown-toggle.btn.btn-warning {
-  background-color: #ff9800;
+  background-color: #aa7424;
 }
 .btn-group.open > .dropdown-toggle.btn.btn-danger,
 .btn-group-vertical.open > .dropdown-toggle.btn.btn-danger {
@@ -1742,7 +1742,7 @@ output {
   background-color: #00bcd4;
 }
 .label.label-warning {
-  background-color: #ff9800;
+  background-color: #aa7424;
 }
 .label.label-danger {
   background-color: #f44336;
@@ -1828,7 +1828,7 @@ output {
   background-image: linear-gradient(#06651b, #06651b), linear-gradient(#D2D2D2, #D2D2D2);
 }
 .form-group.is-focused.form-warning .form-control {
-  background-image: linear-gradient(#ff9800, #ff9800), linear-gradient(#D2D2D2, #D2D2D2);
+  background-image: linear-gradient(#aa7424, #aa7424), linear-gradient(#D2D2D2, #D2D2D2);
 }
 .form-group.is-focused.form-danger .form-control {
   background-image: linear-gradient(#f44336, #f44336), linear-gradient(#D2D2D2, #D2D2D2);
@@ -1850,11 +1850,11 @@ output {
   box-shadow: none;
 }
 .form-group.has-warning.is-focused .form-control {
-  background-image: linear-gradient(#ff9800, #ff9800), linear-gradient(#D2D2D2, #D2D2D2);
+  background-image: linear-gradient(#aa7424, #aa7424), linear-gradient(#D2D2D2, #D2D2D2);
 }
 .form-group.has-warning label.control-label,
 .form-group.has-warning .help-block {
-  color: #ff9800;
+  color: #aa7424;
 }
 .form-group.has-error .form-control {
   box-shadow: none;
@@ -2779,7 +2779,7 @@ fieldset[disabled] .form-group.is-focused .togglebutton label {
   box-shadow: 0 12px 20px -10px rgba(76, 175, 80, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(76, 175, 80, 0.2);
 }
 .nav-pills.nav-pills-warning > li.active > a, .nav-pills.nav-pills-warning > li.active > a:focus, .nav-pills.nav-pills-warning > li.active > a:hover {
-  background-color: #ff9800;
+  background-color: #aa7424;
   box-shadow: 0 12px 20px -10px rgba(255, 152, 0, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(255, 152, 0, 0.2);
 }
 .nav-pills.nav-pills-danger > li.active > a, .nav-pills.nav-pills-danger > li.active > a:focus, .nav-pills.nav-pills-danger > li.active > a:hover {
@@ -3212,7 +3212,7 @@ fieldset[disabled] .form-group.is-focused .togglebutton label {
   color: #ffffff;
 }
 .navbar.navbar-warning {
-  background-color: #ff9800;
+  background-color: #aa7424;
   color: #ffffff;
 }
 .navbar.navbar-warning .navbar-form .form-group input.form-control::-moz-placeholder,
@@ -3232,11 +3232,11 @@ fieldset[disabled] .form-group.is-focused .togglebutton label {
 }
 .navbar.navbar-warning .dropdown-menu li > a:hover, .navbar.navbar-warning .dropdown-menu li > a:focus {
   color: #FFFFFF;
-  background-color: #ff9800;
+  background-color: #aa7424;
   box-shadow: 0 12px 20px -10px rgba(255, 152, 0, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(255, 152, 0, 0.2);
 }
 .navbar.navbar-warning .dropdown-menu .active > a {
-  background-color: #ff9800;
+  background-color: #aa7424;
   color: #ffffff;
   box-shadow: 0 12px 20px -10px rgba(255, 152, 0, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(255, 152, 0, 0.2);
 }
@@ -4030,10 +4030,10 @@ footer .btn {
 }
 
 .ct-series-c .ct-point, .ct-series-c .ct-line, .ct-series-c .ct-bar, .ct-series-c .ct-slice-donut {
-  stroke: #ff9800;
+  stroke: #aa7424;
 }
 .ct-series-c .ct-slice-pie, .ct-series-c .ct-area {
-  fill: #ff9800;
+  fill: #aa7424;
 }
 
 .ct-series-d .ct-point, .ct-series-d .ct-line, .ct-series-d .ct-bar, .ct-series-d .ct-slice-donut {
@@ -4558,7 +4558,7 @@ footer .btn {
 }
 
 .ct-orange {
-  stroke: #ff9800 !important;
+  stroke: #aa7424 !important;
 }
 
 .ct-red {

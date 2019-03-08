@@ -4,6 +4,11 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 from django.db.models import *
+from datetime import datetime
+
+ACCESS_REQUEST_STATUS_CHOICES = (('open', 'open'),
+                                 ('accepted', 'accepted'),
+                                 ('rejected', 'rejected'))
 
 
 class Service(Model):
@@ -60,3 +65,15 @@ class ServiceInstance(Model):
     output_page = CharField(null=True, default='', max_length=100)
     dataframe_visualizations = JSONField(null=True, blank=True, default=None)
     result = JSONField(null=True, blank=True, default=None)
+
+
+class ServiceAccessRequest(Model):
+    user = ForeignKey(User, on_delete=CASCADE)
+    resource = ForeignKey(Service, on_delete=CASCADE, related_name='resource')
+    status = CharField(max_length=20, choices=ACCESS_REQUEST_STATUS_CHOICES, default='open')
+    creation_date = DateTimeField(default=datetime.now())
+    response_date = DateTimeField(null=True)
+
+    @property
+    def type(self):
+        return 'service'

@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block content %}
+    {% csrf_token %}
     <div class="row">
         <div class="col-xs-12">
             <div class="card">
@@ -44,8 +45,9 @@
 {#                                </a>#}
                             </div>
                             <div class="col-xs-7">
-                                <div class="dataset-license">Observation Type: {{ dataset.observation }}</div>
+                                <div class="dataset-license">Observation Type: {{ dataset.observations }}</div>
                                 <div class="dataset-license">License: {{ dataset.license }}</div>
+                                <div class="dataset-last-update">Last updated: {% if dataset.last_updated == None %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</div>
                             </div>
                             <div class="col-xs-2 pull-right">
                                 <div class="pull-right" style="text-align: right;">
@@ -55,6 +57,8 @@
     {#                                <span class="dataset-private"><span class="badge">{{ dataset.category }}</span></span>#}
                                     {% if dataset.private %}
                                         <button class="btn btn-danger btn-sm" style="margin: 0;">Private</button>
+                                        <br/>
+                                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#request_access_modal" style="">Request Access</button>
                                     {%  else %}
                                         <button class="btn btn-success btn-sm" style="margin: 0;">Open</button>
                                     {% endif %}
@@ -87,34 +91,45 @@
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="tab" href="#metadata" role="tab">Metadata</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-toggle="tab" href="#variables" role="tab">Variables</a>
+                        </li>
                     </ul>
                     <!-- Tab panes -->
                     <div class="tab-content">
                         <div class="tab-pane active" id="overview" role="tabpanel" aria-expanded="true">
                             <div class="row">
                                 <div class="col-xs-12 padding-5" style="overflow-x: auto;">
-                                    <p class="padding-horizontal-3">Showing entries
-                                        <span class="o-blue">1</span> - <span class="o-blue">5</span>
-{#                                        , <span class="o-orange">36 GB</span> of data#}
-                                        , <span class="o-green" style="font-weight: bold;">{% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}</span>  rows in total.{% endif %}</p>
-                                    <table id="sample_table" class="table table-hover">
-	                                    <thead class="text-info">
-	                                        <tr>
-                                                {% for title, unit in column_list%}
-                                                    <th>{{ title }}<br/>{% if unit == '' %}{% else %}({{ unit }}){% endif %}</th>
-                                                {% endfor %}
-	                                        </tr>
-                                        </thead>
-	                                    <tbody>
-                                            {% for row in rows_to_render%}
+                                    <p class="padding-horizontal-3">
+                                        {% if dataset.private %}
+                                            <span class="o-red"><strong>Preview not available.</strong></span>
+                                        {% else %}
+                                            Showing entries
+                                            <span class="o-blue">1</span> - <span class="o-blue">5</span>
+    {#                                        , <span class="o-orange">36 GB</span> of data#}
+                                            , <span class="o-green" style="font-weight: bold;">                                        {% endif %}
+                                        {% if dataset.number_of_rows == None %}-{% else %}{{ dataset.number_of_rows_formated }}</span>  rows in total.{% endif %}
+                                    </p>
+                                    {% if not dataset.private %}
+                                        <table id="sample_table" class="table table-hover">
+                                            <thead class="text-info">
                                                 <tr>
-                                                    {% for cell in row%}
-                                                        <td>{{ cell }}</td>
+                                                    {% for title, unit in column_list%}
+                                                        <th>{{ title }}<br/>{% if unit == '' %}{% else %}({{ unit }}){% endif %}</th>
                                                     {% endfor %}
                                                 </tr>
-                                            {% endfor %}
-	                                    </tbody>
-	                                </table>
+                                            </thead>
+                                            <tbody>
+                                                {% for row in rows_to_render%}
+                                                    <tr>
+                                                        {% for cell in row %}
+                                                            <td>{{ cell }}</td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -165,7 +180,7 @@
                                         </tr>
                                         <tr>
                                             <td>Observation</td>
-                                            <td>{{ dataset.observation }}</td>
+                                            <td>{{ dataset.observations }}</td>
                                         </tr>
                                         <tr>
                                             <td>Spatial Coverage North </td>
@@ -201,10 +216,63 @@
                                 </table>
                             </div>
                         </div>
+
+                        <div class="tab-pane" id="variables" role="tabpanel">
+                            <table class="table">
+                                <thead class="text-info">
+                                    <tr>
+                                        <th>Variable Name</th>
+                                        <th>Unit</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for var in dataset.variables.all %}
+                                        <tr>
+                                            <td>{{ var.title }}</td>
+                                            <td>{{ var.unit }}</td>
+                                            <td>{{ var.dataType }}</td>
+                                            <td>{{ var.description }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+{% endblock %}
+
+
+{% block modal %}
+    <div class="modal fade" id="request_access_modal" tabindex="-1" role="dialog" aria-hidden="true" style="width: 50%;left:45vh;">
+      <div class="modal-dialog " role="document" style="width: 50%;">
+        <div class="modal-content" style="height: inherit; ">
+          <div class="modal-header">
+            <h4 style="margin-bottom: 15px; margin-left:10px; font-weight: bold; text-align: center;" class="modal-title" id="deleteModalLabel">Access Request</h4>
+          </div>
+          <div class="modal-body" style="height: inherit;margin-top: 10px;margin-bottom: 30px">
+              <div class="form-group label-floating">
+                    <p>
+                        Do you want to create a request to access this private dataset?
+                    </p>
+                    <p>
+                        The owner of the dataset will be notified and he will accept or decline you request.
+                    </p>
+                    <p>
+                        You will then get notified about the outcome of your request.
+                    </p>
+              </div>
+          </div>
+          <div class="modal-footer" style="text-align: center;">
+              <button id="confirm-create-request-btn" type="button" class="btn btn-success btn-md"  data-dismiss="modal" style="margin-top: 0; margin-bottom: 0;" >Make request</button>
+              <button type="button" class="btn btn-secondary btn-md" data-dismiss="modal"  style="">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
 {% endblock %}
 
@@ -295,5 +363,71 @@
             //start animation for the Emails Subscription Chart
             md.startAnimationForBarChart(emailsSubscriptionChart);
         };
+
+
+        $("#confirm-create-request-btn").click(function(){
+           var csrftoken = getCookie('csrftoken');
+            $.ajax({
+                url: '/access_control/request_access_to_resource/dataset/',
+                type: 'POST',
+                data: {
+                    resource_id: {{ dataset.id }},
+                    csrfmiddlewaretoken: csrftoken
+                },
+                success: function (result) {
+                    console.log(result);
+                    var message = 'Your request has been created successfully!';
+                    $.notify({
+                          icon: "add_alert",
+                          message: message
+
+                    },{
+                          type: 'success',
+                          timer: 2000,
+                          placement: {
+                              from: 'top',
+                              align: 'right'
+                          }
+                    });
+                },
+                error: function (result) {
+                    console.log(result);
+                    var message = 'An error occured. Your request failed.';
+                    $.notify({
+                          icon: "add_alert",
+                          message: message
+
+                    },{
+                          type: 'danger',
+                          timer: 2000,
+                          placement: {
+                              from: 'top',
+                              align: 'right'
+                          }
+                    });
+                }
+            });
+        });
+
+
+        // using jQuery
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
     </script>
+
 {% endblock %}
+

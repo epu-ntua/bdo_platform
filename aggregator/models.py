@@ -11,6 +11,11 @@ import math
 
 from netCDF4._netCDF4 import num2date
 from django.contrib.postgres.fields import JSONField
+from datetime import datetime
+
+ACCESS_REQUEST_STATUS_CHOICES = (('open', 'open'),
+                                 ('accepted', 'accepted'),
+                                 ('rejected', 'rejected'))
 
 DATASET_STORAGES = (
     ('LOCAL_POSTGRES', 'Local PostgreSQL instance'),
@@ -43,7 +48,7 @@ class Dataset(Model):
     temporalCoverageBegin = DateTimeField(null=True)
     temporalCoverageEnd = DateTimeField(null=True)
     license = CharField(max_length=200, null=True)
-    observation = CharField(max_length=200, null=True)
+    observations = CharField(max_length=200, null=True)
     publisher = TextField()
     category = CharField(max_length=200, null=True)
     image_uri = TextField(default='/static/img/logo.png')
@@ -54,6 +59,7 @@ class Dataset(Model):
     last_updated = DateTimeField(null=True)
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
     metadata = JSONField(default={})
+    hascoverage_img = BooleanField(default=False)
     arguments = JSONField(default={})
     joined_with_dataset = models.ManyToManyField("self",through = 'JoinOfDatasets',
                                                          symmetrical=False,
@@ -102,6 +108,19 @@ class DatasetAccess(Model):
     start = DateField()
     end = DateField()
     valid = BooleanField()
+
+
+class DatasetAccessRequest(Model):
+    user = ForeignKey(User, on_delete=CASCADE)
+    resource = ForeignKey(Dataset, on_delete=CASCADE, related_name='resource')
+    status = CharField(max_length=20, choices=ACCESS_REQUEST_STATUS_CHOICES, default='open')
+    creation_date = DateTimeField(default=datetime.now())
+    response_date = DateTimeField(null=True)
+
+    @property
+    def type(self):
+        return 'dataset'
+
 
 
 class JoinOfDatasets(Model):

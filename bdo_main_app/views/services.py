@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.utils.timezone import now
 
 # from bdo_main_app.models import Service
-from dashboard_builder.models import Dashboard
+from dashboard_builder.models import Dashboard, DashboardAccess
 from service_builder.models import Service
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
@@ -14,7 +14,7 @@ from access_controller.policy_enforcement_point import PEP
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ObjectDoesNotExist
 
-
+@never_cache
 def services(request):
     user = request.user
     if user.is_authenticated:
@@ -50,7 +50,7 @@ def services(request):
     anek_service = {'title': 'Fault Detection and Predictive Maintenance',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot1b.jpg',
                       # 'targeturl': '/pilot/fault-prediction-anek/',
-                      'targeturl': '212.101.173.52:8065',
+                      'targeturl': 'http://212.101.173.52:8065',
                       'short_description': 'Design of better and more efficient risk maintenance management strategies facilitating the estimation of the failure effect probability and the estimated time-to-live of the equipment.',
                       'creator': 'ANEK',
                       'sharing': 'Private'}
@@ -58,7 +58,7 @@ def services(request):
     fnk_service = {'title': 'Fuel Consumption Reduction Investigation',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot3.jpg',
                       # 'targeturl': '/pilot/fault-prediction-fnk/',
-                      'targeturl': '212.101.173.52:8062',
+                      'targeturl': 'http://212.101.173.52:8062',
                       'short_description': 'Investigation of the impact of the environmental conditions and the operational decisions taken on the vessel\'s fuel consumption',
                       'creator': 'FOINIKAS',
                       'sharing': 'Private'}
@@ -97,17 +97,25 @@ def view_dashboard(request, pk):
             raise PermissionDenied
     except:
         return HttpResponseForbidden()
+
     # check if user is the owner or just has been granted access
     owner = False
     if dashboard.user_id == user.id:
         owner = True
+
+    # check if user has rights to edit
+    can_edit = False
+    for da in DashboardAccess.objects.filter(dashboard=dashboard, user=user):
+        if da.can_edit:
+            can_edit = True
     dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
     print dashboard.viz_components
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
         'dashboard_json': json.dumps(dashboard.viz_components),
         'pk': pk,
-        'is_owner': owner
+        'is_owner': owner,
+        'can_edit': can_edit
     })
 
 
