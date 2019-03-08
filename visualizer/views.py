@@ -154,17 +154,19 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
     query = TempQuery(document=query.document)
     doc = query.document
     time_flag = platform_flag = lat_flag = lon_flag = var_flag = color_flag = False
-
+    # import pdb
+    # pdb.set_trace()
     for f in doc['from']:
         for s in f['select']:
             if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 order_var = s['name']
                 s['groupBy'] = True
                 if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_minute'
+                    s['aggregate'] = 'date_trunc_hour'
                 time_flag = True
             elif s['name'] == color_col and (s['exclude'] is not True):
                 s['exclude'] = False
+                s['aggregate'] = agg_function
                 color_flag = True
             elif(s['name'] == variable) and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -189,7 +191,8 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, platform_i
                 lon_flag = True
             else:
                 s['exclude'] = True
-
+    # import pdb
+    # pdb.set_trace()
     if not time_flag:
         raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     else:
@@ -255,7 +258,12 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
                 # if s['aggregate'] == '':
                 s['aggregate'] = 'MAX'
             else:
-                s['aggregate'] = 'AVG'
+                if s['datatype'] == 'STRING':
+                    s['aggregate'] = 'MIN'
+                elif s['datatype'] == 'TIMESTAMP':
+                    s['aggregate'] = 'MIN'
+                else:
+                    s['aggregate'] = 'AVG'
                 # s['exclude'] = True
 
     if not lat_flag or not lon_flag:
@@ -323,6 +331,7 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, platform_id):
     query.document = doc
     return query
 
+
 def load_modify_query_polygon(query_pk, marker_limit):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
@@ -344,6 +353,30 @@ def load_modify_query_polygon(query_pk, marker_limit):
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
     doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
+def load_modify_query_polygon_for_dataset_coverage(query_pk, aggregate):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    lat_flag = lon_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = aggregate
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['aggregate'] = aggregate
+                lon_flag = True
+            else:
+                s['exclude'] = True
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
     query.document = doc
     return query
@@ -399,14 +432,29 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
             if (s['name'] == heat_col) and (s['exclude'] is not True):
                 s['exclude'] = False
                 heat_col_flag = True
-            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                if s['aggregate'] == '':
+                    if s['datatype'] == 'STRING':
+                        s['aggregate'] = 'MIN'
+                    elif s['datatype'] == 'TIMESTAMP':
+                        s['aggregate'] = 'MIN'
+                    else:
+                        s['aggregate'] = 'AVG'
+            elif s['name'].split('_', 1)[1] == 'latitude':
                 s['exclude'] = False
                 lat_flag = True
-            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                # if heat_col == 'heatmap_frequency':
+                s['aggregate'] = 'round0'
+                s['groupBy'] = True
+            elif s['name'].split('_', 1)[1] == 'longitude':
                 s['exclude'] = False
                 lon_flag = True
-            # else:
-            #     s['exclude'] = True
+                # if heat_col == 'heatmap_frequency':
+                s['aggregate'] = 'round0'
+                s['groupBy'] = True
+            else:
+                s['exclude'] = True
+                s['aggregate'] = ''
+                s['groupBy'] = False
 
     if not heat_col_flag:
         if heat_col != 'heatmap_frequency':
@@ -531,6 +579,27 @@ def map_visualizer(request):
                                                                  lon_col, m, request, cached_file)
             except ObjectDoesNotExist:
                 pass
+            # Map Polygon - For dataset coverage
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_polygon_for_dataset_coverage').id):
+                    dataset_id = str(request.GET.get('dataset_id'))
+                    m, extra_js = get_map_polygon_for_dataset_coverage(dataset_id, m)
+            except ObjectDoesNotExist:
+                pass
+            # Map Grid - For dataset coverage
+            try:
+                if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid_for_dataset_coverage').id):
+                    dataset_id = str(request.GET.get('dataset_id'))
+                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
+                    query_pk = load_modify_query_for_grid_coverage(dataset_id, marker_limit)
+                    variable = AbstractQuery.objects.get(pk=int(query_pk)).document['from'][0]['select'][0]['name']
+                    m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
+                                                       variable, agg_function,
+                                                       lat_col, lon_col, m,
+                                                       request, cached_file, dataset_id)
+            except ObjectDoesNotExist:
+                pass
+
             # Heatmap
             try:
                 if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id:
@@ -572,6 +641,7 @@ def map_visualizer(request):
             if (extra_js != ""):
                 js_list.append(extra_js)
     except (ValueError, Exception) as e:
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
 
     folium.LayerControl().add_to(m)
@@ -602,7 +672,6 @@ def map_visualizer(request):
     return HttpResponse(html1)
 
 
-
 def get_map_plotline_vessel_query_data(query):
     try:
         query_data = execute_query_method(query)
@@ -620,8 +689,6 @@ def get_map_plotline_vessel_query_data(query):
         elif c['name'].split('_', 1)[1] == 'time':
             time_index = idx
     return data, lat_index, lon_index, time_index
-
-
 
 
 def get_map_plotline_vessel_course(marker_limit, platform_id, color, query_pk, df, notebook_id, lat_col, lon_col, m, request, cached_file):
@@ -711,6 +778,120 @@ def get_map_polygon(marker_limit, color, query_pk, df, notebook_id, lat_col, lon
     ret_html = ""
     return m, ret_html
 
+
+def load_modify_query_for_polygon_coverage(dataset_id):
+    doc = {
+        'distinct': False,
+        'filters': {},
+        'from': [{'name': 'sea_surface_wave_significant_height_0',
+                  'select': [{'aggregate': '',
+                              'datatype': 'None',
+                              'exclude': True,
+                              'groupBy': False,
+                              'name': 'i0_sea_surface_wave_significant_height',
+                              'title': 'sea_surface_wave_significant_height',
+                              'type': 'VALUE'},
+                             {'aggregate': '',
+                              'datatype': 'None',
+                              'exclude': '',
+                              'groupBy': False,
+                              'name': 'i0_longitude',
+                              'title': 'longitude',
+                              'type': 7140},
+                             {'aggregate': '',
+                              'datatype': 'None',
+                              'exclude': '',
+                              'groupBy': False,
+                              'name': 'i0_latitude',
+                              'title': 'latitude',
+                              'type': 7141}],
+                  'type': 2191}],
+        'limit': '',
+        'offset': 0,
+        'orderings': []}
+    var = Variable.objects.filter(dataset=Dataset.objects.get(pk=int(dataset_id))).first()
+    doc['from'][0]['type'] = var.id
+    doc['from'][0]['select'][0]['title'] = var.title
+    doc['from'][0]['select'][0]['name'] = 'i0_' + var.name
+    lat_dim = Dimension.objects.filter(variable=var, name='latitude').first().pk
+    lon_dim = Dimension.objects.filter(variable=var, name='longitude').first().pk
+    doc['from'][0]['select'][1]['type'] = lon_dim
+    doc['from'][0]['select'][2]['type'] = lat_dim
+    query = TempQuery(document=doc, user=User.objects.get(username='BigDataOcean'))
+    query.save()
+    query_pk = query.id
+    return query_pk
+
+
+def load_modify_query_for_grid_coverage(dataset_id, marker_limit=100):
+    doc = {
+        'distinct': False,
+        'filters': {},
+        'from': [{'name': 'sea_surface_wave_significant_height_0',
+                  'select': [{'aggregate': '',
+                              'datatype': 'None',
+                              'exclude': True,
+                              'groupBy': False,
+                              'name': 'i0_sea_surface_wave_significant_height',
+                              'title': 'sea_surface_wave_significant_height',
+                              'type': 'VALUE'},
+                             {'aggregate': 'round2',
+                              'datatype': 'None',
+                              'exclude': '',
+                              'groupBy': True,
+                              'name': 'i0_longitude',
+                              'title': 'longitude',
+                              'type': 7140},
+                             {'aggregate': 'round2',
+                              'datatype': 'None',
+                              'exclude': '',
+                              'groupBy': True,
+                              'name': 'i0_latitude',
+                              'title': 'latitude',
+                              'type': 7141}],
+                  'type': 2191}],
+        'limit': marker_limit,
+        'offset': 0,
+        'orderings': []}
+    var = Variable.objects.filter(dataset=Dataset.objects.get(pk=int(dataset_id))).first()
+    doc['from'][0]['type'] = var.id
+    doc['from'][0]['select'][0]['title'] = var.title
+    doc['from'][0]['select'][0]['name'] = 'i0_' + var.name
+    lat_dim = Dimension.objects.filter(variable=var, name='latitude').first().pk
+    lon_dim = Dimension.objects.filter(variable=var, name='longitude').first().pk
+    doc['from'][0]['select'][1]['type'] = lon_dim
+    doc['from'][0]['select'][2]['type'] = lat_dim
+    query = TempQuery(document=doc, user=User.objects.get(username='BigDataOcean'))
+    query.save()
+    query_pk = query.id
+    return query_pk
+
+
+# def get_map_polygon_for_dataset_coverage(query_pk, m):
+def get_map_polygon_for_dataset_coverage(dataset_id, m):
+    query_pk = load_modify_query_for_polygon_coverage(dataset_id)
+    query = load_modify_query_polygon_for_dataset_coverage(query_pk, 'MIN')
+    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+    min_lat = data[0][lat_index]
+    min_lon = data[0][lon_index]
+    query = load_modify_query_polygon_for_dataset_coverage(query_pk, 'MAX')
+    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+    max_lat = data[0][lat_index]
+    max_lon = data[0][lon_index]
+    points = list()
+    points.append([min_lat, min_lon])
+    points.append([min_lat, max_lon])
+    points.append([max_lat, max_lon])
+    points.append([max_lat, min_lon])
+    points.append([min_lat, min_lon])
+
+    m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+
+    pol_group_layer = folium.map.FeatureGroup(name='Polygon - Layer:' + str(time.time()).replace(".","_") , overlay=True,
+                                              control=True).add_to(m)
+    folium.PolyLine(points, color='green', weight=2.0, opacity=0.8, fill='green').add_to(pol_group_layer)
+    ret_html = ""
+    return m, ret_html
 
 
 def create_plotline_points(data, lat_index, lon_index):
@@ -949,6 +1130,8 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
     print 'levels ok'
     import matplotlib.tri as tri
+    from mpl_toolkits.basemap import Basemap
+    bm = Basemap()
     x = np.array([i[lon_index] for i in final_data])
     y = np.array([i[lat_index] for i in final_data])
     z = np.array([i[var_index] for i in final_data])
@@ -961,6 +1144,17 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     interpolator = tri.LinearTriInterpolator(triang, z)
     Xi, Yi = np.meshgrid(xi, yi)
     zi = interpolator(Xi, Yi)
+    # print zi[:1]
+    # print xi[:3]
+    # print yi[:3]
+    # print len(zi)  # rows
+    # print len(yi)
+    # print len(zi[0])  # columns
+    # print len(xi)
+    for x_index, x in enumerate(xi):
+        for y_index, y in enumerate(yi):
+            if bm.is_land(x, y):
+                zi[y_index][x_index] = None
     # fig, ax1 = plt.subplots(nrows=1)
     min_val = min(z)
     max_val = max(z)
@@ -1118,11 +1312,15 @@ def get_marker_query_data(query, variable, color_col):
 
 
 
-def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request,cached_file):
+def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request, cached_file, dataset_id=None):
     dic = {}
+    print variable
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
-            query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
+            if dataset_id is not None:
+                query = AbstractQuery.objects.get(pk=int(load_modify_query_for_grid_coverage(dataset_id, marker_limit)))
+            else:
+                query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
             data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '')
         elif df != '':
             data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(df, lat_col, lon_col, notebook_id, request, variable)
@@ -1256,15 +1454,19 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
     for d in data:
         if d[lat_index] > max_lat:
             max_lat = d[lat_index]
-        if d[lat_index] < min_lat:
+        if d[lat_index] < min_lat and d[lat_index] is not None:
             min_lat = d[lat_index]
         if d[lon_index] > max_lon:
             max_lon = d[lon_index]
-        if d[lon_index] < min_lon:
+        if d[lon_index] < min_lon and d[lon_index] is not None:
             min_lon = d[lon_index]
-        folium.Marker(
-            location=[d[lat_index], d[lon_index]],
-            popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
+        if d[var_index] is not None:
+            folium.Marker(
+                location=[d[lat_index], d[lon_index]],
+                popup=str(var_title) + ": " + str(round(d[var_index], 3)) + " " + str(var_unit) + "<br>Latitude: " + str(
+                    d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),
+                icon=folium.Icon(color=marker_color)) \
+                .add_to(pol_group_layer)
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
@@ -1963,9 +2165,7 @@ def get_histogram_chart_am(request):
     notebook_id = str(request.GET.get('notebook_id', ''))
 
     x_var = str(request.GET.get('x_var', ''))
-    # y_var = str(request.GET.get('y_var', ''))
     bins = int(str(request.GET.get('bins', '5')))
-    agg_function = str(request.GET.get('agg_func', 'avg'))
 
     if query_pk != 0:
         query = AbstractQuery.objects.get(pk=query_pk)
@@ -2060,7 +2260,6 @@ def get_histogram_chart_am(request):
         x_var = 'startValues'
         # print data
         json_data = convert_unicode_json(json_data)
-        # print json_data
     else:
         bins += 1
         var_title = x_var
@@ -2096,7 +2295,6 @@ def get_histogram_chart_am(request):
         for i in range(0, len(json_data) - 1):
             json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
         json_data = json_data[:-1]
-        # print json_data
         y_var = 'counts'
         x_var = 'startValues'
 
@@ -2640,7 +2838,7 @@ def get_histogram_2d_am(request):
 
 
 
-def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering = True):
+def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_type, ordering = True):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
@@ -2663,6 +2861,12 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, ordering 
             doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
         else:
             raise ValueError('-Variable or Dimension for the X-Axis of Line-Charts and Column-Charts is needed.\n-Variable or Dimension for creating the sub-groups of the Pie-Chart is needed.')
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            json_data = json.load(f)
+        doc['limit'] = json_data['visualiser'][chart_type]['limit']
+    except:
+        pass
     query.document = doc
     return query
 
@@ -2688,7 +2892,7 @@ def load_modify_query_aggregate(query_pk, var, agg_function):
 
 
 
-def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, ordering = True):
+def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function,chart_type, ordering = True):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
@@ -2711,7 +2915,7 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
                 s['exclude'] = False
                 x_flag = True
             else:
-                s['aggregate'] = ''
+                # s['aggregate'] = ''
                 s['groupBy'] = False
                 s['exclude'] = True
     if ordering == True:
@@ -2719,6 +2923,12 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
             doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
         else:
             raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            json_data = json.load(f)
+        doc['limit'] = json_data['visualiser'][chart_type]['limit']
+    except:
+        pass
     query.document = doc
     return query, order_var, min_period
 
@@ -2758,7 +2968,7 @@ def get_chart_query_data(query, x_var, y_var_list):
 
         dict.update({x_var: str(d[x_var_index])})
         json_data.append(dict)
-    return json_data, y_m_unit, y_title_list,x_var_title
+    return json_data, y_m_unit, y_title_list, x_var_title
 
 
 def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, ordering = True):
@@ -2792,7 +3002,7 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, orderi
         y_title_list.insert(0, str(x))
         y_m_unit.insert(0, str('unknown unit'))
     x_var_title = x_var
-    print json_data[:2]
+
     return json_data, y_m_unit, y_title_list, x_var_title
 
 
@@ -2806,7 +3016,7 @@ def get_line_chart_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am')
             json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
             json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
@@ -2832,10 +3042,11 @@ def get_time_series_am(request):
         temporal_resolution = str(request.GET.get('temporal_resolution', ''))
         y_var_list = request.GET.getlist('y_var[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
+        chart_type = str(request.GET.get('chart_type', 'line'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function)
+            query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
             json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
             min_chart_period = chart_min_period_finder(min_period)
         elif df != '':
@@ -2845,11 +3056,14 @@ def get_time_series_am(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
-
-    return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'category_title':'time', 'min_period':min_chart_period})
-
+    if chart_type == 'line':
+        return render(request, 'visualizer/line_chart_am.html',
+                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
+    else:
+        return render(request, 'visualizer/column_chart_am.html',
+                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period': min_chart_period})
 
 
 def get_column_chart_am(request):
@@ -2862,7 +3076,7 @@ def get_column_chart_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function)
+            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
             json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
             json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
@@ -2889,7 +3103,7 @@ def get_pie_chart_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function)
+            query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
         elif df !='':
             json_data, y_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
@@ -2902,7 +3116,7 @@ def get_pie_chart_am(request):
 
 
 
-def load_execute_query_data_table(query_pk, offset, limit, column_choice):
+def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_type):
     query = AbstractQuery.objects.get(pk=query_pk)
     q = TempQuery(document=query.document)
     doc = q.document
@@ -2912,7 +3126,12 @@ def load_execute_query_data_table(query_pk, offset, limit, column_choice):
                 s['exclude'] = False
             else:
                 s['exclude'] = True
-    doc['limit'] = limit
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            json_data = json.load(f)
+        doc['limit'] = json_data['visualiser'][chart_type]['limit']
+    except:
+        pass
     doc['offset'] = offset
     q.document = doc
     try:
@@ -2955,7 +3174,7 @@ def get_data_table(request):
             raise ValueError('At least one column of the given query has to be selected.')
         if query_pk != 0:
             if column_choice.__len__() != 0:
-                data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice)
+                data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice,'data_table')
             else:
                 data = []
                 headers = []
