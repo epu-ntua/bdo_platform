@@ -12,9 +12,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name='dataset',
-            old_name='spatiaNorth',
-            new_name='spatialNorth',
-        ),
+        # migrations.RenameField(
+        #     model_name='dataset',
+        #     old_name='spatiaNorth',
+        #     new_name='spatialNorth',
+        # ),
     ]
