@@ -78,13 +78,23 @@
 {% block  js %}
 
     <script type="text/javascript">
-        {% for key, viz in visualisations.items %}
-            setTimeout(
-              function()
-              {
-                $("#{{ key }}").find('iframe').attr({'src': '{{ viz.url| safe }}'});
-              }, {{ forloop.counter }} * 2000);
-        {% endfor %}
+{#        {% for key, viz in visualisations.items %}#}
+{#            setTimeout(#}
+{#              function()#}
+{#              {#}
+{#                $("#{{ key }}").find('iframe').attr({'src': '{{ viz.url| safe }}'});#}
+{#              }, {{ forloop.counter }} * 2000);#}
+{#        {% endfor %}#}
+        $("#v1").find('iframe').on( "load", function(){
+            $("#v2").find('iframe').attr({'src': '{{ visualisations.v2.url| safe }}'});
+        });
+        $("#v2").find('iframe').on( "load", function(){
+            $("#v3").find('iframe').attr({'src': '{{ visualisations.v3.url| safe }}'});
+        });
+        $("#v3").find('iframe').on( "load", function(){
+            $("#v4").find('iframe').attr({'src': '{{ visualisations.v4.url| safe }}'});
+        });
+
     </script>
 
     <script type="text/javascript">
