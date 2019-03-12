@@ -85,6 +85,9 @@
 {#                $("#{{ key }}").find('iframe').attr({'src': '{{ viz.url| safe }}'});#}
 {#              }, {{ forloop.counter }} * 2000);#}
 {#        {% endfor %}#}
+
+        $("#v1").find('iframe').attr({'src': '{{ visualisations.v1.url| safe }}'});
+
         $("#v1").find('iframe').on( "load", function(){
             $("#v2").find('iframe').attr({'src': '{{ visualisations.v2.url| safe }}'});
         });
