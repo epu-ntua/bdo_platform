@@ -3,7 +3,7 @@
     right: 0;
     z-index: 2;
     background-color: white;
-    width: 22%;
+    width: 27%;
     top: 10%;
 }
 
@@ -122,22 +122,19 @@
     min-width: 70px;
 }
 
-.nav-pills > li > a[href="#point1_form"] {
-    color: #0e2b3f;
+.nav-pills > li.active > a[href="#point2_form"] {
+    background-color: #710000;
 }
 
-.nav-pills > li > a[href="#point2_form"] {
-    color: #8a1c1c;
+.nav-pills > li.active > a[href="#point3_form"] {
+    background-color: #0d6321;
 }
 
-.nav-pills > li > a[href="#point3_form"] {
-    color: #255625;
+.nav-pills > li.active > a[href="#point4_form"] {
+    background-color: #ff6f00;
 }
 
-.nav-pills > li > a[href="#point4_form"] {
-    color: #f17000;
+.nav-pills > li.active > a[href="#point5_form"] {
+    background-color: #181313;
 }
 
-.nav-pills > li > a[href="#point5_form"] {
-    color: #0b0b0b;
-}

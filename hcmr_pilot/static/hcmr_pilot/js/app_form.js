@@ -70,6 +70,7 @@ $(document).ready(function() {
 
     if(scenario === 2){
 
+        $('.service-buttons').hide();
         create_new_area_select([[29.2575,-15.2578],[49.479,42.0898]]);
 
         var startpick2 = $('#startdatepicker2').datetimepicker({
@@ -170,7 +171,7 @@ $(document).ready(function() {
         map.addLayer(first_marker_layer);
         $('#lat').val((bounds[0] + bounds[2]) / 2);
         $('#lon').val((bounds[1] + bounds[3]) / 2);
-        map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 10);
+        map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 9);
 
     });
 
