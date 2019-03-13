@@ -33,7 +33,7 @@ def process(request):
     # 1)Create input file
     filename, url_params = create_inp_file_from_request_and_upload(request)
     # 2)Calculate oil spill
-    found = wait_until_output_ready(url_params)
+    found = wait_until_output_ready(url_params, request)
     if found:
         filename_output = str(filename).replace("_F.inp", "_F.out")
         hcmr_data_filename = str(filename).replace("_F.inp", ".json")
@@ -54,7 +54,9 @@ def process(request):
         red_points_calc.calculate(hcmr_data_filename, red_points_filename)
 
         # 5)Create Visualization
-        visualization_url = "http://localhost:8000/visualizations/map_markers_in_time_hcmr/" + "?notebook_id=2DX2PVRRQ&df=parcel_data_df&markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
+        visualization_url = "http://" + request.META[
+            'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
+
         context = {
             'url': visualization_url,
             'out_filepath': filename_output,
@@ -102,15 +104,14 @@ def create_json_from_out_file(filename_output):
     return spill_data, parcel_data
 
 
-def wait_until_output_ready(params):
+def wait_until_output_ready(params, request):
     found = False
     error = False
     tries = 12
     while (not found) and (tries > 0) and (not error):
         tries -= 1
         time.sleep(2)
-        response = requests.get(
-            "http://localhost:8000/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/?"+params)
+        response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/?" + params)
         print(response)
         print "<status>" + str(response.status_code) + "</status>"
         if int(response.status_code) == 200:
@@ -124,8 +125,7 @@ def wait_until_output_ready(params):
 def create_inp_file_from_request_and_upload(request):
     spill_infos, wave_model, ocean_model = parse_request_params(request)
     url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model)
-    response = requests.get(
-        "http://localhost:8000/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
+    response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
     filename = ''
     if int(response.status_code) == 200:
