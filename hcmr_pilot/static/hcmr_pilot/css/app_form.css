@@ -4,20 +4,12 @@
     z-index: 2;
     background-color: white;
     width: 22%;
-    top: 16%;
-    /*margin-top: 270px;*/
+    top: 10%;
 }
 
 #chart-sidebar{
     width: 100%;
 }
-
-
-
-.app-selector{
-    padding-top: 10px;
-}
-
 
 .ui-dropdown{
     width: 100%;
@@ -44,10 +36,33 @@
     width: 62%;
 }
 
+#lat2{
+    width: 62%;
+}
+
+#lon2{
+    width: 62%;
+}
+
+#lat3{
+    width: 62%;
+}
+
+#lon3{
+    width: 62%;
+}
+
 #oil_volume{
     width: 62%;
 }
 #oil_density{
+    width: 62%;
+}
+#oil_volume2{
+    width: 62%;
+}
+
+#oil_volume3{
     width: 62%;
 }
 
@@ -59,4 +74,70 @@
 }
 #vis_duration{
     width: 62%;
+}
+#vis_duration2{
+    width: 62%;
+}
+
+#vis_duration3{
+    width: 62%;
+}
+
+.form-control{
+    bottom: 11px;
+}
+
+#remove_point1{
+    background-color: #8a1c1c;
+}
+
+#remove_point2{
+    background-color: #8a1c1c;
+}
+
+#remove_point3{
+    background-color: #8a1c1c;
+}
+#remove_point4{
+    background-color: #8a1c1c;
+}
+
+#remove_point5{
+    background-color: #8a1c1c;
+}
+
+.checkbox label{
+    color: #0b0b0b;
+}
+
+.form-control{
+    width: 80%;
+}
+
+.form-group .form-control {
+    margin-bottom: 1px;
+}
+
+.nav-pills > li > a {
+    min-width: 70px;
+}
+
+.nav-pills > li > a[href="#point1_form"] {
+    color: #0e2b3f;
+}
+
+.nav-pills > li > a[href="#point2_form"] {
+    color: #8a1c1c;
+}
+
+.nav-pills > li > a[href="#point3_form"] {
+    color: #255625;
+}
+
+.nav-pills > li > a[href="#point4_form"] {
+    color: #f17000;
+}
+
+.nav-pills > li > a[href="#point5_form"] {
+    color: #0b0b0b;
 }

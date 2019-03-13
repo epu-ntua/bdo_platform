@@ -23,6 +23,9 @@
 
 {% block  js %}
     {% leaflet_js %}
+
+    <script src="{% static "wave_energy_pilot/js/area-select/simple-shape.js" %}"></script>
+    <script src="{% static "wave_energy_pilot/js/area-select/rectangle.js" %}"></script>
     <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
     <script src="{% static 'hcmr_pilot/js/spatio_temporal_filter.js'%}" ></script>

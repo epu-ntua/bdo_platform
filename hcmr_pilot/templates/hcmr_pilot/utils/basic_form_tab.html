@@ -8,7 +8,7 @@
                 <div class='col-sm-6'>
                     <p>Latitude: </p>
                 </div>
-                <div class='col-sm-6' style="bottom: 16px;">
+                <div class='col-sm-6' style="bottom: 10px;">
                     <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
                 </div>
             </div>
@@ -16,7 +16,7 @@
                 <div class='col-sm-6'>
                     <p>Longitude:</p>
                 </div>
-                <div class='col-sm-6' style="bottom: 16px;">
+                <div class='col-sm-6' style="bottom: 10px;">
                     <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
                 </div>
             </div>
@@ -30,7 +30,7 @@
                 <div class='col-sm-6'>
                     <p>Oil Volume: </p>
                 </div>
-                <div class='col-sm-6' style="bottom: 16px;">
+                <div class='col-sm-6' style="bottom: 10px;">
                     <input class="form-control" id="oil_volume" type='number' step="0.01"/>
                 </div>
             </div>
@@ -75,11 +75,14 @@
                     <input class="form-control" id="vis_duration" type='number' step="0.01"/>
                 </div>
             </div>
-
+        </div>
+        <div class="vis-startdate-container" style="width: 100%">
+            <div class="col-sm-6">
+                <p>Start Date:</p>
+            </div>
             <div class='col-sm-6'>
                 <div class="form-group">
                     <div class='input-group date' id='startdatepicker'>
-                        <label>Start Date:</label>
                         <input type='text' class="form-control"/>
                         <span class="input-group-addon">
                             <span class="glyphicon glyphicon-calendar"></span>
@@ -87,41 +90,440 @@
                     </div>
                 </div>
             </div>
-            <div class='col-sm-6'>
-                <div class="form-group">
-                    <div class='input-group date' id='enddatepicker'>
-                        <label>End Date:</label>
-                        <input type='text' class="form-control"/>
-                        <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>
-                    </div>
-                </div>
-            </div>
+        </div>
+        <br>
+        <hr style="margin-top: 30px">
+        <div class="dataset-selector">
+            <h4>Available Datasets</h4>
             <label for="sel1">Wave Forecast Dataset</label>
             <select class="form-control" id="sel1">
                 <option value="202">Poseidon Wave Dataset for the Aegean</option>
                 <option value="201">Poseidon Wave Dataset for the Mediterranean</option>
                 <option value="203">Copernicus Wave Dataset</option>
-
             </select><label for="sel2">Hydrodynamic Dataset</label>
             <select class="form-control" id="sel2">
                 <option value="001">Poseidon High Resolution Aegean Model</option>
                 <option value="002">Poseidon Mediterranean Model</option>
                 <option value="003">Copernicus Model</option>
-
             </select>
         </div>
+
+        <hr style="margin-top: 10px; margin-bottom: 10px">
+        <h4>Additional layers</h4>
+        <div class="checkbox">
+            <label><input type="checkbox" name="optradio" checked>None</label>
+        </div>
+        <div class="checkbox">
+            <label><input type="checkbox" name="optradio">Natura maps</label>
+        </div>
+        <div class="checkbox">
+            <label><input type="checkbox" name="optradio">AIS maps</label>
+        </div>
+    {% endifequal %}
+    {% ifequal scenario '2' %}
+        <h4>High Risk Pollution Areas</h4>
+        <hr style="margin-top: 10px; margin-bottom: 10px">
+        <div class="spatial-selection" >
+            <h4>Geographic Coverage</h4>
+            <div class="row" style="margin: 25px;">
+                <div class="lat-container">
+                     <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
+                        <p>Latitude, from:</p>
+                    </div>
+                    <div class='col-sm-4' style="padding: 0px;">
+                        <input class="form-control" id="lat_min" type='number' step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                    </div>
+                    <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
+                        <p>to:</p>
+                    </div>
+                    <div class='col-sm-3' style="padding: 0px;">
+                        <input class="form-control" id="lat_max" type='number'  step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                    </div>
+                </div>
+                <div class="lon-container">
+                    <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
+                        <p>Longitude, from:</p>
+                    </div>
+                    <div class='col-sm-4' style="padding: 0px;">
+                        <input class="form-control" id="lon_min" type='number'  step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                    </div>
+                    <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
+                        <p>to:</p>
+                    </div>
+                    <div class='col-sm-3' style="padding: 0px;">
+                        <input class="form-control" id="lon_max" type='number' step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+                    </div>
+                </div>
+
+                <input hidden type="number" id="areaSelectWidth" value="" >
+                <input hidden type="number" id="areaSelectHeight" value="">
+
+                <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
+            </div>
+            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <div class="button-container lock-button"  style="width:100%" >
+                <div id="lock_area" class="btn btn-sm btn-dark" style="width:40%">
+                    <i class="fa fa-lock"></i> Lock area
+                </div>
+            </div>
+            <hr style="margin-top: 10px; margin-bottom: 10px">
+        </div>
+
+
+        <div class="points-container" hidden>
+            <ul class="nav nav-pills nav-justified" >
+                <li class="nav-item active">
+                    <a class="nav-link" data-toggle="pill" href="#point1_form">Point 1</a>
+                </li>
+                <li class="nav-item disabled">
+                    <a class="nav-link" href="#point2_form">Point 2</a>
+                </li>
+                <li class="nav-item disabled">
+                    <a class="nav-link" href="#point3_form">Point 3</a>
+                </li>
+                <li class="nav-item disabled">
+                    <a class="nav-link" href="#point4_form">Point 4</a>
+                </li>
+                <li class="nav-item disabled">
+                    <a class="nav-link" href="#point5_form">Point 5</a>
+                </li>
+            </ul>
+
+            <div class="tab-content" style="margin-bottom: 43%">
+
+                <div  class="tab-pane fade in active" id="point1_form" >
+                    <h4>First point parameters (Blue marker)</h4>
+                    <div class="row" style="height: 6.7vh;">
+                        <div class="lat-container">
+                            <div class='col-sm-6'>
+                                <p>Latitude: </p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 10px;">
+                                <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
+                            </div>
+                        </div>
+                        <div class="lon-container">
+                            <div class='col-sm-6'>
+                                <p>Longitude:</p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 10px;">
+                                <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
+                            </div>
+                        </div>
+                        <div class="oil-volume-container">
+                            <div class='col-sm-6'>
+                                <p>Oil Volume: </p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 10px;">
+                                <input class="form-control" id="oil_volume" type='number' step="0.01"/>
+                            </div>
+                        </div>
+                        <div class="vis-duration-container">
+                            <div class='col-sm-6'>
+                                <p>Duration: </p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 10px;">
+                                <input class="form-control" id="vis_duration" type='number' step="0.01"/>
+                            </div>
+                        </div>
+                        <div class="vis-startdate-container" style="width: 100%">
+                            <div class="col-sm-6">
+                                            <p>Start Date:</p>
+                                        </div>
+                            <div class='col-sm-6'>
+                                <div class="form-group">
+                                    <div class='input-group date' id='startdatepicker'>
+
+
+                                        <input type='text' class="form-control"/>
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="point2_form">
+                 <h4>Second point parameters (Red marker)</h4>
+                <div class="row" style="height: 6.7vh;">
+                    <div class="lat-container">
+                        <div class='col-sm-6'>
+                            <p>Latitude: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 8px;">
+                            <input class="form-control" id="lat2" type='number' step="0.01" min="-90" max="90"/>
+                        </div>
+                    </div>
+                    <div class="lon-container">
+                        <div class='col-sm-6'>
+                            <p>Longitude:</p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 8px;">
+                            <input class="form-control" id="lon2" type='number' step="0.01" min="-180" max="180"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="oil-volume-container">
+                    <div class='col-sm-6'>
+                        <p>Oil Volume: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 8px;">
+                        <input class="form-control" id="oil_volume2" type='number' step="0.01"/>
+                    </div>
+                </div>
+                <div class="vis-duration-container">
+                    <div class='col-sm-6'>
+                        <p>Duration: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 16px;">
+                        <input class="form-control" id="vis_duration2" type='number' step="0.01"/>
+                    </div>
+                </div>
+                <div class="vis-startdate-container" style="width: 100%">
+                    <div class="col-sm-6">
+                        <p>Start Date:</p>
+                    </div>
+                    <div class='col-sm-6'>
+                        <div class="form-group">
+                            <div class='input-group date' id='startdatepicker2'>
+                                <input type='text' class="form-control"/>
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div id="remove_point2" class="btn btn-sm btn-danger pull-right" style="width:40%">
+                        <i class="fa fa-minus-circle"></i> Remove point
+                </div>
+            </div>
+
+                <div class="tab-pane fade" id="point3_form">
+                 <h4>Third point parameters (Green marker)
+                 </h4>
+                <div class="row" style="margin: 25px; height: 6.7vh;">
+                    <div class="lat-container">
+                        <div class='col-sm-6'>
+                            <p>Latitude: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 16px;">
+                            <input class="form-control" id="lat3" type='number' step="0.01" min="-90" max="90"/>
+                        </div>
+                    </div>
+                    <div class="lon-container">
+                        <div class='col-sm-6'>
+                            <p>Longitude:</p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 16px;">
+                            <input class="form-control" id="lon3" type='number' step="0.01" min="-180" max="180"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="oil-volume-container">
+                    <div class='col-sm-6'>
+                        <p>Oil Volume: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 16px;">
+                        <input class="form-control" id="oil_volume3" type='number' step="0.01"/>
+                    </div>
+                </div>
+                <div class="vis-duration-container">
+                    <div class='col-sm-6'>
+                        <p>Duration: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 16px;">
+                        <input class="form-control" id="vis_duration3" type='number' step="0.01"/>
+                    </div>
+                </div>
+                <div class="vis-startdate-container" style="width: 100%">
+                    <div class="col-sm-6">
+                        <p>Start Date:</p>
+                    </div>
+                    <div class='col-sm-6'>
+                        <div class="form-group">
+                            <div class='input-group date' id='startdatepicker3'>
+                                <input type='text' class="form-control"/>
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <div id="remove_point3" class="btn btn-sm btn-danger pull-right" style="width:40%">
+                    <i class="fa fa-minus-circle"></i> Remove point
+                </div>
+            </div>
+
+                <div class="tab-pane fade" id="point4_form">
+                    <h4>Fourth point parameters (Orange marker)</h4>
+                    <div class="row" style="margin: 25px; height: 6.7vh;">
+                        <div class="lat-container">
+                            <div class='col-sm-6'>
+                                <p>Latitude: </p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 16px;">
+                                <input class="form-control" id="lat4" type='number' step="0.01" min="-90" max="90"/>
+                            </div>
+                        </div>
+                        <div class="lon-container">
+                            <div class='col-sm-6'>
+                                <p>Longitude:</p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 16px;">
+                                <input class="form-control" id="lon4" type='number' step="0.01" min="-180" max="180"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oil-volume-container">
+                        <div class='col-sm-6'>
+                            <p>Oil Volume: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 16px;">
+                            <input class="form-control" id="oil_volume4" type='number' step="0.01"/>
+                        </div>
+                    </div>
+
+                    <div class="vis-duration-container">
+                        <div class='col-sm-6'>
+                            <p>Duration: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 16px;">
+                            <input class="form-control" id="vis_duration4" type='number' step="0.01"/>
+                        </div>
+                    </div>
+                    <div class="vis-startdate-container" style="width: 100%">
+                        <div class="col-sm-6">
+                            <p>Start Date:</p>
+                        </div>
+                        <div class='col-sm-6'>
+                            <div class="form-group">
+                                <div class='input-group date' id='startdatepicker3'>
+                                    <input type='text' class="form-control"/>
+                                    <span class="input-group-addon">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="remove_point4" class="btn btn-sm btn-danger pull-right" style="width:40%">
+                    <i class="fa fa-minus-circle"></i> Remove point
+                </div>
+                </div>
+
+                <div class="tab-pane fade" id="point5_form">
+                    <h4>Fifth point parameters (Black marker)</h4>
+                    <div class="row" style="margin: 25px; height: 6.7vh;">
+                        <div class="lat-container">
+                            <div class='col-sm-6'>
+                                <p>Latitude: </p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 16px;">
+                                <input class="form-control" id="lat5" type='number' step="0.01" min="-90" max="90"/>
+                            </div>
+                        </div>
+                        <div class="lon-container">
+                            <div class='col-sm-6'>
+                                <p>Longitude:</p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 16px;">
+                                <input class="form-control" id="lon5" type='number' step="0.01" min="-180" max="180"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oil-volume-container">
+                    <div class='col-sm-6'>
+                        <p>Oil Volume: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 16px;">
+                        <input class="form-control" id="oil_volume5" type='number' step="0.01"/>
+                    </div>
+                </div>
+                    <div class="vis-duration-container">
+                    <div class='col-sm-6'>
+                        <p>Duration: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 16px;">
+                        <input class="form-control" id="vis_duration5" type='number' step="0.01"/>
+                    </div>
+                </div>
+                    <div class="vis-startdate-container" style="width: 100%">
+                    <div class="col-sm-6">
+                        <p>Start Date:</p>
+                    </div>
+                    <div class='col-sm-6'>
+                        <div class="form-group">
+                            <div class='input-group date' id='startdatepicker5'>
+                                <input type='text' class="form-control"/>
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    <div id="remove_point5" class="btn btn-sm btn-danger pull-right" style="width:40%">
+                        <i class="fa fa-minus-circle"></i> Remove point
+                    </div>
+                </div>
+            </div>
+
+            <br>
+            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <div class="service-parameters">
+                <h4>Service Parameters</h4>
+                <div class="row" style="margin-top:15px">
+                    <div class="coverage-date-filters-icon">
+                    </div>
+                    <div class="time-interval-container">
+                        <div class='col-sm-6'>
+                            <p>Time Interval: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 16px;">
+                            <input class="form-control" id="time_interval" type='number' step="0.01"/>
+                        </div>
+                    </div>
+                    <div class="simulation-length-container">
+                        <div class='col-sm-6'>
+                            <p>Simulation Length: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 16px;">
+                            <input class="form-control" id="simulation_length" type='number' step="0.01"/>
+                        </div>
+                    </div>
+                    <div class="oil-density-container">
+                        <div class='col-sm-6'>
+                            <p>Oil Density: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 16px;">
+                            <input class="form-control" id="oil_density" type='number' step="0.01"/>
+                        </div>
+                    </div>
+                </div>
+                <hr style="margin-top: 10px; margin-bottom: 10px">
+            </div>
+        </div>
+    {% endifequal %}
+    {% ifequal scenario '3' %}
+        <h3>Oil release at Seabed</h3>
         <hr>
-    </div>
-    <div id="point2_form" hidden>
-        <div class="row" style="margin: 25px; height: 6.7vh;">
+         <div class="row" style="margin: 25px; height: 6.7vh;">
+            <h4 style="margin-top: 0px;">Service Parameters</h4>
             <div class="lat-container">
                 <div class='col-sm-6'>
                     <p>Latitude: </p>
                 </div>
                 <div class='col-sm-6' style="bottom: 16px;">
-                    <input class="form-control" id="lat2" type='number' step="0.01" min="-90" max="90"/>
+                    <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
                 </div>
             </div>
             <div class="lon-container">
@@ -129,96 +531,80 @@
                     <p>Longitude:</p>
                 </div>
                 <div class='col-sm-6' style="bottom: 16px;">
-                    <input class="form-control" id="lon2" type='number' step="0.01" min="-180" max="180"/>
+                    <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
                 </div>
             </div>
-        </div>
-
-        <div class="oil-volume-container">
-            <div class='col-sm-6'>
-                <p>Oil Volume: </p>
-            </div>
-            <div class='col-sm-6' style="bottom: 16px;">
-                <input class="form-control" id="oil_volume2" type='number' step="0.01"/>
-            </div>
-        </div>
-        <div class="vis-duration-container">
-            <div class='col-sm-6'>
-                <p>Duration: </p>
-            </div>
-            <div class='col-sm-6' style="bottom: 16px;">
-                <input class="form-control" id="vis_duration2" type='number' step="0.01"/>
-            </div>
-        </div>
-
-        <div class='col-sm-6'>
-            <div class="form-group">
-                <div class='input-group date' id='startdatepicker2'>
-                    <label>Start Date:</label>
-                    <input type='text' class="form-control"/>
-                    <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>
-                </div>
-            </div>
-        </div>
-    </div>
-    <hr>
-    <div id="point3_form" hidden>
-        <div class="row" style="margin: 25px; height: 6.7vh;">
-            <div class="lat-container">
+            <div class="oil-volume-container">
                 <div class='col-sm-6'>
-                    <p>Latitude: </p>
+                    <p>Oil Volume: </p>
                 </div>
                 <div class='col-sm-6' style="bottom: 16px;">
-                    <input class="form-control" id="lat3" type='number' step="0.01" min="-90" max="90"/>
+                    <input class="form-control" id="oil_volume" type='number' step="0.01"/>
                 </div>
             </div>
-            <div class="lon-container">
+            <div class="vis-duration-container">
                 <div class='col-sm-6'>
-                    <p>Longitude:</p>
+                    <p>Duration: </p>
                 </div>
                 <div class='col-sm-6' style="bottom: 16px;">
-                    <input class="form-control" id="lon3" type='number' step="0.01" min="-180" max="180"/>
+                    <input class="form-control" id="vis_duration" type='number' step="0.01"/>
                 </div>
             </div>
         </div>
-
-        <div class="oil-volume-container">
-            <div class='col-sm-6'>
-                <p>Oil Volume: </p>
+        <div class="service-parameters">
+            <div class="row" style="margin-top:15px">
+                <div class="coverage-date-filters-icon">
+                </div>
+                <div class="time-interval-container">
+                    <div class='col-sm-6'>
+                        <p>Time Interval: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 16px;">
+                        <input class="form-control" id="time_interval" type='number' step="0.01"/>
+                    </div>
+                </div>
+                <div class="simulation-length-container">
+                    <div class='col-sm-6'>
+                        <p>Simulation Length: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 16px;">
+                        <input class="form-control" id="simulation_length" type='number' step="0.01"/>
+                    </div>
+                </div>
+                <div class="oil-density-container">
+                    <div class='col-sm-6'>
+                        <p>Oil Density: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 16px;">
+                        <input class="form-control" id="oil_density" type='number' step="0.01"/>
+                    </div>
+                </div>
             </div>
-            <div class='col-sm-6' style="bottom: 16px;">
-                <input class="form-control" id="oil_volume3" type='number' step="0.01"/>
-            </div>
-        </div>
-        <div class="vis-duration-container">
-            <div class='col-sm-6'>
-                <p>Duration: </p>
-            </div>
-            <div class='col-sm-6' style="bottom: 16px;">
-                <input class="form-control" id="vis_duration3" type='number' step="0.01"/>
-            </div>
-        </div>
-
-        <div class='col-sm-6'>
-            <div class="form-group">
-                <div class='input-group date' id='startdatepicker3' style="width: 100%;">
-                    <label>Start Date:</label>
-                    <input type='text' class="form-control"/>
-                    <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>
+            <div class="vis-startdate-container" style="width: 100%">
+                <div class="col-sm-6">
+                    <p>Start Date:</p>
+                </div>
+                <div class='col-sm-6'>
+                    <div class="form-group">
+                        <div class='input-group date' id='startdatepicker'>
+                            <input type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-<hr><br>
-        <div class="button-container"  style="width:100%">
-            <div id="run-service-btn" type="submit" class="btn btn-primary btn-sm btn-default" style="width:40%">
-                <i class="fa fa-play-circle"></i> Run Service
-            </div>
-            <div id="new_point" class="btn btn-primary btn-sm btn-default" style="width:40%">
+    {% endifequal %}
+
+{#    <hr style="margin-top: 10px; margin-bottom: 10px">#}
+    <div class="button-container service-buttons"  style="width:100%" hidden>
+        <div id="run-service-btn" type="submit" class="btn btn-primary btn-sm btn-default" style="width:32%">
+            <i class="fa fa-play-circle"></i> Run Service
+        </div>
+        {% ifequal scenario '2' %}
+            <div id="new_point" class="btn btn-sm btn-success" style="width:32%">
                 <i class="fa fa-plus-circle"></i> Add Oil Spill
             </div>
         </div>
