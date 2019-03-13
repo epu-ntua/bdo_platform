@@ -539,8 +539,7 @@ $(document).ready(function() {
             var wave_dataset = $("#sel1").val();
             var hd_dataset = $("#sel2").val();
 
-            var url = "http://localhost:8000/oilspill/process/?csrfmiddlewaretoken=LlLKJ7OlQGdAUeWOeOT52n" +
-                "Y6Z5dlBNu9OqDB0X2nu6egRBPUrbY5PiTWWUxTF1tg" +
+            var url = "/oilspill/process/?" +
                 "&latitude1=" + lat +
                 "&longitude1=" + lng +
                 "&start_date1=" + start_date +
