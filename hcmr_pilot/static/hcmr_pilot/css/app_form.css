@@ -3,7 +3,7 @@
     right: 0;
     z-index: 2;
     background-color: white;
-    width: 27%;
+    width: 362px;
     top: 10%;
 }
 
@@ -89,21 +89,30 @@
 
 #remove_point1{
     background-color: #8a1c1c;
+    /*margin-right: 25px;*/
 }
 
 #remove_point2{
     background-color: #8a1c1c;
+    /*margin-right: 25px;*/
+    /*width:150px;*/
 }
 
 #remove_point3{
     background-color: #8a1c1c;
+    /*margin-right: 25px;*/
+    /*width:150px;*/
 }
 #remove_point4{
     background-color: #8a1c1c;
+    /*margin-right: 25px;*/
+    /*width:150px;*/
 }
 
 #remove_point5{
     background-color: #8a1c1c;
+    /*margin-right: 25px;*/
+    /*width:150px;*/
 }
 
 .checkbox label{
@@ -119,7 +128,9 @@
 }
 
 .nav-pills > li > a {
-    min-width: 70px;
+    min-width: 65px;
+    text-transform: none;
+    padding: 10px 5px;
 }
 
 .nav-pills > li.active > a[href="#point2_form"] {
@@ -131,10 +142,14 @@
 }
 
 .nav-pills > li.active > a[href="#point4_form"] {
-    background-color: #ff6f00;
+    background-color: #ee8331;;
 }
 
 .nav-pills > li.active > a[href="#point5_form"] {
     background-color: #181313;
+}
+
+.points-control{
+    height: 0.3vh;
 }
 

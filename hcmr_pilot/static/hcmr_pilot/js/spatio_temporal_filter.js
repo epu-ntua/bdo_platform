@@ -17,7 +17,7 @@ $(document).ready(function() {
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
         'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
 
-        map = L.map('map').setView([38.41, 21.97], 5);
+        map = L.map('map').setView([38.41, 21.97], 4);
 
         L.tileLayer(maplayer + token, {
             attribution: attr,
