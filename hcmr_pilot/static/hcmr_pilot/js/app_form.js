@@ -39,6 +39,15 @@ function isInsideAegeanIonian(lat, lon) {
         (lon < MIN_LON_AEGEAN_IONIAN || lon > MAX_LON_AEGEAN_IONIAN))
 }
 
+function ckeck_markers_location() {
+    area_bounds = areaSelect.getBounds();
+    var swlat = Math.round(area_bounds.getSouthWest().lat * 10000) / 10000;
+    var swlon = Math.round(area_bounds.getSouthWest().lng * 10000) / 10000;
+    var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
+    var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
+    bounds = [swlat,swlon,nelat,nelon];
+}
+
 function create_new_area_select(area_select_bounds){
     $(".leaflet-interactive").remove();
     areaSelect = L.rectangle(area_select_bounds);
@@ -70,7 +79,7 @@ $(document).ready(function() {
 
     if(scenario === 2){
 
-        $('.service-buttons').hide();
+
         create_new_area_select([[29.2575,-15.2578],[49.479,42.0898]]);
 
         var startpick2 = $('#startdatepicker2').datetimepicker({
@@ -104,7 +113,7 @@ $(document).ready(function() {
 
 
     if (scenario === 1) {
-
+        lock = 1;
         first_user_marker = L.marker([38.06, 25.36], {draggable: true}).bindPopup("First Marker").addTo(map);
 
         first_marker_layer = L.layerGroup(first_user_marker);
@@ -146,6 +155,48 @@ $(document).ready(function() {
 
     }
 
+    if(scenario === 3){
+        lock = 1;
+        first_user_marker = L.marker([38.06, 25.36], {draggable: true}).bindPopup("First Marker").addTo(map);
+
+        first_marker_layer = L.layerGroup(first_user_marker);
+
+        map.addLayer(first_marker_layer);
+
+
+        $('#lat').val(38.06);
+        $('#lon').val(25.36);
+
+        var endpick = $('#enddatepicker').datetimepicker({
+            autoclose: true,
+            pickerPosition: 'top-left',
+
+        });
+
+
+        first_user_marker.on('dragend', function (e) {
+
+            $('#lat').val(e.target._latlng.lat);
+            $('#lon').val(e.target._latlng.lng);
+            // let lat = e.latlng.lat;
+            // let lon = e.latlng.lng;
+            if (isInsideAegeanIonian(e.target._latlng.lat, e.target._latlng.lng)) {
+                $("#sel1").val("202");
+                $("#sel2").val("001");
+            } else if (isInsideMediteranean(e.target._latlng.lat, e.target._latlng.lng)) {
+                $("#sel1").val("201")
+                $("#sel2").val("002")
+            } else {
+                alert("Point outside of Mediterranean sea. Please select another point");
+                var latlng = L.latLng(38.06, 25.36);
+                first_user_marker.setLatLng(latlng).update(first_user_marker);
+                $('#lat').val(38.06);
+                $('#lon').val(25.36);
+
+            }
+        });
+    }
+
     $('#lock_area').on('click', function(e){
 
         lock = 1;
@@ -155,6 +206,7 @@ $(document).ready(function() {
         $('.spatial-selection').hide();
         $('.points-container').show();
         $('.service-buttons').show();
+        $('#unlock-area').show();
          // $('.lock-button').hide();
         area_bounds = areaSelect.getBounds();
         var swlat = Math.round(area_bounds.getSouthWest().lat * 10000) / 10000;
@@ -219,6 +271,15 @@ $(document).ready(function() {
         $('.spatial-selection').show();
         $('.points-container').hide();
         $('.service-buttons').hide();
+        $('#unlock-area').hide();
+         area_bounds = areaSelect.getBounds();
+        var swlat = Math.round(area_bounds.getSouthWest().lat * 10000) / 10000;
+        var swlon = Math.round(area_bounds.getSouthWest().lng * 10000) / 10000;
+        var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
+        var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
+        bounds = [swlat,swlon,nelat,nelon];
+         map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
+
     });
 
 
@@ -268,78 +329,7 @@ $(document).ready(function() {
 
 
 
-
-    // map.on('click', function(e){
-    //
-    //     point2_form = $("#point2_form");
-    //     point3_form = $("#point3_form");
-    //
-    //     let lat = e.latlng.lat;
-    //     let lon = e.latlng.lng;
-    //     if (!isInsideMediteranean(lat, lon))
-    //         alert("Point outside of Mediterranean sea. Please select another point");
-    //     else {
-    //         if (isInsideAegeanIonian(lat,lon)) {
-    //             $("#sel1").val("202")
-    //             $("#sel2").val("001")
-    //         }
-    //         else {
-    //             $("#sel1").val("201")
-    //             $("#sel2").val("002")
-    //         }
-    //         if (point2_form.is(":hidden")) {
-    //             $('#lat').val(lat);
-    //             $('#lon').val(lon);
-    //         }
-    //         else if (point3_form.is(":hidden")) {
-    //             $('#lat2').val(lat);
-    //             $('#lon2').val(lon);
-    //         }
-    //         else {
-    //             $('#lat3').val(lat);
-    //             $('#lon3').val(lon);
-    //         }
-    //     }
-    //     if (user_marker != undefined) {
-    //         map.removeLayer(user_marker);
-    //     }
-    //
-    //
-    //     user_marker = L.marker([lat, lon],  {draggable:true}).bindPopup("AS4254").addTo(map);
-    //     single_marker_layer = L.layerGroup(user_marker);
-    //     map.addLayer(single_marker_layer);
-    //     user_marker.on('dragend', function (e) {
-    //
-    //         if (point2_form.is(":hidden")) {
-    //             $('#lat').val(e.latlng.lat);
-    //             $('#lon').val(e.latlng.lng);
-    //         }
-    //         else if (point3_form.is(":hidden")) {
-    //             $('#lat2').val(e.latlng.lat);
-    //             $('#lon2').val(e.latlng.lng);
-    //         }
-    //         else {
-    //             $('#lat3').val(e.latlng.lat);
-    //             $('#lon3').val(e.latlng.lng);
-    //         }
-    //     })
-    //
-    // });
-    // $("#new_point").click(function(){
-    //     point2_form = $("#point2_form");
-    //     if (point2_form.is(":hidden"))
-    //       point2_form.show();
-    //     else
-    //         $("#point3_form").show();
-    // });
-
-
-    $("#new_point").click(function(){
-        // point2_form = $("#point2_form");
-        // if (point2_form.is(":hidden"))
-        //   point2_form.show();
-        // else
-        //     $("#point3_form").show();
+    $(".new_point").click(function(){
         $('.nav li.active').next('li').removeClass('disabled');
         var tabid = $('.nav li.active').children('a[data-toggle="pill"]').attr('href');
         $(tabid).removeClass('active');
@@ -355,8 +345,8 @@ $(document).ready(function() {
         var swlon = Math.round(area_bounds.getSouthWest().lng * 10000) / 10000;
         var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
         var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
-        // var x_mov = (nelat - swlat) / swlat;
-        // var y_mov = (nelon - swlon) / swlon;
+        var x_mov = 3*(nelat - swlat) / swlat;
+        var y_mov = 3*(nelon - swlon) / swlon;
         bounds = [swlat,swlon,nelat,nelon];
 
         if ( tabid2 === "#point2_form"){
@@ -364,10 +354,15 @@ $(document).ready(function() {
             if (second_user_marker != undefined) {
                 map.removeLayer(second_user_marker);
             }
+            var startpick = $('#startdatepicker2').datetimepicker({
+                autoclose: true,
+                pickerPosition: 'top-left',
+
+            });
             var redIcon = new L.Icon({
                 iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png'
             });
-            second_user_marker = L.marker([((bounds[0] + bounds[2] ) / 2) - 0.01, ((bounds[1] + bounds[3] ) / 2) - 0.01], {draggable:true}, {icon: redIcon}).bindPopup("Second Marker").addTo(map);
+            second_user_marker = L.marker([((bounds[0] + bounds[2] ) / 2) - x_mov, ((bounds[1] + bounds[3] ) / 2) - y_mov], {draggable:true}, {icon: redIcon}).bindPopup("Second Marker").addTo(map);
             second_user_marker.setIcon(redIcon);
             second_marker_layer = L.layerGroup(second_user_marker);
             map.addLayer(second_marker_layer);
@@ -376,17 +371,24 @@ $(document).ready(function() {
                 $('#lat2').val(e.target._latlng.lat);
                 $('#lon2').val(e.target._latlng.lng);
             });
-            $('#lat2').val(((bounds[0] + bounds[2] ) / 2) - 0.01);
-            $('#lon2').val(((bounds[1] + bounds[3] ) / 2) - 0.01);
+            var lat = ((bounds[0] + bounds[2] ) / 2) - 0.1;
+            var lng = ((bounds[1] + bounds[3] ) / 2) - 0.1;
+            $('#lat2').val(lat);
+            $('#lon2').val(lng);
         }
         else if(tabid2 === "#point3_form"){
+            var startpick = $('#startdatepicker3').datetimepicker({
+                autoclose: true,
+                pickerPosition: 'top-left',
+
+            });
             if (third_user_marker != undefined) {
                 map.removeLayer(third_user_marker);
             }
             var greenIcon = new L.Icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png'
             });
-            third_user_marker = L.marker([((bounds[0] + bounds[2]) / 2) - 0.01, ((bounds[1] + bounds[3] ) / 2) + 0.01 ], {draggable:true}, {icon: greenIcon}).bindPopup("Third Marker").addTo(map);
+            third_user_marker = L.marker([((bounds[0] + bounds[2]) / 2) - x_mov, ((bounds[1] + bounds[3] ) / 2) + y_mov ], {draggable:true}, {icon: greenIcon}).bindPopup("Third Marker").addTo(map);
             third_user_marker.setIcon(greenIcon);
             third_marker_layer = L.layerGroup(third_user_marker);
             map.addLayer(third_marker_layer);
@@ -395,19 +397,25 @@ $(document).ready(function() {
                 $('#lat3').val(e.target._latlng.lat);
                 $('#lon3').val(e.target._latlng.lng);
             });
-
-            $('#lat2').val(((bounds[0] + bounds[2] ) / 2) - 0.01);
-            $('#lon2').val(((bounds[1] + bounds[3] ) / 2) + 0.01);
+            var lat = ((bounds[0] + bounds[2] ) / 2) - 0.1;
+            var lng = ((bounds[1] + bounds[3] ) / 2) + 0.1;
+            $('#lat3').val(lat);
+            $('#lon3').val(lng);
 
         }
         else if (tabid2 === "#point4_form"){
+            var startpick = $('#startdatepicker4').datetimepicker({
+                autoclose: true,
+                pickerPosition: 'top-left',
+
+            });
             if (fourth_user_marker != undefined) {
                 map.removeLayer(fourth_user_marker);
             }
             var orangeIcon = new L.Icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png'
             });
-            fourth_user_marker = L.marker([((bounds[0] + bounds[2] ) / 2) + 0.01, ((bounds[1] + bounds[3]) / 2) - 0.01], {draggable:true}, {icon: greenIcon}).bindPopup("Fourth Marker").addTo(map);
+            fourth_user_marker = L.marker([((bounds[0] + bounds[2] ) / 2) + x_mov, ((bounds[1] + bounds[3]) / 2) - y_mov], {draggable:true}, {icon: greenIcon}).bindPopup("Fourth Marker").addTo(map);
             fourth_user_marker.setIcon(orangeIcon);
             fourth_marker_layer = L.layerGroup(fourth_user_marker);
             map.addLayer(fourth_marker_layer);
@@ -416,18 +424,24 @@ $(document).ready(function() {
                 $('#lat4').val(e.target._latlng.lat);
                 $('#lon4').val(e.target._latlng.lng);
             });
-
-            $('#lat2').val(((bounds[0] + bounds[2] ) / 2) + 0.01);
-            $('#lon2').val(((bounds[1] + bounds[3] ) / 2) - 0.01);
+            var lat = ((bounds[0] + bounds[2] ) / 2) + 0.1;
+            var lng = ((bounds[1] + bounds[3] ) / 2) - 0.1;
+            $('#lat4').val(lat);
+            $('#lon4').val(lng);
         }
         else if (tabid2 === "#point5_form"){
+            var startpick = $('#startdatepicker5').datetimepicker({
+                autoclose: true,
+                pickerPosition: 'top-left',
+
+            });
             if (fifth_user_marker != undefined) {
                 map.removeLayer(fifth_user_marker);
             }
             var blackIcon = new L.Icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png'
             });
-            fifth_user_marker = L.marker([((bounds[0] + bounds[2] ) / 2) + 0.01, ((bounds[1] + bounds[3] ) / 2) + 0.01], {draggable:true}, {icon: greenIcon}).bindPopup("Fourth Marker").addTo(map);
+            fifth_user_marker = L.marker([((bounds[0] + bounds[2] ) / 2) + x_mov, ((bounds[1] + bounds[3] ) / 2) + y_mov], {draggable:true}, {icon: greenIcon}).bindPopup("Fourth Marker").addTo(map);
             fifth_user_marker.setIcon(blackIcon);
             fifth_marker_layer = L.layerGroup(fifth_user_marker);
             map.addLayer(fifth_marker_layer);
@@ -436,9 +450,10 @@ $(document).ready(function() {
                 $('#lat5').val(e.target._latlng.lat);
                 $('#lon5').val(e.target._latlng.lng);
             });
-
-            $('#lat2').val(((bounds[0] + bounds[2] ) / 2) + 0.01);
-            $('#lon2').val(((bounds[1] + bounds[3] ) / 2) + 0.01);
+            var lat = ((bounds[0] + bounds[2] ) / 2) + 0.1;
+            var lng = ((bounds[1] + bounds[3] ) / 2) + 0.1;
+            $('#lat5').val(lat);
+            $('#lon5').val(lng);
         }
 
     });
