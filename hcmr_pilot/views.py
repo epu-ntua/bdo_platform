@@ -24,7 +24,7 @@ def init(request):
     return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps})
 
 
-def results(request, exec_instance):
+def scenario1_results(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     visualization_url = service_exec.dataframe_visualizations['v1']
     filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
@@ -38,13 +38,62 @@ def results(request, exec_instance):
         'out_filepath': filename_output,
         'result': [],
         'service_title': 'Oil Spill - Scenario 1 title',
+        'back_url': '/oilspill/?scenario=1',
         'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
                               'value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                              {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': 'from ' + str(start_date)},
                              {'icon': 'fas fa-database', 'text': 'Model used:', 'value': str(model_title)}],
 
     }
-    return render(request, 'hcmr_pilot/oilspill-results.html', context)
+    return render(request, 'hcmr_pilot/scenario1-results.html', context)
+
+
+def scenario2_results(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    visualization_url = service_exec.dataframe_visualizations['v1']
+    filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
+    location_lat = '123'
+    location_lon = '321'
+    start_date = '2019-03-12 12:00'
+    model_title = 'Agean/Ionias Posidon'
+
+    context = {
+        'url': visualization_url,
+        'out_filepath': filename_output,
+        'result': [],
+        'service_title': 'Oil Spill - Scenario 2 title',
+        'back_url': '/oilspill/?scenario=2',
+        'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
+                              'value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
+                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': 'from ' + str(start_date)},
+                             {'icon': 'fas fa-database', 'text': 'Model used:', 'value': str(model_title)}],
+
+    }
+    return render(request, 'hcmr_pilot/scenario1-results.html', context)
+
+
+def scenario3_results(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    visualization_url = service_exec.dataframe_visualizations['v1']
+    filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
+    location_lat = '123'
+    location_lon = '321'
+    start_date = '2019-03-12 12:00'
+    model_title = 'Agean/Ionias Posidon'
+
+    context = {
+        'url': visualization_url,
+        'out_filepath': filename_output,
+        'result': [],
+        'service_title': 'Oil Spill - Scenario 3 title',
+        'back_url': '/oilspill/?scenario=3',
+        'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
+                              'value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
+                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': 'from ' + str(start_date)},
+                             {'icon': 'fas fa-database', 'text': 'Model used:', 'value': str(model_title)}],
+
+    }
+    return render(request, 'hcmr_pilot/scenario1-results.html', context)
 
 
 def index(request):
@@ -117,7 +166,7 @@ def process(request, exec_instance):
         #     'url': visualization_url,
         #     'out_filepath': filename_output,
         # }
-        # return render(request, 'hcmr_pilot/oilspill-results.html', context)
+        # return render(request, 'hcmr_pilot/scenario1-results.html', context)
     else:
         # html = "<html><body>Something went wrong. Please, try again.</body></html>"
         # return HttpResponse(html)

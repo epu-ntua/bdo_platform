@@ -525,7 +525,12 @@ $(document).ready(function() {
 
     var exec_instance = '';
     $("#run-service-btn").click(function () {
-        $("#execution_btn_OIL_SPILL_SCENARIO_1").click();
+        if(parseInt(scenario) === 1)
+            $("#execution_btn_OIL_SPILL_SCENARIO_1").click();
+        else if(parseInt(scenario) === 2)
+            $("#execution_btn_OIL_SPILL_SCENARIO_2").click();
+        else if(parseInt(scenario) === 3)
+            $("#execution_btn_OIL_SPILL_SCENARIO_3").click();
 
         var lat = $('#lat').val();
         var lng = $("#lon").val();
@@ -558,7 +563,9 @@ $(document).ready(function() {
             var wave_dataset = $("#sel1").val();
             var hd_dataset = $("#sel2").val();
 
-            var url = "/oilspill/process/?" +
+            var url = "/oilspill/" +
+                "scenario" + scenario +
+                "/process/?" +
                 "&latitude1=" + lat +
                 "&longitude1=" + lng +
                 "&start_date1=" + start_date +
@@ -614,7 +621,7 @@ $(document).ready(function() {
             function check_execution_status() {
                 $.ajax({
                     "type": "GET",
-                    "url": "/oilspill/status/"+exec_instance+"/",
+                    "url": "/oilspill/"+"scenario"+ scenario+"/status/"+exec_instance+"/",
                     "data": {},
                     "success": function(result) {
                         console.log(result["status"]);
@@ -622,7 +629,7 @@ $(document).ready(function() {
                         if(result["status"] === "done"){
                             setTimeout(function() {
                                 execution_status_stop();
-                                window.location.href = "/oilspill/results/"+exec_instance+"/";
+                                window.location.href = "/oilspill/"+"scenario"+ scenario+"/results/"+exec_instance+"/";
                             }, 1000);
                         }
                         else if (result["status"] === "failed") {
