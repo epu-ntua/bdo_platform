@@ -563,6 +563,9 @@ $(document).ready(function() {
             var wave_dataset = $("#sel1").val();
             var hd_dataset = $("#sel2").val();
 
+            var natura_layer = $('input[name="natura_checkbox"]:checked').length > 0;
+            var ais_layer = $('input[name="ais_checkbox"]:checked').length > 0;
+
             var url = "/oilspill/" +
                 "scenario" + scenario +
                 "/process/?" +
@@ -596,7 +599,9 @@ $(document).ready(function() {
                 "&simulation_length=" + simulation_length +
                 "&time_interval=" + time_interval +
                 "&wave_model=" + wave_dataset +
-                "&hd_model=" + hd_dataset;
+                "&hd_model=" + hd_dataset +
+                "&natura_layer=" + natura_layer +
+                "&ais_layer=" + ais_layer;
 
 
 

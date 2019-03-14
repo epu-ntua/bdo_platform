@@ -94,7 +94,8 @@
                 <option value="202">Poseidon Wave Dataset for the Aegean</option>
                 <option value="201">Poseidon Wave Dataset for the Mediterranean</option>
                 <option value="203">Copernicus Wave Dataset</option>
-            </select><label for="sel2">Hydrodynamic Dataset</label>
+            </select>
+            <label for="sel2">Hydrodynamic Model</label>
             <select class="form-control" id="sel2">
                 <option value="001">Poseidon High Resolution Aegean Model</option>
                 <option value="002">Poseidon Mediterranean Model</option>
@@ -104,14 +105,14 @@
 
         <hr style="margin-top: 10px; margin-bottom: 10px">
         <h4>Additional layers</h4>
+{#        <div class="checkbox">#}
+{#            <label><input type="checkbox" name="optradio" checked>None</label>#}
+{#        </div>#}
         <div class="checkbox">
-            <label><input type="checkbox" name="optradio" checked>None</label>
+            <label><input type="checkbox" name="natura_checkbox" id="natura_checkbox">Natura maps</label>
         </div>
         <div class="checkbox">
-            <label><input type="checkbox" name="optradio">Natura maps</label>
-        </div>
-        <div class="checkbox">
-            <label><input type="checkbox" name="optradio">AIS maps</label>
+            <label><input type="checkbox" name="ais_checkbox" id="ais_checkbox">AIS data</label>
         </div>
     {% endifequal %}
     {% ifequal scenario '2' %}

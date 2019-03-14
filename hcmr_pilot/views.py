@@ -28,10 +28,12 @@ def scenario1_results(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     visualization_url = service_exec.dataframe_visualizations['v1']
     filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
-    location_lat = '123'
-    location_lon = '321'
-    start_date = '2019-03-12 12:00'
-    model_title = 'Agean/Ionias Posidon'
+    location_lat = service_exec.arguments['algorithm-arguments'][0]['latitude']
+    location_lon = service_exec.arguments['algorithm-arguments'][0]['longitude']
+    start_date = service_exec.arguments['algorithm-arguments'][0]['start_date']
+    oil_volume = service_exec.arguments['algorithm-arguments'][0]['oil_volume']
+    wave_forecast_dataset = service_exec.arguments['algorithm-arguments'][0]['wave_model']
+    hydrodynamic_model = service_exec.arguments['algorithm-arguments'][0]['ocean_model']
 
     context = {
         'url': visualization_url,
@@ -39,11 +41,11 @@ def scenario1_results(request, exec_instance):
         'result': [],
         'service_title': 'Oil Spill - Scenario 1 title',
         'back_url': '/oilspill/?scenario=1',
-        'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
-                              'value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
+        'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                              {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': 'from ' + str(start_date)},
-                             {'icon': 'fas fa-database', 'text': 'Model used:', 'value': str(model_title)}],
-
+                             {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume)},
+                             {'icon': 'fas fa-database', 'text': 'Wave Forecast Dataset:', 'value': str(wave_forecast_dataset)},
+                             {'icon': 'fab fa-buromobelexperte', 'text': 'Hydrodynamic Model:', 'value': str(hydrodynamic_model)}],
     }
     return render(request, 'hcmr_pilot/scenario1-results.html', context)
 
@@ -120,6 +122,34 @@ def execute(request):
 def process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
+    service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}]}
+
+    spill_infos, wave_model, ocean_model, natura_layer, ais_layer = parse_request_params(request)
+    service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
+    service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
+    service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
+    service_exec.arguments["algorithm-arguments"][0]["oil_volume"] = spill_infos[0]['oil_volume']
+    if wave_model == '202':
+        service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Aegean'
+    elif wave_model == '201':
+        service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Mediterranean'
+    elif wave_model == '203':
+        service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Copernicus Wave Dataset'
+    else:
+        service_exec.arguments["algorithm-arguments"][0]["wave_model"] = ''
+
+    if ocean_model == '001':
+        service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Poseidon High Resolution Aegean Model'
+    elif ocean_model == '002':
+        service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Poseidon Mediterranean Model'
+    elif ocean_model == '003':
+        service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Copernicus Model'
+    else:
+        service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = ''
+
+    service_exec.arguments["algorithm-arguments"][0]["natura_layer"] = natura_layer
+    service_exec.arguments["algorithm-arguments"][0]["ais_layer"] = ais_layer
+
     # 1)Create input file
     service_exec.status = "Creating simulation request"
     service_exec.save()
@@ -149,16 +179,17 @@ def process(request, exec_instance):
         parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
 
         # 4)Calculate red points
-        red_points_calc.calculate(hcmr_data_filename, red_points_filename)
         service_exec.status = "Calculating oil spill intersections with protected areas"
         service_exec.save()
+        red_points_calc.calculate(hcmr_data_filename, red_points_filename)
+
 
         # 5)Create Visualization
         visualization_url = "http://" + request.META[
             'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
 
         service_exec.dataframe_visualizations = {"v1": visualization_url}
-        service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{"out_filepath": filename_output}]}
+        service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output
         service_exec.status = "done"
         service_exec.save()
 
@@ -235,7 +266,7 @@ def wait_until_output_ready(params, request):
 
 
 def create_inp_file_from_request_and_upload(request):
-    spill_infos, wave_model, ocean_model = parse_request_params(request)
+    spill_infos, wave_model, ocean_model, natura_layer, ais_layer = parse_request_params(request)
     url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model)
     response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
@@ -286,7 +317,9 @@ def parse_request_params(request):
         print(spill_infos)
     wave_model = request.GET.get('wave_model')
     ocean_model = request.GET.get('hd_model')
-    return spill_infos, wave_model, ocean_model
+    natura_layer = request.GET.get('natura_layer')
+    ais_layer = request.GET.get('ais_layer')
+    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer
 
 
 def is_integer_string(s):
