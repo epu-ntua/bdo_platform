@@ -121,86 +121,89 @@ def execute(request):
 
 def process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
-    service = Service.objects.get(pk=service_exec.service_id)
-    service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}]}
+    try:
+        service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}]}
 
-    spill_infos, wave_model, ocean_model, natura_layer, ais_layer = parse_request_params(request)
-    service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
-    service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
-    service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
-    service_exec.arguments["algorithm-arguments"][0]["oil_volume"] = spill_infos[0]['oil_volume']
-    if wave_model == '202':
-        service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Aegean'
-    elif wave_model == '201':
-        service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Mediterranean'
-    elif wave_model == '203':
-        service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Copernicus Wave Dataset'
-    else:
-        service_exec.arguments["algorithm-arguments"][0]["wave_model"] = ''
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer = parse_request_params(request)
+        service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
+        service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
+        service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
+        service_exec.arguments["algorithm-arguments"][0]["oil_volume"] = spill_infos[0]['oil_volume']
+        if wave_model == '202':
+            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Aegean'
+        elif wave_model == '201':
+            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Mediterranean'
+        elif wave_model == '203':
+            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Copernicus Wave Dataset'
+        else:
+            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = ''
 
-    if ocean_model == '001':
-        service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Poseidon High Resolution Aegean Model'
-    elif ocean_model == '002':
-        service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Poseidon Mediterranean Model'
-    elif ocean_model == '003':
-        service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Copernicus Model'
-    else:
-        service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = ''
+        if ocean_model == '001':
+            service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Poseidon High Resolution Aegean Model'
+        elif ocean_model == '002':
+            service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Poseidon Mediterranean Model'
+        elif ocean_model == '003':
+            service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Copernicus Model'
+        else:
+            service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = ''
 
-    service_exec.arguments["algorithm-arguments"][0]["natura_layer"] = natura_layer
-    service_exec.arguments["algorithm-arguments"][0]["ais_layer"] = ais_layer
+        service_exec.arguments["algorithm-arguments"][0]["natura_layer"] = natura_layer
+        service_exec.arguments["algorithm-arguments"][0]["ais_layer"] = ais_layer
 
-    # 1)Create input file
-    service_exec.status = "Creating simulation request"
-    service_exec.save()
-    filename, url_params = create_inp_file_from_request_and_upload(request)
-    # 2)Calculate oil spill
-    service_exec.status = "Simulation running"
-    service_exec.save()
-    found = wait_until_output_ready(url_params, request)
-    if found:
-        service_exec.status = "Simulation results received"
+        # 1)Create input file
+        service_exec.status = "Creating simulation request"
         service_exec.save()
-        filename_output = str(filename).replace("_F.inp", "_F.out")
-        hcmr_data_filename = str(filename).replace("_F.inp", ".json")
-        red_points_filename = str(filename).replace("_F.inp", ".txt")
-
-        # 3)Transforming data to be shown on map
-        service_exec.status = "Transforming data to be shown on map"
+        filename, url_params = create_inp_file_from_request_and_upload(request)
+        # 2)Calculate oil spill
+        service_exec.status = "Simulation running"
         service_exec.save()
-        output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
-        spill_data, parcel_data = create_json_from_out_file(
-            output_path)
+        found = wait_until_output_ready(url_params, request)
+        if found:
+            service_exec.status = "Simulation results received"
+            service_exec.save()
+            filename_output = str(filename).replace("_F.inp", "_F.out")
+            hcmr_data_filename = str(filename).replace("_F.inp", ".json")
+            red_points_filename = str(filename).replace("_F.inp", ".txt")
 
-        headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
-        parcel_df = DataFrame(parcel_data, columns = headers_parcel)
+            # 3)Transforming data to be shown on map
+            service_exec.status = "Transforming data to be shown on map"
+            service_exec.save()
+            output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
+            spill_data, parcel_data = create_json_from_out_file(output_path)
+            print 'create_json_from_out_file done'
+            headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
+            parcel_df = DataFrame(parcel_data, columns = headers_parcel)
+            print 'parcel_df = DataFrame done'
+            print(parcel_df.head(2))
+            parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
+            print 'parcel_df.to_json done'
+            # 4)Calculate red points
+            service_exec.status = "Calculating oil spill intersections with protected areas"
+            service_exec.save()
+            if natura_layer == "true":
+                red_points_calc.calculate(hcmr_data_filename, red_points_filename)
 
-        print(parcel_df.head(10))
-        parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
+            print 'red points calculated'
+            # 5)Create Visualization
+            visualization_url = "http://" + request.META[
+                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer
 
-        # 4)Calculate red points
-        service_exec.status = "Calculating oil spill intersections with protected areas"
-        service_exec.save()
-        red_points_calc.calculate(hcmr_data_filename, red_points_filename)
+            service_exec.dataframe_visualizations = {"v1": visualization_url}
+            service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output
+            service_exec.status = "done"
+            service_exec.save()
 
-
-        # 5)Create Visualization
-        visualization_url = "http://" + request.META[
-            'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
-
-        service_exec.dataframe_visualizations = {"v1": visualization_url}
-        service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output
-        service_exec.status = "done"
-        service_exec.save()
-
-        # context = {
-        #     'url': visualization_url,
-        #     'out_filepath': filename_output,
-        # }
-        # return render(request, 'hcmr_pilot/scenario1-results.html', context)
-    else:
-        # html = "<html><body>Something went wrong. Please, try again.</body></html>"
-        # return HttpResponse(html)
+            # context = {
+            #     'url': visualization_url,
+            #     'out_filepath': filename_output,
+            # }
+            # return render(request, 'hcmr_pilot/scenario1-results.html', context)
+        else:
+            # html = "<html><body>Something went wrong. Please, try again.</body></html>"
+            # return HttpResponse(html)
+            service_exec.status = "failed"
+            service_exec.save()
+    except:
         service_exec.status = "failed"
         service_exec.save()
 
@@ -224,6 +227,8 @@ def create_json_from_out_file(filename_output):
         start_datetime = datetime.strptime(line.strip(), '%Y %m %d %H%M')
         print start_datetime
         while line.strip() != "*** End of Input ***":
+            if len(line) == 0:
+                return spill_data, parcel_data
             line = f.readline()
         print line
         first_line = f.readline()

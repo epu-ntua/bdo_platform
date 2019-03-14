@@ -32,6 +32,9 @@
     <div id="info">
         <ul id="displayed-list"></ul>
     </div>
+    {% if not has_data %}
+        <h4 style="text-align: center; background-color: white;">No simulation data for the selected parameters, please try again with different values</h4>
+    {% endif %}
     {% leaflet_map map_id %}
 
 {% endblock %}
@@ -68,7 +71,7 @@
                 position: 'bottomleft',
                 autoPlay: true,
                 playerOptions: {
-                    transitionTime: 200,
+                    transitionTime: 600,
                     loop: true}
                     });
            map.addControl(map.timeDimensionControl);

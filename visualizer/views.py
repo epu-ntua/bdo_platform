@@ -3283,10 +3283,11 @@ def map_markers_in_time_hcmr(request):
     m = create_map()
     # comment out map_routes until you find a way to cleanup the route-data
     # m = map_routes(m)
-    m, shapely_polygons = map_oil_spill_hcmr(m)
 
-    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk = hcmr_service_parameters(
-        request)
+
+    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer = hcmr_service_parameters(request)
+    if natura_layer == "true":
+        m, shapely_polygons = map_oil_spill_hcmr(m)
 
     if query_pk != 0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
@@ -3315,7 +3316,7 @@ def map_markers_in_time_hcmr(request):
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
         print(result_headers)
-
+        has_data = len(data) > 0
         var_index = order_index = lon_index = lat_index = -1
 
         for idx, c in enumerate(result_headers['columns']):
@@ -3363,9 +3364,10 @@ def map_markers_in_time_hcmr(request):
             # data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
             # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
             data = []
-            with open('visualizer/static/visualizer/files/hcmr_data.json') as json_data:
+            with open('visualizer/static/visualizer/files/' + data_file) as json_data:
                 data = json.load(json_data)
                 print(data[:3])
+        has_data = len(data) > 0
         min_lat = 90
         max_lat = -90
         min_lon = 180
@@ -3382,12 +3384,13 @@ def map_markers_in_time_hcmr(request):
         #         count_inters = count_inters + 1
         # print 'intersects:' + str(count_inters)
         red_points = []
-        with open('visualizer/static/visualizer/files/red_points.txt', 'r') as file:
-            line = file.readline()
-            while line:
-                red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
+        if natura_layer == "true":
+            with open('visualizer/static/visualizer/files/'+ rp_file, 'r') as file:
                 line = file.readline()
-            file.close()
+                while line:
+                    red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
+                    line = file.readline()
+                file.close()
         # red_points = []
         # with open('red_points.txt', 'r') as file:
         #     line = file.readline()
@@ -3414,11 +3417,11 @@ def map_markers_in_time_hcmr(request):
         ]
         # print data
 
-        tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
+        # tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
         period = 'PT2H'
 
     features = convert_unicode_json(features)
-    folium.LayerControl().add_to(m)
+    # folium.LayerControl().add_to(m)
 
     m.save('templates/map.html')
     f = open('templates/map.html', 'r')
@@ -3436,7 +3439,7 @@ def map_markers_in_time_hcmr(request):
     os.remove('templates/map.html')
 
     return render(request, 'visualizer/map_markers_in_time.html',
-                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType})
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType, 'has_data': has_data})
 
 
 def hcmr_service_parameters(request):
@@ -3450,7 +3453,12 @@ def hcmr_service_parameters(request):
     markerType = str(request.GET.get('markerType', ''))
     FMT = '%Y-%m-%d %H:%M:%S'
     duration = 'PT0H'
-    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk
+    data_file = str(request.GET.get('data_file', ''))
+    rp_file = str(request.GET.get('red_points_file', ''))
+    natura_layer = str(request.GET.get('natura_layer', 'false'))
+    ais_layer = str(request.GET.get('ais_layer', 'false'))
+
+    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
