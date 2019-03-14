@@ -19,7 +19,8 @@ def init(request):
     execution_steps = dict()
     execution_steps['OIL_SPILL_SCENARIO_1'] = ["starting service", "Creating simulation request",
                                                "Simulation running", "Simulation results received",
-                                               "Transforming data to be shown on map", "done"]
+                                               "Transforming data to be shown on map",
+                                               "Calculating oil spill intersections with protected areas", "done"]
     return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps})
 
 
@@ -89,6 +90,8 @@ def process(request, exec_instance):
 
         # 4)Calculate red points
         red_points_calc.calculate(hcmr_data_filename, red_points_filename)
+        service_exec.status = "Calculating oil spill intersections with protected areas"
+        service_exec.save()
 
         # 5)Create Visualization
         visualization_url = "http://" + request.META[
