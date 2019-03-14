@@ -11,11 +11,6 @@ import math
 
 from netCDF4._netCDF4 import num2date
 from django.contrib.postgres.fields import JSONField
-from datetime import datetime
-
-ACCESS_REQUEST_STATUS_CHOICES = (('open', 'open'),
-                                 ('accepted', 'accepted'),
-                                 ('rejected', 'rejected'))
 
 DATASET_STORAGES = (
     ('LOCAL_POSTGRES', 'Local PostgreSQL instance'),
@@ -43,23 +38,21 @@ class Dataset(Model):
     private = BooleanField(default=False)
     spatialEast = CharField(max_length=200, null=True)
     spatialSouth = CharField(max_length=200, null=True)
-    spatialNorth = CharField(max_length=200, null=True)
+    spatiaNorth = CharField(max_length=200, null=True)
     spatialWest = CharField(max_length=200, null=True)
     temporalCoverageBegin = DateTimeField(null=True)
     temporalCoverageEnd = DateTimeField(null=True)
     license = CharField(max_length=200, null=True)
-    observations = CharField(max_length=200, null=True)
+    observation = CharField(max_length=200, null=True)
     publisher = TextField()
     category = CharField(max_length=200, null=True)
     image_uri = TextField(default='/static/img/logo.png')
     sample_rows = JSONField(null=True)
     number_of_rows = CharField(max_length=200, null=True)
     size_in_gb = FloatField(null=True)
-    update_frequency = CharField(max_length=200, default='-')
-    last_updated = DateTimeField(null=True)
+    update_frequency = CharField(max_length=200, default='static file')
     owner = ForeignKey(User, related_name='dataset_owner', null=True)
     metadata = JSONField(default={})
-    hascoverage_img = BooleanField(default=False)
     arguments = JSONField(default={})
     joined_with_dataset = models.ManyToManyField("self",through = 'JoinOfDatasets',
                                                          symmetrical=False,
@@ -110,19 +103,6 @@ class DatasetAccess(Model):
     valid = BooleanField()
 
 
-class DatasetAccessRequest(Model):
-    user = ForeignKey(User, on_delete=CASCADE)
-    resource = ForeignKey(Dataset, on_delete=CASCADE, related_name='resource')
-    status = CharField(max_length=20, choices=ACCESS_REQUEST_STATUS_CHOICES, default='open')
-    creation_date = DateTimeField(default=datetime.now())
-    response_date = DateTimeField(null=True)
-
-    @property
-    def type(self):
-        return 'dataset'
-
-
-
 class JoinOfDatasets(Model):
     dataset_first = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='first')
     dataset_second = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='second')
@@ -134,9 +114,6 @@ class BaseVariable(Model):
     title = CharField(max_length=256)
     unit = CharField(max_length=256)
     description = TextField(null=True)
-    sameAs = CharField(null=True, max_length=256)
-    dataType = CharField(null=True, max_length=256)
-    original_column_name = CharField(null=True, max_length=256)
 
     class Meta:
         abstract = True

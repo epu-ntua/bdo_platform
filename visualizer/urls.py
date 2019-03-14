@@ -34,15 +34,11 @@ urlpatterns = [
     url('^get_pie_chart_am/$', views.get_pie_chart_am, name='get_pie_chart_am'),
     url('^get_column_chart_am/$', views.get_column_chart_am, name='get_column_chart_am'),
     url('^get_histogram_chart_am/$', views.get_histogram_chart_am, name='get_histogram_chart_am'),
-    # url('^get_histogram_2d_am/$', views.get_histogram_2d_am, name='get_histogram_2d_am'),
-    url('^get_histogram_2d_am/$', views.get_histogram_2d_matplotlib, name='get_histogram_2d_am'),
+    url('^get_histogram_2d_am/$', views.get_histogram_2d_am, name='get_histogram_2d_am'),
 
     url('^get_data_table/$', views.get_data_table, name='get_data_table'),
     url('^get_aggregate_value/$', views.get_aggregate_value, name='get_aggregate_value'),
 
-
-    url('^get_map_polygon_for_dataset_coverage/$', views.get_map_polygon_for_dataset_coverage, name='get_map_polygon_for_dataset_coverage'),
-    url('^get_map_markers_grid_for_dataset_coverage/$', views.get_map_markers_grid, name='get_map_markers_grid_for_dataset_coverage'),
 
 
     url('^get_table_zep/$', views.get_table_zep, name='get_table_zep'),

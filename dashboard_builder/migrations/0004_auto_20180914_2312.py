@@ -44,4 +44,4 @@ class Migration(migrations.Migration):
             name='access_list',
             field=models.ManyToManyField(through='dashboard_builder.DashboardAccess', to=settings.AUTH_USER_MODEL),
         ),
-]
+    ]

@@ -29,9 +29,6 @@ urlpatterns = [
     # profiles
     url(r'^profile/', include('bdo_profile.urls')),
 
-    # profiles
-    url(r'^access_control/', include('access_controller.urls')),
-
     # query designer
     url(r'^queries/', include('query_designer.urls')),
 
@@ -63,7 +60,4 @@ urlpatterns = [
     url(r'^s3direct/', include('s3direct.urls')),
 
     url(r'^feedback/', include('feedback_form.urls')),
-
-    # wave energy pilot urls
-    url(r'^wave-energy/', include('wave_energy_pilot.urls')),
 ]

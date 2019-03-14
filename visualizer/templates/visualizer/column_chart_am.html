@@ -89,16 +89,6 @@ var chart = AmCharts.makeChart("chartdiv", {
         "shadowAlpha": 0,
         "fontSize": 15,
     },
-    "allLabels": [{
-        "text": "{{ category_title }}",
-        "bold": true,
-        "x": "50%",
-        "y": "88%",
-        "rotation": 0,
-        "width": "100%",
-        "align": "middle",
-        "size": 15
-    }],
     "startDuration": 1,
 
     "graphs": [
@@ -138,10 +128,10 @@ var chart = AmCharts.makeChart("chartdiv", {
         {% endfor %}
     ],
     "chartScrollbar": {
-{#        "graph": "g0",#}
+        "graph": "g0",
         "oppositeAxis": false,
-        "offset": 25,
-        "scrollbarHeight": 45,
+        "offset": 30,
+        "scrollbarHeight": 80,
         "backgroundAlpha": 0,
         "selectedBackgroundAlpha": 0.1,
         "selectedBackgroundColor": "#888888",
@@ -162,7 +152,7 @@ var chart = AmCharts.makeChart("chartdiv", {
         "limitToGraph": "g0",
         "valueLineAlpha": 0.2,
         "valueZoomable": true,
-        "categoryBalloonDateFormat": "DD MMM YYYY JJ:NN:SS",
+        "categoryBalloonDateFormat": "DD MMM YYYY, JJ:NN",
     },
     "valueScrollbar": {
         "oppositeAxis": false,
@@ -171,14 +161,11 @@ var chart = AmCharts.makeChart("chartdiv", {
     },
     "categoryField": "{{ category_col }}",
     "categoryAxis": {
-{#        "title": "{{ category_title }}",#}
-{#        "titleFontSize":15,#}
-        {% if isDate %}"minPeriod":"hh",{% endif %}
+        {#"gridPosition": "start",#}
         "labelRotation": 0,
         "parseDates": {{ isDate }},
         "dashLength": 1,
-        "minorGridEnabled": true,
-
+        "minorGridEnabled": true
       },
     "export": {
     "enabled": true

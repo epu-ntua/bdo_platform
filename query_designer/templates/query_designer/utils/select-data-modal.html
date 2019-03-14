@@ -12,24 +12,8 @@
             <div class="modal-body">
 
                 <div id="dataset-all-section" class="row">
-                    <form id="dataset-filter-section" class="col-sm-2 filter-section">
-                        <div id="filter-head-div" style="text-align: center; height: 8%;">
-                            <h3 style="">Filters</h3>
-                        </div>
-
-
-
-                        <div style="" >
-                            <button style="height: 4%; margin: 2%; display: inline-block; padding: 2px 4px; position: absolute; top: 0; text-transform: none;  font-size: 95%;"
-                            <button style="height: 4%; margin: 2%; display: inline-block; padding: 2px 4px; position: absolute; top: 0; text-transform: none;  font-size: 95%;"
-                                type="button"
-                                class="jplist-reset-btn btn btn-warning btn-sm"
-                                data-control-type="reset"
-                                data-control-name="reset"
-                                data-control-action="reset">
-                                Reset  <i class="fa fa-undo" style="font-size: 8pt; top: 1px; margin-left: 3px;"></i>
-                            </button>
-                        </div>
+                    <form id="dataset-filter-section" class="col-sm-2">
+                        <h3>Filters</h3>
                         <!-- text filter control -->
                         <div class="form-group label-floating is-empty">
                             <label for="title-filter" class="control-label">Search in title: </label>
@@ -37,7 +21,7 @@
                                 data-control-type="textbox"
                                 data-control-action="filter"
                                 data-control-name="title-filter"
-                                data-path=".dataset-title, .dataset-publisher, .dataset-description"
+                                data-path=".dataset-name"
                                 type="text"
                                 value=""
                                 class="form-control full-width border-input"
@@ -61,52 +45,18 @@
                             </select>
                         </div>
                         <div class="form-group ">
-                            <label for="organization-filter" class="control-label">Publisher: </label>
+                            <label for="publisher-filter" class="control-label">Publisher: </label>
                             <select
-                                title="select organization"
+                                title="select publisher"
                                 data-control-type="filter-select"
                                 data-control-action="filter"
-                                data-control-name="organization-filter"
+                                data-control-name="publisher-filter"
                                 class="form-control full-width"
-                                id="organization-filter"
+                                id="publisher-filter"
                             >
                                 <option value="0" data-path="default" selected>All</option>
-                                {% for org in organizations %}
-                                    {% if org.id != 1 %}
-                                        <option value="{{ org.id }}" data-path="[data-publisher-id='{{ org }}']">{{ org }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group ">
-                            <label for="observation-filter" class="control-label">Observation Type: </label>
-                            <select
-                                title="select observation type"
-                                data-control-type="filter-select"
-                                data-control-action="filter"
-                                data-control-name="observation-filter"
-                                class="form-control full-width"
-                                id="observation-filter"
-                            >
-                                <option value="0" data-path="default" selected>All</option>
-                                {% for observation in observations %}
-                                    <option value="{{ observation }}" data-path="[data-observations='{{ observation }}']">{{ observation }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group ">
-                            <label for="license-filter" class="control-label">License: </label>
-                            <select
-                                title="select license type"
-                                data-control-type="filter-select"
-                                data-control-action="filter"
-                                data-control-name="license-filter"
-                                class="form-control full-width"
-                                id="license-filter"
-                            >
-                                <option value="0" data-path="default" selected>All</option>
-                                {% for license in licenses %}
-                                    <option value="{{ license }}" data-path="[data-license='{{ license }}']">{{ license }}</option>
+                                {% for publisher in publishers %}
+                                        <option value="{{ publisher }}" data-path="[data-publisher='{{ publisher }}']">{{ publisher }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -131,27 +81,6 @@
 {#                                Is private dataset#}
 {#                            </label>#}
 {#                        </div>#}
-
-                        <div
-                            class="jplist-group checkbox"
-                            data-control-type="checkbox-group-filter"
-                            data-control-action="filter"
-                            data-control-name="is-updating-filter">
-
-                            <label class="form-check-label">
-                                <input
-                                    data-path="[data-is-updating='True']"
-                                    id="is-updating-filter"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    value=""
-                                />
-                                <span class="form-check-sign">
-                                    <span class="check"></span>
-                                </span>
-                                Is updating dataset
-                            </label>
-                        </div>
 
                         <div
                             class="jplist-group checkbox"
@@ -199,103 +128,7 @@
                     <div id="dataset-list-section" class="col-sm-6">
                         <h3>BDO Datasets</h3>
 
-                        <div class="selection-body filter-section">
-                        <div
-                             class="dropdown"
-                             style="width: 35%; position: absolute; top: 5px;"
-                             data-control-type="boot-sort-drop-down"
-                             data-control-name="bootstrap-sort-dropdown"
-                             data-control-action="sort"
-                             data-datetime-format="{month}/{day}/{year}"> <!-- {year}, {month}, {day}, {hour}, {min}, {sec} -->
-            {#                <span id="sort-by-span">#}
-                                <div style="display: inline-block; font-size: 95%; margin: 0;">Sort:</div>
-                                <button
-                                     style="padding: 2px 10px;  text-transform: none; margin: 0; font-size: 95%;"
-                                     class="btn btn-sm btn-warning dropdown-toggle"
-                                     type="button"
-                                     id="sort-by-dropdown-btn"
-                                     data-toggle="dropdown"
-                                     aria-expanded="true">
-                                     <span data-type="selected-text">Sort:</span>
-                                     <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                                    <li role="presentation">
-                                        <a
-                                           role="menuitem"
-                                           tabindex="-1"
-                                           href="#"
-                                           data-path=".dataset-id"
-                                           data-order="asc"
-                                           data-type="text"
-                                           data-default="true">Default</a>
-                                     </li>
-
-                                     <li role="presentation" class="divider"></li>
-
-                                     <li role="presentation">
-                                        <a
-                                           role="menuitem"
-                                           tabindex="-1"
-                                           href="#"
-                                           data-path=".dataset-title"
-                                           data-order="asc"
-                                           data-type="text"
-                                           data-default="true">Dataset title A-Z</a>
-                                     </li>
-                                    <li role="presentation">
-                                        <a
-                                           role="menuitem"
-                                           tabindex="-1"
-                                           href="#"
-                                           data-path=".dataset-title"
-                                           data-order="desc"
-                                           data-type="text">Dataset title Z-A</a>
-                                    </li>
-                                    <li role="presentation" class="divider"></li>
-                                    <li role="presentation">
-                                        <a
-                                           role="menuitem"
-                                           tabindex="-1"
-                                           href="#"
-                                           data-path=".dataset-publisher"
-                                           data-order="asc"
-                                           data-type="text"
-                                           data-default="true">Publisher A-Z</a>
-                                     </li>
-                                    <li role="presentation">
-                                        <a
-                                           role="menuitem"
-                                           tabindex="-1"
-                                           href="#"
-                                           data-path=".dataset-publisher"
-                                           data-order="desc"
-                                           data-type="text">Publisher Z-A</a>
-                                    </li>
-                                    <li role="presentation" class="divider"></li>
-                                    <li role="presentation">
-                                        <a
-                                           role="menuitem"
-                                           tabindex="-1"
-                                           href="#"
-                                           data-path=".dataset-last_updated"
-                                           data-order="asc"
-                                           data-type="text"
-                                           data-default="true">Last Updated (recent first)</a>
-                                     </li>
-                                    <li role="presentation">
-                                        <a
-                                           role="menuitem"
-                                           tabindex="-1"
-                                           href="#"
-                                           data-path=".dataset-last_updated"
-                                           data-order="desc"
-                                           data-type="text">Last Updated (recent last)</a>
-                                    </li>
-                                    <li role="presentation" class="divider"></li>
-                                </ul>
-            {#                </span>#}
-                        </div>
+                        <div class="selection-body">
                             {% for dataset in datasets.all %}
                                 <div class="dataset_collapse_div dataset-section">
                                     <div class="dataset-name" data-dataset-id="{{ dataset.id }}" data-selected>
@@ -303,13 +136,12 @@
                                         <div class="dataset-title">
                                             {{ dataset.title }}
                                         </div>
-                                        <div>
-                                            <div style="display: inline-block;" class="dataset-publisher">By {{ dataset.publisher }}</div> <span class="pull-right last_updated_in_title">{% if dataset.last_updated is None or dataset.last_updated == '' %}Static dataset{% else %}Last updated: {{ dataset.last_updated }}{% endif %}</span>
+                                        <div class="dataset-publisher">
+                                            {{ dataset.publisher }}
                                         </div>
                                     </div>
                                     <div class="dataset-info hidden">
                                         <div class="dataset-metadata" data-dataset-id="{{ dataset.id }}" data-selected>
-                                            <div style="padding: 13px 7px;"><strong>Description: </strong>{% if dataset.description is None or dataset.description == '' %}No description available{% else %}{{ dataset.description }}{% endif %}</div>
                                             <table class="table table-condensed table-striped">
                                                 <thead>
                                                     <tr>
@@ -322,7 +154,7 @@
                                                         <td>Title</td>
                                                         <td>{{ dataset.title }}</td>
                                                     </tr>
-                                                    <tr class="dataset-organization" data-publisher-id="{{ dataset.publisher }}">
+                                                    <tr class="dataset-publisher" data-publisher="{{ dataset.publisher }}">
                                                         <td>Publisher</td>
                                                         <td>{{ dataset.publisher }}</td>
                                                     </tr>
@@ -335,90 +167,31 @@
                                                             {% endif %}
                                                         </td>
                                                     </tr>
-                                                    <tr class="dataset-license" data-license="{{ dataset.license }}">
+                                                    <tr>
                                                         <td>License</td>
                                                         <td>{{ dataset.license }}</td>
                                                     </tr>
-                                                    <tr class="dataset-observations" data-observations="{{ dataset.observations }}">
+                                                    <tr>
                                                         <td>Observation type</td>
-                                                        <td>{{ dataset.observations }}</td>
+                                                        <td>{{ dataset.observation }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Source</td>
-                                                        <td>{{ dataset.source }}</td>
+                                                        <td>Description</td>
+                                                        <td>{{ dataset.description }}</td>
                                                     </tr>
-                                                    <tr>
-                                                        <td>Size</td>
-                                                        <td>{{ dataset.number_of_rows_formated }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Source</td>
-                                                        <td>{{ dataset.source }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                    <tr class="dataset-last_updated" last_updated="{{ dataset.last_updated }}">
-                                                        <td>Last Updated</td>
-                                                        <td>{% if dataset.last_updated is None  or dataset.last_updated == '' %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</td>
-                                                    </tr>
-                                                    {% for key, value in dataset.metadata.items %}
-                                                        {% if value is not None and value != "" %}
-                                                            <tr>
-                                                                <td>{{ key }}</td>
-                                                                <td>{{ value }}</td>
-                                                            </tr>
-                                                        {% endif %}
-                                                    {% endfor %}
                                                     <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
 
-                                                    </tr>
-                                                    <tr class="is-updating" data-is-updating='{% if dataset.last_updated == '' or dataset.last_updated == None %}False{% else %}True{% endif %}'>
                                                     </tr>
                                                     <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div class="dataset-coverage-div">
-                                            <table class="table table-condensed table-striped">
-                                                <thead>
-                                                    <tr>
-                                                        <th class="col-sm-4" style="text-align: center; font-weight: bold;">Property</th>
-                                                        <th style="text-align: center; font-weight: bold;">From</th>
-                                                        <th style="text-align: center; font-weight: bold;">To</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>Spatial coverage (lat)</td>
-                                                        <td>{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-{% else %}{{ dataset.spatialSouth }}{% endif %}</td>
-                                                        <td>{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}-{% else %}{{ dataset.spatialNorth }}{% endif %}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Spatial coverage (lon)</td>
-                                                        <td>{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-{% else %}{{ dataset.spatialWest }}{% endif %}</td>
-                                                        <td>{% if dataset.spatialEast is None or dataset.spatialEast == '' %}-{% else %}{{ dataset.spatialEast }}{% endif %}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Temporal coverage</td>
-                                                        <td>{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}-{% else %}{{ dataset.temporalCoverageBegin }}{% endif %}</td>
-                                                        <td>{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}-{% else %}{{ dataset.temporalCoverageBegin }}{% endif %}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                            {% if dataset.hascoverage_img%}
-                                                {% with 'aggregator/img/coverage/'|add:dataset.title|add:'.PNG' as image_static %}
-                                                    <img src="{% static image_static %}" alt="coverage image">
-                                                {% endwith %}
-                                            {% else %}
-{#                                                <p>Coverage info not available</p>#}
-                                                <p>Coverage image not available</p>
-                                            {% endif %}
-                                        </div>
                                         <div class="dataset-dimensions-div">
                                             <ul class="list-group">
                                                 {% for dimension in dataset.variables.first.dimensions.all %}
                                                     <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
-                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
+                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
                                                     </li>
                                                 {% endfor %}
                                             </ul>
@@ -431,20 +204,17 @@
                                                         data-variable-unit="{{ variable.unit }}"
                                                         data-variable-id="{{ variable.id }}"
                                                         data-variable-title="{{ variable.title }}"
-                                                        data-variable-datatype="{{ variable.dataType }}"
-                                                        data-selected="False"
-                                                        data-variable-dataset="{{ dataset.id }}">
-                                                        <span class="variable-id" hidden>{{ variable.id }}</span>
+                                                        data-selected="False">
+                                                        <span class="variable-id " hidden>{{ variable.id }}</span>
                                                         <ul class="variable-dimensions" hidden>
                                                             {% for dimension in variable.dimensions.all %}
                                                                 <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
-                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
+                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}">{{ dimension.name }}</span>
                                                                 </li>
                                                             {% endfor %}
                                                         </ul>
-                                                        <span data-dataset={{ dataset.id }} class="variable-title" title="{{ variable.description }}">{{ variable.title }}
+                                                        <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}
                                                             (<span class="variable-unit">{{ variable.unit }}</span>)
-{#                                                            <span class="variable-info-icon"><i class="fas fa-info"></i></span>#}
                                                             <span class="variable-check-icon pull-right"><i class="fas fa-check"></i></span>
                                                         </span>
                                                     </li>
@@ -461,16 +231,14 @@
                     </div>
                     <div id="dataset-info-section" class="col-sm-4">
                         <h3>Dataset Info</h3>
-
                         <div id="dataset_info_div" class="hidden">
                             <div id="dataset_basic_info_div">
 
                             </div>
                             <div id="pills_div">
                                 <ul class="nav nav-pills nav-justified">
-                                    <li class="active"><a href="#dataset_var_dim_div" data-toggle="pill" >Columns</a></li>
-                                    <li><a href="#dataset_metadata_div" data-toggle="pill" >Info</a></li>
-                                    <li><a href="#dataset-coverage-div" data-toggle="pill" >Coverage</a></li>
+                                  <li class="active"><a href="#dataset_var_dim_div" data-toggle="pill" >Columns</a></li>
+                                  <li><a href="#dataset_metadata_div" data-toggle="pill" >Info</a></li>
                                 </ul>
                             </div>
                             <div class="tab-content">
@@ -499,8 +267,7 @@
                                     </div>
                                 </div>
                                 <div id="dataset_metadata_div" class="tab-pane fade">
-                                </div>
-                                <div id="dataset-coverage-div"  class="tab-pane fade">
+
                                 </div>
                             </div>
                         </div>
@@ -540,4 +307,3 @@
         </div>
     </div>
 </div>
-

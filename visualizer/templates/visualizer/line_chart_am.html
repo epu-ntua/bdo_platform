@@ -46,7 +46,7 @@ var chart = AmCharts.makeChart("chartdiv", {
         "maxColumns": 4,
         "position": "bottom",
         "markerSize": 15,
-        "marginTop": 30,
+        "marginTop": 20,
         "switchable": true,
         "fontSize": 15,
         "equalWidths": false,
@@ -61,7 +61,7 @@ var chart = AmCharts.makeChart("chartdiv", {
                                  return String(Math.round(value*1000)/1000) +" "+ String(un);
                              }
                              else return valueText;
-        }
+                }
     },
     "marginRight": 20,
     "marginLeft": 20,
@@ -87,16 +87,6 @@ var chart = AmCharts.makeChart("chartdiv", {
         "shadowAlpha": 0,
         "fontSize": 15,
     },
-    "allLabels": [{
-        "text": "{{ category_title }}",
-        "bold": true,
-        "x": "50%",
-        "y": "89%",
-        "rotation": 0,
-        "width": "100%",
-        "align": "middle",
-        "size": 15
-    }],
     "graphs": [
         {% for item in value_col %}
             {
@@ -132,10 +122,10 @@ var chart = AmCharts.makeChart("chartdiv", {
         {% endfor %}
     ],
     "chartScrollbar": {
-{#        "graph": "g0",#}
+        "graph": "g0",
         "oppositeAxis": false,
-        "offset": 25,
-        "scrollbarHeight": 45,
+        "offset": 10,
+        "scrollbarHeight": 30,
         "backgroundAlpha": 0,
         "selectedBackgroundAlpha": 0.1,
         "selectedBackgroundColor": "#888888",
@@ -178,8 +168,6 @@ var chart = AmCharts.makeChart("chartdiv", {
     },
     "categoryField": "{{ category_col }}",
     "categoryAxis": {
-{#        "title": "{{ category_title }}",#}
-{#        "titleFontSize":15,#}
         "parseDates": {{ isDate }},
         {% if isDate %}"minPeriod": "{{ min_period }}",{% endif %}
         "dashLength": 1,

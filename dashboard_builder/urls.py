@@ -9,7 +9,6 @@ urlpatterns = [
     url('save/(?P<pk>\d+)/$', views.save_dashboard, name='save_dashboard'),
 
     url('delete/(?P<pk>\d+)/$', views.delete_dashboard, name='delete_dashboard'),
-    url('share/(?P<pk>\d+)/$', views.delete_dashboard, name='share_dashboard'),
 
     url('edit/(?P<pk>\d+)/$', views.edit_dashboard, name='edit_dashboard'),
 

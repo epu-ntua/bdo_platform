@@ -78,9 +78,7 @@ INSTALLED_APPS = [
     'uploader',
     'on_demand',
     'data_parser',
-    'feedback_form',
-    'access_controller',
-    'wave_energy_pilot'
+    'feedback_form'
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -227,7 +225,7 @@ CKEDITOR_UPLOAD_PATH ='uploads/'
 
 CKEDITOR_CONFIGS = {
     'default': {
-        'toolbar': 'full',
+        # 'skin': 'moono',
     },
 }
 

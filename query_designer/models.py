@@ -74,8 +74,6 @@ class AbstractQuery(Model):
             }[op.lower()][0 if mode == 'postgres' else 1]
         else:
             return {
-                'not_null': (' IS NOT NULL ', None),
-
                 # comparison
                 'eq': ('=', ':'),
                 'neq': ('!=', None),

@@ -84,14 +84,6 @@
             box-shadow: 0px 1px 0px 0px rgba(230, 230, 230, 0.97), 0px 0px 0px 0px rgba(153, 153, 153, 0.2), 0px 0px 0px 0 rgba(153, 153, 153, 0.12)
         }
 
-        body nav .navbar-right .dropdown li:not(:first-child):hover {
-            background-color: #1d567e !important;
-        }
-
-        body nav .navbar-right .dropdown li:hover a{
-            color: white !important;
-        }
-
         nav .btn:not(.btn-just-icon):not(.btn-fab) .fa, .navbar .navbar-nav > li > a.btn:not(.btn-just-icon):not(.btn-fab) .fa {
             margin-top: 0;
             top: 0px;
@@ -108,18 +100,6 @@
 
         .navbar-right{
             margin-top: 2px;
-        }
-
-        .navbar-right a{
-            width: 100%;
-            display: inline-block;
-            cursor: pointer;
-            padding: 10px 0px;
-        }
-
-        .navbar-right p{
-            margin: 0;
-            padding: 0;
         }
 
         .navbar .form-group.is-focused .form-control {
@@ -173,13 +153,6 @@
 {#                            </a>#}
 {#                        </span>#}
                         <span class="dropdown">
-                            <a href="/bdo/?data-on-top=true" class="btn bg-color--blue dropdown-toggle"
-                               style="padding: 9px 10px;">
-                                <i class="fas fa-server o-white"></i>
-                                BDO Datasets
-                            </a>
-                        </span>
-                        <span class="dropdown">
                             <a href="/services/" class="btn bg-color--blue dropdown-toggle"
                                style="padding: 9px 10px;">
                                 <i class="fas fa-desktop o-white"></i>
@@ -198,19 +171,11 @@
                                 <li><a href="/dashboards/create/" style="font-size: 1.1em;"><i class="fas fa-bar-chart margin-right-5"></i> <span>Create a dashboard</span></a></li>
 {#                                <li><a href="/analytics/create/" style="font-size: 1.1em;"><i class="fas fa-chart-line margin-right-5"></i> <span>Create an analysis</span></a></li>#}
                                 <li><a href="/service_builder/create/" style="font-size: 1.1em;"><i class="fas fa-cogs margin-right-5"></i><span>Create a service</span></a></li>
-                                {% if request.user.is_superuser %}
-                                    <li><a href="/upload" style="font-size: 1.1em;"><i class="fas fa-cloud-upload-alt margin-right-4"></i> <span>Upload a dataset</span></a></li>
-                                    <li><a href="http://212.101.173.48:5000/" style="font-size: 1.1em;"><i class="fa fa-code margin-right-4"></i> <span>Process metadata</span></a></li>
-    {#								<li><a href="/parse" style="font-size: 1.1em;"><i class="fas fa-file-medical-alt margin-right-5"></i> <span>Parse a dataset</span></a></li>#}
-                                {% endif %}
+                                <li><a href="/upload" style="font-size: 1.1em;"><i class="fas fa-cloud-upload-alt margin-right-4"></i> <span>Upload a dataset</span></a></li>
+{#								<li><a href="http://212.101.173.21:5000" style="font-size: 1.1em;"><i class="fa fa-code margin-right-4"></i> <span>Process metadata</span></a></li>#}
+{#								<li><a href="/parse" style="font-size: 1.1em;"><i class="fas fa-file-medical-alt margin-right-5"></i> <span>Parse a dataset</span></a></li>#}
+
                             </ul>
-                        </span>
-                        <span class="dropdown">
-                            <a href="/on-demand/" class="btn bg-color--blue dropdown-toggle"
-                               style="padding: 9px 10px;">
-                                <i class="fas fa-th o-white"></i>
-                                Requests
-                            </a>
                         </span>
 					</div>
 					<div class="collapse navbar-collapse">
@@ -247,7 +212,7 @@
 									<li><a href="#">You have no new notifications</a></li>
 								</ul>
 							</li>
-							<li class="dropdown">
+							<li>
                                 {% if request.user.is_authenticated %}
                                     <a href="/" class="dropdown-toggle" data-toggle="dropdown">
                                        <i class="material-icons">person</i>
@@ -256,7 +221,6 @@
                                     <ul class="dropdown-menu" style="text-align: right;">
                                         <li style="padding: 10px 20px;">Welcome <b>{{ request.user.username }}</b></li>
                                         <li style="padding: 5px 20px;"><p><a href="/profile/{{ request.user.username }}/">Profile</a></p></li>
-                                        <li style="padding: 5px 20px;"><p><a href="/access_control/requests/">Access requests</a></p></li>
                                         <li style="padding: 5px 20px;"><p><a href="/accounts/logout/">Logout</a></p></li>
                                     </ul>
                                 {% else %}

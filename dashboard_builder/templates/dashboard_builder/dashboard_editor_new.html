@@ -52,11 +52,9 @@
         <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" >
             Save Dashboard
         </button>
-        {% if is_owner %}
-            <button data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_dashboard_btn" style="float: right; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;" class="btn btn-md">
-                 <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Dashboard</span>
-            </button>
-        {% endif %}
+        <button data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_dashboard_btn" style="float: right; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;" class="btn btn-md">
+             <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Dashboard</span>
+        </button>
     </div>
 
 
@@ -227,7 +225,7 @@
                                             {% for var in el.select %}
                                                 {% if var.exclude == False or var.exclude == ''%}
                                                      {% if var.type == 'VALUE' %}
-                                                             <option value="{{ var.name }}" data-datatype="{{ var.datatype }}">{{ var.title }}</option>
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
                                                      {% endif %}
 
                                                 {% endif %}
@@ -243,7 +241,7 @@
                                             {% for var in el.select %}
                                                 {% if var.exclude == False or var.exclude == ''%}
                                                     {% if var.type != 'VALUE' %}
-                                                             <option value="{{ var.name }}" data-datatype="{{ var.datatype }}">{{ var.title }}</option>
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
                                                      {% endif %}
                                                 {% endif %}
                                             {% endfor %}
@@ -278,7 +276,6 @@
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
     <script type="text/javascript">
         var img_source_path =  "{% static "img/loading_gif.gif" %}";
-        var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');
     </script>
     <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
     <script>

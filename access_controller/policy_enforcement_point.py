@@ -26,13 +26,6 @@ class PEP:
         return decision
 
     @staticmethod
-    def access_to_edit_dashboard(request, dashboard_id):
-        request_user = request.user
-        request_time = datetime.now()
-        decision = PDP.resolve_access_to_edit_dashboard(request_user, request_time, dashboard_id)
-        return decision
-
-    @staticmethod
     def access_to_service(request, service_id):
         request_user = request.user
         request_time = datetime.now()

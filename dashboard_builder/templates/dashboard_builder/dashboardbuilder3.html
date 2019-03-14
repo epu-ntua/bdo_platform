@@ -213,7 +213,7 @@
                                             {% for var in el.select %}
                                                 {% if var.exclude == False or var.exclude == ''%}
                                                      {% if var.type == 'VALUE' %}
-                                                             <option value="{{ var.name }}" data-datatype="{{ var.datatype }}">{{ var.title }}</option>
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
                                                      {% endif %}
 
                                                 {% endif %}
@@ -229,7 +229,7 @@
                                             {% for var in el.select %}
                                                 {% if var.exclude == False or var.exclude == ''%}
                                                     {% if var.type != 'VALUE' %}
-                                                             <option value="{{ var.name }}" data-datatype="{{ var.datatype }}">{{ var.title }}</option>
+                                                             <option value="{{ var.name }}">{{ var.title }}</option>
                                                      {% endif %}
                                                 {% endif %}
                                             {% endfor %}
@@ -282,7 +282,11 @@
         var img_source_path =  "{% static "img/loading_gif.gif" %}";
         var to_create_ = "{{ toCreate }}";
         $('#prebuilt_viz').val(to_create_);
-        var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');
+{#        if (to_create_ !== 'None'){#}
+{#            $('#viz-iframe').html('<div class="loadingFrame">' +#}
+{#                    '                    <img src="' + img_source_path + '"/>' +#}
+{#                    '                </div>');#}
+{#        }#}
     </script>
     <script type="text/javascript" src="{% static 'dashboard_builder/js/angular_dashboard_layout.js' %}"></script>
     <script type="text/javascript" src="{% static 'dashboard_builder/js/multilayer_viz_dashboard_ui.js' %}"></script>

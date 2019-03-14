@@ -42,7 +42,6 @@ $(document).ready(function() {
         mapprev.scrollWheelZoom.disable();
         mapprev.boxZoom.disable();
         mapprev.keyboard.disable();
-
     }
 
     function set_bounds_filters() {
@@ -99,9 +98,6 @@ $(document).ready(function() {
 
     map_init();
 
-    // FOR MAPPREV RIGHT DISPLAY
-    $('#filters_div').removeClass('in').removeClass('active');
-    $('#variables_div').addClass('in').addClass('active');
 
     //
     $('#bounds').addClass('after-data-selection');
@@ -167,9 +163,9 @@ $(document).ready(function() {
 
 
     $('#lat_min, #lat_max, #lon_min, #lon_max').change(function () {
-        $('#mapchoices option[value=-1]').prop('disabled', 'enabled');
-        $('#mapchoices').val(-1);
-        $('#mapchoices').trigger('change');
+        // $('#mapchoices option[value=-1]').prop('disabled', 'enabled');
+        // $('#mapchoices').val(-1);
+        // $('#mapchoices').trigger('change');
         $('#mapchoices').val(null).trigger('change');
         if ((!isNaN($('#lat_min').val())&&($('#lat_min').val()!=="")) && (!isNaN($('#lat_max').val())&&($('#lat_max').val()!=="")) && (!isNaN($('#lon_min').val())&&($('#lon_min').val()!=="")) && (!isNaN($('#lon_max').val())&&($('#lon_max').val()!==""))) {
             bounds = [parseFloat($('#lat_min').val()), parseFloat($('#lon_min').val()), parseFloat($('#lat_max').val()), parseFloat($('#lon_max').val())];

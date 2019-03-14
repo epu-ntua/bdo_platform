@@ -7,21 +7,16 @@
 {% endblock %}
 
 {% block content %}
-    {% csrf_token %}
+
     <h2 class="text-center">{{ dashboard.title }}</h2>
-    {% if can_edit or is_owner %}
+    {% if is_owner %}
         <div class="row">
             <a href="/dashboards/edit/{{ dashboard.id }}/" class="btn btn-default btn-md pull-left bg-color--blue" style="">
-                <i class="fas fa-edit"></i> Edit
+                <i class="fas fa-edit"></i> Edit Dashboard
             </a>
-            <button data-toggle="modal" data-target="#shareModal" type ="button" id="share_dashboard_btn" style="" class="btn btn-success btn-md pull-left">
-                 <span><i class="fas fa-share"></i>Share</span>
+             <button data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_dashboard_btn" style="float: right; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;" class="btn btn-md">
+                 <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Dashboard</span>
             </button>
-            {% if is_owner %}
-                <button data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_dashboard_btn" style="float: right; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;" class="btn btn-md">
-                     <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete</span>
-                </button>
-            {% endif %}
         </div>
     {% endif %}
 
@@ -67,37 +62,7 @@
           </div>
           <div class="modal-footer">
               <a href="{% url 'delete_dashboard' pk=dashboard.id %}" id="confirm-dashboard-delete" type="button" class="btn btn-primary"  style=" background-color: rgb(160, 0, 0) !important ; margin-top: 0;" class="btn btn-md">Delete</a>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal"  style="float: right;">Cancel</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel" aria-hidden="true" style="width: 50%;top:30vh; left:45vh;">
-      <div class="modal-dialog " role="document" style="width: 50%;">
-        <div class="modal-content" style="height: inherit; ">
-          <div class="modal-header">
-            <h4 style="margin-bottom: 15px; margin-left:10px; font-weight: bold; text-align: center;" class="modal-title" id="deleteModalLabel">Share Dashboard</h4>
-          </div>
-          <div class="modal-body" style="height: inherit;margin-top: 10px;margin-bottom: 30px">
-              <div class="form-group label-floating">
-                    <label for="share_user_input" class="control-label">Enter a user's username or email to share the dashboard with him</label>
-                    <input class="form-control full-width border-input" id="share_user_input" name="share_user_input" type="text"/>
-              </div>
-              <div class="checkbox">
-                    <label class="form-check-label">
-                        <input id="can_edit_input" name="can_edit_input" class="form-check-input" type="checkbox" value="">
-                        <span class="form-check-sign">
-                            <span class="check"></span>
-                        </span>
-                        Can edit
-                    </label>
-              </div>
-          </div>
-          <div class="modal-footer" style="text-align: center;">
-              <button id="confirm-dashboard-share" type="button" class="btn btn-success btn-md"  data-dismiss="modal" style="margin-top: 0; margin-bottom: 0;" >Share</button>
-              <button type="button" class="btn btn-secondary btn-md" data-dismiss="modal"  style="">Cancel</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal"  style="float: right;">Close</button>
           </div>
         </div>
       </div>
@@ -110,70 +75,6 @@
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
     <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
-
-    <script type="text/javascript">
-        // using jQuery
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        $("#confirm-dashboard-share").click(function () {
-            var csrftoken = getCookie('csrftoken');
-            $.ajax({
-                url: '/access_control/share_access_to_resource/dashboard/',
-                type: 'POST',
-                data: {
-                    resource_id: {{ dashboard.id }},
-                    username_or_email: $("#share_user_input").val(),
-                    can_edit: $('#can_edit_input:checkbox:checked').length > 0,
-                    csrfmiddlewaretoken: csrftoken
-                },
-                success: function (result) {
-                    console.log(result);
-                    $.notify({
-                          icon: "add_alert",
-                          message: "Dashboard shared successfully!"
-
-                    },{
-                          type: 'success',
-                          timer: 2000,
-                          placement: {
-                              from: 'top',
-                              align: 'right'
-                          }
-                    });
-                },
-                error: function (result) {
-                    console.log(result);
-                    $.notify({
-                          icon: "add_alert",
-                          message: result.responseJSON.error
-
-                    },{
-                          type: 'danger',
-                          timer: 2000,
-                          placement: {
-                              from: 'top',
-                              align: 'right'
-                          }
-                    });
-                }
-            });
-            $("#share_user_input").val('');
-            $('#can_edit_input:checkbox').prop('checked', false);
-        });
-    </script>
 
 
 <script type="text/javascript">

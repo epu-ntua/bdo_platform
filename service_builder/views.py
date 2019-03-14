@@ -546,14 +546,12 @@ def load_template(request):
 
 def updateServiceInstanceVisualizations(execution_id, url):
     service_exec = ServiceInstance.objects.get(pk=execution_id)
-    for key in service_exec.dataframe_visualizations.keys():
-        viz = service_exec.dataframe_visualizations[key]
+    for viz in service_exec.dataframe_visualizations:
         if viz['url'] == url and not viz['done']:
             viz['done'] = True
             break
     all_done = True
-    for key in service_exec.dataframe_visualizations.keys():
-        viz = service_exec.dataframe_visualizations[key]
+    for viz in service_exec.dataframe_visualizations:
         if not viz['done']:
             all_done = False
             break
@@ -660,7 +658,7 @@ def APIcreateInputFileForHCMRSpillSimulator(request):
                                                                SIM_TYPE, str(SPILL_NUM), STEP, VOLUME, WAVE_MODEL,
                                                                WIND_MODEL, point_info_list)
             print 'InputString:{0}'.format(OilSpillInputString)
-            from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME, FTPPASS
+            FTPSERVER, FTPUSERNAME, FTPPASS = 'tethys.hcmr.gr', 'bdo', '!p1l0t2#'
 
             #Save Oil Spill Simulation input string to a text file in ftp
             ftp = ftplib.FTP(FTPSERVER)
@@ -764,7 +762,7 @@ def APIcheckIfOutputExistsforHCMRSpillSimulator(request):
             LATLON = request.GET['LATLON0']
             DATETIME = request.GET['DATETIME0']
 
-            from temp.FTPConnectionSettings import FTPSERVER, FTPUSERNAME, FTPPASS
+            FTPSERVER, FTPUSERNAME, FTPPASS = 'tethys.hcmr.gr','bdo', '!p1l0t2#'
 
             # Check the out directory
             ftp = ftplib.FTP(FTPSERVER)
