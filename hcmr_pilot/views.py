@@ -1,20 +1,50 @@
 import requests
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 import time
 from pandas import DataFrame
 from .forms import HCMRForm
 import calculate_red_points as red_points_calc
+from django.conf import settings
+from service_builder.models import Service, ServiceInstance
+from threading import Thread
+from datetime import datetime
 
 
 def init(request):
     form = HCMRForm()
-    return render(request, 'hcmr_pilot/load_service.html', {'form': form})
+    scenario = request.GET['scenario']
+    print scenario
+
+    execution_steps = dict()
+    execution_steps['OIL_SPILL_SCENARIO_1'] = ["starting service", "Creating simulation request",
+                                               "Simulation running", "Simulation results received",
+                                               "Transforming data to be shown on map",
+                                               "Calculating oil spill intersections with protected areas", "done"]
+    return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps})
 
 
-def results(request):
+def results(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    visualization_url = service_exec.dataframe_visualizations['v1']
+    filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
+    location_lat = '123'
+    location_lon = '321'
+    start_date = '2019-03-12 12:00'
+    model_title = 'Agean/Ionias Posidon'
 
-    return render(request, 'hcmr_pilot/oilspill-results.html')
+    context = {
+        'url': visualization_url,
+        'out_filepath': filename_output,
+        'result': [],
+        'service_title': 'Oil Spill - Scenario 1 title',
+        'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
+                              'value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
+                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': 'from ' + str(start_date)},
+                             {'icon': 'fas fa-database', 'text': 'Model used:', 'value': str(model_title)}],
+
+    }
+    return render(request, 'hcmr_pilot/oilspill-results.html', context)
 
 
 def index(request):
@@ -27,35 +57,77 @@ def index(request):
     return render(request, 'hcmr_pilot/config-service-form-fields.html', {'form': form})
 
 
-def process(request):
+def execute(request):
+    service = Service.objects.get(pk=settings.OIL_SPILL_SERVICE_ID)
+    service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
+                                   status="starting service", dataframe_visualizations=[])
+    service_exec.save()
+    # Spawn thread to process the data
+    t = Thread(target=process, args=(request, service_exec.id))
+    t.start()
+    return JsonResponse({'exec_instance': service_exec.id})
+
+
+def process(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    service = Service.objects.get(pk=service_exec.service_id)
     # 1)Create input file
+    service_exec.status = "Creating simulation request"
+    service_exec.save()
     filename, url_params = create_inp_file_from_request_and_upload(request)
     # 2)Calculate oil spill
-    wait_until_output_ready(url_params)
-    filename_output = str(filename).replace("_F.inp", "_F.out")
-    hcmr_data_filename = str(filename).replace("_F.inp", ".json")
-    red_points_filename = str(filename).replace("_F.inp", ".txt")
+    service_exec.status = "Simulation running"
+    service_exec.save()
+    found = wait_until_output_ready(url_params, request)
+    if found:
+        service_exec.status = "Simulation results received"
+        service_exec.save()
+        filename_output = str(filename).replace("_F.inp", "_F.out")
+        hcmr_data_filename = str(filename).replace("_F.inp", ".json")
+        red_points_filename = str(filename).replace("_F.inp", ".txt")
 
-    # 3)Transform data to show in map
-    spill_data, parcel_data = create_json_from_out_file(
-        'service_builder/static/services_files/hcmr_service_1/' + filename_output)
+        # 3)Transforming data to be shown on map
+        service_exec.status = "Transforming data to be shown on map"
+        service_exec.save()
+        output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
+        spill_data, parcel_data = create_json_from_out_file(
+            output_path)
 
-    headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
-    parcel_df = DataFrame(parcel_data, columns = headers_parcel)
+        headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
+        parcel_df = DataFrame(parcel_data, columns = headers_parcel)
 
-    print(parcel_df.head(10))
-    parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
+        print(parcel_df.head(10))
+        parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
 
-    # 4)Calculate red points
-    red_points_calc.calculate(hcmr_data_filename, red_points_filename)
+        # 4)Calculate red points
+        red_points_calc.calculate(hcmr_data_filename, red_points_filename)
+        service_exec.status = "Calculating oil spill intersections with protected areas"
+        service_exec.save()
 
-    # 5)Create Visualization
-    visualization_url = "http://localhost:8000/visualizations/map_markers_in_time_hcmr/" + "?notebook_id=2DX2PVRRQ&df=parcel_data_df&markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
-    context = {
-        'url': visualization_url,
-    }
-    return render(request, 'hcmr_pilot/oilspill-results.html', context)
+        # 5)Create Visualization
+        visualization_url = "http://" + request.META[
+            'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
 
+        service_exec.dataframe_visualizations = {"v1": visualization_url}
+        service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{"out_filepath": filename_output}]}
+        service_exec.status = "done"
+        service_exec.save()
+
+        # context = {
+        #     'url': visualization_url,
+        #     'out_filepath': filename_output,
+        # }
+        # return render(request, 'hcmr_pilot/oilspill-results.html', context)
+    else:
+        # html = "<html><body>Something went wrong. Please, try again.</body></html>"
+        # return HttpResponse(html)
+        service_exec.status = "failed"
+        service_exec.save()
+
+
+def status(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    return JsonResponse({'status': service_exec.status})
 
 
 def create_json_from_out_file(filename_output):
@@ -95,30 +167,28 @@ def create_json_from_out_file(filename_output):
     return spill_data, parcel_data
 
 
-def wait_until_output_ready(params):
+def wait_until_output_ready(params, request):
     found = False
     error = False
     tries = 12
     while (not found) and (tries > 0) and (not error):
         tries -= 1
         time.sleep(2)
-        response = requests.get(
-            "http://localhost:8000/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/?"+params)
+        response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/?" + params)
         print(response)
         print "<status>" + str(response.status_code) + "</status>"
         if int(response.status_code) == 200:
-            return
+            return True
         elif int(response.status_code) == 300:
             continue
         else:
-            return
+            return False
 
 
 def create_inp_file_from_request_and_upload(request):
-    spill_infos = parse_request_params(request)
-    url_params = build_request_params_for_file_creation(spill_infos)
-    response = requests.get(
-        "http://localhost:8000/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
+    spill_infos, wave_model, ocean_model = parse_request_params(request)
+    url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model)
+    response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
     filename = ''
     if int(response.status_code) == 200:
@@ -127,7 +197,7 @@ def create_inp_file_from_request_and_upload(request):
     return filename, url_params
 
 
-def build_request_params_for_file_creation(spill_info_list):
+def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_model):
     url_params = ''
     idx = 0
     for point in spill_info_list:
@@ -146,7 +216,8 @@ def build_request_params_for_file_creation(spill_info_list):
         url_params += "&DATETIME"+str(idx)+"=" + year + '%20' + month + '%20' + day+'+'+hours+mins
         url_params += "&VOLUME"+str(idx)+"=" + str(oil_volume)
         idx += 1
-
+    url_params += '&WAVE_MODEL='+str(wave_model)
+    url_params += '&OCEAN_MODEL='+ str(ocean_model)
     return url_params
 
 
@@ -159,12 +230,14 @@ def parse_request_params(request):
         spill_info['start_date'] = start_date = request.GET.get('start_date'+str(i))
         spill_info['oil_volume'] = oil_volume = request.GET.get('oil_volume'+str(i))
         print (latitude,longitude, start_date, oil_volume)
-        if (latitude == '' or longitude == '' or start_date == '' or oil_volume == ''):
+        if (latitude == '' or latitude == 'undefined' or longitude == '' or longitude == 'undefined' or start_date == '' or start_date == 'undefined' or oil_volume == '' or oil_volume == 'undefined' ):
             break
         else:
             spill_infos.append(spill_info)
         print(spill_infos)
-    return spill_infos
+    wave_model = request.GET.get('wave_model')
+    ocean_model = request.GET.get('hd_model')
+    return spill_infos, wave_model, ocean_model
 
 
 def is_integer_string(s):
@@ -173,3 +246,11 @@ def is_integer_string(s):
         return True
     except ValueError:
         return False
+
+
+def download(request):
+    out = request.GET.get('file')
+    content = open('service_builder/static/services_files/hcmr_service_1/'+out).read()
+    print(content)
+    response = HttpResponse(content, content_type='text/plain')
+    return response

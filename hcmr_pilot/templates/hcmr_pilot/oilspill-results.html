@@ -1,381 +1,60 @@
+{% extends "hcmr_pilot/service_output.html" %}
 {% load static %}
-{% load leaflet_tags %}
-
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}"/>
-    <link rel="icon" type="image/png" href="{% static 'img/favicon.ico' %}"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-
-    <title>Big Data Ocean | {% block title %}Online Platform{% endblock %}</title>
-
-    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport'/>
-    <meta name="viewport" content="width=device-width"/>
-
-    <!-- Bootstrap core CSS     -->
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"/>
-
-    <!--  Material Dashboard CSS    -->
-    <link href="{% static 'css/material-dashboard.css' %}" rel="stylesheet"/>
-    <link href="{% static 'css/colors.css' %}" rel="stylesheet"/>
-
-    <link href="{% static 'css/jquery.contextMenu.css' %}" rel="stylesheet"/>
-    <link href="{% static 'css/jquery.modal.css' %}" rel="stylesheet"/>
-    <link href="{% static 'css/jquery-ui.min.css' %}" rel="stylesheet"/>
-
-    <link href="{% static 'css/style.css' %}" rel="stylesheet"/>
-
-    <!-- Bootstrap library -->
-    {#	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">#}
-
-    <!-- jQuery library -->
-    {#	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>#}
-
-    <!-- Latest compiled JavaScript -->
-    {#	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>#}
-
-    <!-- Leaflet CSS -->
-    {% leaflet_css %}
-    <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
-
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
-
+{% block css %}
     <style>
-        .form-control {
-            width: auto;
-            display: inline-block;
-            margin: 0 5px;
-        }
-
-        .logo {
-            width: 100px;
-            height: 43px;
-            margin-top: -5px;
-        }
-
-        .navbar.navbar-transparent {
-            background-color: #1d567e;
-            box-shadow: none;
-            border-bottom: 0;
-            color: white;
-        }
-
-        nav .btn, .navbar .navbar-nav li a.btn {
-            border: none;
-            border-radius: 0px;
-            position: relative;
-            padding: 12px 30px;
-            margin: 10px 1px;
-            font-size: 12px;
-            font-weight: 400;
-            text-transform: none;
-            letter-spacing: 0;
-            will-change: box-shadow, transform;
-            transition: box-shadow 0.2s cubic-bezier(0.4, 0, 1, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body nav .navbar-header .dropdown a {
-            margin: 6px 0px;
-            background: #30526a00 !important;
-            box-shadow: 0px 1px 0px 0px rgba(153, 153, 153, 0.14), 0px 0px 0px 0px rgba(153, 153, 153, 0.2), 0px 0px 0px 0 rgba(153, 153, 153, 0.12);
-            font-size: 12pt;
-        }
-
-        body nav .navbar-header .dropdown a:hover {
-            box-shadow: 0px 1px 0px 0px rgba(230, 230, 230, 0.97), 0px 0px 0px 0px rgba(153, 153, 153, 0.2), 0px 0px 0px 0 rgba(153, 153, 153, 0.12)
-        }
-
-        nav .btn:not(.btn-just-icon):not(.btn-fab) .fa, .navbar .navbar-nav > li > a.btn:not(.btn-just-icon):not(.btn-fab) .fa {
-            margin-top: 0;
-            top: 0px;
-        }
-
-        .navbar .btn {
-            /* margin-top: 0; */
-            margin-bottom: 0;
-        }
-
-        .navbar-right .dropdown-menu {
-            color: #30526a;
-        }
-
-        .navbar-right {
-            margin-top: 2px;
-        }
-
-        .navbar .form-group.is-focused .form-control {
-            outline: none;
-            background-image: linear-gradient(#D2D2D2, #D2D2D2), linear-gradient(rgba(210, 210, 210, 0.61), rgba(210, 210, 210, 0.6));
-            background-size: 100% 2px, 100% 1px;
-            box-shadow: none;
-            transition-duration: 0.3s;
-        }
-
-        .nav .btn.btn-just-icon, .navbar .navbar-nav > li > a.btn.btn-just-icon {
-            padding: 8px 8px;
-        }
-
-
+        #location_assessment_statistics{ text-align: center;}
+        #location_assessment_statistics th{text-align: center; font-weight: 600 !important;}
+        #location_assessment_statistics td{text-align: center; }
+        #location_assessment_statistics .panel-primary .panel-heading{background-color: #30526a; color: white;}
+        #location_assessment_statistics .panel-warning .panel-heading{background-color: #8a6d3b; color: white;}
+        #location_assessment_statistics .panel-success .panel-heading{background-color: #3c763d; color: white;}
+        #location_assessment_statistics .panel-default .panel-heading{background-color: #707070; color: white;}
     </style>
 
-    {% block css %}
-    {% endblock %}
-
-    <!--     Fonts and icons     -->
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet">
-    <!-- keeping it for compatibility for now, should delete it-->
-    <link href='https://fonts.googleapis.com/css?family=Roboto:400,700,300|Material+Icons' rel='stylesheet'
-          type='text/css'>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
-          integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
-
-</head>
-
-<body>
-
-<div class="wrapper">
-
-    <div class="main-panel">
-        <nav class="navbar navbar-transparent navbar-absolute">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <a class="navbar-brand js-scroll-trigger" href="/bdo/">
-                        <img id="logowhite" class="logo" src="{% static "img/logow.png" %}" alt="BigData Ocean">
-                        <img id="logoblack" style="display:none" class="logo" src="{% static "img/logo.png" %}"
-                             alt="BigData Ocean">
-                    </a>
-                    <button type="button" class="navbar-toggle" data-toggle="collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    {#						<a class="navbar-brand" href="#">How BDO works</a>#}
-                    {#						<span class="dropdown">#}
-                    {#                            <a href="/bdo/" class="btn bg-color--blue dropdown-toggle"#}
-                    {#                               style="padding: 9px 10px;">#}
-                    {#                                Home#}
-                    {#                            </a>#}
-                    {#                        </span>#}
-                    <span class="dropdown">
-                            <a href="/services/" class="btn bg-color--blue dropdown-toggle"
-                               style="padding: 9px 10px;">
-                                <i class="fas fa-desktop o-white"></i>
-                                Applications & Dashboards
-                            </a>
-                        </span>
-                    <span class="dropdown">
-                            <a href="#" class="btn bg-color--blue dropdown-toggle"
-                               data-toggle="dropdown" aria-expanded="false"
-                               style="padding: 9px 20px;">
-                                <i class="fas fa-stream o-white"></i>
-                                Explore &amp; Create
-                            </a>
-                            <ul class="dropdown-menu" data-color="blue">
-                                <li><a href="/queries/" style="font-size: 1.1em;"><i
-                                        class="far fa-eye margin-right-5"></i> <span>Create a query</span></a></li>
-                                <li><a href="/dashboards/create/" style="font-size: 1.1em;"><i
-                                        class="fas fa-bar-chart margin-right-5"></i> <span>Create a dashboard</span></a></li>
-{#                                <li><a href="/analytics/create/" style="font-size: 1.1em;"><i class="fas fa-chart-line margin-right-5"></i> <span>Create an analysis</span></a></li>#}
-                                <li><a href="/service_builder/create/" style="font-size: 1.1em;"><i
-                                        class="fas fa-cogs margin-right-5"></i><span>Create a service</span></a></li>
-                                <li><a href="/upload" style="font-size: 1.1em;"><i
-                                        class="fas fa-cloud-upload-alt margin-right-4"></i> <span>Upload a dataset</span></a></li>
-{#								<li><a href="http://212.101.173.21:5000" style="font-size: 1.1em;"><i class="fa fa-code margin-right-4"></i> <span>Process metadata</span></a></li>#}
-{#								<li><a href="/parse" style="font-size: 1.1em;"><i class="fas fa-file-medical-alt margin-right-5"></i> <span>Parse a dataset</span></a></li>#}
-
-                            </ul>
-                        </span>
-                </div>
-                <div class="collapse navbar-collapse">
-                    <ul class="nav navbar-nav navbar-right">
-
-
-                        <li>
-                            {#                                <form class="navbar-form navbar-right" role="search" method="GET" action="{% url 'search' %}">#}
-                            {#                                    <div class="form-group  is-empty">#}
-                            {#                                        <input type="text" class="form-control" placeholder="Search" name="q">#}
-                            {#                                        <span class="material-input"></span>#}
-                            {#                                    </div>#}
-                            {#                                    <button type="submit" class="btn btn-white btn-round btn-just-icon">#}
-                            {#                                        <i class="material-icons">search</i><div class="ripple-container"></div>#}
-                            {#                                    </button>#}
-                            {#                                </form>#}
-
-
-                            <a href="{% url 'feedback_form:home' %}" class="dropdown-toggle">
-                                <span style='display: inline-block;font-family: "Roboto", "Helvetica", "Arial", sans-serif;font-size: 12pt;text-transform: none; position:relative;bottom:3px; margin-right: 15px;'>Feedback</span>
-                                <i class="fas fa-comments" style="font-size: 20px;position: relative;bottom: 2px"></i>
-                                <p class="hidden-lg hidden-md">Feedback</p>
-                            </a>
-                        </li>
-
-                        <li class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                <i class="material-icons">notifications</i>
-                                <!--<span class="notification"></span>-->
-                                <p class="hidden-lg hidden-md">Notifications</p>
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a href="#">You have no new notifications</a></li>
-                            </ul>
-                        </li>
-                        <li>
-                            {% if request.user.is_authenticated %}
-                                <a href="/" class="dropdown-toggle" data-toggle="dropdown">
-                                    <i class="material-icons">person</i>
-                                    <p class="hidden-lg hidden-md">Profile</p>
-                                </a>
-                                <ul class="dropdown-menu" style="text-align: right;">
-                                    <li style="padding: 10px 20px;">Welcome <b>{{ request.user.username }}</b></li>
-                                    <li style="padding: 5px 20px;"><p><a href="/profile/{{ request.user.username }}/">Profile</a>
-                                    </p></li>
-                                    <li style="padding: 5px 20px;"><p><a href="/accounts/logout/">Logout</a></p></li>
-                                </ul>
-                            {% else %}
-                                <a href="/accounts/login/">Login or Signup</a>
-                            {% endif %}
-                        </li>
-                    </ul>
-
-
-                </div>
-            </div>
-        </nav>
-        <div class="col-sm-12"
-             style="font-size: 120%; text-align: right; margin-top: 80px; padding: 0px 30px; position: fixed; z-index:1;">
-            <div class="col-sm-offset-10 col-sm-2 well"
-                 style="text-align: center; min-height: 15px; padding: 5px 0px; margin-bottom: 0;">
-                <div>Please evaluate us!</div>
-                <span style="margin-right: 5px;"><i class="fab fa-glide" style="margin-right: 5px;"></i><a
-                        href="http://bit.ly/bdo-guide" style="text-decoration: underline;">Guide</a></span>
-                <span><i class="far fa-clipboard" style="margin-right: 5px;"></i></i><a href="http://bit.ly/bdo-survey"
-                                                                                        style="text-decoration: underline;">Survey</a></span>
-            </div>
-        </div>
-
-        <div class="content">
+    <link rel="stylesheet" href="{% static 'hcmr_pilot/css/service_output.css' %}">
+{% endblock %}
+{% block service_output_results %}
 
             <div class="container-fluid">
                 <div class="container" style="width: 100%; text-align: center;">
-                    <h2 style="text-align: center">Oil Spill Simulation Service Results</h2>
-                    <object type="text/html" data="{{ url }}" width="800px" height="600px" style="overflow:auto;border:5px ridge blue">
-                    </object>
-            <div>
+{#                    <h2 style="text-align: center">Oil Spill Simulation Service Results</h2>#}
+{#                    <object type="text/html" data="{{ url }}" width="800px" height="600px"#}
+{#                            style="overflow:auto;border:5px ridge blue">#}
+{#                    </object>#}
 
-         </div>
+                    <div class="viz_container row">
+                        <div class="frame_container" style="position: relative; height: 100%;">
+                            <div class="loadingFrame">
+                                <img src="{% static 'img/loading_gif.gif' %}"/>
+                            </div>
+                            <iframe src="{{ url }}" class="col-sm-10 col-sm-offset-1"
+                                style="width: 100%; height: 100%; background-color: white;">
+                            </iframe>
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <div class="button-container" style="width:100%">
+                            <div id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
+                                 style="width:40%">
+                                <i class="fa fa-download"></i> <a href="/oilspill/download?file={{ out_filepath }}" download style="color:#ffffff">Download out file</a>
+                            </div>
+                            <div id="download-report" class="btn btn-primary btn-sm btn-default" style="width:40%">
+                                <i class="fa fa-download"></i> Download report
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <footer class="footer">
-            <div class="container-fluid">
-                <nav class="pull-left">
-                    <ul>
-                        <li>
-                            <a href="http://bigdataocean.eu/">
-                                About the project
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-                <p class="copyright pull-right">
-                    &copy;
-                    <script>document.write(new Date().getFullYear())</script>
-                    <a href="http://bigdataocean.eu/">Big Data Ocean</a>
-                </p>
-            </div>
-        </footer>
-    </div>
-</div>
-{% block modal %}
 {% endblock %}
 
-</body>
 
-<!--   Core JS Files   -->
-<script src="{% static 'js/jquery-3.1.0.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'js/bootstrap.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'js/material.min.js' %}" type="text/javascript"></script>
-
-<script src="{% static 'js/jquery.contextMenu.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'js/jquery.modal.min.js' %}" type="text/javascript"></script>
-<script src="{% static 'js/jquery-ui.min.js' %}" type="text/javascript"></script>
-
-<!--  Charts Plugin -->
-{#	<script src="{% static 'js/chartist.min.js' %}"></script>#}
-
-<!--  Notifications Plugin    -->
-<script src="{% static 'js/bootstrap-notify.js' %}"></script>
-
-<!--  Google Maps Plugin    -->
-{#    # Google Maps Requires Special User Key For ##}
-{#	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBE2A-pZn-ZWSdADTL5VmKOrw7TEFlS58E"></script>#}
-
-<!-- Material Dashboard javascript methods -->
-<script src="{% static 'js/material-dashboard.js' %}"></script>
-
-<!-- Form setup -->
-<script src="{% static 'js/form.js' %}"></script>
-
-{% leaflet_js %}
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-{#    <script src="{% static ''%}"></script>#}
-
-
-<script>
-    window.setInterval(function () {
-        $('.form-group input').each(function () {
-            if ($(this).val() != '') {
-                $(this).closest('.form-group').removeClass('is-empty');
-            }
+{% block  js %}
+    <script type="text/javascript">
+        $(".viz_container iframe").on( "load", function(){
+            $(this).siblings(".loadingFrame").css( "display", "none" )
         });
-        $('.form-group select').each(function () {
-            $(this).closest('.form-group').removeClass('is-empty');
-        });
-        $('.form-group .select2-selection--multiple').closest('.form-group').removeClass('is-empty');
-
-        {#            $('.popover-content select').not('.select2-hidden-accessible').select2({width: 'style'});#}
-
-        {#            $('.popover-content select:not([class^="select2"])').select2();#}
-        {#            .each(function (i, obj) {#}
-        {#                if (!$(obj).class('select2-hidden-accessible'))#}
-        {#                {#}
-        {#                    $(obj).select2();#}
-        {#                }#}
-        {#            });#}
-    }, 500);
-    var maplayer = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=';
-    var token = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ';
-    var attr = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors,' +
-        '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
-        'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
-
-    map = L.map('newmap').setView([38, 25], 6);
-    L.tileLayer(maplayer + token, {
-        attribution: attr,
-        maxZoom: 18
-    }).addTo(map);
-    marker = {}
-    function onMapClick(e) {
-    {#alert("You clicked the map at " + e.latlng);#}
-        if (marker !== undefined) {
-              map.removeLayer(marker);
-        };
-        marker = L.marker(e.latlng).addTo(map);
-        $('#id_latitude1').val(e.latlng.lat)
-        $('#id_longitude1').val(e.latlng.lng)
-    }
-
-    map.on('click', onMapClick);
-</script>
-
-
-
-{% block js %}
+    </script>
 {% endblock %}
-
-</html>

@@ -3,21 +3,13 @@
     right: 0;
     z-index: 2;
     background-color: white;
-    width: 22%;
-    top: 16%;
-    /*margin-top: 270px;*/
+    width: 362px;
+    top: 10%;
 }
 
 #chart-sidebar{
     width: 100%;
 }
-
-
-
-.app-selector{
-    padding-top: 10px;
-}
-
 
 .ui-dropdown{
     width: 100%;
@@ -97,12 +89,80 @@
 
 #remove_point1{
     background-color: #8a1c1c;
+    /*margin-right: 25px;*/
 }
 
 #remove_point2{
     background-color: #8a1c1c;
+    /*margin-right: 25px;*/
+    /*width:150px;*/
 }
 
 #remove_point3{
     background-color: #8a1c1c;
+    /*margin-right: 25px;*/
+    /*width:150px;*/
 }
+#remove_point4{
+    background-color: #8a1c1c;
+    /*margin-right: 25px;*/
+    /*width:150px;*/
+}
+
+#remove_point5{
+    background-color: #8a1c1c;
+    /*margin-right: 25px;*/
+    /*width:150px;*/
+}
+
+.checkbox label{
+    color: #0b0b0b;
+}
+
+.form-control{
+    width: 80%;
+}
+
+.form-group .form-control {
+    margin-bottom: 1px;
+}
+
+.nav-pills > li > a {
+    min-width: 65px;
+    text-transform: none;
+    padding: 10px 5px;
+}
+
+.nav-pills > li.active > a[href="#point2_form"] {
+    background-color: #710000;
+}
+
+.nav-pills > li.active > a[href="#point3_form"] {
+    background-color: #0d6321;
+}
+
+.nav-pills > li.active > a[href="#point4_form"] {
+    background-color: #ee8331;;
+}
+
+.nav-pills > li.active > a[href="#point5_form"] {
+    background-color: #181313;
+}
+
+.points-control{
+    height: 0.3vh;
+}
+
+
+.label-default{
+    background-color: #989898 !important;
+}
+
+.label-primary{
+    background-color: #0e2b3f !important;
+}
+
+.modal-content{
+    height: 45vh;
+}
+

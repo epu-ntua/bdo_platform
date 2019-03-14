@@ -17,7 +17,7 @@ $(document).ready(function() {
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
         'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
 
-        map = L.map('map').setView([38.06, 25.36], 7);
+        map = L.map('map').setView([38.41, 21.97], 4);
 
         L.tileLayer(maplayer + token, {
             attribution: attr,
@@ -56,7 +56,7 @@ $(document).ready(function() {
     /*          Set Up Maps for Modal and Preview       */
     //Change Lan, Lon values from user's selection area
 
-    $('.leaflet-edit-move').mouseup(function(){
+    $('.leaflet-edit-move').click(function(){
         area_bounds = areaSelect.getBounds();
         var swlat = Math.round(area_bounds.getSouthWest().lat * 10000) / 10000;
         var swlon = Math.round(area_bounds.getSouthWest().lng * 10000) / 10000;
@@ -69,7 +69,7 @@ $(document).ready(function() {
         $('#lon_max').val(bounds[3]);
     });
 
-    $('.leaflet-edit-resize').mouseup(function(){
+    $('.leaflet-edit-resize').click(function(){
         area_bounds = areaSelect.getBounds();
         var swlat = Math.round(area_bounds.getSouthWest().lat * 10000) / 10000;
         var swlon = Math.round(area_bounds.getSouthWest().lng * 10000) / 10000;
