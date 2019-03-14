@@ -1,22 +1,38 @@
 import requests
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 import time
 from pandas import DataFrame
 from .forms import HCMRForm
 import calculate_red_points as red_points_calc
+from django.conf import settings
+from service_builder.models import Service, ServiceInstance
+from threading import Thread
+from datetime import datetime
 
 
 def init(request):
     form = HCMRForm()
     scenario = request.GET['scenario']
     print scenario
-    return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario})
+
+    execution_steps = dict()
+    execution_steps['OIL_SPILL_SCENARIO_1'] = ["starting service", "Creating simulation request",
+                                               "Simulation running", "Simulation results received",
+                                               "Transforming data to be shown on map", "done"]
+    return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps})
 
 
-def results(request):
+def results(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    visualization_url = service_exec.dataframe_visualizations['v1']
+    filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
 
-    return render(request, 'hcmr_pilot/oilspill-results.html')
+    context = {
+        'url': visualization_url,
+        'out_filepath': filename_output,
+    }
+    return render(request, 'hcmr_pilot/oilspill-results.html', context)
 
 
 def index(request):
@@ -29,17 +45,38 @@ def index(request):
     return render(request, 'hcmr_pilot/config-service-form-fields.html', {'form': form})
 
 
-def process(request):
+def execute(request):
+    service = Service.objects.get(pk=settings.OIL_SPILL_SERVICE_ID)
+    service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
+                                   status="starting service", dataframe_visualizations=[])
+    service_exec.save()
+    # Spawn thread to process the data
+    t = Thread(target=process, args=(request, service_exec.id))
+    t.start()
+    return JsonResponse({'exec_instance': service_exec.id})
+
+
+def process(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    service = Service.objects.get(pk=service_exec.service_id)
     # 1)Create input file
+    service_exec.status = "Creating simulation request"
+    service_exec.save()
     filename, url_params = create_inp_file_from_request_and_upload(request)
     # 2)Calculate oil spill
+    service_exec.status = "Simulation running"
+    service_exec.save()
     found = wait_until_output_ready(url_params, request)
     if found:
+        service_exec.status = "Simulation results received"
+        service_exec.save()
         filename_output = str(filename).replace("_F.inp", "_F.out")
         hcmr_data_filename = str(filename).replace("_F.inp", ".json")
         red_points_filename = str(filename).replace("_F.inp", ".txt")
 
-        # 3)Transform data to show in map
+        # 3)Transforming data to be shown on map
+        service_exec.status = "Transforming data to be shown on map"
+        service_exec.save()
         output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
         spill_data, parcel_data = create_json_from_out_file(
             output_path)
@@ -57,14 +94,26 @@ def process(request):
         visualization_url = "http://" + request.META[
             'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename
 
-        context = {
-            'url': visualization_url,
-            'out_filepath': filename_output,
-        }
-        return render(request, 'hcmr_pilot/oilspill-results.html', context)
+        service_exec.dataframe_visualizations = {"v1": visualization_url}
+        service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{"out_filepath": filename_output}]}
+        service_exec.status = "done"
+        service_exec.save()
+
+        # context = {
+        #     'url': visualization_url,
+        #     'out_filepath': filename_output,
+        # }
+        # return render(request, 'hcmr_pilot/oilspill-results.html', context)
     else:
-        html = "<html><body>Something went wrong. Please, try again.</body></html>"
-        return HttpResponse(html)
+        # html = "<html><body>Something went wrong. Please, try again.</body></html>"
+        # return HttpResponse(html)
+        service_exec.status = "failed"
+        service_exec.save()
+
+
+def status(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    return JsonResponse({'status': service_exec.status})
 
 
 def create_json_from_out_file(filename_output):

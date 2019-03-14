@@ -18,10 +18,17 @@
         <div id="app_form" class="form container " >
             {% include "hcmr_pilot/utils/basic_form_tab.html" %}
         </div>
+
+        {% for app_name, data in execution_steps.items %}
+            <btn id="execution_btn_{{ app_name }}" class="btn btn-success hidden" data-toggle="modal" data-target="#{{ app_name }}_modal">Execute_{{ forloop.counter }}</btn>
+        {% endfor %}
+        <input hidden id="execution_status" type="text" value=""/>
     </div>
 {% endblock %}
 
 {% block  js %}
+    {% include 'hcmr_pilot/utils/status_modal.html' %}
+
     {% leaflet_js %}
 
     <script src="{% static "wave_energy_pilot/js/area-select/simple-shape.js" %}"></script>

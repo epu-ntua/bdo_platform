@@ -507,7 +507,11 @@ $(document).ready(function() {
         $('.nav-item').children('a[href="#point1_form"]').parent().addClass('active');
     });
 
+
+    var exec_instance = '';
     $("#run-service-btn").click(function () {
+        $("#execution_btn_OIL_SPILL_SCENARIO_1").click();
+
         var lat = $('#lat').val();
         var lng = $("#lon").val();
         var oil_volume = $("#oil_volume").val();
@@ -572,12 +576,128 @@ $(document).ready(function() {
                 "&wave_model=" + wave_dataset +
                 "&hd_model=" + hd_dataset;
 
+
+
             console.log(url);
-            window.location.replace(url);
+            // window.location.replace(url);
+            $("#execution_status").val('starting service');
+            $.ajax({
+                "type": "GET",
+                "url": url,
+                "data": {},
+                "success": function(result) {
+                        console.log(result);
+                        exec_instance = result['exec_instance'];
+                    },
+                    error: function () {
+                        alert('error');
+                    }
+            });
+
+            var execution_status_interval = setInterval(check_execution_status, 3000);
+
+            function check_execution_status() {
+                $.ajax({
+                    "type": "GET",
+                    "url": "/oilspill/status/"+exec_instance+"/",
+                    "data": {},
+                    "success": function(result) {
+                        console.log(result["status"]);
+                        $("#execution_status").val(result["status"]);
+                        if(result["status"] === "done"){
+                            setTimeout(function() {
+                                execution_status_stop();
+                                window.location.href = "/oilspill/results/"+exec_instance+"/";
+                            }, 1000);
+                        }
+                        else if (result["status"] === "failed") {
+                            execution_status_stop();
+                            // alert("execution failed");
+                        }
+                    },
+                    error: function () {
+                        execution_status_stop();
+                        // alert('error');
+                    }
+                });
+            }
+
+            function execution_status_stop() {
+                clearInterval(execution_status_interval);
+            }
+
         }
         else {
             alert("Please select points inside Mediterranean sea")
         }
     });
+
+
+    window.setInterval(function () {
+        if($(".modal.in").length > 0) {
+            var old_status = $(" .modal.in #modal_status_input").val();
+            var new_status = $("#execution_status").val();
+            if (old_status !== new_status) {
+                console.log(new_status);
+                $(".modal.in #modal_status_input").val(new_status);
+                $(".modal.in #modal_status_div").fadeOut("2000").html(new_status).fadeIn("2000");
+                $(".modal.in .status_counter").each(function (index, elem) {
+                    console.log($(elem).data("status"));
+                    if ($(elem).attr("data-status") === new_status) {
+                        // console.log('found');
+                        var new_step_counter = $(elem).attr("data-counter");
+                        $(".modal.in .status_counter").each(function (i, e) {
+                            if(i <= index){
+                                $(e).removeClass('label-default').addClass('label-primary');
+                            }
+                        });
+
+                        var $total = parseInt($(".modal.in #number_of_steps").val());
+                        var $current = parseInt(new_step_counter);
+                        var $percent = ($current / $total) * 100;
+                        $(".modal.in .progress-bar").css({width: $percent + '%'});
+                    }
+                });
+
+            }
+            if (new_status === "failed"){
+                $(".modal.in .progress-bar").css({width: '100%', background: '#db2828'});
+                $(".modal.in .status_counter").each(function (index, elem) {
+                    $(elem).removeClass('label-default').addClass('label-primary');
+                });
+                $(".modal.in #modal_dismiss_btn_cancel").hide();
+                $(".modal.in #modal_dismiss_btn_close").show();
+            }
+        }
+    }, 1000);
+
+    $('.modal').on('hidden.bs.modal', function () {
+        $(" .modal #modal_status_input").val('');
+        $("#execution_status").val('');
+        $(".modal #modal_dismiss_btn_cancel").show();
+        $(".modal #modal_dismiss_btn_close").hide();
+        $(".modal .status_counter").each(function (index, elem) {
+            $(elem).removeClass('label-default').removeClass('label-primary').addClass('label-default');
+        });
+        $(".modal .progress-bar").css({width: '0%', background: '#337ab7'});
+        $(".modal #modal_status_div").html('');
+    });
+
+    // $("#modal_dismiss_btn_cancel").click(function () {
+    //     $.ajax({
+    //         "type": "GET",
+    //         "url": "/wave-energy/"+exec_instance+"/",
+    //         "data": {},
+    //         "success": function(result) {
+    //             console.log('service cancelled');
+    //         },
+    //         error: function () {
+    //             console.log('error cancelling service');
+    //         },
+    //         complete: function () {
+    //             exec_instance = '';
+    //         }
+    //     });
+    // });
 
 });
