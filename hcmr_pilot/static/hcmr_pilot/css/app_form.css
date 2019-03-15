@@ -166,3 +166,7 @@
     height: 45vh;
 }
 
+
+#oilspill_form .form-control {
+    height: 30px;
+}

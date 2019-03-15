@@ -4,7 +4,7 @@
     <div class="scenario" data-id="{{ scenario }}"></div>
     {% ifequal scenario '1' %}
         <h4>Oil spill dispersion forecast</h4>
-        <hr style="margin-top: 10px; margin-bottom: 10px">
+        <hr style="margin: 11px 0;">
          <div class="row" style="height: 6.5vh;">
             <h4 style="margin-top: 0px;">Service Parameters</h4>
             <div class="lat-container">
@@ -86,9 +86,9 @@
             </div>
         </div>
         <br>
-        <hr style="margin-top: 30px">
+        <hr style="margin: 11px 0;">
         <div class="dataset-selector">
-            <h4>Available Datasets</h4>
+            <h4 style="margin: 0;">Available Datasets</h4>
             <label for="sel1">Wave Forecast Dataset</label>
             <select class="form-control" id="sel1">
                 <option value="202">Poseidon Wave Dataset for the Aegean</option>
@@ -103,15 +103,15 @@
             </select>
         </div>
 
-        <hr style="margin-top: 10px; margin-bottom: 10px">
-        <h4>Additional layers</h4>
+        <hr style="margin: 11px 0;">
+        <h4 style="margin: 0">Additional layers</h4>
 {#        <div class="checkbox">#}
 {#            <label><input type="checkbox" name="optradio" checked>None</label>#}
 {#        </div>#}
-        <div class="checkbox">
+        <div class="checkbox" style="margin: 3px 0;">
             <label><input type="checkbox" name="natura_checkbox" id="natura_checkbox">Natura maps</label>
         </div>
-        <div class="checkbox">
+        <div class="checkbox" style="margin: 3px 0;">
             <label><input type="checkbox" name="ais_checkbox" id="ais_checkbox">AIS data</label>
         </div>
     {% endifequal %}
@@ -127,9 +127,9 @@
              </div>
         </div>
 
-        <hr style="margin-top: 10px; margin-bottom: 10px">
+        <hr style="margin: 11px 0;">
         <div class="spatial-selection" >
-            <h4>Geographic Coverage</h4>
+            <h4 style="margin: 0;">Geographic Coverage</h4>
             <div class="row" style="margin: 25px;">
                 <div class="lat-container">
                      <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
@@ -165,13 +165,13 @@
 
                 <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
             </div>
-            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <hr style="margin: 11px 0;">
             <div class="button-container lock-button"  style="width:100%" >
                 <div id="lock_area" class="btn btn-sm btn-dark" style="width:40%">
                     <i class="fa fa-lock"></i> Lock area
                 </div>
             </div>
-            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <hr style="margin: 11px 0;">
         </div>
 
 
@@ -197,7 +197,7 @@
             <div class="tab-content" style="margin-bottom: 155px">
 
                 <div  class="tab-pane fade in active" id="point1_form" >
-                    <h4>First point parameters (Blue marker)</h4>
+                    <h4 style="margin: 0;">First point parameters (Blue marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -259,7 +259,7 @@
                 </div>
 
                 <div class="tab-pane fade" id="point2_form">
-                 <h4>Second point parameters (Red marker)</h4>
+                 <h4 style="margin: 0;">Second point parameters (Red marker)</h4>
                 <div class="row" style="height: 6.7vh;">
                     <div class="lat-container">
                         <div class='col-sm-6'>
@@ -325,7 +325,7 @@
             </div>
 
                 <div class="tab-pane fade" id="point3_form">
-                 <h4>Third point parameters (Green marker)</h4>
+                 <h4 style="margin: 0;">Third point parameters (Green marker)</h4>
                 <div class="row" style="height: 6.7vh;">
                     <div class="lat-container">
                         <div class='col-sm-6'>
@@ -390,7 +390,7 @@
                 </div>
             </div>
                 <div class="tab-pane fade" id="point4_form">
-                    <h4>Fourth point parameters (Orange marker)</h4>
+                    <h4 style="margin: 0;">Fourth point parameters (Orange marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -457,7 +457,7 @@
                 </div>
 
                 <div class="tab-pane fade" id="point5_form">
-                    <h4>Fifth point parameters (Black marker)</h4>
+                    <h4 style="margin: 0;">Fifth point parameters (Black marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -524,9 +524,9 @@
             </div>
 
             <br>
-            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <hr style="margin: 11px 0;">
             <div class="service-parameters">
-                <h4>Service Parameters</h4>
+                <h4 style="margin: 0;">Service Parameters</h4>
                 <div class="row" style="margin-top:15px">
                     <div class="coverage-date-filters-icon">
                     </div>
@@ -555,13 +555,13 @@
                         </div>
                     </div>
                 </div>
-                <hr style="margin-top: 10px; margin-bottom: 10px">
+                <hr style="margin: 11px 0;">
             </div>
         </div>
     {% endifequal %}
     {% ifequal scenario '3' %}
         <h3>Oil release at Seabed</h3>
-        <hr>
+        <hr style="margin: 11px 0;">
          <div class="row" style="margin: 25px; height: 6.7vh;">
             <h4 style="margin-top: 0px;">Service Parameters</h4>
             <div class="lat-container">
