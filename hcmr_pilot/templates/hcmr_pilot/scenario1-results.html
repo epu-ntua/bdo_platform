@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="{% static 'hcmr_pilot/css/service_output.css' %}">
 {% endblock %}
 {% block service_output_results %}
-    <h3 style="text-align: center; margin-bottom: 20px;">Simulation Results</h3>
+    <h3 style="text-align: center; margin-bottom: 20px;">The evolution of the oil spill in time</h3>
     <div class="container-fluid">
         <div class="container" style="width: 100%; text-align: center;">
             <input value="" id="current_time" class="hidden"/>
@@ -71,10 +71,10 @@
                 <div class="button-container" style="width:100%">
                     <div id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
                          style="width:30%">
-                        <i class="fa fa-download"></i> <a href="/oilspill/download?file={{ out_filepath }}" download style="color:#ffffff">Download output file</a>
+                        <i class="fa fa-download"></i> <a href="/oilspill/download?file={{ out_filepath }}" download style="color:#ffffff">Download Output File</a>
                     </div>
                     <div id="download-report" class="btn btn-primary btn-sm btn-default" style="width:30%" onclick="alert('Currently unavailable')">
-                        <i class="fa fa-download"></i> Download report
+                        <i class="fa fa-download"></i> Create & Download Report
                     </div>
                 </div>
             </div>

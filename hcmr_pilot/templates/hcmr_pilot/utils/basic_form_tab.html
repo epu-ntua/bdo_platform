@@ -23,68 +23,73 @@
                     <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
                 </div>
             </div>
-            <div class="oil-volume-container">
-                <div class='col-sm-6'>
-                    <p>Oil Volume: </p>
+
+            <div class="vis-startdate-container col-sm-12" style="width: 100%">
+                <div class="col-sm-6">
+                    <p>Start date and time:</p>
                 </div>
-                <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="oil_volume" type='number' step="0.01"/>
+                <div class='col-sm-6'>
+                    <div class="form-group">
+                        <div class='input-group date' id='startdatepicker'>
+                            <input type='text' class="form-control" />
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="vis-duration-container">
+
+            <div class="oil-volume-container col-sm-12">
                 <div class='col-sm-6'>
-                    <p>Duration: </p>
+                    <p>Volume of oil spilled (m<sup>3</sup>): </p>
                 </div>
                 <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="vis_duration" type='number' step="0.01"/>
+                    <input class="form-control" id="oil_volume" type='number' step="1" value="10000" />
                 </div>
             </div>
+
+            <div class="vis-duration-container col-sm-12">
+                <div class='col-sm-6'>
+                    <p>Duration of the spill release (hours): </p>
+                </div>
+                <div class='col-sm-6' style="bottom: 10px;">
+                    <input class="form-control" id="vis_duration" type='number' step="0.1" value="0"/>
+                </div>
+            </div>
+            <br>
         </div>
         <div class="service-parameters">
-            <div class="row" style="margin-top:15px">
-                <div class="coverage-date-filters-icon">
-                </div>
-                <div class="time-interval-container">
+            <div class="" style="margin-top:15px">
+{#                <div class="coverage-date-filters-icon">#}
+{#                </div>#}
+                <div class="time-interval-container col-sm-12">
                     <div class='col-sm-6'>
-                        <p>Time Interval: </p>
+                        <p>Time Interval between two outputs (hours): </p>
                     </div>
                     <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="time_interval" type='number' step="0.01"/>
+                        <input class="form-control" id="time_interval" type='number' step="1" value="2"/>
                     </div>
                 </div>
-                <div class="simulation-length-container">
+                <div class="simulation-length-container col-sm-12">
                     <div class='col-sm-6'>
-                        <p>Simulation Length: </p>
+                        <p>Length of the requested simulation (hours): </p>
                     </div>
                     <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="simulation_length" type='number' step="0.01"/>
+                        <input class="form-control" id="simulation_length" type='number' step="1" value="24" max="720" min="1"/>
                     </div>
                 </div>
-                <div class="oil-density-container">
+                <div class="oil-density-container col-sm-12">
                     <div class='col-sm-6'>
-                        <p>Oil Density: </p>
+                        <p>Oil Density (kg/m<sup>3</sup>): </p>
                     </div>
                     <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="oil_density" type='number' step="0.01"/>
+                        <input class="form-control" id="oil_density" type='number' step="0.1" value="920"/>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="vis-startdate-container" style="width: 100%">
-            <div class="col-sm-6">
-                <p>Start Date:</p>
-            </div>
-            <div class='col-sm-6'>
-                <div class="form-group">
-                    <div class='input-group date' id='startdatepicker'>
-                        <input type='text' class="form-control"/>
-                        <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+
         <br>
         <hr style="margin: 11px 0;">
         <div class="dataset-selector">
@@ -109,7 +114,7 @@
 {#            <label><input type="checkbox" name="optradio" checked>None</label>#}
 {#        </div>#}
         <div class="checkbox" style="margin: 3px 0;">
-            <label><input type="checkbox" name="natura_checkbox" id="natura_checkbox">Natura maps</label>
+            <label><input type="checkbox" name="natura_checkbox" id="natura_checkbox">Natura protected areas</label>
         </div>
         <div class="checkbox" style="margin: 3px 0;">
             <label><input type="checkbox" name="ais_checkbox" id="ais_checkbox">AIS data</label>

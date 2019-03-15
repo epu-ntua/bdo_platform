@@ -48,7 +48,7 @@ def scenario1_results(request, exec_instance):
         'out_filepath': filename_output,
         'legend_data': legend_data,
         'result': [],
-        'service_title': 'Oil Spill - Scenario 1 title',
+        'service_title': 'Oil Spill Dispersion in the Marine Environment',
         'back_url': '/oilspill/?scenario=1',
         'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(' + str(round(location_lat, 3)) + ', ' + str(round(location_lon,3)) + ')'},
                              {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': str(start_date)},
