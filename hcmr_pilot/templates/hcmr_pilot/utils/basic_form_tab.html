@@ -3,117 +3,120 @@
     {% csrf_token %}
     <div class="scenario" data-id="{{ scenario }}"></div>
     {% ifequal scenario '1' %}
-        <h4>Oil spill dispersion forecast</h4>
-        <hr style="margin-top: 10px; margin-bottom: 10px">
-         <div class="row" style="height: 6.5vh;">
-            <h4 style="margin-top: 0px;">Service Parameters</h4>
-            <div class="lat-container">
-                <div class='col-sm-6'>
-                    <p>Latitude: </p>
-                </div>
-                <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
-                </div>
-            </div>
-            <div class="lon-container">
-                <div class='col-sm-6'>
-                    <p>Longitude:</p>
-                </div>
-                <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
-                </div>
-            </div>
-            <div class="oil-volume-container">
-                <div class='col-sm-6'>
-                    <p>Oil Volume: </p>
-                </div>
-                <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="oil_volume" type='number' step="0.01"/>
-                </div>
-            </div>
-            <div class="vis-duration-container">
-                <div class='col-sm-6'>
-                    <p>Duration: </p>
-                </div>
-                <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="vis_duration" type='number' step="0.01"/>
-                </div>
-            </div>
-        </div>
-        <div class="service-parameters">
-            <div class="row" style="margin-top:15px">
-                <div class="coverage-date-filters-icon">
-                </div>
-                <div class="time-interval-container">
+        <div class="scenario1">
+            <h4 class="application-header">Oil spill dispersion forecast</h4>
+            <hr style="margin-top: 10px; margin-bottom: 10px">
+             <div class="row" style="height: 6.5vh;">
+                <h4 style="margin-top: 0px;">Service Parameters</h4>
+                <div class="lat-container">
                     <div class='col-sm-6'>
-                        <p>Time Interval: </p>
+                        <p>Latitude: </p>
                     </div>
                     <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="time_interval" type='number' step="0.01"/>
+                        <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
                     </div>
                 </div>
-                <div class="simulation-length-container">
+                <div class="lon-container">
                     <div class='col-sm-6'>
-                        <p>Simulation Length: </p>
+                        <p>Longitude:</p>
                     </div>
                     <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="simulation_length" type='number' step="0.01"/>
+                        <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
                     </div>
                 </div>
-                <div class="oil-density-container">
+                <div class="oil-volume-container">
                     <div class='col-sm-6'>
-                        <p>Oil Density: </p>
+                        <p>Oil Volume: </p>
                     </div>
                     <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="oil_density" type='number' step="0.01"/>
+                        <input class="form-control" id="oil_volume" type='number' step="0.01"/>
+                    </div>
+                </div>
+                <div class="vis-duration-container">
+                    <div class='col-sm-6'>
+                        <p>Duration: </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="vis_duration" type='number' step="0.01"/>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="vis-startdate-container" style="width: 100%">
-            <div class="col-sm-6">
-                <p>Start Date:</p>
-            </div>
-            <div class='col-sm-6'>
-                <div class="form-group">
-                    <div class='input-group date' id='startdatepicker'>
-                        <input type='text' class="form-control"/>
-                        <span class="input-group-addon">
-                            <span class="glyphicon glyphicon-calendar"></span>
-                        </span>
+            <div class="service-parameters">
+                <div class="row" style="margin-top:15px">
+                    <div class="coverage-date-filters-icon">
+                    </div>
+                    <div class="time-interval-container">
+                        <div class='col-sm-6'>
+                            <p>Time Interval: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 10px;">
+                            <input class="form-control" id="time_interval" type='number' step="0.01"/>
+                        </div>
+                    </div>
+                    <div class="simulation-length-container">
+                        <div class='col-sm-6'>
+                            <p>Simulation Length: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 10px;">
+                            <input class="form-control" id="simulation_length" type='number' step="0.01"/>
+                        </div>
+                    </div>
+                    <div class="oil-density-container">
+                        <div class='col-sm-6'>
+                            <p>Oil Density: </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 10px;">
+                            <input class="form-control" id="oil_density" type='number' step="0.01"/>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <br>
-        <hr style="margin-top: 30px">
-        <div class="dataset-selector">
-            <h4>Available Datasets</h4>
-            <label for="sel1">Wave Forecast Dataset</label>
-            <select class="form-control" id="sel1">
-                <option value="202">Poseidon Wave Dataset for the Aegean</option>
-                <option value="201">Poseidon Wave Dataset for the Mediterranean</option>
-                <option value="203">Copernicus Wave Dataset</option>
-            </select><label for="sel2">Hydrodynamic Dataset</label>
-            <select class="form-control" id="sel2">
-                <option value="001">Poseidon High Resolution Aegean Model</option>
-                <option value="002">Poseidon Mediterranean Model</option>
-                <option value="003">Copernicus Model</option>
-            </select>
-        </div>
+            <div class="vis-startdate-container" style="width: 100%">
+                <div class="col-sm-6">
+                    <p>Start Date:</p>
+                </div>
+                <div class='col-sm-6'>
+                    <div class="form-group">
+                        <div class='input-group date' id='startdatepicker'>
+                            <input type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <hr style="margin-top: 30px">
+            <div class="dataset-selector">
+                <h4>Available Datasets</h4>
+                <label for="sel1">Wave Forecast Dataset</label>
+                <select class="form-control" id="sel1">
+                    <option value="202">Poseidon Wave Dataset for the Aegean</option>
+                    <option value="201">Poseidon Wave Dataset for the Mediterranean</option>
+                    <option value="203">Copernicus Wave Dataset</option>
+                </select><label for="sel2">Hydrodynamic Dataset</label>
+                <select class="form-control" id="sel2">
+                    <option value="001">Poseidon High Resolution Aegean Model</option>
+                    <option value="002">Poseidon Mediterranean Model</option>
+                    <option value="003">Copernicus Model</option>
+                </select>
+            </div>
 
-        <hr style="margin-top: 10px; margin-bottom: 10px">
-        <h4>Additional layers</h4>
-        <div class="checkbox">
-            <label><input type="checkbox" name="optradio" checked>None</label>
-        </div>
-        <div class="checkbox">
-            <label><input type="checkbox" name="optradio">Natura maps</label>
-        </div>
-        <div class="checkbox">
-            <label><input type="checkbox" name="optradio">AIS maps</label>
+            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <h4>Additional layers</h4>
+            <div class="checkbox">
+                <label><input type="checkbox" name="optradio" checked>None</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="optradio">Natura maps</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" name="optradio">AIS maps</label>
+            </div>
         </div>
     {% endifequal %}
+
     {% ifequal scenario '2' %}
         <div class="row">
             <div class="col-sm-7" style="padding-left: 0px; padding-right: 0px; top: 10px; width: 67.333333%;">
@@ -558,8 +561,9 @@
             </div>
         </div>
     {% endifequal %}
+
     {% ifequal scenario '3' %}
-        <h3>Oil release at Seabed</h3>
+        <h3 class="application-header">Oil release at Seabed</h3>
         <hr>
          <div class="row" style="margin: 25px; height: 6.7vh;">
             <h4 style="margin-top: 0px;">Service Parameters</h4>
