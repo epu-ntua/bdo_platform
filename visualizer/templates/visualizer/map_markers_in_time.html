@@ -36,6 +36,7 @@
         <h4 style="text-align: center; background-color: white;">No simulation data for the selected parameters, please try again with different values</h4>
     {% endif %}
     {% leaflet_map map_id %}
+    <input hidden value="" id="current_time" />
 
 {% endblock %}
 
@@ -100,6 +101,16 @@
                     {% endif %}
                 }
                 ).addTo(map);
+
+
+
+
+        $(document).ready(function(){
+            function update_current_time(){
+              $("#current_time").val(map.timeDimension.getCurrentTime());
+            }
+            setInterval(update_current_time,100);
+        });
     </script>
 
 
