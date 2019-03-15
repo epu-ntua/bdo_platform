@@ -133,7 +133,7 @@ def process(request, exec_instance):
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
 
-        spill_infos, wave_model, ocean_model, natura_layer, ais_layer = parse_request_params(request)
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density= parse_request_params(request)
         service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
         service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
         service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
@@ -288,8 +288,8 @@ def wait_until_output_ready(params, request):
 
 
 def create_inp_file_from_request_and_upload(request):
-    spill_infos, wave_model, ocean_model, natura_layer, ais_layer = parse_request_params(request)
-    url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model)
+    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density = parse_request_params(request)
+    url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model, oil_density, sim_length, time_interval)
     response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
     filename = ''
@@ -299,7 +299,7 @@ def create_inp_file_from_request_and_upload(request):
     return filename, url_params
 
 
-def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_model):
+def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_model, oil_density, sim_length, time_interval):
     url_params = ''
     idx = 0
     for point in spill_info_list:
@@ -320,6 +320,11 @@ def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_mo
         idx += 1
     url_params += '&WAVE_MODEL='+str(wave_model)
     url_params += '&OCEAN_MODEL='+ str(ocean_model)
+    url_params += '&DENSITYOILTYPE=' + str(oil_density)
+    url_params += '&SIM_LENGTH=' + str(sim_length)
+    url_params += '&DENSITYOILTYPE=' + str(oil_density)
+    url_params += '&STEP=' + str(time_interval)
+
     return url_params
 
 
@@ -341,7 +346,10 @@ def parse_request_params(request):
     ocean_model = request.GET.get('hd_model')
     natura_layer = request.GET.get('natura_layer')
     ais_layer = request.GET.get('ais_layer')
-    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer
+    time_interval = request.GET.get('time_interval')
+    sim_length = request.GET.get('simulation_length')
+    oil_density = request.GET.get('oil_density')
+    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density
 
 
 def is_integer_string(s):
