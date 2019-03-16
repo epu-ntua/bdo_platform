@@ -3279,13 +3279,42 @@ def map_routes(m):
     return m
 
 
+def add_oil_spill_ais_layer(m):
+    pol_group_layer = folium.map.FeatureGroup(name='AIS data layer : ' + str(time.time()).replace(".", "_"),
+                                              overlay=True,
+                                              control=True).add_to(m)
+
+    q = AbstractQuery(document={"from": [{"name": "platform_type_name_0", "type": 1824, "select": [
+        {"name": "platform_type_name_0", "type": "VALUE", "title": "platform_type_name_0", "exclude": False, "groupBy": False, "datatype": "STRING",
+         "aggregate": ""},
+        {"name": "i0_time", "type": 5615, "title": "time", "exclude": "", "groupBy": False, "datatype": "TIMESTAMP", "aggregate": ""},
+        {"name": "i0_latitude", "type": 5614, "title": "latitude", "exclude": "", "groupBy": False, "datatype": "FLOAT", "aggregate": ""},
+        {"name": "i0_longitude", "type": 5613, "title": "longitude", "exclude": "", "groupBy": False, "datatype": "FLOAT", "aggregate": ""},
+        {"name": "i0_platform_id", "type": 5612, "title": "platform_id", "exclude": "", "groupBy": False, "datatype": "FLOAT", "aggregate": ""}]}],
+                                "limit": 100, "offset": 0, "filters": {"a": {"a": "<5614,5613>", "b": "<<36,23>,<38,26>>", "op": "inside_rect"},
+                                                                      "b": {"a": {"a": "i0_time", "b": "'2011-03-12 13:00'", "op": "lte_time"},
+                                                                            "b": {"a": "i0_time", "b": "'2011-03-01 12:00'", "op": "gte_time"},
+                                                                            "op": "AND"}, "op": "AND"}, "distinct": False, "orderings": []})
+
+    data = q.execute()[0]['results']
+
+    for d in data:
+        folium.Marker(
+            location=[d[2], d[3]],
+            icon=folium.Icon()).add_to(pol_group_layer)
+    return m
+
+
 def map_markers_in_time_hcmr(request):
     m = create_map()
     # comment out map_routes until you find a way to cleanup the route-data
     # m = map_routes(m)
 
-
     FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer = hcmr_service_parameters(request)
+
+    if ais_layer == "true":
+        m = add_oil_spill_ais_layer(m)
+
     if natura_layer == "true":
         m, shapely_polygons = map_oil_spill_hcmr(m)
 
