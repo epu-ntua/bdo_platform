@@ -842,6 +842,7 @@ $(document).ready(function() {
             "type": "GET",
             "url": app_url+"execute/"+parameters,
             "data": {},
+            "cache": false,
             "success": function(result) {
                     console.log(result);
                     exec_instance = result['exec_instance'];
@@ -858,6 +859,7 @@ $(document).ready(function() {
                     "type": "GET",
                     "url": app_url+"status/"+exec_instance+"/",
                     "data": {},
+                    "cache": false,
                     "success": function(result) {
                         console.log(result["status"]);
                         $("#execution_status").val(result["status"]);
