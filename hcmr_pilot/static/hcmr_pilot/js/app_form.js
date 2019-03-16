@@ -77,7 +77,7 @@ $(document).ready(function() {
     $('.ui.dropdown').dropdown();
     var startpick = $('#startdatepicker').datetimepicker({
         autoclose: true,
-        pickerPosition: 'top-left',
+        pickerPosition: 'bottom-left',
 
     });
 
@@ -142,7 +142,7 @@ $(document).ready(function() {
 
     if (scenario === 1) {
         lock = 1;
-        first_user_marker = L.marker([38.06, 25.36], {draggable: true}).bindPopup("First Marker").addTo(map);
+        first_user_marker = L.marker([38.06, 25.36], {draggable: true}).bindPopup("Oil spill incident").addTo(map);
 
         first_marker_layer = L.layerGroup(first_user_marker);
 
@@ -168,58 +168,72 @@ $(document).ready(function() {
             placement: "left",
             title: "Oil spill dispersion forecast",
             // duration: 3500,
-            content: "This scenario forecasts the dispersion of oilspil in a selected point on map. Fill in all the fields",
+            content: "This scenario forecasts the dispersion of oilspil in a selected point on map. Fill in all the fields.",
+        });
+        first_scenario_tour.addStep({
+            element: ".lat-container",
+            placement: "left",
+            title: "Click on the map",
+            // duration: 3500,
+            content: "Click on the map or drag the marker to select the point of an oil spill incident.",
         });
         first_scenario_tour.addStep({
             element: ".vis-startdate-container",
             placement: "left",
             title: "Datetime Selection",
-            content: "Date and time start",
+            content: "Select the date and time of the oil spill incident.",
         });
         first_scenario_tour.addStep({
             element: ".oil-volume-container",
             placement: "left",
             title: "Oil volume input",
-            content: "Insert the total amount of oil spilled in m3",
+            content: "Insert the total amount of oil spilled in m3.",
         });
         first_scenario_tour.addStep({
             element: ".vis-duration-container",
             placement: "left",
             title: "Simulation duration",
-            content: "Duration of the spill release in hours",
+            content: "Duration of the spill release in hours.",
         });
         first_scenario_tour.addStep({
             element: ".time-interval-container",
             placement: "left",
             title: "Time interval",
-            content: "Time interval between two outputs in hours",
+            content: "Time interval between two outputs in hours.",
         });
         first_scenario_tour.addStep({
             element: ".simulation-length-container",
             placement: "left",
             title: "Simulation length",
-            content: "Length of the requested simulation in hours ( max 30 days)",
+            content: "Length of the requested simulation in hours ( max 30 days).",
         });
 
         first_scenario_tour.addStep({
             element: ".oil-density-container",
             placement: "left",
             title: "Oil density",
-            content: "Density of oil (kg/m3)",
+            content: "Density of oil (kg/m3).",
         });
         first_scenario_tour.addStep({
-            element: ".dataset-selector",
+            element: "#sel1",
             placement: "left",
-            title: "Model Selection",
+            title: "Wave Forecast Dataset Selection",
             duration: 3500,
-            content: "The selected models depend on the location of the marker. The supported area is the Mediterranean sea",
+            content: "Select the dataset to be used for the wave forecast.",
+        });
+        first_scenario_tour.addStep({
+            element: "#sel2",
+            placement: "left",
+            title: "Hydrodynamic Model Selection",
+            duration: 3500,
+            content: "Select the hydrodynamic model to be used.",
         });
         first_scenario_tour.addStep({
             element: ".checkbox",
             placement: "left",
             title: "Additional layers",
             duration: 3500,
-            content: "Insert an additional layers to the simulation. If you do not wish select None!",
+            content: "(Optional) Select additional layers to be added to the output of the simulation.",
         });
 
         first_scenario_tour.addStep({
@@ -227,7 +241,7 @@ $(document).ready(function() {
             placement: "left",
             title: "Execution",
             duration: 3500,
-            content: "All set. Ready to execute!",
+            content: "All set. Ready to run the service!",
         });
 
         first_scenario_tour.init();

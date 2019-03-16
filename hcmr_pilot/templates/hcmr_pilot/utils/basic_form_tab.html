@@ -4,7 +4,7 @@
     <div class="scenario" data-id="{{ scenario }}"></div>
     {% ifequal scenario '1' %}
         <div class="scenario1">
-        <h3 style="text-align: center;">Oil spill dispersion forecast</h3>
+        <h3 style="text-align: center;" class="application-header">Oil spill dispersion forecast</h3>
         <hr style="margin: 11px 0;">
          <div class="row" style="height: 6.5vh;">
             <h4 style="margin-top: 0px;">Service Parameters</h4>
@@ -55,7 +55,7 @@
                     <p>Duration of the spill release (hours): </p>
                 </div>
                 <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="vis_duration" type='number' step="0.1" value="0"/>
+                    <input class="form-control" id="vis_duration" type='number' step="1" value="0"/>
                 </div>
             </div>
             <br>
@@ -235,7 +235,7 @@
                                 <p>Duration: </p>
                             </div>
                             <div class='col-sm-6' style="bottom: 10px;">
-                                <input class="form-control" id="vis_duration" type='number' step="0.01"/>
+                                <input class="form-control" id="vis_duration" type='number' step="1"/>
                             </div>
                         </div>
                         <div class="vis-startdate-container" style="width: 100%">
@@ -299,7 +299,7 @@
                         <p>Duration: </p>
                     </div>
                     <div class='col-sm-6' style="bottom: 16px;">
-                        <input class="form-control" id="vis_duration2" type='number' step="0.01"/>
+                        <input class="form-control" id="vis_duration2" type='number' step="1"/>
                     </div>
                 </div>
                 <div class="vis-startdate-container" style="width: 100%">
@@ -365,7 +365,7 @@
                         <p>Duration: </p>
                     </div>
                     <div class='col-sm-6' style="bottom: 16px;">
-                        <input class="form-control" id="vis_duration3" type='number' step="0.01"/>
+                        <input class="form-control" id="vis_duration3" type='number' step="1"/>
                     </div>
                 </div>
                 <div class="vis-startdate-container" style="width: 100%">
@@ -431,7 +431,7 @@
                             <p>Duration: </p>
                         </div>
                         <div class='col-sm-6' style="bottom: 16px;">
-                            <input class="form-control" id="vis_duration4" type='number' step="0.01"/>
+                            <input class="form-control" id="vis_duration4" type='number' step="1"/>
                         </div>
                     </div>
                     <div class="vis-startdate-container" style="width: 100%">
@@ -497,7 +497,7 @@
                         <p>Duration: </p>
                     </div>
                     <div class='col-sm-6' style="bottom: 16px;">
-                        <input class="form-control" id="vis_duration5" type='number' step="0.01"/>
+                        <input class="form-control" id="vis_duration5" type='number' step="1"/>
                     </div>
                 </div>
                     <div class="vis-startdate-container" style="width: 100%">
@@ -600,7 +600,7 @@
                     <p>Duration: </p>
                 </div>
                 <div class='col-sm-6' style="bottom: 16px;">
-                    <input class="form-control" id="vis_duration" type='number' step="0.01"/>
+                    <input class="form-control" id="vis_duration" type='number' step="1"/>
                 </div>
             </div>
         </div>
