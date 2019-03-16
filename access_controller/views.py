@@ -140,18 +140,18 @@ def share_access_to_resource(request, type):
                 if len(DashboardAccess.objects.filter(dashboard=resource, user=user)) > 0:
                     ra = DashboardAccess.objects.filter(dashboard=resource, user=user).first()
                 else:
-                    ra = DashboardAccess(dashboard=resource)
+                    ra = DashboardAccess(dashboard=resource, user=user)
                 ra.can_edit = can_edit
             elif type == "service":
                 if len(ServiceAccess.objects.filter(service=resource, user=user)) > 0:
                     ra = ServiceAccess.objects.filter(service=resource, user=user).first()
                 else:
-                    ra = ServiceAccess(service=resource)
+                    ra = ServiceAccess(service=resource, user=user)
             elif type == "dataset":
                 if len(DatasetAccess.objects.filter(dataset=resource, user=user)) > 0:
                     ra = DatasetAccess.objects.filter(dataset=resource, user=user).first()
                 else:
-                    ra = DatasetAccess(dataset=resource)
+                    ra = DatasetAccess(dataset=resource, user=user)
             else:
                 raise Exception
             ra.start = datetime.datetime.now()
