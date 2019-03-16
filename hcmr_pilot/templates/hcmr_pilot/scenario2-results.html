@@ -1,0 +1,60 @@
+{% extends "hcmr_pilot/service_output.html" %}
+{% load static %}
+{% block css %}
+    <style>
+        #location_assessment_statistics{ text-align: center;}
+        #location_assessment_statistics th{text-align: center; font-weight: 600 !important;}
+        #location_assessment_statistics td{text-align: center; }
+        #location_assessment_statistics .panel-primary .panel-heading{background-color: #30526a; color: white;}
+        #location_assessment_statistics .panel-warning .panel-heading{background-color: #8a6d3b; color: white;}
+        #location_assessment_statistics .panel-success .panel-heading{background-color: #3c763d; color: white;}
+        #location_assessment_statistics .panel-default .panel-heading{background-color: #707070; color: white;}
+    </style>
+
+    <link rel="stylesheet" href="{% static 'hcmr_pilot/css/service_output.css' %}">
+{% endblock %}
+{% block service_output_results %}
+
+            <div class="container-fluid">
+                <div class="container" style="width: 100%; text-align: center;">
+{#                    <h2 style="text-align: center">Oil Spill Simulation Service Results</h2>#}
+{#                    <object type="text/html" data="{{ url }}" width="800px" height="600px"#}
+{#                            style="overflow:auto;border:5px ridge blue">#}
+{#                    </object>#}
+
+                    <div class="viz_container row">
+                        <div class="frame_container" style="position: relative; height: 100%;">
+                            <div class="loadingFrame">
+                                <img src="{% static 'img/loading_gif.gif' %}"/>
+                            </div>
+                            <iframe src="{{ url }}" class=""
+                                style="width: 100%; height: 100%; background-color: white;">
+                            </iframe>
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <div class="button-container" style="width:100%">
+                            <div id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
+                                 style="width:40%">
+                                <i class="fa fa-download"></i> <a href="/oilspill/download?file={{ out_filepath }}" download style="color:#ffffff">Download out file</a>
+                            </div>
+                            <div id="download-report" class="btn btn-primary btn-sm btn-default" style="width:40%">
+                                <i class="fa fa-download"></i> Download report
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+
+{% block  js %}
+    <script type="text/javascript">
+        $(".viz_container iframe").on( "load", function(){
+            $(this).siblings(".loadingFrame").css( "display", "none" )
+        });
+    </script>
+{% endblock %}

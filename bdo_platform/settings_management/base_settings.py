@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'bdo_profile',
     'aggregator',
     'query_designer',
+    'hcmr_pilot',
     'analytics',
     'visualizer',
     'dashboard_builder',

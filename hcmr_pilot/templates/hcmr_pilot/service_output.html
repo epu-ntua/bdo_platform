@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+{% load leaflet_tags %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'hcmr_pilot/css/service_output.css' %}">
+{% endblock %}
+
+{% block content %}
+
+    {% block service_output_head %}
+        {# HEADER #}
+        <div class="jumbotron col-sm-12" style="padding: 3vh; position: relative;">
+            <div class="col-sm-3" style="text-align: center;">
+                <img src="{% static 'img/logo.png' %}" style="height: 7vh;">
+                <img src="{% static 'hcmr_pilot/img/hcmr-LOGO.jpg' %}" style="height: 8vh; margin-left: 3%;">
+            </div>
+            <div class="col-sm-6" style="text-align: center;">
+                <h1 style="font-size: 4vh; margin: 0;"> Exploiting Oceans of Data for Maritime Apps </h1>
+                <h2 style="font-size: 3vh; margin: 0;"> {{ service_title }} </h2>
+            </div>
+            <div class="col-sm-3" style="height: 12vh;">
+                <a class="btn btn-danger" href="{{ back_url }}" style="position: absolute; bottom: 0; right: 0;">Back</a>
+            </div>
+        </div>
+    {% endblock %}
+
+    {% block service_output_conditions %}
+        {# STUDY CONDITIONS #}
+        <div id="study_conditions" class="row col-sm-12" style="box-shadow: 0 1px #c7c7c7; margin-bottom: 3vh;">
+            <div class="col-sm-12" style="text-align: center;">
+                <button class="btn btn-primary" data-toggle="collapse" data-target="#conditions_div"> Study Conditions </button>
+            </div>
+            <div id="conditions_div" class="col-sm-6 col-sm-offset-3 collapse in" style="text-align: center;">
+                <table class="table">
+                    <tbody>
+                        {% for condition in study_conditions %}
+                            <tr>
+                                <td><i class="{{ condition.icon }}"></i></td>
+                                <td class="col-sm 2">{{ condition.text }}</td>
+                                <td class="col-sm 5">{{ condition.value | safe }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endblock %}
+
+    <div id="service_result_container" class="col-sm-12">
+        {% block service_output_results %}
+
+        {% endblock %}
+    </div>
+
+    <div id="footer" style="text-align: center; margin-top: 40px;">
+{#        <button class="btn btn-primary" onclick="alert('Currently unavailable')">Obtain a PDF Report</button>#}
+        <br/>
+        <p style="display: inline-block; margin-right: 10px;">Do you want or need anything different?</p><a href="/#contact" class="btn btn-primary btn-sm" style="display: inline-block;">Get in touch with us</a>
+    </div>
+{% endblock %}
+
+{% block  js %}
+
+{% endblock %}

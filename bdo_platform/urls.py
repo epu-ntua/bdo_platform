@@ -35,6 +35,9 @@ urlpatterns = [
     # query designer
     url(r'^queries/', include('query_designer.urls')),
 
+    # hcmr pilot
+    url(r'^oilspill/', include('hcmr_pilot.urls')),
+
     # analytics
     url(r'^analytics/', include('analytics.urls')),
 

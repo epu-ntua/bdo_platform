@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+
+    {# HEADER #}
+    <div class="jumbotron col-sm-12" style="padding: 3vh; position: relative;">
+        <div class="col-sm-3">
+            <img src="{% static 'img/logo.png' %}" style="height: 6vh;">
+            <img src="{% static 'hcmr_pilot/img/hcmr-LOGO.jpg' %}" style="height: 7vh; margin-left: 1vh;">
+        </div>
+        <div class="col-sm-6" style="text-align: center;">
+            <h1 style="font-size: 4vh; margin: 0;"> Exploiting Oceans of Data for Maritime Apps </h1>
+            <h2 style="font-size: 3vh; margin: 0;"> Mare Protection Service </h2>
+        </div>
+        <div class="col-sm-3" style="height: 12vh;">
+            <a class="btn btn-danger" href="/services/" style="position: absolute; bottom: 0; right: 0;">Back</a>
+        </div>
+    </div>
+
+    <h3 class="col-sm-8" style="text-decoration: underline;">Pilot Service Description</h3>
+    <div class="col-sm-4"><a class="btn btn-success pull-right" href="/oilspill/?scenario=1">Go to service!</a></div>
+    <div class="col-sm-7">
+        <div class="" style="margin-bottom: 2vh;">
+            <h4>Application 1: Oil Spill Dispersion in the Marine Environment</h4>
+            <p style="text-align: justify;">
+                Oil Spill Dispersion in the Marine Environment description.
+            </p>
+        </div>
+    </div>
+    <div class="col-sm-5"><img src="{% static '/img/pilot_screenshots/hcmr1.PNG' %}" style="width: 100%;"></div>
+
+    <div id="footer" class="col-sm-12" style="text-align: center;">
+        <p style="display: inline-block; margin-right: 10px;">Do you want or need anything different?</p><a href="/#contact" class="btn btn-primary btn-sm" style="display: inline-block;">Get in touch with us</a>
+    </div>
+{% endblock %}
+
+{% block  js %}
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+{% load leaflet_tags %}
+{% block css %}
+    <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+    <link href="{% static "hcmr_pilot/css/app_form.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/bootstrap-tour/build/css/bootstrap-tour.css"%}" rel="stylesheet">
+
+{% endblock %}
+
+{% block content %}
+    <div class="app-container">
+        <div id="map" style="min-height: 800px; width: 100%; margin-top: 10px; z-index: 1; ">
+        </div>
+
+        <div id="app_form" class="form container " >
+            {% include "hcmr_pilot/utils/basic_form_tab.html" %}
+        </div>
+
+        {% for app_name, data in execution_steps.items %}
+            <btn id="execution_btn_{{ app_name }}" class="btn btn-success hidden" data-toggle="modal" data-target="#{{ app_name }}_modal">Execute_{{ forloop.counter }}</btn>
+        {% endfor %}
+        <input hidden id="execution_status" type="text" value=""/>
+    </div>
+{% endblock %}
+
+{% block  js %}
+    {% include 'hcmr_pilot/utils/status_modal.html' %}
+
+    {% leaflet_js %}
+    <script src="{% static "vendor/bootstrap-tour/build/js/bootstrap-tour.js"%}"></script>
+    <script src="{% static "query_designer/js/simplified/area-select/simple-shape.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/area-select/rectangle.js" %}"></script>
+    <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script src="{% static 'hcmr_pilot/js/spatio_temporal_filter.js'%}" ></script>
+    <script src="{% static 'hcmr_pilot/js/app_form.js' %}"></script>
+{% endblock %}
