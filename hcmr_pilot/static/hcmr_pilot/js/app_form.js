@@ -46,6 +46,10 @@ function ckeck_markers_location() {
     var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
     var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
     bounds = [swlat,swlon,nelat,nelon];
+    var latlng1
+    var latlng1
+    var latlng1
+    var latlng1
 }
 
 function create_new_area_select(area_select_bounds){
@@ -79,6 +83,30 @@ $(document).ready(function() {
 
     if(scenario === 2){
 
+        var second_scenario_tour = new Tour({
+            storage: false,
+            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+                "<div class='arrow'></div>" +
+                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                "<div class='popover-content'></div>" +
+                // "<div class='popover-navigation'>" +
+                // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+                // "<span data-role='separator'>|</span>" +
+                // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                // "</div>" +
+                "</div>",
+        });
+
+        second_scenario_tour.addStep({
+            element: ".spatial-selection",
+            placement: "left",
+            title: "Area selection",
+            content: "Adjust the blue rectangle to the area you wih to investigate. When you finish press the lock area button to lock the coordinates",
+        });
+
+        second_scenario_tour.init();
+        second_scenario_tour.start(true);
 
         create_new_area_select([[29.2575,-15.2578],[49.479,42.0898]]);
 
@@ -120,6 +148,90 @@ $(document).ready(function() {
 
         map.addLayer(first_marker_layer);
 
+        var first_scenario_tour = new Tour({
+            storage: false,
+            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+                "<div class='arrow'></div>" +
+                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                "<div class='popover-content'></div>" +
+                "<div class='popover-navigation'>" +
+                "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+                "<span data-role='separator'>|</span>" +
+                "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                "</div>" +
+                "</div>",
+        });
+
+        first_scenario_tour.addStep({
+            element: ".application-header",
+            placement: "left",
+            title: "Oil spill dispersion forecast",
+            // duration: 3500,
+            content: "This scenario forecasts the dispersion of oilspil in a selected point on map. Fill in all the fields",
+        });
+        first_scenario_tour.addStep({
+            element: ".vis-startdate-container",
+            placement: "left",
+            title: "Datetime Selection",
+            content: "Date and time start",
+        });
+        first_scenario_tour.addStep({
+            element: ".oil-volume-container",
+            placement: "left",
+            title: "Oil volume input",
+            content: "Insert the total amount of oil spilled in m3",
+        });
+        first_scenario_tour.addStep({
+            element: ".vis-duration-container",
+            placement: "left",
+            title: "Simulation duration",
+            content: "Duration of the spill release in hours",
+        });
+        first_scenario_tour.addStep({
+            element: ".time-interval-container",
+            placement: "left",
+            title: "Time interval",
+            content: "Time interval between two outputs in hours",
+        });
+        first_scenario_tour.addStep({
+            element: ".simulation-length-container",
+            placement: "left",
+            title: "Simulation length",
+            content: "Length of the requested simulation in hours ( max 30 days)",
+        });
+
+        first_scenario_tour.addStep({
+            element: ".oil-density-container",
+            placement: "left",
+            title: "Oil density",
+            content: "Density of oil (kg/m3)",
+        });
+        first_scenario_tour.addStep({
+            element: ".dataset-selector",
+            placement: "left",
+            title: "Model Selection",
+            duration: 3500,
+            content: "The selected models depend on the location of the marker. The supported area is the Mediterranean sea",
+        });
+        first_scenario_tour.addStep({
+            element: ".checkbox",
+            placement: "left",
+            title: "Additional layers",
+            duration: 3500,
+            content: "Insert an additional layers to the simulation. If you do not wish select None!",
+        });
+
+        first_scenario_tour.addStep({
+            element: ".service-buttons",
+            placement: "left",
+            title: "Execution",
+            duration: 3500,
+            content: "All set. Ready to execute!",
+        });
+
+        first_scenario_tour.init();
+        first_scenario_tour.start(true);
 
         $('#lat').val(38.06);
         $('#lon').val(25.36);
@@ -154,6 +266,201 @@ $(document).ready(function() {
         });
 
     }
+
+    $('.oil-volume-container').change(function () {
+        if(scenario === 1) {
+            if (first_scenario_tour.getCurrentStep() === 2) {
+                // first_scenario_tour.addStep({
+                //     element: ".vis-duration-container",
+                //     placement: "left",
+                //     title: "Simulation duration",
+                //     content: "Duration of the spill release in hours",
+                // });
+                first_scenario_tour.next();
+            } else {
+                first_scenario_tour.setCurrentStep(7);
+            }
+        }
+        else {
+            if (third_scenario_tour.getCurrentStep() === 1) {
+                third_scenario_tour.addStep({
+                    element: ".vis-duration-container",
+                    placement: "left",
+                    title: "Simulation duration",
+                    content: "Duration of the spill release in hours",
+                });
+                third_scenario_tour.next();
+            } else {
+                third_scenario_tour.setCurrentStep(7);
+            }
+        }
+    });
+
+    $('.vis-duration-container').change(function () {
+        if (scenario  === 1) {
+            if (first_scenario_tour.getCurrentStep() === 3) {
+                // first_scenario_tour.addStep({
+                //     element: ".time-interval-container",
+                //     placement: "left",
+                //     title: "Time interval",
+                //     content: "Time interval between two outputs in hours",
+                // });
+                first_scenario_tour.next();
+            } else {
+                first_scenario_tour.setCurrentStep(7);
+            }
+        }
+        else{
+            if(third_scenario_tour.getCurrentStep() === 2){
+                third_scenario_tour.addStep({
+                    element: ".time-interval-container",
+                    placement: "left",
+                    title: "Time interval",
+                    content: "Time interval between two outputs in hours",
+                });
+                third_scenario_tour.next();
+            }
+            else{
+                third_scenario_tour.setCurrentStep(7);
+            }
+        }
+    });
+
+    $('.time-interval-container').change(function () {
+        if (scenario  === 1){
+            if (first_scenario_tour.getCurrentStep() === 4) {
+                // first_scenario_tour.addStep({
+                //     element: ".simulation-length-container",
+                //     placement: "left",
+                //     title: "Simulation length",
+                //     content: "Length of the requested simulation in hours ( max 30 days)",
+                // });
+                first_scenario_tour.next();
+            } else {
+                first_scenario_tour.setCurrentStep(7);
+            }
+        }
+        else {
+            if (third_scenario_tour.getCurrentStep() === 3) {
+                third_scenario_tour.addStep({
+                    element: ".simulation-length-container",
+                    placement: "left",
+                    title: "Simulation length",
+                    content: "Length of the requested simulation in hours ( max 30 days)",
+                });
+                third_scenario_tour.next();
+            } else {
+                third_scenario_tour.setCurrentStep(7);
+            }
+        }
+    });
+
+    $('.simulation-length-container').change(function () {
+        if (scenario === 1) {
+            if (first_scenario_tour.getCurrentStep() === 5) {
+                // first_scenario_tour.addStep({
+                //     element: ".oil-density-container",
+                //     placement: "left",
+                //     title: "Oil density",
+                //     content: "Density of oil (kg/m3)",
+                // });
+                first_scenario_tour.next();
+            } else {
+                first_scenario_tour.setCurrentStep(7);
+            }
+        }
+        else {
+            if (third_scenario_tour.getCurrentStep() === 4) {
+                third_scenario_tour.addStep({
+                    element: ".oil-density-container",
+                    placement: "left",
+                    title: "Oil density",
+                    content: "Density of oil (kg/m3)",
+                });
+                third_scenario_tour.next();
+            } else {
+                third_scenario_tour.setCurrentStep(7);
+            }
+        }
+    });
+
+    $('.oil-density-container').change(function () {
+        if(scenario === 1) {
+            if (first_scenario_tour.getCurrentStep() === 6) {
+                //  first_scenario_tour.addStep({
+                //     element: ".dataset-selector",
+                //     placement: "left",
+                //     title: "Model Selection",
+                //     duration: 3500,
+                //     content: "The selected models depend on the location of the marker. The supported area is the Mediterranean sea",
+                // });
+                // first_scenario_tour.addStep({
+                //     element: ".checkbox",
+                //     placement: "left",
+                //     title: "Additional layers",
+                //     duration: 3500,
+                //     content: "Insert an additional layers to the simulation. If you do not wish select None!",
+                // });
+                //
+                // first_scenario_tour.addStep({
+                //     element: ".service-buttons",
+                //     placement: "left",
+                //     title: "Execution",
+                //     duration: 3500,
+                //     content: "All set. Ready to execute!",
+                // });
+                first_scenario_tour.next();
+            } else {
+                first_scenario_tour.setCurrentStep(7);
+            }
+        }
+        else {
+            if (third_scenario_tour.getCurrentStep() === 5) {
+                third_scenario_tour.addStep({
+                    element: ".vis-startdate-container",
+                    placement: "left",
+                    title: "Datetime Selection",
+                    content: "Date and time start",
+                });
+                third_scenario_tour.next();
+            }
+            else {
+                third_scenario_tour.setCurrentStep(7);
+            }
+        }
+    });
+
+    $('.vis-startdate-container').change(function () {
+        if (scenario === 1) {
+            if (first_scenario_tour.getCurrentStep() === 1) {
+                // first_scenario_tour.addStep({
+                //     element: ".oil-volume-container",
+                //     placement: "left",
+                //     title: "Oil volume input",
+                //     content: "Insert the total amount of oil spilled in m3",
+                // });
+                first_scenario_tour.next();
+            } else {
+                first_scenario_tour.setCurrentStep(7);
+            }
+        }
+        else{
+           if (third_scenario_tour.getCurrentStep() === 6) {
+                third_scenario_tour.addStep({
+                    element: ".service-buttons",
+                    placement: "left",
+                    title: "Execution",
+                    duration: 3500,
+                    content: "All set. Ready to execute!"
+                });
+                third_scenario_tour.next();
+            }
+            else {
+                third_scenario_tour.setCurrentStep(7);
+            }
+        }
+    });
+
 
     if(scenario === 3){
         lock = 1;
@@ -195,6 +502,37 @@ $(document).ready(function() {
 
             }
         });
+        var third_scenario_tour = new Tour({
+            storage: false,
+            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+                "<div class='arrow'></div>" +
+                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                "<div class='popover-content'></div>" +
+                // "<div class='popover-navigation'>" +
+                // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+                // "<span data-role='separator'>|</span>" +
+                // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                // "</div>" +
+                "</div>",
+        });
+        third_scenario_tour.addStep({
+            element: ".application-header",
+            placement: "left",
+            title: "Oil spill dispersion forecast",
+            duration: 3500,
+            content: "This scenario forecasts the dispersion of oilspil in a selected point on map. Fill in all the fields",
+        });
+
+        third_scenario_tour.addStep({
+            element: ".oil-volume-container",
+            placement: "left",
+            title: "Oil volume input",
+            content: "Insert the total amount of oil spilled in m3",
+        });
+
+        third_scenario_tour.init();
+        third_scenario_tour.start(true);
     }
 
     $('#lock_area').on('click', function(e){
@@ -224,6 +562,26 @@ $(document).ready(function() {
         $('#lat').val((bounds[0] + bounds[2]) / 2);
         $('#lon').val((bounds[1] + bounds[3]) / 2);
         map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 9);
+
+        second_scenario_tour.addStep({
+            element: ".points-container",
+            placement: "left",
+            title: "Simulations Points",
+            duration: 6000,
+            content: "Once you selected the area, select more specifically the points within the selected area. " +
+                "The simulation supports up to five points. Feel free to select whatever number of points. " +
+                "All the simulation points must be placed inside the selected area otherwise the simulation can not be executed. " +
+                "You can go back to edit the location of the selected area",
+        });
+        second_scenario_tour.addStep({
+            element: ".service-parameters",
+            placement: "left",
+            title: "Service parameters",
+            duration: 3500,
+            content: "These parameters are common for all the points of the simulation. Time interval is measured in hours, " +
+                "simulation length in hours (max 30 days) and oil density in kg/m3 ",
+        });
+        second_scenario_tour.next();
 
     });
 
@@ -525,12 +883,7 @@ $(document).ready(function() {
 
     var exec_instance = '';
     $("#run-service-btn").click(function () {
-        if(parseInt(scenario) === 1)
-            $("#execution_btn_OIL_SPILL_SCENARIO_1").click();
-        else if(parseInt(scenario) === 2)
-            $("#execution_btn_OIL_SPILL_SCENARIO_2").click();
-        else if(parseInt(scenario) === 3)
-            $("#execution_btn_OIL_SPILL_SCENARIO_3").click();
+        $("#execution_btn_OIL_SPILL_SCENARIO_1").click();
 
         var lat = $('#lat').val();
         var lng = $("#lon").val();
@@ -563,12 +916,7 @@ $(document).ready(function() {
             var wave_dataset = $("#sel1").val();
             var hd_dataset = $("#sel2").val();
 
-            var natura_layer = $('input[name="natura_checkbox"]:checked').length > 0;
-            var ais_layer = $('input[name="ais_checkbox"]:checked').length > 0;
-
-            var url = "/oilspill/" +
-                "scenario" + scenario +
-                "/process/?" +
+            var url = "/oilspill/process/?" +
                 "&latitude1=" + lat +
                 "&longitude1=" + lng +
                 "&start_date1=" + start_date +
@@ -599,9 +947,7 @@ $(document).ready(function() {
                 "&simulation_length=" + simulation_length +
                 "&time_interval=" + time_interval +
                 "&wave_model=" + wave_dataset +
-                "&hd_model=" + hd_dataset +
-                "&natura_layer=" + natura_layer +
-                "&ais_layer=" + ais_layer;
+                "&hd_model=" + hd_dataset;
 
 
 
@@ -627,7 +973,7 @@ $(document).ready(function() {
             function check_execution_status() {
                 $.ajax({
                     "type": "GET",
-                    "url": "/oilspill/"+"scenario"+ scenario+"/status/"+exec_instance+"/",
+                    "url": "/oilspill/status/"+exec_instance+"/",
                     "data": {},
                     "cache": false,
                     "success": function(result) {
@@ -636,7 +982,7 @@ $(document).ready(function() {
                         if(result["status"] === "done"){
                             setTimeout(function() {
                                 execution_status_stop();
-                                window.location.href = "/oilspill/"+"scenario"+ scenario+"/results/"+exec_instance+"/";
+                                window.location.href = "/oilspill/results/"+exec_instance+"/";
                             }, 1000);
                         }
                         else if (result["status"] === "failed") {

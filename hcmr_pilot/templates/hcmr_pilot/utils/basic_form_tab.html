@@ -3,6 +3,7 @@
     {% csrf_token %}
     <div class="scenario" data-id="{{ scenario }}"></div>
     {% ifequal scenario '1' %}
+        <div class="scenario1">
         <h3 style="text-align: center;">Oil spill dispersion forecast</h3>
         <hr style="margin: 11px 0;">
          <div class="row" style="height: 6.5vh;">
@@ -119,6 +120,7 @@
 {#        <div class="checkbox" style="margin: 3px 0;">#}
 {#            <label><input type="checkbox" name="ais_checkbox" id="ais_checkbox">AIS data</label>#}
 {#        </div>#}
+        </div>
     {% endifequal %}
     {% ifequal scenario '2' %}
         <div class="row">
@@ -565,7 +567,7 @@
         </div>
     {% endifequal %}
     {% ifequal scenario '3' %}
-        <h3>Oil release at Seabed</h3>
+        <h3 class="application-header">Oil release at Seabed</h3>
         <hr style="margin: 11px 0;">
          <div class="row" style="margin: 25px; height: 6.7vh;">
             <h4 style="margin-top: 0px;">Service Parameters</h4>
