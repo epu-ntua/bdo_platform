@@ -46,11 +46,10 @@ function ckeck_markers_location() {
     var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
     var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
     bounds = [swlat,swlon,nelat,nelon];
-    // var latlng1
-    // var latlng1
-    // var latlng1
-    // var latlng1
-    // var latlng1
+    var latlng1
+    var latlng1
+    var latlng1
+    var latlng1
 }
 
 function create_new_area_select(area_select_bounds){
@@ -171,13 +170,13 @@ $(document).ready(function() {
             duration: 3500,
             content: "This scenario forecasts the dispersion of oilspil in a selected point on map. Fill in all the fields",
         });
-
         first_scenario_tour.addStep({
-            element: ".oil-volume-container",
+            element: ".vis-startdate-container",
             placement: "left",
-            title: "Oil volume input",
-            content: "Insert the total amount of oil spilled in m3",
+            title: "Datetime Selection",
+            content: "Date and time start",
         });
+
 
         first_scenario_tour.init();
         first_scenario_tour.start(true);
@@ -218,7 +217,7 @@ $(document).ready(function() {
 
     $('.oil-volume-container').change(function () {
         if(scenario === 1) {
-            if (first_scenario_tour.getCurrentStep() === 1) {
+            if (first_scenario_tour.getCurrentStep() === 2) {
                 first_scenario_tour.addStep({
                     element: ".vis-duration-container",
                     placement: "left",
@@ -247,7 +246,7 @@ $(document).ready(function() {
 
     $('.vis-duration-container').change(function () {
         if (scenario  === 1) {
-            if (first_scenario_tour.getCurrentStep() === 2) {
+            if (first_scenario_tour.getCurrentStep() === 3) {
                 first_scenario_tour.addStep({
                     element: ".time-interval-container",
                     placement: "left",
@@ -277,7 +276,7 @@ $(document).ready(function() {
 
     $('.time-interval-container').change(function () {
         if (scenario  === 1){
-            if (first_scenario_tour.getCurrentStep() === 3) {
+            if (first_scenario_tour.getCurrentStep() === 4) {
                 first_scenario_tour.addStep({
                     element: ".simulation-length-container",
                     placement: "left",
@@ -306,7 +305,7 @@ $(document).ready(function() {
 
     $('.simulation-length-container').change(function () {
         if (scenario === 1) {
-            if (first_scenario_tour.getCurrentStep() === 4) {
+            if (first_scenario_tour.getCurrentStep() === 5) {
                 first_scenario_tour.addStep({
                     element: ".oil-density-container",
                     placement: "left",
@@ -335,12 +334,28 @@ $(document).ready(function() {
 
     $('.oil-density-container').change(function () {
         if(scenario === 1) {
-            if (first_scenario_tour.getCurrentStep() === 5) {
-                first_scenario_tour.addStep({
-                    element: ".vis-startdate-container",
+            if (first_scenario_tour.getCurrentStep() === 6) {
+                 first_scenario_tour.addStep({
+                    element: ".dataset-selector",
                     placement: "left",
-                    title: "Datetime Selection",
-                    content: "Date and time start",
+                    title: "Model Selection",
+                    duration: 3500,
+                    content: "The selected models depend on the location of the marker. The supported area is the Mediterranean sea",
+                });
+                first_scenario_tour.addStep({
+                    element: ".checkbox",
+                    placement: "left",
+                    title: "Additional layers",
+                    duration: 3500,
+                    content: "Insert an additional layers to the simulation. If you do not wish select None!",
+                });
+
+                first_scenario_tour.addStep({
+                    element: ".service-buttons",
+                    placement: "left",
+                    title: "Execution",
+                    duration: 3500,
+                    content: "All set. Ready to execute!",
                 });
                 first_scenario_tour.next();
             } else {
@@ -365,28 +380,12 @@ $(document).ready(function() {
 
     $('.vis-startdate-container').change(function () {
         if (scenario === 1) {
-            if (first_scenario_tour.getCurrentStep() === 6) {
+            if (first_scenario_tour.getCurrentStep() === 1) {
                 first_scenario_tour.addStep({
-                    element: ".dataset-selector",
+                    element: ".oil-volume-container",
                     placement: "left",
-                    title: "Model Selection",
-                    duration: 3500,
-                    content: "The selected models depend on the location of the marker. The supported area is the Mediterranean sea",
-                });
-                first_scenario_tour.addStep({
-                    element: ".checkbox",
-                    placement: "left",
-                    title: "Additional layers",
-                    duration: 3500,
-                    content: "Insert an additional layers to the simulation. If you do not wish select None!",
-                });
-
-                first_scenario_tour.addStep({
-                    element: ".service-buttons",
-                    placement: "left",
-                    title: "Execution",
-                    duration: 3500,
-                    content: "All set. Ready to execute!",
+                    title: "Oil volume input",
+                    content: "Insert the total amount of oil spilled in m3",
                 });
                 first_scenario_tour.next();
             } else {

@@ -4,81 +4,35 @@
     <div class="scenario" data-id="{{ scenario }}"></div>
     {% ifequal scenario '1' %}
         <div class="scenario1">
-            <h4 class="application-header">Oil spill dispersion forecast</h4>
-            <hr style="margin-top: 10px; margin-bottom: 10px">
-             <div class="row" style="height: 6.5vh;">
-                <h4 style="margin-top: 0px;">Service Parameters</h4>
-                <div class="lat-container">
-                    <div class='col-sm-6'>
-                        <p>Latitude: </p>
-                    </div>
-                    <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
-                    </div>
+        <h4 class="application-header">Oil spill dispersion forecast</h4>
+        <hr style="margin: 11px 0;">
+         <div class="row" style="height: 6.5vh;">
+            <h4 style="margin-top: 0px;">Service Parameters</h4>
+            <div class="lat-container">
+                <div class='col-sm-6'>
+                    <p>Latitude: </p>
                 </div>
-                <div class="lon-container">
-                    <div class='col-sm-6'>
-                        <p>Longitude:</p>
-                    </div>
-                    <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
-                    </div>
-                </div>
-                <div class="oil-volume-container">
-                    <div class='col-sm-6'>
-                        <p>Oil Volume: </p>
-                    </div>
-                    <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="oil_volume" type='number' step="0.01"/>
-                    </div>
-                </div>
-                <div class="vis-duration-container">
-                    <div class='col-sm-6'>
-                        <p>Duration: </p>
-                    </div>
-                    <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="vis_duration" type='number' step="0.01"/>
-                    </div>
+                <div class='col-sm-6' style="bottom: 10px;">
+                    <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
                 </div>
             </div>
-            <div class="service-parameters">
-                <div class="row" style="margin-top:15px">
-                    <div class="coverage-date-filters-icon">
-                    </div>
-                    <div class="time-interval-container">
-                        <div class='col-sm-6'>
-                            <p>Time Interval: </p>
-                        </div>
-                        <div class='col-sm-6' style="bottom: 10px;">
-                            <input class="form-control" id="time_interval" type='number' step="0.01"/>
-                        </div>
-                    </div>
-                    <div class="simulation-length-container">
-                        <div class='col-sm-6'>
-                            <p>Simulation Length: </p>
-                        </div>
-                        <div class='col-sm-6' style="bottom: 10px;">
-                            <input class="form-control" id="simulation_length" type='number' step="0.01"/>
-                        </div>
-                    </div>
-                    <div class="oil-density-container">
-                        <div class='col-sm-6'>
-                            <p>Oil Density: </p>
-                        </div>
-                        <div class='col-sm-6' style="bottom: 10px;">
-                            <input class="form-control" id="oil_density" type='number' step="0.01"/>
-                        </div>
-                    </div>
+            <div class="lon-container">
+                <div class='col-sm-6'>
+                    <p>Longitude:</p>
+                </div>
+                <div class='col-sm-6' style="bottom: 10px;">
+                    <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
                 </div>
             </div>
-            <div class="vis-startdate-container" style="width: 100%">
+
+            <div class="vis-startdate-container col-sm-12" style="width: 100%">
                 <div class="col-sm-6">
-                    <p>Start Date:</p>
+                    <p>Start date and time:</p>
                 </div>
                 <div class='col-sm-6'>
                     <div class="form-group">
                         <div class='input-group date' id='startdatepicker'>
-                            <input type='text' class="form-control"/>
+                            <input type='text' class="form-control" />
                             <span class="input-group-addon">
                                 <span class="glyphicon glyphicon-calendar"></span>
                             </span>
@@ -86,37 +40,88 @@
                     </div>
                 </div>
             </div>
-            <br>
-            <hr style="margin-top: 30px">
-            <div class="dataset-selector">
-                <h4>Available Datasets</h4>
-                <label for="sel1">Wave Forecast Dataset</label>
-                <select class="form-control" id="sel1">
-                    <option value="202">Poseidon Wave Dataset for the Aegean</option>
-                    <option value="201">Poseidon Wave Dataset for the Mediterranean</option>
-                    <option value="203">Copernicus Wave Dataset</option>
-                </select><label for="sel2">Hydrodynamic Dataset</label>
-                <select class="form-control" id="sel2">
-                    <option value="001">Poseidon High Resolution Aegean Model</option>
-                    <option value="002">Poseidon Mediterranean Model</option>
-                    <option value="003">Copernicus Model</option>
-                </select>
+
+            <div class="oil-volume-container col-sm-12">
+                <div class='col-sm-6'>
+                    <p>Volume of oil spilled (m<sup>3</sup>): </p>
+                </div>
+                <div class='col-sm-6' style="bottom: 10px;">
+                    <input class="form-control" id="oil_volume" type='number' step="1" value="10000" />
+                </div>
             </div>
 
-            <hr style="margin-top: 10px; margin-bottom: 10px">
-            <h4>Additional layers</h4>
-            <div class="checkbox">
-                <label><input type="checkbox" name="optradio" checked>None</label>
+            <div class="vis-duration-container col-sm-12">
+                <div class='col-sm-6'>
+                    <p>Duration of the spill release (hours): </p>
+                </div>
+                <div class='col-sm-6' style="bottom: 10px;">
+                    <input class="form-control" id="vis_duration" type='number' step="0.1" value="0"/>
+                </div>
             </div>
-            <div class="checkbox">
-                <label><input type="checkbox" name="optradio">Natura maps</label>
-            </div>
-            <div class="checkbox">
-                <label><input type="checkbox" name="optradio">AIS maps</label>
+            <br>
+        </div>
+        <div class="service-parameters">
+            <div class="" style="margin-top:15px">
+{#                <div class="coverage-date-filters-icon">#}
+{#                </div>#}
+                <div class="time-interval-container col-sm-12">
+                    <div class='col-sm-6'>
+                        <p>Time Interval between two outputs (hours): </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="time_interval" type='number' step="1" value="2"/>
+                    </div>
+                </div>
+                <div class="simulation-length-container col-sm-12">
+                    <div class='col-sm-6'>
+                        <p>Length of the requested simulation (hours): </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="simulation_length" type='number' step="1" value="24" max="720" min="1"/>
+                    </div>
+                </div>
+                <div class="oil-density-container col-sm-12">
+                    <div class='col-sm-6'>
+                        <p>Oil Density (kg/m<sup>3</sup>): </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="oil_density" type='number' step="0.1" value="920"/>
+                    </div>
+                </div>
             </div>
         </div>
-    {% endifequal %}
 
+        <br>
+        <hr style="margin: 11px 0;">
+        <div class="dataset-selector">
+            <h4 style="margin: 0;">Available Datasets</h4>
+            <label for="sel1">Wave Forecast Dataset</label>
+            <select class="form-control" id="sel1">
+                <option value="202">Poseidon Wave Dataset for the Aegean</option>
+                <option value="201">Poseidon Wave Dataset for the Mediterranean</option>
+                <option value="203">Copernicus Wave Dataset</option>
+            </select>
+            <label for="sel2">Hydrodynamic Model</label>
+            <select class="form-control" id="sel2">
+                <option value="001">Poseidon High Resolution Aegean Model</option>
+                <option value="002">Poseidon Mediterranean Model</option>
+                <option value="003">Copernicus Model</option>
+            </select>
+        </div>
+
+        <hr style="margin: 11px 0;">
+        <h4 style="margin: 0">Additional layers</h4>
+{#        <div class="checkbox">#}
+{#            <label><input type="checkbox" name="optradio" checked>None</label>#}
+{#        </div>#}
+        <div class="checkbox" style="margin: 3px 0;">
+            <label><input type="checkbox" name="natura_checkbox" id="natura_checkbox">Natura protected areas</label>
+        </div>
+        <div class="checkbox" style="margin: 3px 0;">
+            <label><input type="checkbox" name="ais_checkbox" id="ais_checkbox">AIS data</label>
+        </div>
+        </div>
+    {% endifequal %}
     {% ifequal scenario '2' %}
         <div class="row">
             <div class="col-sm-7" style="padding-left: 0px; padding-right: 0px; top: 10px; width: 67.333333%;">
@@ -129,9 +134,9 @@
              </div>
         </div>
 
-        <hr style="margin-top: 10px; margin-bottom: 10px">
+        <hr style="margin: 11px 0;">
         <div class="spatial-selection" >
-            <h4>Geographic Coverage</h4>
+            <h4 style="margin: 0;">Geographic Coverage</h4>
             <div class="row" style="margin: 25px;">
                 <div class="lat-container">
                      <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
@@ -167,13 +172,13 @@
 
                 <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
             </div>
-            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <hr style="margin: 11px 0;">
             <div class="button-container lock-button"  style="width:100%" >
                 <div id="lock_area" class="btn btn-sm btn-dark" style="width:40%">
                     <i class="fa fa-lock"></i> Lock area
                 </div>
             </div>
-            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <hr style="margin: 11px 0;">
         </div>
 
 
@@ -199,7 +204,7 @@
             <div class="tab-content" style="margin-bottom: 155px">
 
                 <div  class="tab-pane fade in active" id="point1_form" >
-                    <h4>First point parameters (Blue marker)</h4>
+                    <h4 style="margin: 0;">First point parameters (Blue marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -261,7 +266,7 @@
                 </div>
 
                 <div class="tab-pane fade" id="point2_form">
-                 <h4>Second point parameters (Red marker)</h4>
+                 <h4 style="margin: 0;">Second point parameters (Red marker)</h4>
                 <div class="row" style="height: 6.7vh;">
                     <div class="lat-container">
                         <div class='col-sm-6'>
@@ -327,7 +332,7 @@
             </div>
 
                 <div class="tab-pane fade" id="point3_form">
-                 <h4>Third point parameters (Green marker)</h4>
+                 <h4 style="margin: 0;">Third point parameters (Green marker)</h4>
                 <div class="row" style="height: 6.7vh;">
                     <div class="lat-container">
                         <div class='col-sm-6'>
@@ -392,7 +397,7 @@
                 </div>
             </div>
                 <div class="tab-pane fade" id="point4_form">
-                    <h4>Fourth point parameters (Orange marker)</h4>
+                    <h4 style="margin: 0;">Fourth point parameters (Orange marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -459,7 +464,7 @@
                 </div>
 
                 <div class="tab-pane fade" id="point5_form">
-                    <h4>Fifth point parameters (Black marker)</h4>
+                    <h4 style="margin: 0;">Fifth point parameters (Black marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -526,9 +531,9 @@
             </div>
 
             <br>
-            <hr style="margin-top: 10px; margin-bottom: 10px">
+            <hr style="margin: 11px 0;">
             <div class="service-parameters">
-                <h4>Service Parameters</h4>
+                <h4 style="margin: 0;">Service Parameters</h4>
                 <div class="row" style="margin-top:15px">
                     <div class="coverage-date-filters-icon">
                     </div>
@@ -557,14 +562,13 @@
                         </div>
                     </div>
                 </div>
-                <hr style="margin-top: 10px; margin-bottom: 10px">
+                <hr style="margin: 11px 0;">
             </div>
         </div>
     {% endifequal %}
-
     {% ifequal scenario '3' %}
         <h3 class="application-header">Oil release at Seabed</h3>
-        <hr>
+        <hr style="margin: 11px 0;">
          <div class="row" style="margin: 25px; height: 6.7vh;">
             <h4 style="margin-top: 0px;">Service Parameters</h4>
             <div class="lat-container">

@@ -29,58 +29,58 @@
 }
 
 #lat{
-    width: 62%;
+    width: 73%;
 }
 
 #lon{
-    width: 62%;
+    width: 73%;
 }
 
 #lat2{
-    width: 62%;
+    width: 73%;
 }
 
 #lon2{
-    width: 62%;
+    width: 73%;
 }
 
 #lat3{
-    width: 62%;
+    width: 73%;
 }
 
 #lon3{
-    width: 62%;
+    width: 73%;
 }
 
 #oil_volume{
-    width: 62%;
+    width: 73%;
 }
 #oil_density{
-    width: 62%;
+    width: 73%;
 }
 #oil_volume2{
-    width: 62%;
+    width: 73%;
 }
 
 #oil_volume3{
-    width: 62%;
+    width: 73%;
 }
 
 #time_interval{
-    width: 62%;
+    width: 73%;
 }
 #simulation_length{
-    width: 62%;
+    width: 73%;
 }
 #vis_duration{
-    width: 62%;
+    width: 73%;
 }
 #vis_duration2{
-    width: 62%;
+    width: 73%;
 }
 
 #vis_duration3{
-    width: 62%;
+    width: 73%;
 }
 
 .form-control{
@@ -166,3 +166,15 @@
     height: 45vh;
 }
 
+
+#oilspill_form .form-control {
+    height: 30px;
+}
+
+#oilspill_form .col-sm-12, #oilspill_form .col-sm-6{
+    padding: 0;
+}
+
+#oilspill_form .checkbox .checkbox-material {
+     padding-left: 0;
+}

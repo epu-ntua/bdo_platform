@@ -2,7 +2,7 @@
 {% load static %}
 {% load leaflet_tags %}
 {% block css %}
-    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}">
+    <link rel="stylesheet" href="{% static 'hcmr_pilot/css/service_output.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -18,7 +18,7 @@
                 <h2 style="font-size: 3vh; margin: 0;"> {{ service_title }} </h2>
             </div>
             <div class="col-sm-3" style="height: 12vh;">
-                <a class="btn btn-danger" href="/oilspill/?scenario=1" style="position: absolute; bottom: 0; right: 0;">Back</a>
+                <a class="btn btn-danger" href="{{ back_url }}" style="position: absolute; bottom: 0; right: 0;">Back</a>
             </div>
         </div>
     {% endblock %}
@@ -52,7 +52,7 @@
     </div>
 
     <div id="footer" style="text-align: center; margin-top: 40px;">
-        <button class="btn btn-primary" onclick="alert('Currently unavailable')">Obtain a PDF Report</button>
+{#        <button class="btn btn-primary" onclick="alert('Currently unavailable')">Obtain a PDF Report</button>#}
         <br/>
         <p style="display: inline-block; margin-right: 10px;">Do you want or need anything different?</p><a href="/#contact" class="btn btn-primary btn-sm" style="display: inline-block;">Get in touch with us</a>
     </div>

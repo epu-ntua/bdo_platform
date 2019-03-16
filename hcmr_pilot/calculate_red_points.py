@@ -18,18 +18,21 @@ def calculate(data_filename, red_points_filename):
 
 
 def find_min_max_lat_lon(data):
-    min_lat = max_lat = data[0]['Lat']
-    min_lon = max_lon = data[0]['Lon']
-    for d in data:
-        if d['Lat'] < min_lat:
-            min_lat = d['Lat']
-        elif d['Lat'] > max_lat:
-            max_lat = d['Lat']
-        if d['Lon'] < min_lon:
-            min_lon = d['Lon']
-        elif d['Lon'] > max_lon:
-            max_lon = d['Lon']
-    return min_lat, max_lat, min_lon, max_lon
+    if len(data) > 0:
+        min_lat = max_lat = data[0]['Lat']
+        min_lon = max_lon = data[0]['Lon']
+        for d in data:
+            if d['Lat'] < min_lat:
+                min_lat = d['Lat']
+            elif d['Lat'] > max_lat:
+                max_lat = d['Lat']
+            if d['Lon'] < min_lon:
+                min_lon = d['Lon']
+            elif d['Lon'] > max_lon:
+                max_lon = d['Lon']
+        return min_lat, max_lat, min_lon, max_lon
+    else:
+        return -90, 90, -180, 180
 
 
 def filter_out_of_range_areas(kml_data, min_lat, max_lat, min_lon, max_lon):
