@@ -10,48 +10,83 @@
 
 {% block content %}
     <div class="row">
-        <div class="col-12">
-            <div class="o-lighter-gray text-center"><h2 style="box-shadow: 0 1px #e5e5e5; margin-left: 20%; margin-right: 20%;">Applications & Dashboards</h2></div>
+        <div class="col-sm-2" style="margin-top: 20px;"><a class="btn btn-success makerequestbtn" href="/on-demand/" role="button"><i class="fas fa-user-ninja" style="padding-right:5px"></i> Make a new request</a></div>
+        <div class="col-sm-8">
+            <div class="o-lighter-gray text-center"><h2 style="box-shadow: 0 1px #e5e5e5; margin-left: 20%; margin-right: 20%;">BDO Applications and Dashboards</h2></div>
             <div class="filterservices form-group">
 {#                <label for="filterservicesSelect" class="o-lighter-gray"><b>Filter Services</b></label>#}
 {#                <select class="form-control" width="300" id="filterservicesSelect">#}
 {#                    <option>Latest</option>#}
 {#                </select>#}
-                <div class="pull-right"><a class="btn btn-success makerequestbtn" href="/on-demand/" role="button"><i class="fas fa-user-ninja" style="padding-right:5px"></i> Make a new request</a></div>
             </div>
         </div>
     </div>
+
+
+
+
     <ul class="nav nav-pills nav-pills-icons" role="tablist" style="text-align: center;">
+{#        <div class="o-lighter-gray text-center"><h2 style="box-shadow: 0 1px #e5e5e5; margin-left: 20%; margin-right: 20%;">My Applications & Dashboards</h2></div>#}
         <!--
             color-classes: "nav-pills-primary", "nav-pills-info", "nav-pills-success", "nav-pills-warning","nav-pills-danger"
         -->
         <li class="nav-item active" style="width: 20%; display: inline-block; float: none;">
+            <a class="nav-link" href="#pilot-services-div" role="tab" data-toggle="tab">
+                <i class="fas fa-cogs"></i>
+                Pilot Applications
+            </a>
+        </li>
+        <li class="nav-item" style="width: 20%; display: inline-block; float: none;">
             <a class="nav-link" href="#myservices" role="tab" data-toggle="tab">
                 <i class="fas fa-cogs"></i>
                 My Services
             </a>
         </li>
-        <li class="nav-item " style="width: 20%; display: inline-block; float: none;">
-            <a class="nav-link active" href="#publicservices" role="tab" data-toggle="tab">
-                <i class="fas fa-users-cog"></i>
-                Public Services
-            </a>
-        </li>
+{#        <li class="nav-item " style="width: 20%; display: inline-block; float: none;">#}
+{#            <a class="nav-link active" href="#publicservices" role="tab" data-toggle="tab">#}
+{#                <i class="fas fa-users-cog"></i>#}
+{#                Public Services#}
+{#            </a>#}
+{#        </li>#}
         <li class="nav-item" style="width: 20%; display: inline-block; float: none;">
             <a class="nav-link" href="#mydashboards" role="tab" data-toggle="tab">
                 <i class="fas fa-bar-chart"></i>
                 My Dashboards
             </a>
         </li>
-        <li class="nav-item" style="width: 20%; display: inline-block; float: none;">
-            <a class="nav-link" href="#publicdashboards" role="tab" data-toggle="tab">
-                <i class="fas fa-user-friends"></i>
-                Public Dashboards
-            </a>
-        </li>
+{#        <li class="nav-item" style="width: 20%; display: inline-block; float: none;">#}
+{#            <a class="nav-link" href="#publicdashboards" role="tab" data-toggle="tab">#}
+{#                <i class="fas fa-user-friends"></i>#}
+{#                Public Dashboards#}
+{#            </a>#}
+{#        </li>#}
     </ul>
     <div class="tab-content tab-space text-center">
-        <div class="tab-pane active" id="myservices">
+        <div class="tab-pane active" id="pilot-services-div" style="text-align: center;">
+            {% for item in pilot_services %}
+                <div class="card card-default-width card-default-margin-right">
+                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                    <div class="card-body card-padding-20">
+                        <h5 class="card-title o-blue card-title-default-height">
+                            <a class="o-blue" href="{{item.targeturl}}">
+                            {{item.title}}
+                            </a>
+                        </h5>
+                        <p class="card-text card-text-default-height">{{ item.short_description|default:"No description provided." }}</p>
+                    </div>
+
+                    <ul class="list-group list-group-flush" style="text-align: left;">
+                        <li class="list-group-item ">Service Creator <div class="pull-right">{{ item.creator }}</div></li>
+                        <li class="list-group-item">Sharing <div class="pull-right ">{{ item.sharing }}</div></li>
+                    </ul>
+                    <div class="card-body text-center">
+                        <a class="btn btn-primary blue" href="{{item.targeturl}}" role="button">SHOW SERVICE</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="tab-pane" id="myservices">
 
             <div class="card-deck">
             {% for item in my_services %}
@@ -61,9 +96,9 @@
                         <h5 class="card-title o-blue card-title-default-height">
                             <a class="o-blue"
                                 {% if item.title == 'Vessel Fault Prediction (FNK)'%}
-                                    href="http://212.101.173.31:8062"
+                                    href="http://212.101.173.52:8062"
                                 {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
-                                    href="http://212.101.173.31:8065"
+                                    href="http://212.101.173.52:8065"
                                 {% else %}
                                     href="/services/service/{{item.pk}}"
                                 {% endif %}
@@ -82,9 +117,9 @@
                     <div class="card-body text-center">
                         <a class="btn btn-primary blue"
                             {% if item.title == 'Vessel Fault Prediction (FNK)'%}
-                                href="http://212.101.173.31:8062"
+                                href="http://212.101.173.52:8062"
                             {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
-                                href="http://212.101.173.31:8065"
+                                href="http://212.101.173.52:8065"
                             {% else %}
                                 href="/services/service/{{item.pk}}"
                             {% endif %}
@@ -100,73 +135,73 @@
 
 
         </div>
-        <div class="tab-pane" id="publicservices">
-
-            <div class="card-deck">
-            {% for item in bdo_services %}
-                <div class="card card-default-width card-default-margin-right">
-                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
-                    <div class="card-body card-padding-20">
-                        <h5 class="card-title o-blue card-title-default-height">
-                            <a class="o-blue"
-                                {% if item.title == 'Vessel Fault Prediction (FNK)'%}
-                                    href="http://212.101.173.31:8062"
-                                {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
-                                    href="http://212.101.173.31:8065"
-                                {% else %}
-                                    href="/services/service/{{item.pk}}"
-                                {% endif %}
-                            >
-                            {{item.title}}
-                            </a>
-                        </h5>
-                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
-                    </div>
-
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Service Creator
-                            <div class="pull-right">
-                                {% if item.title == 'Primary Wave Energy Assessment'%}
-                                    'R&D Nester'
-                                {% elif  item.title == 'Vessel Anomaly Detection'%}
-                                    'Marine Traffic'
-                                {% elif  item.title == 'Route Anomaly Detection'%}
-                                    'Marine Traffic'
-                                {% elif  item.title == 'Vessel Fault Prediction (FNK)'%}
-                                    'FOINIKAS'
-                                {% elif  item.title == 'Vessel Fault Prediction (ANEK)'%}
-                                    'ANEK'
-                                {% elif  item.title == 'Oil Spill Simulation Service'%}
-                                    'HCMR'
-                                {% else %}
-                                    {{ item.user.username }}
-                                {% endif %}
-                            </div>
-                        </li>
-                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
-                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
-                    </ul>
-                    <div class="card-body text-center">
-                        <a class="btn btn-primary blue"
-                            {% if item.title == 'Vessel Fault Prediction (FNK)'%}
-                                href="http://212.101.173.31:8062"
-                            {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
-                                href="http://212.101.173.31:8065"
-                            {% else %}
-                                href="/services/service/{{item.pk}}"
-                            {% endif %}
-                             role="button">
-                            SHOW SERVICE
-                        </a>
-                    </div>
-                </div>
-            {% empty %}
-                <b>No services are created yet. Click <a class="o-blue" href="/service_builder/create/">here</a> to create a new service.</b>
-            {% endfor %}
-            </div>
-
-
-        </div>
+{#        <div class="tab-pane" id="publicservices">#}
+{##}
+{#            <div class="card-deck">#}
+{#            {% for item in bdo_services %}#}
+{#                <div class="card card-default-width card-default-margin-right">#}
+{#                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">#}
+{#                    <div class="card-body card-padding-20">#}
+{#                        <h5 class="card-title o-blue card-title-default-height">#}
+{#                            <a class="o-blue"#}
+{#                                {% if item.title == 'Vessel Fault Prediction (FNK)'%}#}
+{#                                    href="http://212.101.173.31:8062"#}
+{#                                {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}#}
+{#                                    href="http://212.101.173.31:8065"#}
+{#                                {% else %}#}
+{#                                    href="/services/service/{{item.pk}}"#}
+{#                                {% endif %}#}
+{#                            >#}
+{#                            {{item.title}}#}
+{#                            </a>#}
+{#                        </h5>#}
+{#                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>#}
+{#                    </div>#}
+{##}
+{#                    <ul class="list-group list-group-flush">#}
+{#                        <li class="list-group-item">Service Creator#}
+{#                            <div class="pull-right">#}
+{#                                {% if item.title == 'Primary Wave Energy Assessment'%}#}
+{#                                    'R&D Nester'#}
+{#                                {% elif  item.title == 'Vessel Anomaly Detection'%}#}
+{#                                    'Marine Traffic'#}
+{#                                {% elif  item.title == 'Route Anomaly Detection'%}#}
+{#                                    'Marine Traffic'#}
+{#                                {% elif  item.title == 'Vessel Fault Prediction (FNK)'%}#}
+{#                                    'FOINIKAS'#}
+{#                                {% elif  item.title == 'Vessel Fault Prediction (ANEK)'%}#}
+{#                                    'ANEK'#}
+{#                                {% elif  item.title == 'Oil Spill Simulation Service'%}#}
+{#                                    'HCMR'#}
+{#                                {% else %}#}
+{#                                    {{ item.user.username }}#}
+{#                                {% endif %}#}
+{#                            </div>#}
+{#                        </li>#}
+{#                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>#}
+{#                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>#}
+{#                    </ul>#}
+{#                    <div class="card-body text-center">#}
+{#                        <a class="btn btn-primary blue"#}
+{#                            {% if item.title == 'Vessel Fault Prediction (FNK)'%}#}
+{#                                href="http://212.101.173.31:8062"#}
+{#                            {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}#}
+{#                                href="http://212.101.173.31:8065"#}
+{#                            {% else %}#}
+{#                                href="/services/service/{{item.pk}}"#}
+{#                            {% endif %}#}
+{#                             role="button">#}
+{#                            SHOW SERVICE#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </div>#}
+{#            {% empty %}#}
+{#                <b>No services are created yet. Click <a class="o-blue" href="/service_builder/create/">here</a> to create a new service.</b>#}
+{#            {% endfor %}#}
+{#            </div>#}
+{##}
+{##}
+{#        </div>#}
         <div class="tab-pane" id="mydashboards">
             <div class="card-deck">
             {% for item in my_dashboards %}
@@ -191,30 +226,30 @@
             {% endfor %}
             </div>
         </div>
-        <div class="tab-pane" id="publicdashboards">
-            <div class="card-deck">
-            {% for item in bdo_dashboards %}
-                <div class="card card-default-width card-default-margin-right">
-                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
-                    <div class="card-body card-padding-20">
-                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/dashboard/{{item.pk}}">{{ item.title }}</a></h5>
-                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
-                    </div>
-
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
-                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
-                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
-                    </ul>
-                    <div class="card-body text-center">
-                        <a class="btn btn-primary blue" href="/services/dashboard/{{item.pk}}" role="button">SHOW DASHBOARD</a>
-                    </div>
-                </div>
-            {% empty %}
-                <b>No dashboards are created yet. Click <a class="o-blue" href="/dashboards/create/">here</a> to create a new dashboard.</b>
-            {% endfor %}
-            </div>
-        </div>
+{#        <div class="tab-pane" id="publicdashboards">#}
+{#            <div class="card-deck">#}
+{#            {% for item in bdo_dashboards %}#}
+{#                <div class="card card-default-width card-default-margin-right">#}
+{#                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">#}
+{#                    <div class="card-body card-padding-20">#}
+{#                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/dashboard/{{item.pk}}">{{ item.title }}</a></h5>#}
+{#                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>#}
+{#                    </div>#}
+{##}
+{#                    <ul class="list-group list-group-flush">#}
+{#                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>#}
+{#                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>#}
+{#                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>#}
+{#                    </ul>#}
+{#                    <div class="card-body text-center">#}
+{#                        <a class="btn btn-primary blue" href="/services/dashboard/{{item.pk}}" role="button">SHOW DASHBOARD</a>#}
+{#                    </div>#}
+{#                </div>#}
+{#            {% empty %}#}
+{#                <b>No dashboards are created yet. Click <a class="o-blue" href="/dashboards/create/">here</a> to create a new dashboard.</b>#}
+{#            {% endfor %}#}
+{#            </div>#}
+{#        </div>#}
     </div>
 
 
