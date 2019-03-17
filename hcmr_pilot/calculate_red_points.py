@@ -71,7 +71,7 @@ def get_polygons_in_range(filtered_kml_data):
 
 
 def build_red_points_file(data, polygons, red_points_filename):
-    file = open('visualizer\\static\\visualizer\\files\\'+red_points_filename, 'w')
+    file = open('visualizer/static/visualizer/files/'+red_points_filename, 'w')
     for p in data:
         is_inner = False
         for pol in polygons:
