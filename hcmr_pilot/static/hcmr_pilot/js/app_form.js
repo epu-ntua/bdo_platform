@@ -989,9 +989,9 @@ $(document).ready(function() {
                         console.log(result);
                         exec_instance = result['exec_instance'];
                     },
-                    error: function () {
-                        alert('error');
-                    }
+                "error": function () {
+                    set_execution_failed();
+                }
             });
 
             var execution_status_interval = setInterval(check_execution_status, 3000);
@@ -1017,6 +1017,7 @@ $(document).ready(function() {
                         }
                     },
                     error: function () {
+                        set_execution_failed();
                         execution_status_stop();
                         // alert('error');
                     }
@@ -1032,6 +1033,15 @@ $(document).ready(function() {
             alert("Please select points inside Mediterranean sea")
         }
     });
+
+    function set_execution_failed(){
+        $(".modal.in .progress-bar").css({width: '100%', background: '#db2828'});
+        $(".modal.in .status_counter").each(function (index, elem) {
+            $(elem).removeClass('label-default').addClass('label-primary');
+        });
+        $(".modal.in #modal_dismiss_btn_cancel").hide();
+        $(".modal.in #modal_dismiss_btn_close").show();
+    }
 
 
     window.setInterval(function () {
@@ -1062,12 +1072,7 @@ $(document).ready(function() {
 
             }
             if (new_status === "failed"){
-                $(".modal.in .progress-bar").css({width: '100%', background: '#db2828'});
-                $(".modal.in .status_counter").each(function (index, elem) {
-                    $(elem).removeClass('label-default').addClass('label-primary');
-                });
-                $(".modal.in #modal_dismiss_btn_cancel").hide();
-                $(".modal.in #modal_dismiss_btn_close").show();
+                set_execution_failed();
             }
         }
     }, 1000);
