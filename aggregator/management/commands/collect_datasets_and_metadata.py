@@ -92,11 +92,18 @@ class Command(BaseCommand):
                     metadata[key] = profile[key]
             dataset.metadata = metadata
             dataset.save()
+            possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
+                                   "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
+                                   "timestamp", "ship_id", "ship_name", "imo_id", "mmsi", 'imo']
+            possible_vessel_identifiers = ["platform_id", "ship_id", "ship_name", "imo_id", "mmsi", 'imo', "voyage_number", "trip_identifier"]
+
+            ### REMOVE IT
+            # column_list_titles = [var["canonicalName"] for var in profile["variables"]]
+            # dataset_vessel_identifiers = [col for col in column_list_titles if col in possible_vessel_identifiers]
+            ###/ REMOVE IT
 
             if profile["storageTable"] in tables_to_add:
-                possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
-                                       "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
-                                       "timestamp", "ship_id"]
+            # if profile["storageTable"] in tables_to_add and len(dataset_vessel_identifiers)>0:
                 dataset_variables = []
                 dataset_dimensions = []
                 for var in profile["variables"]:

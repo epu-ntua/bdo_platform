@@ -7,7 +7,6 @@
         <div id="viz_{{ viz.id }}">
             <input id="1+++viz_id"  class="full-width " name="viz_id"  value="{{ viz.id }}" style="display: none">
             <input id="action"  class=" full-width " name="action"  value="{{ viz.view_name }}" style="display: none">
-
             {% for argument in viz.info.arguments %}
                 <div class="row">
                     <div class="col-xs-12">
@@ -49,6 +48,20 @@
                                 <select id="{{ argument.name }}" class="ui dropdown full-width columns-numeric-select" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
 
                                 </select>
+                            {% elif argument.type == 'VESSEL_ID_COLUMN_LIST' %}
+                                <select id="{{ argument.name }}" class="ui dropdown full-width vessel-id-columns-select" name="{{ argument.name }}" style="width: 250px">
+
+                                </select>
+                            {% elif argument.type == 'VESSEL_ID_LIST' %}
+                                {% if viz.view_name == 'get_map_plotline_vessel_course'  %}
+                                    <select id="{{ argument.name }}" class="ui search selection dropdown full-width vessel-id" name="{{ argument.name }}" style="width: 250px">
+
+                                    </select>
+                                {% else %}
+                                    <select id="{{ argument.name }}" class="ui search selection dropdown full-width vessel-id" name="{{ argument.name }}[]"  multiple="multiple" style="width: 250px">
+
+                                    </select>
+                                {% endif %}
                             {% elif argument.type == 'AGG_FUNCTION' %}
                                 <select id="{{ argument.name }}" class="ui dropdown full-width aggregate-select" name="{{ argument.name }}" >
 {#                                    <option value="">Select Aggregation Function</option>#}
