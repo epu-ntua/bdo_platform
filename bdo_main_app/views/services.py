@@ -47,19 +47,19 @@ def services(request):
                       'creator': 'HCMR',
                       'sharing': 'Open'}
     pilot_services.append(hcmr_service)
-    anek_service = {'title': 'Fault Detection and Predictive Maintenance',
+    anek_service = {'title': 'Fuel Consumption Reduction Investigation',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot1b.jpg',
                       # 'targeturl': '/pilot/fault-prediction-anek/',
                       'targeturl': 'http://212.101.173.52:8065',
-                      'short_description': 'Design of better and more efficient risk maintenance management strategies facilitating the estimation of the failure effect probability and the estimated time-to-live of the equipment.',
+                      'short_description': 'Investigation of the impact of the environmental conditions and the operational decisions taken on the vessel\'s fuel consumption',
                       'creator': 'ANEK',
                       'sharing': 'Private'}
     pilot_services.append(anek_service)
-    fnk_service = {'title': 'Fuel Consumption Reduction Investigation',
+    fnk_service = {'title': 'Fault Detection and Predictive Maintenance',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot3.jpg',
                       # 'targeturl': '/pilot/fault-prediction-fnk/',
                       'targeturl': 'http://212.101.173.52:8062',
-                      'short_description': 'Investigation of the impact of the environmental conditions and the operational decisions taken on the vessel\'s fuel consumption',
+                      'short_description': 'Design of better and more efficient risk maintenance management strategies facilitating the estimation of the failure effect probability and the estimated time-to-live of the equipment.',
                       'creator': 'FOINIKAS',
                       'sharing': 'Private'}
     pilot_services.append(fnk_service)
