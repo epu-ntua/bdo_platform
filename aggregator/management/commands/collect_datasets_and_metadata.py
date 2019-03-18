@@ -58,7 +58,8 @@ class Command(BaseCommand):
         self.stdout.write(str(tables_to_add))
         self.stdout.write(str(len(tables_to_add)))
 
-        for profile in profile_list[:2]:
+        for i, profile in enumerate(profile_list[:]):
+            print "Profile: " + str(i)
             if profile["storageTable"] in tables_to_add:
                 dataset = Dataset(title=profile["title"],
                                   source=profile["source"],
@@ -104,6 +105,12 @@ class Command(BaseCommand):
                         dataset_variables.append(var)
                     else:
                         dataset_dimensions.append(var)
+                # this change was made because i.e. in HCMR Aegean Sea Bathymetry, no variable was present
+                if len(dataset_variables) == 0 and 'depth' in [d["canonicalName"] for d in dataset_dimensions]:
+                    for d in dataset_dimensions:
+                        if d["canonicalName"] == 'depth':
+                            dataset_dimensions.remove(d)
+                            dataset_variables.append(d)
                 self.stdout.write('variables to add')
                 self.stdout.write(str(dataset_variables))
                 self.stdout.write('dimensions to add')
@@ -239,19 +246,22 @@ class Command(BaseCommand):
             # if 1 == 1:
                 rows_to_render = []
                 variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
+                variable_list_titles = [v.title for v in Variable.objects.filter(dataset=dataset)]
                 variable_list_units = [v.unit for v in Variable.objects.filter(dataset=dataset)]
                 dimension_list_canonical = [d.name for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
+                dimension_list_titles = [d.title for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
                 dimension_list_units = [d.unit for d in Dimension.objects.filter(variable=Variable.objects.filter(dataset=dataset)[0])]
-                column_list_titles = variable_list_canonical + dimension_list_canonical
+                column_list_canonical = variable_list_canonical + dimension_list_canonical
+                column_list_titles = variable_list_titles + dimension_list_titles
                 column_list_units = variable_list_units + dimension_list_units
                 column_list_string = ""
-                for column in column_list_titles:
+                for column in column_list_canonical:
                     column_list_string += ", " + column
                 column_list_string = column_list_string[1:]
                 column_list_filter_string = ""
-                for column in column_list_titles[:5]:
+                for column in column_list_canonical[:5]:
                     column_list_filter_string += "AND " + column + " is not NULL "
-                column_list_filter_string = column_list_filter_string[4:]
+                # column_list_filter_string = column_list_filter_string[4:]
                 try:
                     presto_credentials = settings.DATABASES['UBITECH_PRESTO']
                     conn_presto = prestodb.dbapi.connect(
