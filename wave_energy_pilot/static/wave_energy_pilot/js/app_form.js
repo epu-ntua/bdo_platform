@@ -325,13 +325,11 @@ $(document).ready(function() {
                 $('.wave_resource_assessment_area_dropdown').hide();
                 $('.wave_resource_assessment_single_dropdown').hide();
                 $('.data_visualisation_dropdown').hide();
-
-                // $('.variable-selector').hide();
-
+                $('.variable-selector').hide();
                 $('.coverage-date-filters').show();
                 $('#wave-forecast-results').show();
                 $('.single-spatial-selection').show();
-                $("#run-service-btn").show();
+                $(".run-service-button-container").show();
                 $(".wave_forecast_dropdown").show();
 
                 wave_forecast_tour.start(true);
@@ -350,7 +348,10 @@ $(document).ready(function() {
                         $('#lat').val(e.latlng.lat);
                         $('#lon').val(e.latlng.lng);
 
-                        $('#wave_forecast_dropdown').dropdown('clear');
+                        if($('#wave_forecast_dropdown :selected').data("maxlat") < e.latlng.lat || $('#wave_forecast_dropdown :selected').data("minlat") > e.latlng.lat ||
+                            $('#wave_forecast_dropdown :selected').data("minlng") > e.latlng.lng || $('#wave_forecast_dropdown :selected').data("maxlng") < e.latlng.lng)
+                            $('#wave_forecast_dropdown').dropdown('clear');
+
                         $('.dataset-selector').show();
 
                         $(".item").each(function() {
@@ -359,7 +360,7 @@ $(document).ready(function() {
                             }
                         });
 
-                        $('#select_dataset_wave_forecast  option').each(function () {
+                        $('#wave_forecast_dropdown  option').each(function () {
                             if($(this).data("maxlat") < e.latlng.lat || $(this).data("minlat") > e.latlng.lat || $(this).data("minlng") > e.latlng.lng || $(this).data("maxlng") < e.latlng.lng){
                                 var dropdown_id = $(this).val();
                                 $(`.item[data-value="${dropdown_id}"]`).addClass("disabled");
@@ -417,7 +418,7 @@ $(document).ready(function() {
                 $('.wave_resource_assessment_area_dropdown').show();
                 $('.spatial-selection').show();
                 $('#wave-atlas-results').show();
-                $("#run-service-btn").show();
+                $(".run-service-button-container").show();
 
                 create_new_area_select([[29.2575,-24.2578],[49.479,37.0898]]);
 
@@ -517,7 +518,7 @@ $(document).ready(function() {
                 $('.data_visualisation_dropdown').show();
                 $('.single-spatial-selection').show();
                 $('#data-visualisation-results').show();
-                $("#run-service-btn").show();
+                $(".run-service-button-container").show();
 
 
                 data_visualization_tour.start(true);
@@ -537,8 +538,9 @@ $(document).ready(function() {
                         $('#lat').val(e.latlng.lat);
                         $('#lon').val(e.latlng.lng);
 
-
-                        $('#select_dataset_data_visualisation').dropdown('clear');
+                        if($('#select_dataset_data_visualisation :selected').data("maxlat") < e.latlng.lat || $('#select_dataset_data_visualisation :selected').data("minlat") > e.latlng.lat ||
+                            $('#select_dataset_data_visualisation :selected').data("minlng") > e.latlng.lng || $('#select_dataset_data_visualisation :selected').data("maxlng") < e.latlng.lng)
+                            $('#select_dataset_data_visualisation').dropdown('clear');
                         $('.dataset-selector').show();
                         $('.variable-selector').show();
 
@@ -560,6 +562,7 @@ $(document).ready(function() {
                          $('#select_dataset_data_visualisation  option').each(function () {
                             if($(this).data("maxlat") < e.latlng.lat || $(this).data("minlat") > e.latlng.lat || $(this).data("minlng") > e.latlng.lng || $(this).data("maxlng") < e.latlng.lng){
                                 var dropdown_id = $(this).val();
+
                                 $(`.item[data-value="${dropdown_id}"]`).addClass("disabled");
                             }
                         });
@@ -571,7 +574,7 @@ $(document).ready(function() {
 
                              $('#lat').val(e.target._latlng.lat);
                              $('#lon').val(e.target._latlng.lng);
-                        })
+                        });
                         data_visualization_tour.addStep({
                             element: ".dataset-selector",
                             placement: "left",
@@ -603,7 +606,7 @@ $(document).ready(function() {
                 $('.wave_resource_assessment_single_dropdown').show();
                 $('#wave-resource-assessment').show();
                 $('.single-spatial-selection').show();
-                $("#run-service-btn").show();
+                $(".run-service-button-container").show();
 
                 wave_resource_assesment_single_tour.start(true);
                 wave_resource_assesment_single_tour.addStep(
@@ -623,7 +626,8 @@ $(document).ready(function() {
 
                         $('.dataset-selector').show();
 
-                        $(" select_dataset_wave_resource_assessment_single .item").each(function() {
+                        $(".item").each(function() {
+
                             if($(this).hasClass("disabled")) {
                                 $(this).removeClass("disabled");
                             }
@@ -692,8 +696,8 @@ $(document).ready(function() {
            $('.variables-selector').hide();
            var dataset_id = $('#'+app_selector+" :selected").val();
 
-           if(app_selector === "select_dataset_data_visualisation"){
-               $('#'+dataset_id+'-variables').show();
+            if(app_selector === "select_dataset_data_visualisation"){
+                $('#'+dataset_id+'-variables').show();
                 data_visualization_tour.addStep({
                     element: ".variable-selector",
                     placement: "left",
@@ -701,27 +705,31 @@ $(document).ready(function() {
                     content: "Select at least one the available variables of the selected dataset",
                 });
                 data_visualization_tour.next();
-           }
+            }
+            if(dataset_id === ""){
+                $('#startdatepicker').find("input[type=text], textarea").val("").val('');
+                $('#enddatepicker').find("input[type=text], textarea").val("").val('');
+            }
+            else{
+                var startdate = new Date($('#'+app_selector+" :selected").data("startdate"));
+                var enddate = new Date($('#'+app_selector+" :selected").data("enddate"));
 
-           var startdate = new Date($('#'+app_selector+" :selected").data("startdate"));
-           var enddate = new Date($('#'+app_selector+" :selected").data("enddate"));
+                var startpick = $('#startdatepicker').datetimepicker({
+                    autoclose: true,
+                    pickerPosition: 'top-left',
+                    startDate: startdate,
+                    endDate: enddate,
+                });
+                $('#startdatepicker').datetimepicker("update", startdate);
 
-            var startpick = $('#startdatepicker').datetimepicker({
-                autoclose: true,
-                pickerPosition: 'top-left',
-                startDate: startdate,
-                endDate: enddate,
-            });
-            $('#startdatepicker').datetimepicker("update", startdate);
-
-            var endpick = $('#enddatepicker').datetimepicker({
-                autoclose: true,
-                pickerPosition: 'top-left',
-                startDate: startdate,
-                endDate: enddate
-            });
-            $('#enddatepicker').datetimepicker("update", enddate);
-
+                var endpick = $('#enddatepicker').datetimepicker({
+                    autoclose: true,
+                    pickerPosition: 'top-left',
+                    startDate: startdate,
+                    endDate: enddate,
+                });
+                $('#enddatepicker').datetimepicker("update", enddate);
+            }
        })
    }
 

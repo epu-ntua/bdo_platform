@@ -215,12 +215,12 @@ $("#select_data_popover").click(function () {
                 var variables_numeric_content = '';
                 var dimensions_numeric_content = '';
                 $.each($('#query-variables-select-container #'+String(new_query_id)).find('option'), function (i, el) {
-                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")){
+                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")  || ($(el).data('datatype') === "DOUBLE")  || ($(el).data('datatype') === "BYTE")){
                         variables_numeric_content += $(el).prop('outerHTML');
                     }
                 });
                 $.each($('#query-dimensions-select-container #'+String(new_query_id)).find('option'), function (i, el) {
-                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")){
+                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")  || ($(el).data('datatype') === "DOUBLE")  || ($(el).data('datatype') === "BYTE")){
                         dimensions_numeric_content += $(el).prop('outerHTML');
                     }
                 });

@@ -45,9 +45,9 @@
 {#                                </a>#}
                             </div>
                             <div class="col-xs-7">
-                                <div class="dataset-license">Observation Type: {{ dataset.observations }}</div>
+                                <div class="dataset-license">Observation Type: {% if dataset.observations is None or dataset.observations == "" %} - {% else %} {{ dataset.observations }} {% endif %}</div>
                                 <div class="dataset-license">License: {{ dataset.license }}</div>
-                                <div class="dataset-last-update">Last updated: {% if dataset.last_updated == None %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</div>
+                                <div class="dataset-last-update">Last updated: {% if dataset.last_updated == None or dataset.last_updated == "" %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</div>
                             </div>
                             <div class="col-xs-2 pull-right">
                                 <div class="pull-right" style="text-align: right;">
@@ -115,7 +115,7 @@
                                             <thead class="text-info">
                                                 <tr>
                                                     {% for title, unit in column_list%}
-                                                        <th>{{ title }}<br/>{% if unit == '' %}{% else %}({{ unit }}){% endif %}</th>
+                                                        <th>{{ title }}<br/>{% if unit == '' or unit == "-" or unit is None %}{% else %}({{ unit }}){% endif %}</th>
                                                     {% endfor %}
                                                 </tr>
                                             </thead>

@@ -139,7 +139,7 @@
                         {%  if application == "data_visualisation" %}
                             <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}"
                                     data-minlat="{{ dataset.min_lat }}" data-maxlat="{{ dataset.max_lat }}" data-minlng="{{ dataset.min_lng }}"
-                                    data-maxlng="{{ dataset.max_lat }}">{{ dataset.title }}</option>
+                                    data-maxlng="{{ dataset.max_lng }}">{{ dataset.title }}</option>
                         {% endif %}
                     {% endfor %}
                 {% endfor %}
@@ -301,8 +301,8 @@
     </div>
 </div>
 
-<div class="button-container" id="run-service-btn" hidden>
-    <div class="btn btn-primary btn-sm btn-default">
+<div class="run-service-button-container" hidden>
+    <div class="btn btn-primary btn-sm btn-default" id="run-service-btn">
         <i class="fa fa-play-circle"></i> Run Service
     </div>
 </div>
