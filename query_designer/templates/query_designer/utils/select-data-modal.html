@@ -400,7 +400,7 @@
                                                     <tr>
                                                         <td>Temporal coverage</td>
                                                         <td>{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}-{% else %}{{ dataset.temporalCoverageBegin }}{% endif %}</td>
-                                                        <td>{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}-{% else %}{{ dataset.temporalCoverageBegin }}{% endif %}</td>
+                                                        <td>{% if dataset.temporalCoverageEnd is None or dataset.temporalCoverageEnd == '' %}-{% else %}{{ dataset.temporalCoverageEnd }}{% endif %}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
