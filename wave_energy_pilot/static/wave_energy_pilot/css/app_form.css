@@ -4,7 +4,7 @@
     z-index: 2;
     background-color: white;
     width: 25%;
-    top: 16%;
+    top: 0px;
     /*margin-top: 270px;*/
 }
 
@@ -12,7 +12,9 @@
     width: 100%;
 }
 
-
+.app-container{
+    position: relative;
+}
 
 .app-selector{
     padding-top: 10px;
