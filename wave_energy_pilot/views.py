@@ -210,6 +210,24 @@ def init(request):
     execution_steps['LOCATION_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS] + ['done']
     execution_steps['WAVE_FORECAST_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.WAVE_FORECAST_SERVICE_PARAGRAPHS] + ['done']
     execution_steps['AREA_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.AREA_EVALUATION_SERVICE_PARAGRAPHS] + ['done']
+    for dataset in DATASETS:
+        try:
+            service_dataset = Dataset.objects.get(pk=dataset["id"])
+            print "----------------brhkame dataset"
+            dataset["min_lat"] = service_dataset.spatialSouth
+            dataset["max_lat"] = service_dataset.spatialNorth
+            dataset["min_lng"] = service_dataset.spatialWest
+            dataset["max_lng"] = service_dataset.spatialEast
+            dataset["min_date"] = service_dataset.temporalCoverageBegin
+            dataset["max_date"] = service_dataset.temporalCoverageEnd
+            print dataset["min_lat"]
+            print dataset["max_lat"]
+            print dataset["min_lng"]
+            print dataset["max_lng"]
+            print dataset["min_date"]
+            print dataset["max_date"]
+        except:
+            print "dataset not found"
     return render(request, 'wave_energy_pilot/load_service.html',
                   {'buoys_list': BUOYS,
                    'datasets_list': DATASETS,
