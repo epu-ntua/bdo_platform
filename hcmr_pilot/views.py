@@ -272,10 +272,10 @@ def create_json_from_out_file(filename_output):
 def wait_until_output_ready(params, request):
     found = False
     error = False
-    tries = 12
+    tries = 36
     while (not found) and (tries > 0) and (not error):
         tries -= 1
-        time.sleep(2)
+        time.sleep(5)
         response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/?" + params)
         print(response)
         print "<status>" + str(response.status_code) + "</status>"
