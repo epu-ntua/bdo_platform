@@ -571,6 +571,10 @@ $("#select_data_popover").click(function () {
                 $('#myModal .variables-select ').find('option').remove();
                 $('#myModal .column-select ').find('option').remove();
                 $('#myModal .columns-select ').find('option').remove();
+                $('#myModal .variable-numeric-select').find('option').remove();
+                $('#myModal .variables-numeric-select ').find('option').remove();
+                $('#myModal .column-numeric-select ').find('option').remove();
+                $('#myModal .columns-numeric-select ').find('option').remove();
                 $('#myModal .vessel-id-columns-select ').find('option').remove();
                 $('#myModal .vessel-id-select ').find('option').remove();
                 $('#myModal .ais-select ').find('option').remove();
