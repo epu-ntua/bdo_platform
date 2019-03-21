@@ -72,6 +72,7 @@
 {#                </div>#}
                 <div class="time-interval-container col-sm-12">
                     <div class='col-sm-6'>
+{#                        <p>Time Interval between two outputs (hours): </p>#}
                         <p>Time Interval between two outputs (hours): </p>
                     </div>
                     <div class='col-sm-6'>
@@ -87,8 +88,17 @@
                     </div>
                 </div>
                 <div class="simulation-length-container col-sm-12">
+                    <div class='col-sm-12'>
+                        <p>Length of the requested simulation: </p>
+                    </div>
                     <div class='col-sm-6'>
-                        <p>Length of the requested simulation (hours): </p>
+                        <p>Historical Run (days)</p>
+                    </div>
+                    <div class='col-sm-6'>
+                        <p>Forecasting Run (hours)</p>
+                    </div>
+                    <div class='col-sm-6'>
+                        <input class="form-control" id="simulation_length_hist" style='bottom: 4px; position: relative;' type='number' step="1" value="0" min="0" max="30"/>
                     </div>
                     <div class='col-sm-6'>
                         <select class="ui dropdown" id="simulation_length">

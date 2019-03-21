@@ -192,7 +192,7 @@ function check_marker_position(lat, lon, user_marker){
 };
 
 function interactive_form(onLocationfound){
-    var allow_form_submit = [true, true, true, true, true, true];
+    var allow_form_submit = [true, true, true, true, true, true, true];
     $('#lat').on('input',function () {
         allow_form_submit = missing_parameter($('#lat'), allow_form_submit, 'latitude', 0);
         if($('#lat').val()<-90){
@@ -231,6 +231,41 @@ function interactive_form(onLocationfound){
         if ($('#vis_duration').val()<0){
             $('#vis_duration').val(0);
         }
+    });
+    $('#simulation_length_hist').on('input',function(){
+        $('#simulation_length').parent().find('div').removeClass('disabled');
+        var starting_date = new Date($("#startdatepicker input").val());
+        var now = new Date();
+        var oneDay = 24*60*60*1000;
+        var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
+        allow_form_submit = missing_parameter($('#simulation_length_hist'), allow_form_submit, 'duration', 6);
+        if ($('#simulation_length_hist').val()<0){
+            $('#simulation_length_hist').val(0);
+        }else if($('#simulation_length_hist').val()>diffDays) {
+            $('#simulation_length_hist').val(diffDays);
+            $('#simulation_length').parent().removeClass('disabled')
+            var days_allowed = 30 - diffDays
+            if(days_allowed === 1){
+                $('#simulation_length').parent().find('div[data-value=36]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=48]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=60]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=72]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=84]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=96]').addClass('disabled');
+            }else if(days_allowed === 2){
+                $('#simulation_length').parent().find('div[data-value=60]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=72]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=84]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=96]').addClass('disabled');
+            }else if(days_allowed === 3){
+                $('#simulation_length').parent().find('div[data-value=84]').addClass('disabled');
+                $('#simulation_length').parent().find('div[data-value=96]').addClass('disabled');
+            }
+
+        }else if ($('#simulation_length_hist').val()>30){
+            $('#simulation_length_hist').val(30);
+        }
+
     });
 }
 
@@ -1024,9 +1059,14 @@ $(document).ready(function() {
             var oil_volume3 = $("#oil_volume3").val();
             var oil_volume4 = oil_volume5 = '';
 
-            var start_date = $("#startdatepicker input").datepicker({dateFormat: "yy-mm-dd"}).val();
-            var enddate = $("#enddatepicker input").datepicker({dateFormat: "yy-mm-dd"}).val();
-
+            var starting_date = new Date($("#startdatepicker input").val());
+            alert(starting_date);
+            // var enddate = $("#enddatepicker input").datepicker({dateFormat: "yy-mm-dd"}).val();
+            var now = new Date();
+            alert(now);
+            var oneDay = 24*60*60*1000;
+            var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
+            alert(diffDays);
             var wave_dataset = $("#sel1").val();
             var hd_dataset = $("#sel2").val();
 
