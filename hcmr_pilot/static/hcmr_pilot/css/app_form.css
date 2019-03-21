@@ -83,6 +83,10 @@
     width: 73%;
 }
 
+.disabled{
+    pointer-events: none;
+    cursor: default;
+}
 .form-control{
     bottom: 11px;
 }
@@ -96,6 +100,11 @@
     background-color: #8a1c1c;
     /*margin-right: 25px;*/
     /*width:150px;*/
+}
+
+.conf-error-message{
+    color: darkred;
+    font-size: small;
 }
 
 #remove_point3{

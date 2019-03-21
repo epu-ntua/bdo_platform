@@ -70,16 +70,222 @@ function create_new_area_select(area_select_bounds){
 
 }
 
+function tour_guide_senario_1(){
+    var first_scenario_tour = new Tour({
+            storage: false,
+            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+                "<div class='arrow'></div>" +
+                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                "<div class='popover-content'></div>" +
+                "<div class='popover-navigation'>" +
+                "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+                "<span data-role='separator'>|</span>" +
+                "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                "</div>" +
+                "</div>",
+    });
+
+    first_scenario_tour.addStep({
+        element: ".application-header",
+        placement: "left",
+        title: "Oil spill dispersion forecast",
+        // duration: 3500,
+        content: "Perform an oil spill dispersion simulation. Select a starting point on the map and provide all the necessary information.",
+    });
+    first_scenario_tour.addStep({
+        element: ".lat-container",
+        placement: "left",
+        title: "Click on the map",
+        // duration: 3500,
+        content: "Click on the map to select the point of an oil spill incident or add manually position latitude and longitude.",
+    });
+    first_scenario_tour.addStep({
+        element: ".vis-startdate-container",
+        placement: "left",
+        title: "Datetime Selection",
+        content: "Set the oil spill starting date and time. For historical simulations, you can choose date and time up to one year back.",
+    });
+    first_scenario_tour.addStep({
+        element: ".oil-volume-container",
+        placement: "left",
+        title: "Oil volume input",
+        content: "Set the volume of the oil spilled in the sea.",
+    });
+    first_scenario_tour.addStep({
+        element: ".vis-duration-container",
+        placement: "left",
+        title: "Simulation duration",
+        content: "Set the duration of the oil volume release in the sea.",
+    });
+    first_scenario_tour.addStep({
+        element: ".time-interval-container",
+        placement: "left",
+        title: "Time interval",
+        content: "Set the time step of the output results.",
+    });
+    first_scenario_tour.addStep({
+        element: ".simulation-length-container",
+        placement: "left",
+        title: "Simulation length",
+        content: "Set the duration of the requested simulation in hours (30 days maximum length).",
+    });
+
+    first_scenario_tour.addStep({
+        element: ".oil-density-container",
+        placement: "left",
+        title: "Oil density",
+        content: "Set the density of oil spilled in the sea in kg/ m3.",
+    });
+    first_scenario_tour.addStep({
+        element: "#sel2",
+        placement: "left",
+        title: "Ocean Circulation Model",
+        duration: 3500,
+        content: "Choose ocean circulation model. The forecasting product will be used as the hydrodynamic input for the oil spill simulation.",
+    });
+    first_scenario_tour.addStep({
+        element: "#sel1",
+        placement: "left",
+        title: "Wave Model",
+        duration: 3500,
+        content: "Choose the wave model. The forecasting product will be used as wave input for the oil spill simulation.",
+    });
+    first_scenario_tour.addStep({
+        element: ".checkbox",
+        placement: "left",
+        title: "Additional layers",
+        duration: 3500,
+        content: "(Optional) Select additional layers to be added to the output of the simulation.",
+    });
+
+    first_scenario_tour.addStep({
+        element: ".service-buttons",
+        placement: "left",
+        title: "Execution",
+        duration: 3500,
+        content: "All set. Ready to run the service!",
+    });
+
+    first_scenario_tour.init();
+    first_scenario_tour.start(true);
+}
+
+function check_marker_position(lat, lon, user_marker){
+    if (isInsideAegeanIonian(lat,lon)) {
+        $("#sel1").val("202");
+        $("#sel2").val("001");
+        $('#lat').val(lat.toFixed(4));
+        $('#lon').val(lon.toFixed(4));
+    } else if (isInsideMediteranean(lat,lon)) {
+        $("#sel1").val("201")
+        $("#sel2").val("002")
+        $('#lat').val(lat.toFixed(4));
+        $('#lon').val(lon.toFixed(4));
+    } else {
+        alert("Point outside of Mediterranean sea. Please select another point");
+        var latlng = L.latLng(38.06, 25.36);
+        user_marker.setLatLng(latlng).update(user_marker);
+        $('#lat').val((38.06).toFixed(4));
+        $('#lon').val((25.36).toFixed(4));
+    }
+};
+
+function interactive_form(onLocationfound){
+    var allow_form_submit = [true, true, true, true, true, true];
+    $('#lat').on('input',function () {
+        allow_form_submit = missing_parameter($('#lat'), allow_form_submit, 'latitude', 0);
+        if($('#lat').val()<-90){
+            $('#lat').val((-90).toFixed(4));
+        }else if($('#lat').val()>90){
+            $('#lat').val((90).toFixed(4));
+        }
+        onLocationfound({latlng:[$('#lat').val(),$('#lon').val()]});
+    });
+    $('#lon').on('input',function () {
+        allow_form_submit = missing_parameter($('#lon'), allow_form_submit, 'longitude', 1);
+        if($('#lon').val()<-180){
+            $('#lon').val((-180).toFixed(4));
+        }else if($('#lon').val()>180){
+            $('#lon').val((180).toFixed(4));
+        }
+        onLocationfound({latlng:[$('#lat').val(),$('#lon').val()]});
+    });
+    $('#startdatepicker input').on('change',function () {
+        allow_form_submit = missing_parameter($('#startdatepicker input'), allow_form_submit, 'date', 2);
+    });
+    $('#oil_volume').on('input',function(){
+        allow_form_submit = missing_parameter($('#oil_volume'), allow_form_submit, 'oil-volume', 3);
+        if ($('#oil_volume').val()<0){
+            $('#oil_volume').val(0);
+        }
+    });
+    $('#oil_density').on('input',function(){
+        allow_form_submit = missing_parameter($('#oil_density'), allow_form_submit, 'oil-density', 4);
+        if ($('#oil_density').val()<0){
+            $('#oil_density').val(0);
+        }
+    });
+    $('#vis_duration').on('input',function(){
+        allow_form_submit = missing_parameter($('#vis_duration'), allow_form_submit, 'duration', 5);
+        if ($('#vis_duration').val()<0){
+            $('#vis_duration').val(0);
+        }
+    });
+}
+
+function missing_parameter(col_select, allow_submit, parameter_name, parameter_id) {
+    if ((col_select.val() === null) || (col_select.val().length === 0)) {
+        if (allow_submit[parameter_id] === true) {
+            $('#run-service-btn').addClass('disabled');
+            $("<div class='conf-error-message " + parameter_name + "_missing_error'>* Selection of " + parameter_name + " is required.</div>").insertBefore("#run-service-btn");
+        }
+        allow_submit[parameter_id] = false;
+    }
+    else {
+        allow_submit[parameter_id] = true;
+        $('.' + parameter_name + '_missing_error').remove();
+        if (check_list(allow_submit)) {
+            $('#run-service-btn').removeClass('disabled');
+        }
+    }
+    return allow_submit
+}
+
+function check_list(list){
+    var flag = true;
+    for(var i=0; i<list.length; i++){
+        if(list[i]===false){
+            flag=false;
+        }
+    }
+    return flag;
+}
+
 $(document).ready(function() {
-    // var startdate = new Date();
-    // var enddate = new Date();
     var scenario = $('.scenario').data('id');
     $('.ui.dropdown').dropdown();
+    $('#time_interval').parent().css('min-width','13rem');
+    $('#time_interval').parent().addClass("form-control");
+    $('#simulation_length').parent().css('min-width','13rem');
+    $('#simulation_length').parent().addClass("form-control");
+    $('#sel2').parent().css('min-width','100%');
+    $('#sel1').parent().css('min-width','100%');
+    $('.glyphicon-calendar').css('top','-15px');
+    var startDate = new Date();
+    var endDate = new Date();
+    startDate.setFullYear(startDate.getFullYear() - 1);
+    startDate.setHours(0,0,0,0);
     var startpick = $('#startdatepicker').datetimepicker({
         autoclose: true,
         pickerPosition: 'bottom-left',
-
+        startDate: startDate,
+        endDate: endDate,
+        initialDate: endDate
     });
+    startpick.datetimepicker('update',endDate);
+
+    var allow_form_submit = [true, true, true, true, true, true];
 
     if(scenario === 2){
 
@@ -141,144 +347,33 @@ $(document).ready(function() {
 
 
     if (scenario === 1) {
-        lock = 1;
+        $('#lat').val((38.06).toFixed(4));
+        $('#lon').val((25.36).toFixed(4));
         first_user_marker = L.marker([38.06, 25.36], {draggable: true}).bindPopup("First Marker").addTo(map);
-
         first_marker_layer = L.layerGroup(first_user_marker);
-
-        map.addLayer(first_marker_layer);
-
-        var first_scenario_tour = new Tour({
-            storage: false,
-            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
-                "<div class='arrow'></div>" +
-                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
-                "<div class='popover-content'></div>" +
-                "<div class='popover-navigation'>" +
-                "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-                "<span data-role='separator'>|</span>" +
-                "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-                "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-                "</div>" +
-                "</div>",
-        });
-
-        first_scenario_tour.addStep({
-            element: ".application-header",
-            placement: "left",
-            title: "Oil spill dispersion forecast",
-            // duration: 3500,
-            content: "This scenario forecasts the dispersion of oilspil in a selected point on map. Fill in all the fields.",
-        });
-        first_scenario_tour.addStep({
-            element: ".lat-container",
-            placement: "left",
-            title: "Click on the map",
-            // duration: 3500,
-            content: "Click on the map or drag the marker to select the point of an oil spill incident.",
-        });
-        first_scenario_tour.addStep({
-            element: ".vis-startdate-container",
-            placement: "left",
-            title: "Datetime Selection",
-            content: "Select the date and time of the oil spill incident.",
-        });
-        first_scenario_tour.addStep({
-            element: ".oil-volume-container",
-            placement: "left",
-            title: "Oil volume input",
-            content: "Insert the total amount of oil spilled in m3.",
-        });
-        first_scenario_tour.addStep({
-            element: ".vis-duration-container",
-            placement: "left",
-            title: "Simulation duration",
-            content: "Duration of the spill release in hours.",
-        });
-        first_scenario_tour.addStep({
-            element: ".time-interval-container",
-            placement: "left",
-            title: "Time interval",
-            content: "Time interval between two outputs in hours.",
-        });
-        first_scenario_tour.addStep({
-            element: ".simulation-length-container",
-            placement: "left",
-            title: "Simulation length",
-            content: "Length of the requested simulation in hours ( max 30 days).",
-        });
-
-        first_scenario_tour.addStep({
-            element: ".oil-density-container",
-            placement: "left",
-            title: "Oil density",
-            content: "Density of oil (kg/m3).",
-        });
-        first_scenario_tour.addStep({
-            element: "#sel1",
-            placement: "left",
-            title: "Wave Forecast Dataset Selection",
-            duration: 3500,
-            content: "Select the dataset to be used for the wave forecast.",
-        });
-        first_scenario_tour.addStep({
-            element: "#sel2",
-            placement: "left",
-            title: "Hydrodynamic Model Selection",
-            duration: 3500,
-            content: "Select the hydrodynamic model to be used.",
-        });
-        first_scenario_tour.addStep({
-            element: ".checkbox",
-            placement: "left",
-            title: "Additional layers",
-            duration: 3500,
-            content: "(Optional) Select additional layers to be added to the output of the simulation.",
-        });
-
-        first_scenario_tour.addStep({
-            element: ".service-buttons",
-            placement: "left",
-            title: "Execution",
-            duration: 3500,
-            content: "All set. Ready to run the service!",
-        });
-
-        first_scenario_tour.init();
-        first_scenario_tour.start(true);
-
-        $('#lat').val(38.06);
-        $('#lon').val(25.36);
-
-        var endpick = $('#enddatepicker').datetimepicker({
-            autoclose: true,
-            pickerPosition: 'top-left',
-
-        });
-
-
+        onLocationfound = function(e){
+            first_user_marker.setLatLng(e.latlng).update();
+        };
         first_user_marker.on('dragend', function (e) {
-
-            $('#lat').val(e.target._latlng.lat);
-            $('#lon').val(e.target._latlng.lng);
-            // let lat = e.latlng.lat;
-            // let lon = e.latlng.lng;
-            if (isInsideAegeanIonian(e.target._latlng.lat, e.target._latlng.lng)) {
-                $("#sel1").val("202");
-                $("#sel2").val("001");
-            } else if (isInsideMediteranean(e.target._latlng.lat, e.target._latlng.lng)) {
-                $("#sel1").val("201")
-                $("#sel2").val("002")
-            } else {
-                alert("Point outside of Mediterranean sea. Please select another point");
-                var latlng = L.latLng(38.06, 25.36);
-                first_user_marker.setLatLng(latlng).update(first_user_marker);
-                $('#lat').val(38.06);
-                $('#lon').val(25.36);
-
-            }
+            check_marker_position(e.target._latlng.lat, e.target._latlng.lng,first_user_marker);
         });
-
+        map.addLayer(first_marker_layer);
+        map.on('locationfound', onLocationfound);
+        interactive_form(onLocationfound);
+        map.locate();
+        map.on('click', function (e) {
+            if (first_user_marker != undefined) {
+                map.removeLayer(first_user_marker);
+            }
+            first_user_marker = L.marker([e.latlng.lat, e.latlng.lng], {draggable: true}).bindPopup("First Marker").addTo(map);
+            first_marker_layer = L.layerGroup(first_user_marker);
+            map.addLayer(first_marker_layer);
+            check_marker_position(e.latlng.lat, e.latlng.lng, first_user_marker);
+            first_user_marker.on('dragend', function (e) {
+                check_marker_position(e.target._latlng.lat, e.target._latlng.lng, first_user_marker);
+            });
+        });
+        tour_guide_senario_1();
     }
 
     $('.oil-volume-container').change(function () {
@@ -656,48 +751,48 @@ $(document).ready(function() {
 
 
 
-    map.on('click', function (e) {
-        if(lock === 1) {
-            if (first_user_marker != undefined) {
-                map.removeLayer(first_user_marker);
-            }
-
-            first_user_marker = L.marker([e.latlng.lat, e.latlng.lng], {draggable: true}).bindPopup("First Marker").addTo(map);
-            first_marker_layer = L.layerGroup(first_user_marker);
-            map.addLayer(first_marker_layer);
-            let lat = e.latlng.lat;
-            let lon = e.latlng.lng;
-            if (isInsideAegeanIonian(lat, lon)) {
-                $("#sel1").val("202");
-                $("#sel2").val("001");
-            } else if (isInsideMediteranean(lat, lon)) {
-                $("#sel1").val("201")
-                $("#sel2").val("002")
-            } else {
-                alert("Point outside of Mediterranean sea. Please select another point");
-                if (first_user_marker != undefined) {
-                    map.removeLayer(first_user_marker);
-                }
-                first_user_marker = L.marker([38.06, 25.36], {draggable: true}).bindPopup("First Marker").addTo(map);
-
-                first_marker_layer = L.layerGroup(first_user_marker);
-
-                map.addLayer(first_marker_layer);
-                $('#lat').val(38.06);
-                $('#lon').val(25.36);
-
-            }
-
-            $('#lat').val(e.latlng.lat);
-            $('#lon').val(e.latlng.lng);
-            first_user_marker.on('dragend', function (e) {
-
-                $('#lat').val(e.target._latlng.lat);
-                $('#lon').val(e.target._latlng.lng);
-            });
-
-        }
-    });
+    // map.on('click', function (e) {
+    //     if(lock === 1) {
+    //         if (first_user_marker != undefined) {
+    //             map.removeLayer(first_user_marker);
+    //         }
+    //
+    //         first_user_marker = L.marker([e.latlng.lat, e.latlng.lng], {draggable: true}).bindPopup("First Marker").addTo(map);
+    //         first_marker_layer = L.layerGroup(first_user_marker);
+    //         map.addLayer(first_marker_layer);
+    //         let lat = e.latlng.lat;
+    //         let lon = e.latlng.lng;
+    //         if (isInsideAegeanIonian(lat, lon)) {
+    //             $("#sel1").val("202");
+    //             $("#sel2").val("001");
+    //         } else if (isInsideMediteranean(lat, lon)) {
+    //             $("#sel1").val("201")
+    //             $("#sel2").val("002")
+    //         } else {
+    //             alert("Point outside of Mediterranean sea. Please select another point");
+    //             if (first_user_marker != undefined) {
+    //                 map.removeLayer(first_user_marker);
+    //             }
+    //             first_user_marker = L.marker([38.06, 25.36], {draggable: true}).bindPopup("First Marker").addTo(map);
+    //
+    //             first_marker_layer = L.layerGroup(first_user_marker);
+    //
+    //             map.addLayer(first_marker_layer);
+    //             $('#lat').val(38.06);
+    //             $('#lon').val(25.36);
+    //
+    //         }
+    //
+    //         $('#lat').val(e.latlng.lat);
+    //         $('#lon').val(e.latlng.lng);
+    //         first_user_marker.on('dragend', function (e) {
+    //
+    //             $('#lat').val(e.target._latlng.lat);
+    //             $('#lon').val(e.target._latlng.lng);
+    //         });
+    //
+    //     }
+    // });
 
 
 
