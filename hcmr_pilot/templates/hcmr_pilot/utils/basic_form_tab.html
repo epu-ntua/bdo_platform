@@ -68,6 +68,21 @@
         </div>
         <div class="service-parameters">
             <div class="" style="margin-top:15px">
+                 <div class="simulation-length-container col-sm-12">
+                    <div class='col-sm-6'>
+                        <p>Length of the requested simulation (Hours): </p>
+                    </div>
+                     <div class='col-sm-6'>
+                        <select class="ui dropdown" id="simulation_length_hist">
+                            {% for i in sim_len_list %}
+                                <option value={{ i }}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+{#                    <div class='col-sm-6'>#}
+{#                        <input class="form-control" id="simulation_length_hist" style='bottom: 4px; position: relative;' type='number' step="12" value="24" min="0" max="720"/>#}
+{#                    </div>#}
+                </div>
 {#                <div class="coverage-date-filters-icon">#}
 {#                </div>#}
                 <div class="time-interval-container col-sm-12">
@@ -84,32 +99,6 @@
                             <option value=6>6</option>
                             <option value=8>8</option>
                             <option value=12>12</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="simulation-length-container col-sm-12">
-                    <div class='col-sm-12'>
-                        <p>Length of the requested simulation: </p>
-                    </div>
-                    <div class='col-sm-6'>
-                        <p>Historical Run (days)</p>
-                    </div>
-                    <div class='col-sm-6'>
-                        <p>Forecasting Run (hours)</p>
-                    </div>
-                    <div class='col-sm-6'>
-                        <input class="form-control" id="simulation_length_hist" style='bottom: 4px; position: relative;' type='number' step="1" value="0" min="0" max="30"/>
-                    </div>
-                    <div class='col-sm-6'>
-                        <select class="ui dropdown" id="simulation_length">
-                            <option value=12>12</option>
-                            <option value=24>24</option>
-                            <option value=36>36</option>
-                            <option value=48>48</option>
-                            <option value=60>60</option>
-                            <option value=72>72</option>
-                            <option value=84>84</option>
-                            <option value=96>96</option>
                         </select>
                     </div>
                 </div>

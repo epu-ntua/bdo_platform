@@ -173,13 +173,13 @@ function tour_guide_senario_1(){
 
 function check_marker_position(lat, lon, user_marker){
     if (isInsideAegeanIonian(lat,lon)) {
-        $("#sel1").val("202");
-        $("#sel2").val("001");
+        $("#sel1").dropdown("set selected", "202");
+        $("#sel2").dropdown("set selected", "001");
         $('#lat').val(lat.toFixed(4));
         $('#lon').val(lon.toFixed(4));
     } else if (isInsideMediteranean(lat,lon)) {
-        $("#sel1").val("201")
-        $("#sel2").val("002")
+        $("#sel1").dropdown("set selected", "201");
+        $("#sel2").dropdown("set selected", "002");
         $('#lat').val(lat.toFixed(4));
         $('#lon').val(lon.toFixed(4));
     } else {
@@ -191,8 +191,38 @@ function check_marker_position(lat, lon, user_marker){
     }
 };
 
+function check_sim_len_options(){
+    $('#simulation_length_hist').parent().find('div').removeClass('disabled');
+    var starting_date = new Date($("#startdatepicker input").val());
+    var now = new Date();
+    now.setDate(now.getDate()+4);
+    var oneDay = 24*60*60*1000;
+    var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
+    var diff_dec_days = (Math.abs((starting_date.getTime() - now.getTime())/(oneDay)).toFixed(2));
+    if (diff_dec_days < 30){
+        var diff = (30-diff_dec_days)*24;
+        $('#simulation_length_hist').parent().find('div div').each(function (el) {
+            var ist = $(this).attr('data-value');
+            if (ist > diff_dec_days*24){
+                $(this).addClass('disabled');
+            }
+            console.log(ist)
+        });
+
+    }
+
+}
+
 function interactive_form(onLocationfound){
-    var allow_form_submit = [true, true, true, true, true, true, true];
+    var allow_form_submit = [true, true, true, true, true, true];
+    check_sim_len_options();
+    // var starting_date = new Date($("#startdatepicker input").val());
+    // var now = new Date();
+    // var oneDay = 24*60*60*1000;
+    // var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
+    // if ($('#simulation_length_hist').val()<=diffDays){
+    //    $('#simulation_length').parent().addClass('disabled');
+    // }
     $('#lat').on('input',function () {
         allow_form_submit = missing_parameter($('#lat'), allow_form_submit, 'latitude', 0);
         if($('#lat').val()<-90){
@@ -213,6 +243,11 @@ function interactive_form(onLocationfound){
     });
     $('#startdatepicker input').on('change',function () {
         allow_form_submit = missing_parameter($('#startdatepicker input'), allow_form_submit, 'date', 2);
+        check_sim_len_options();
+    });
+    $('#startdatepicker input').on('input',function () {
+        allow_form_submit = missing_parameter($('#startdatepicker input'), allow_form_submit, 'date', 2);
+        check_sim_len_options();
     });
     $('#oil_volume').on('input',function(){
         allow_form_submit = missing_parameter($('#oil_volume'), allow_form_submit, 'oil-volume', 3);
@@ -232,15 +267,15 @@ function interactive_form(onLocationfound){
             $('#vis_duration').val(0);
         }
     });
-    $('#simulation_length_hist').on('input',function(){
-        $('#simulation_length').parent().find('div').removeClass('disabled');
+    $('#simulation_length_hist').on('change',function(){
+        // $('#simulation_length').parent().find('div').removeClass('disabled');
         var starting_date = new Date($("#startdatepicker input").val());
         var now = new Date();
         var oneDay = 24*60*60*1000;
         var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
-        allow_form_submit = missing_parameter($('#simulation_length_hist'), allow_form_submit, 'duration', 6);
-        if ($('#simulation_length_hist').val()<0){
-            $('#simulation_length_hist').val(0);
+        var selected_length = $(this).val()/24;
+        if(selected_length<=diffDays){
+            $('#simulation_length').parent().addClass('disabled')
         }else if($('#simulation_length_hist').val()>diffDays) {
             $('#simulation_length_hist').val(diffDays);
             $('#simulation_length').parent().removeClass('disabled')
@@ -262,7 +297,7 @@ function interactive_form(onLocationfound){
                 $('#simulation_length').parent().find('div[data-value=96]').addClass('disabled');
             }
 
-        }else if ($('#simulation_length_hist').val()>30){
+        }else if ($('#simulation_length_hist').val()>1330){
             $('#simulation_length_hist').val(30);
         }
 
@@ -302,8 +337,12 @@ $(document).ready(function() {
     $('.ui.dropdown').dropdown();
     $('#time_interval').parent().css('min-width','13rem');
     $('#time_interval').parent().addClass("form-control");
-    $('#simulation_length').parent().css('min-width','13rem');
-    $('#simulation_length').parent().addClass("form-control");
+    $('#time_interval').parent().css('top','3px');
+    $('#time_interval').dropdown('set selected', 2);
+    $('#simulation_length_hist').dropdown('set selected', 24);
+    $('#simulation_length_hist').parent().css('min-width','13rem');
+    $('#simulation_length_hist').parent().addClass("form-control");
+    $('#simulation_length_hist').parent().css('top','3px');
     $('#sel2').parent().css('min-width','100%');
     $('#sel1').parent().css('min-width','100%');
     $('.glyphicon-calendar').css('top','-15px');
@@ -1039,7 +1078,7 @@ $(document).ready(function() {
         var oil_volume = $("#oil_volume").val();
         var oil_density = $("#oil_density").val();
         var time_interval = $("#time_interval").val();
-        var simulation_length = $("#simulation_length").val();
+        var simulation_length = $("#simulation_length_hist").val();
         var duration = $("#vis_duration").val();
         lat2 = $('#lat2').val();
         lng2 = $('#lon2').val();
@@ -1059,14 +1098,15 @@ $(document).ready(function() {
             var oil_volume3 = $("#oil_volume3").val();
             var oil_volume4 = oil_volume5 = '';
 
-            var starting_date = new Date($("#startdatepicker input").val());
-            alert(starting_date);
-            // var enddate = $("#enddatepicker input").datepicker({dateFormat: "yy-mm-dd"}).val();
-            var now = new Date();
-            alert(now);
-            var oneDay = 24*60*60*1000;
-            var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
-            alert(diffDays);
+            // var starting_date = new Date($("#startdatepicker input").val());
+            // alert(starting_date);
+            var start_date = $("#startdatepicker input").datepicker({dateFormat: "yy-mm-dd"}).val();
+            var enddate = $("#enddatepicker input").datepicker({dateFormat: "yy-mm-dd"}).val();
+            // var now = new Date();
+            // alert(now);
+            // var oneDay = 24*60*60*1000;
+            // var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
+            // alert(diffDays);
             var wave_dataset = $("#sel1").val();
             var hd_dataset = $("#sel2").val();
 

@@ -3249,9 +3249,18 @@ def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
 def color_point_oil_spill2(red_points_list, point):
     if point in red_points_list:
         return 'red'
+    elif point[2] == 0:
+        return 'darkblue'
+    elif point[2] == 1:
+        return 'lightblue'
+    elif point[2] == 5:
+        return 'cadetblue'
+    elif point[2] == 10:
+        return 'orange'
     else:
         return 'lightblue'
-
+FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
+                 'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
 def map_routes(m):
     routes_query = """SELECT centroids_ci_1.latitude, centroids_ci_1.longitude,centroids_ci_1.route FROM centroids_ci_1  ORDER BY centroids_ci_1.route,centroids_ci_1.latitude, centroids_ci_1.longitude """
     cursor = connections['UBITECH_POSTGRES'].cursor()
@@ -3409,6 +3418,7 @@ def map_markers_in_time_hcmr(request):
         #         count_inters = count_inters + 1
         # print 'intersects:' + str(count_inters)
         red_points = []
+
         if natura_layer == "true":
             with open('visualizer/static/visualizer/files/'+ rp_file, 'r') as file:
                 line = file.readline()
@@ -3433,7 +3443,7 @@ def map_markers_in_time_hcmr(request):
                     "times": [str(d[order_var])],
                     "style": {
                         # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
-                        "color": color_point_oil_spill2(red_points, (d[lat_col], d[lon_col])),
+                        "color": color_point_oil_spill2(red_points, (d[lat_col], d[lon_col], d['Status'])),
                         # "color": "red"
                     }
                 }
