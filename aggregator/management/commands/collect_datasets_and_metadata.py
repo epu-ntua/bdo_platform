@@ -261,7 +261,7 @@ class Command(BaseCommand):
                 column_list_filter_string = ""
                 for column in column_list_canonical[:5]:
                     column_list_filter_string += "AND " + column + " is not NULL "
-                # column_list_filter_string = column_list_filter_string[4:]
+                column_list_filter_string = column_list_filter_string[4:]
                 try:
                     presto_credentials = settings.DATABASES['UBITECH_PRESTO']
                     conn_presto = prestodb.dbapi.connect(
