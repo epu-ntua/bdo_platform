@@ -242,7 +242,7 @@ class Command(BaseCommand):
             else:
                 dataset.last_updated = datetime.strptime(response.content, '%Y-%m-%dT%H:%M:%S.%f')
                 dataset.save()
-            if profile["storageTable"] in tables_to_add:
+            if profile["storageTable"] in tables_to_add or options['update_old']:
             # if 1 == 1:
                 rows_to_render = []
                 variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
@@ -297,7 +297,7 @@ class Command(BaseCommand):
                     print str(e)
                     pass
 
-            if response.content != '' or profile["storageTable"] in tables_to_add:
+            if response.content != '' or profile["storageTable"] in tables_to_add or options['update_old']:
                 try:
                     presto_credentials = settings.DATABASES['UBITECH_PRESTO']
                     conn_presto = prestodb.dbapi.connect(
