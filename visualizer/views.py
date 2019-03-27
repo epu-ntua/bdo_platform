@@ -104,7 +104,7 @@ def get_markers_parameters(request, count):
     marker_limit = str(request.GET.get("marker_limit" + str(count), '1'))
     try:
         vessel_id_column = str(request.GET.get("vessel-id-columns-select" + str(count), ''))
-        vessel_id = request.GET.getlist("vessel-id-select" + str(count)+'[]', '')
+        vessel_id = request.GET.getlist("vessel-id" + str(count)+'[]', '')
     except ValueError:
         raise ValueError('Platform ID has a numeric value.(cannot be empty)')
     try:
@@ -185,6 +185,10 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
                 color_flag = True
                 if (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                     platform_id_filtername = str(s['name'])
+                    if str(s['type']) == "VALUE":
+                        platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                    else:
+                        platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
                     platform_flag = True
             elif(s['name'] == variable) and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -227,7 +231,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
         if vessel_id == '':
             vessel_id = []
 
-        doc['filters'] = filtering_vessels(doc, vessel_id, platform_id_filtername)
+        doc['filters'] = filtering_vessels(doc, vessel_id, platform_id_filtername, platform_id_datatype)
 
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
@@ -309,6 +313,10 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, ves
             elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
                 s['exclude'] = True
+                if str(s['type']) == "VALUE":
+                    platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                else:
+                    platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
                 platform_flag = True
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -336,7 +344,7 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, ves
             vessel_id = []
         else:
             vessel_id = [vessel_id]
-        doc['filters'] = filtering_vessels(doc, vessel_id, platform_id_filtername)
+        doc['filters'] = filtering_vessels(doc, vessel_id, platform_id_filtername, platform_id_datatype)
 
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
@@ -347,17 +355,27 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, ves
     return query
 
 
-def filtering_vessels(doc, vessel_id, platform_id_filtername):
-    if vessel_id.__len__() > 0:
+def filtering_vessels(doc, vessel_id, platform_id_filtername, platform_id_datatype):
+    # import pdb
+    # pdb.set_trace()
+    if len(vessel_id) > 0:
         vessel_argument = ''
         for vessel in vessel_id:
             if vessel_argument.__len__() == 0:
-                vessel_argument = json.loads(
-                    '{"a":"' + str(platform_id_filtername) + '", "b": ' + str(vessel) + ', "op": "eq"}')
+                if platform_id_datatype == "STRING":
+                    vessel_argument = json.loads(
+                        '{"a":"' + str(platform_id_filtername) + '", "b": "\'' + str(vessel) + '\'", "op": "eq"}')
+                else:
+                    vessel_argument = json.loads(
+                        '{"a":"' + str(platform_id_filtername) + '", "b": ' + str(vessel) + ', "op": "eq"}')
             else:
                 alpha_argument = vessel_argument
-                beta_argument = json.loads(
-                    '{"a":"' + str(platform_id_filtername) + '", "b": ' + str(vessel) + ', "op": "eq"}')
+                if platform_id_datatype == "STRING":
+                    beta_argument = json.loads(
+                        '{"a":"' + str(platform_id_filtername) + '", "b": "\'' + str(vessel) + '\'", "op": "eq"}')
+                else:
+                    beta_argument = json.loads(
+                        '{"a":"' + str(platform_id_filtername) + '", "b": ' + str(vessel) + ', "op": "eq"}')
                 vessel_argument = json.loads(
                     '{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "OR"}')
         if doc['filters'].__len__() == 0:
@@ -367,6 +385,8 @@ def filtering_vessels(doc, vessel_id, platform_id_filtername):
             beta_argument = vessel_argument
             doc['filters'] = json.loads(
                 '{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "AND"}')
+    # print 'Vessel course filters'
+    # print doc['filters']
     return doc['filters']
 
 
