@@ -112,11 +112,19 @@ function tour_guide_senario_1(){
         title: "Oil volume input",
         content: "Set the volume of the oil spilled in the sea.",
     });
+
     first_scenario_tour.addStep({
         element: ".vis-duration-container",
         placement: "left",
         title: "Simulation duration",
         content: "Set the duration of the oil volume release in the sea.",
+    });
+
+    first_scenario_tour.addStep({
+        element: ".simulation-length-container",
+        placement: "left",
+        title: "Simulation length",
+        content: "Set the duration of the requested simulation in hours (30 days maximum length).",
     });
     first_scenario_tour.addStep({
         element: ".time-interval-container",
@@ -124,19 +132,7 @@ function tour_guide_senario_1(){
         title: "Time interval",
         content: "Set the time step of the output results.",
     });
-    first_scenario_tour.addStep({
-        element: ".simulation-length-container",
-        placement: "left",
-        title: "Simulation length",
-        content: "Set the duration of the requested simulation in hours (30 days maximum length).",
-    });
-
-    first_scenario_tour.addStep({
-        element: ".oil-density-container",
-        placement: "left",
-        title: "Oil density",
-        content: "Set the density of oil spilled in the sea in kg/ m3.",
-    });
+    
     first_scenario_tour.addStep({
         element: "#sel2",
         placement: "left",

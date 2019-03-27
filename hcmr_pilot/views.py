@@ -189,7 +189,7 @@ def process(request, exec_instance):
                           parcel_data[0][6], parcel_data[0][7]])
             spill_data.insert(0,
                                [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
-            
+
             print 'create_json_from_out_file done'
             headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
             parcel_df = DataFrame(parcel_data, columns=headers_parcel)
