@@ -130,7 +130,7 @@ def get_plotline_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
     try:
         vessel_id_column = str(request.GET.get("vessel-id-columns-select" + str(count), ''))
-        vessel_id = str(request.GET.get("vessel-id-select" + str(count), ''))
+        vessel_id = str(request.GET.get("vessel-id" + str(count), ''))
     except ValueError:
         raise ValueError('Platform ID has a numeric value.(cannot be empty)')
     color = str(request.GET.get('plotline_color' + str(count), 'blue'))
@@ -312,7 +312,8 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, ves
                 time_flag = True
             elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
-                s['exclude'] = True
+                s['exclude'] = False
+                s['groupBy'] = True
                 if str(s['type']) == "VALUE":
                     platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
                 else:
