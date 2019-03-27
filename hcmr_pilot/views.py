@@ -136,7 +136,7 @@ def process(request, exec_instance):
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
 
-        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density= parse_request_params(request)
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density = parse_request_params(request)
         service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
         service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
         service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
@@ -182,9 +182,17 @@ def process(request, exec_instance):
             service_exec.save()
             output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
             spill_data, parcel_data = create_json_from_out_file(output_path)
+            # spill_data = [spill_infos[0]['start_date']+':00', spill_infos[0]['latitude'], spill_infos[0]['longitude'], spill_data[0][3], spill_data[0][4], spill_data[0][3], spill_infos[0]['oil_volume'],spill_data[0][5], spill_data[0][6]]
+
+            parcel_data.insert(0,[spill_infos[0]['start_date'].encode('ascii') + ':00', float(spill_infos[0]['latitude']),float(spill_infos[0]['longitude']),
+                          parcel_data[0][3], parcel_data[0][4], float(spill_infos[0]['oil_volume']),
+                          parcel_data[0][6], parcel_data[0][7]])
+            spill_data.insert(0,
+                               [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
+            
             print 'create_json_from_out_file done'
             headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
-            parcel_df = DataFrame(parcel_data, columns = headers_parcel)
+            parcel_df = DataFrame(parcel_data, columns=headers_parcel)
             print 'parcel_df = DataFrame done'
             print(parcel_df.head(2))
             parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
@@ -206,7 +214,7 @@ def process(request, exec_instance):
             print 'red points calculated'
             # 5)Create Visualization
             visualization_url = "http://" + request.META[
-                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer
+                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer + "&time_interval=" + time_interval
 
             service_exec.dataframe_visualizations = {"v1": visualization_url}
             service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output
@@ -275,10 +283,10 @@ def create_json_from_out_file(filename_output):
 def wait_until_output_ready(params, request):
     found = False
     error = False
-    tries = 12
+    tries = 40
     while (not found) and (tries > 0) and (not error):
         tries -= 1
-        time.sleep(2)
+        time.sleep(8)
         response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/?" + params)
         print(response)
         print "<status>" + str(response.status_code) + "</status>"
@@ -345,6 +353,7 @@ def parse_request_params(request):
         else:
             spill_infos.append(spill_info)
         print(spill_infos)
+
     wave_model = request.GET.get('wave_model')
     ocean_model = request.GET.get('hd_model')
     natura_layer = request.GET.get('natura_layer')

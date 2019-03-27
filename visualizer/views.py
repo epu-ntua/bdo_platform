@@ -3259,8 +3259,7 @@ def color_point_oil_spill2(red_points_list, point):
         return 'orange'
     else:
         return 'lightblue'
-FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
-                 'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
+
 def map_routes(m):
     routes_query = """SELECT centroids_ci_1.latitude, centroids_ci_1.longitude,centroids_ci_1.route FROM centroids_ci_1  ORDER BY centroids_ci_1.route,centroids_ci_1.latitude, centroids_ci_1.longitude """
     cursor = connections['UBITECH_POSTGRES'].cursor()
@@ -3318,11 +3317,7 @@ def map_markers_in_time_hcmr(request):
     m = create_map()
     # comment out map_routes until you find a way to cleanup the route-data
     # m = map_routes(m)
-
-    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer = hcmr_service_parameters(request)
-
-
-
+    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer, time_interval = hcmr_service_parameters(request)
     if query_pk != 0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
         q = Query(document=q.document)
@@ -3379,6 +3374,7 @@ def map_markers_in_time_hcmr(request):
             }
             for d in data
         ]
+
         tdelta = data[1][order_index] - data[0][order_index]
         period = 'PT{0}S'.format(tdelta.seconds)
     else:
@@ -3418,12 +3414,13 @@ def map_markers_in_time_hcmr(request):
         #         count_inters = count_inters + 1
         # print 'intersects:' + str(count_inters)
         red_points = []
-
         if natura_layer == "true":
             with open('visualizer/static/visualizer/files/'+ rp_file, 'r') as file:
                 line = file.readline()
+                # import pdb
+                # pdb.set_trace()
                 while line:
-                    red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
+                    red_points.append((float(line.split(',')[0]), float(line.split(',')[1]), float(line.split(',')[2])))
                     line = file.readline()
                 file.close()
         # red_points = []
@@ -3450,10 +3447,14 @@ def map_markers_in_time_hcmr(request):
             }
             for d in data
         ]
+
+
+        import pdb
         # print data
 
         # tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
-        period = 'PT2H'
+
+        period = 'PT'+ str(time_interval) +'H'
 
 
     if has_data:
@@ -3500,8 +3501,8 @@ def hcmr_service_parameters(request):
     rp_file = str(request.GET.get('red_points_file', ''))
     natura_layer = str(request.GET.get('natura_layer', 'false'))
     ais_layer = str(request.GET.get('ais_layer', 'false'))
-
-    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer
+    time_interval = str(request.GET.get('time_interval',2))
+    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer,time_interval
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):

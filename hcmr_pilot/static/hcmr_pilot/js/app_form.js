@@ -216,13 +216,6 @@ function check_sim_len_options(){
 function interactive_form(onLocationfound){
     var allow_form_submit = [true, true, true, true, true, true];
     check_sim_len_options();
-    // var starting_date = new Date($("#startdatepicker input").val());
-    // var now = new Date();
-    // var oneDay = 24*60*60*1000;
-    // var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
-    // if ($('#simulation_length_hist').val()<=diffDays){
-    //    $('#simulation_length').parent().addClass('disabled');
-    // }
     $('#lat').on('input',function () {
         allow_form_submit = missing_parameter($('#lat'), allow_form_submit, 'latitude', 0);
         if($('#lat').val()<-90){
@@ -268,7 +261,6 @@ function interactive_form(onLocationfound){
         }
     });
     $('#simulation_length_hist').on('change',function(){
-        // $('#simulation_length').parent().find('div').removeClass('disabled');
         var starting_date = new Date($("#startdatepicker input").val());
         var now = new Date();
         var oneDay = 24*60*60*1000;
@@ -1112,7 +1104,6 @@ $(document).ready(function() {
 
             var natura_layer = $('input[name="natura_checkbox"]:checked').length > 0;
             var ais_layer = $('input[name="ais_checkbox"]:checked').length > 0;
-
             var url = "/oilspill/" +
                 "scenario" + scenario +
                 "/process/?" +
