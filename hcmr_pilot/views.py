@@ -22,7 +22,7 @@ def init(request):
                                                "Transforming data to be shown on map",
                                                "Calculating oil spill intersections with protected areas", "done"]
     list = []
-    for i in range(0,61):
+    for i in range(0, 61):
         list.append(i*12)
     return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps, 'sim_len_list': list})
 
@@ -378,3 +378,10 @@ def download(request):
     print(content)
     response = HttpResponse(content, content_type='text/plain')
     return response
+
+
+# def create_map_grid_for_natura(request):
+#     for lat in range(0, 43000):
+#         for lon in range(0, 15500):
+#             print 'lat:'+ str(lat)+ 'lon:'+ str(lon)
+#     return JsonResponse({'status':"completed"})

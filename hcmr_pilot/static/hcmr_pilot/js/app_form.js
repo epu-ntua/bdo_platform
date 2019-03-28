@@ -132,7 +132,7 @@ function tour_guide_senario_1(){
         title: "Time interval",
         content: "Set the time step of the output results.",
     });
-    
+
     first_scenario_tour.addStep({
         element: "#sel2",
         placement: "left",
@@ -184,6 +184,8 @@ function check_marker_position(lat, lon, user_marker){
         user_marker.setLatLng(latlng).update(user_marker);
         $('#lat').val((38.06).toFixed(4));
         $('#lon').val((25.36).toFixed(4));
+        $("#sel1").dropdown("set selected", "202");
+        $("#sel2").dropdown("set selected", "001");
     }
 };
 
@@ -209,7 +211,7 @@ function check_sim_len_options(){
 
 }
 
-function interactive_form(onLocationfound){
+function interactive_form(onLocationfound, user_marker){
     var allow_form_submit = [true, true, true, true, true, true];
     check_sim_len_options();
     $('#lat').on('input',function () {
@@ -221,6 +223,11 @@ function interactive_form(onLocationfound){
         }
         onLocationfound({latlng:[$('#lat').val(),$('#lon').val()]});
     });
+    $('#lat').on('change',function () {
+        if (($('#lat').val() !== '') && ($('#lat').val() !== undefined) && ($('#lat').val()!== null)) {
+            check_marker_position($('#lat').val(),$('#lon').val(),user_marker)
+        }
+    });
     $('#lon').on('input',function () {
         allow_form_submit = missing_parameter($('#lon'), allow_form_submit, 'longitude', 1);
         if($('#lon').val()<-180){
@@ -229,6 +236,11 @@ function interactive_form(onLocationfound){
             $('#lon').val((180).toFixed(4));
         }
         onLocationfound({latlng:[$('#lat').val(),$('#lon').val()]});
+    });
+    $('#lon').on('change',function () {
+        if (($('#lon').val() !== '') && ($('#lon').val() !== undefined) && ($('#lon').val()!== null)) {
+            check_marker_position($('#lat').val(),$('#lon').val(),user_marker)
+        }
     });
     $('#startdatepicker input').on('change',function () {
         allow_form_submit = missing_parameter($('#startdatepicker input'), allow_form_submit, 'date', 2);
@@ -421,19 +433,12 @@ $(document).ready(function() {
         });
         map.addLayer(first_marker_layer);
         map.on('locationfound', onLocationfound);
-        interactive_form(onLocationfound);
+        interactive_form(onLocationfound, first_user_marker);
         map.locate();
         map.on('click', function (e) {
-            if (first_user_marker != undefined) {
-                map.removeLayer(first_user_marker);
-            }
-            first_user_marker = L.marker([e.latlng.lat, e.latlng.lng], {draggable: true}).bindPopup("First Marker").addTo(map);
-            first_marker_layer = L.layerGroup(first_user_marker);
-            map.addLayer(first_marker_layer);
+            var latlng = L.latLng(e.latlng.lat, e.latlng.lng);
+            first_user_marker.setLatLng(latlng).update(first_user_marker);
             check_marker_position(e.latlng.lat, e.latlng.lng, first_user_marker);
-            first_user_marker.on('dragend', function (e) {
-                check_marker_position(e.target._latlng.lat, e.target._latlng.lng, first_user_marker);
-            });
         });
         tour_guide_senario_1();
     }
