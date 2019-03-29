@@ -45,6 +45,7 @@ from folium import CustomIcon
 from folium.plugins import HeatMap, MarkerCluster
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
+import csv
 
 FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
                  'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
@@ -3246,10 +3247,13 @@ def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
             color = 'red'
     return color
 
-def color_point_oil_spill2(red_points_list, point):
-    if point in red_points_list:
-        return 'red'
-    elif point[2] == 0:
+def color_point_oil_spill2(natura_table, point, resolution, min_lat, min_lon):
+    if len(natura_table) != 0:
+        x = int((point[0] - min_lat)*resolution)
+        y = int((point[1] - min_lon)*resolution)
+        if natura_table[x][y] == 1:
+            return 'red'
+    if point[2] == 0:
         return 'darkblue'
     elif point[2] == 1:
         return 'lightblue'
@@ -3413,21 +3417,28 @@ def map_markers_in_time_hcmr(request):
         #         filtered_polygons.append(pol)
         #         count_inters = count_inters + 1
         # print 'intersects:' + str(count_inters)
-        red_points = []
+        natura_table = []
+        min_grid_lat = ''
+        min_grid_lon = ''
+        resolution = ''
         if natura_layer == "true":
-            with open('visualizer/static/visualizer/files/'+ rp_file, 'r') as file:
-                line = file.readline()
-                # import pdb
-                # pdb.set_trace()
-                while line:
-                    red_points.append((float(line.split(',')[0]), float(line.split(',')[1]), float(line.split(',')[2])))
-                    line = file.readline()
-                file.close()
-        # red_points = []
-        # with open('red_points.txt', 'r') as file:
-        #     line = file.readline()
-        #     red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
-        #     file.close()
+            # with open('visualizer/static/visualizer/files/'+ rp_file, 'r') as file:
+            #     line = file.readline()
+            #     # import pdb
+            #     # pdb.set_trace()
+            #     while line:
+            #         red_points.append((float(line.split(',')[0]), float(line.split(',')[1]), float(line.split(',')[2])))
+            #         line = file.readline()
+            #     file.close()
+            with open('visualizer/static/visualizer/files/natura_grid_fr.csv', 'r') as csvfile:
+                reader = csv.reader(csvfile)
+                natura_table = [[int(e) for e in r] for r in reader]
+                csvfile.close()
+            with open('visualizer/static/visualizer/files/natura_grid_info_fr', 'r') as file:
+                natura_info = json.load(file)
+            min_grid_lat = natura_info['min_lat']
+            min_grid_lon = natura_info['min_lon']
+            resolution = natura_info['resolution']
 
         features = [
             {
@@ -3440,7 +3451,7 @@ def map_markers_in_time_hcmr(request):
                     "times": [str(d[order_var])],
                     "style": {
                         # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
-                        "color": color_point_oil_spill2(red_points, (d[lat_col], d[lon_col], d['Status'])),
+                        "color": color_point_oil_spill2(natura_table, (d[lat_col], d[lon_col], d['Status']), resolution, min_grid_lat, min_grid_lon),
                         # "color": "red"
                     }
                 }
@@ -3466,7 +3477,8 @@ def map_markers_in_time_hcmr(request):
 
     features = convert_unicode_json(features)
     # folium.LayerControl().add_to(m)
-
+    # legend = '<div style="position: fixed; bottom:50px; left:50px; width:100px; height:90px; border:2px solid grey; z-index:9999; font-size:14px;"> Bottom of the sea: <i class="fa fa-map-marker fa-2x" style="color: blue"></i><br> In the water:<i class="fa fa-map-marker fa-2x" style="color: cadetblue"></i><br> On the surface:<i class="fa fa-map-marker fa-2x" style="color: lightblue"></i><br> On the coast:<i class="fa fa-map-marker fa-2x" style="color: orange"></i><br> In protected areas:<i class="fa fa-map-marker fa-2x" style="color: red"></i></div> '
+    # m.get_root().html.add_child(folium.Element(legend))
     m.save('templates/map.html')
     f = open('templates/map.html', 'r')
     map_html = f.read()
