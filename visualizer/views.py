@@ -60,8 +60,8 @@ def get_vessel_ids_info(request, query_id):
         dataset_list.append(Variable.objects.get(id=int(el['type'])).dataset)
     for dataset in set(dataset_list):
         for vi in dataset.vessel_identifiers.all():
-            return_dict[vi.column_name] = [x[0] for x in vi.values_list]
-    print return_dict
+            return_dict[vi.column_name] = [x[0] for x in vi.values_list[:1000]]
+    # print return_dict[:2]
     return JsonResponse(return_dict)
 
 
@@ -192,11 +192,27 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
                     platform_flag = True
             elif(s['name'] == variable) and (s['exclude'] is not True):
                 s['exclude'] = False
-                s['aggregate'] = agg_function
+                if s['datatype'] == 'STRING':
+                    s['aggregate'] = 'MIN'
+                elif s['datatype'] == 'TIMESTAMP':
+                    s['aggregate'] = 'MIN'
+                else:
+                    s['aggregate'] = 'AVG'
                 var_flag = True
+                if (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
+                    platform_id_filtername = str(s['name'])
+                    if str(s['type']) == "VALUE":
+                        platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                    else:
+                        platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
+                    platform_flag = True
             elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
                 s['exclude'] = True
+                if str(s['type']) == "VALUE":
+                    platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                else:
+                    platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
                 platform_flag = True
             elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -502,13 +518,13 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
                 s['exclude'] = False
                 lat_flag = True
                 # if heat_col == 'heatmap_frequency':
-                s['aggregate'] = 'round0'
+                s['aggregate'] = 'round2'
                 s['groupBy'] = True
             elif s['name'].split('_', 1)[1] == 'longitude':
                 s['exclude'] = False
                 lon_flag = True
                 # if heat_col == 'heatmap_frequency':
-                s['aggregate'] = 'round0'
+                s['aggregate'] = 'round2'
                 s['groupBy'] = True
             else:
                 s['exclude'] = True
@@ -725,6 +741,7 @@ def map_visualizer(request):
     css_all = soup.findAll('link')
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
+    # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
     html1 = render_to_string('visualizer/final_map_folium_template.html',
                              {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
     # print(html1)
@@ -1487,9 +1504,18 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
         if d[lon_index] < min_lon:
             min_lon = d[lon_index]
 
+        try:
+            var_val = str(round(d[var_index], 3))
+        except:
+            var_val = str(d[var_index])
+        if var_val == "None":
+            var_val = 'unavailable'
+        else:
+            var_val = var_val + " " + str(var_unit)
+
         folium.Marker(
             location=[d[lat_index], d[lon_index]],
-            popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Time: " + str(d[time_index]) + "<br>Latitude: " + str(
+            popup=str(var_title) + ": " + var_val + "<br>Time: " + str(d[time_index]) + "<br>Latitude: " + str(
                 d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),
             icon=folium.Icon(color=marker_color),
             # radius=2,
@@ -3528,7 +3554,7 @@ def map_markers_in_time_hcmr(request):
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
     f.close()
-
+    js_all = [js.replace('worldCopyJump', 'preferCanvas: true , worldCopyJump') for js in js_all]
     os.remove('templates/map.html')
 
     return render(request, 'visualizer/map_markers_in_time.html',

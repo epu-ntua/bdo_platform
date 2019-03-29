@@ -37,6 +37,7 @@
     {% endif %}
     {% leaflet_map map_id %}
     <input hidden value="" id="current_time" />
+    <div id="snapshot" style="position: absolute; top: 1000px;"></div>
 
 {% endblock %}
 
@@ -56,7 +57,7 @@
     <script src="https://rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.min.js"></script>
 
 
-
+    <script src="{% static 'js/leaflet-image.js' %}"></script>
 
 
     {% for js in js_all %}
@@ -104,12 +105,50 @@
 
 
 
+        function get_snapshot(){
+          leafletImage(map, function(err, canvas) {
+                // now you have canvas
+                // example thing to do with that canvas:
+                var img = document.createElement('img');
+                var dimensions = map.getSize();
+                img.width = dimensions.x;
+                img.height = dimensions.y;
+                img.src = canvas.toDataURL();
+                document.getElementById('snapshot').appendChild(img);
+            });
+        }
+
+        function stop() {
+            map.timeDimensionControl._player.pause();
+        }
+
+        function snap(times){
+            for(i=0; i<times; i++){
+                setTimeout(function(){
+                    map.timeDimensionControl._player.pause();
+                    map.timeDimension.setCurrentTime(map.timeDimension._availableTimes[i]);
+                    map.timeDimensionControl._player.pause();
+                    get_snapshot();
+                }, i * 5000);
+            }
+        }
 
         $(document).ready(function(){
             function update_current_time(){
               $("#current_time").val(map.timeDimension.getCurrentTime());
             }
             setInterval(update_current_time,100);
+
+
+
+{#            $("#download-report").click(function () {#}
+
+{#                map.timeDimension._availableTimes;#}
+
+
+
+
+{#            });#}
         });
     </script>
 
