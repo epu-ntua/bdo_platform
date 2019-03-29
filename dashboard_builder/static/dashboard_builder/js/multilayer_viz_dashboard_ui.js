@@ -398,14 +398,15 @@ $("#select_data_popover").click(function () {
 
 
                 //HEATMAP
-                var allow_heatmap_submit = [true,true];
+                // var allow_heatmap_submit = [true,true];
+                var allow_heatmap_submit = [true];
                 var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
-                var heatmap_points_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
+                // var heatmap_points_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
                 var viz_conf_heatmap = viz_conf_json['visualiser']['map_heatmap'];
-                heatmap_points_input.val(viz_conf_heatmap['default_points']);
-                heatmap_points_input.on('input',function () {
-                    allow_heatmap_submit = limit_points(heatmap_points_input, viz_conf_heatmap, allow_heatmap_submit, 'points',1);
-                });
+                // heatmap_points_input.val(viz_conf_heatmap['default_points']);
+                // heatmap_points_input.on('input',function () {
+                //     allow_heatmap_submit = limit_points(heatmap_points_input, viz_conf_heatmap, allow_heatmap_submit, 'points',1);
+                // });
                 var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
                 heatmap_col_select.append('<option value="heatmap_frequency">Frequency</option>');
                 heatmap_col_select.on('change',function () {
@@ -941,7 +942,7 @@ $("#select_data_popover").click(function () {
             }
 
             function limit_points(input, viz_conf, allow_submit, unit, parameter_id){
-                if (input.val()>=viz_conf['limit'] || input.val()<=0 || (input.val()==='')){
+                if (input.val()>viz_conf['limit'] || input.val()<=0 || (input.val()==='')){
                         if(allow_submit[parameter_id]===true) {
                             $("<div class='conf-error-message limit_oob_message'>* Number of "+unit+" must be below " + String(viz_conf['limit']) + " and above 0.</div>").insertBefore("#select_conf_ok");
                             $('#select_conf_ok').addClass('disabled');

@@ -154,14 +154,13 @@ def get_heatmap_parameters(request, count):
     heat_col = str(request.GET.get('heat_col' + str(count), ''))
     if heat_col == '':
         raise ValueError('The heatmap variable has to be selected.')
-    heat_points_limit = str(request.GET.get("points_limit" + str(count), '1'))
-    try:
-        heat_points_limit = int(heat_points_limit)
-    except ValueError:
-        raise ValueError('Number of heatmap points is not valid.')
-    if heat_points_limit <= 0:
-        raise ValueError('Number of heatmap points has to be a positive number.')
-    return cached_file, heat_col, heat_points_limit, lat_col,lon_col
+    # try:
+    #     heat_points_limit = int(heat_points_limit)
+    # except ValueError:
+    #     raise ValueError('Number of heatmap points is not valid.')
+    # if heat_points_limit <= 0:
+    #     raise ValueError('Number of heatmap points has to be a positive number.')
+    return cached_file, heat_col, lat_col,lon_col
 
 
 def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_column, vessel_id, color_col, agg_function, use_color_col):
@@ -497,7 +496,7 @@ def load_modify_query_map(query_pk, variable, order_var, lat_col, lon_col, color
     return query
 
 
-def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
+def load_modify_query_heatmap(query_pk, heat_col):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
@@ -518,13 +517,15 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
                 s['exclude'] = False
                 lat_flag = True
                 # if heat_col == 'heatmap_frequency':
-                s['aggregate'] = 'round2'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'round2'
                 s['groupBy'] = True
             elif s['name'].split('_', 1)[1] == 'longitude':
                 s['exclude'] = False
                 lon_flag = True
                 # if heat_col == 'heatmap_frequency':
-                s['aggregate'] = 'round2'
+                if s['aggregate'] == '':
+                    s['aggregate'] = 'round2'
                 s['groupBy'] = True
             else:
                 s['exclude'] = True
@@ -539,7 +540,12 @@ def load_modify_query_heatmap(query_pk, heat_col, marker_limit):
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
 
-    doc['limit'] = marker_limit
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            json_data = json.load(f)
+        doc['limit'] = json_data['visualiser']['map_heatmap']['limit']
+    except:
+        pass
 
     query.document = doc
     return query
@@ -678,10 +684,10 @@ def map_visualizer(request):
             # Heatmap
             try:
                 if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id:
-                    cached_file, heat_col, heat_points_limit, lat_col, lon_col = get_heatmap_parameters(request,
+                    cached_file, heat_col, lat_col, lon_col = get_heatmap_parameters(request,
                                                                                                         count)
                     m, extra_js = get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col,
-                                                  heat_points_limit, m, cached_file, request)
+                                                   m, cached_file, request)
             except ObjectDoesNotExist:
                 pass
             # Contours
@@ -1001,12 +1007,12 @@ def create_plotline_points(data, lat_index, lon_index):
 
 
 
-def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, heat_points_limit, m, cached_file, request):
+def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, cached_file, request):
     dict = {}
     max_intensity = 1.0
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
-            query = load_modify_query_heatmap(query_pk, heat_col, heat_points_limit)
+            query = load_modify_query_heatmap(query_pk, heat_col)
             data, lat_index, lon_index, heat_var_index = get_heatmap_query_data(query, heat_col)
         else:
             data, headers = load_execute_dataframe_data(request, df, notebook_id)
