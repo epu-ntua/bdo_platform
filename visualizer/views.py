@@ -3249,10 +3249,13 @@ def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
 
 def color_point_oil_spill2(natura_table, point, resolution, min_lat, min_lon):
     if len(natura_table) != 0:
-        x = int((point[0] - min_lat)*resolution)
-        y = int((point[1] - min_lon)*resolution)
-        if natura_table[x][y] == 1:
-            return 'red'
+        try:
+            x = int((point[0] - min_lat)*resolution)
+            y = int((point[1] - min_lon)*resolution)
+            if natura_table[x][y] == 1:
+                return 'red'
+        except:
+            pass
     if point[2] == 0:
         return 'darkblue'
     elif point[2] == 1:
