@@ -204,7 +204,7 @@ function check_sim_len_options(){
             if (ist > diff_dec_days*24){
                 $(this).addClass('disabled');
             }
-            console.log(ist)
+            // console.log(ist)
         });
 
     }
@@ -268,40 +268,7 @@ function interactive_form(onLocationfound, user_marker){
             $('#vis_duration').val(0);
         }
     });
-    $('#simulation_length_hist').on('change',function(){
-        var starting_date = new Date($("#startdatepicker input").val());
-        var now = new Date();
-        var oneDay = 24*60*60*1000;
-        var diffDays = Math.round(Math.abs((starting_date.getTime() - now.getTime())/(oneDay)));
-        var selected_length = $(this).val()/24;
-        if(selected_length<=diffDays){
-            $('#simulation_length').parent().addClass('disabled')
-        }else if($('#simulation_length_hist').val()>diffDays) {
-            $('#simulation_length_hist').val(diffDays);
-            $('#simulation_length').parent().removeClass('disabled')
-            var days_allowed = 30 - diffDays
-            if(days_allowed === 1){
-                $('#simulation_length').parent().find('div[data-value=36]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=48]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=60]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=72]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=84]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=96]').addClass('disabled');
-            }else if(days_allowed === 2){
-                $('#simulation_length').parent().find('div[data-value=60]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=72]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=84]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=96]').addClass('disabled');
-            }else if(days_allowed === 3){
-                $('#simulation_length').parent().find('div[data-value=84]').addClass('disabled');
-                $('#simulation_length').parent().find('div[data-value=96]').addClass('disabled');
-            }
 
-        }else if ($('#simulation_length_hist').val()>1330){
-            $('#simulation_length_hist').val(30);
-        }
-
-    });
 }
 
 function missing_parameter(col_select, allow_submit, parameter_name, parameter_id) {
@@ -357,7 +324,11 @@ $(document).ready(function() {
         endDate: endDate,
         initialDate: endDate
     });
-    startpick.datetimepicker('update',endDate);
+    startpick.datetimepicker('update', endDate);
+    // startpick.datetimepicker('update', endDate.getFullYear()+'-0'+endDate.getMonth()+'-0'+endDate.getDay()+' '+endDate.getHours()+':'+endDate.getMinutes());
+    // console.log(endDate.getFullYear()+'-'+endDate.getMonth()+'-'+endDate.getDay());
+    // startpick.datetimepicker().children('input').val();
+
 
     var allow_form_submit = [true, true, true, true, true, true];
 
