@@ -18,4 +18,5 @@ urlpatterns = [
 
     url('download', views.download, name='download'),
     url('form', views.index, name='index'),
+    url('create_natura_grid/', views.create_map_grid_for_natura, name='natura_grid')
 ]

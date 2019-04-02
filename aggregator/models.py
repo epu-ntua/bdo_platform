@@ -91,16 +91,20 @@ class Dataset(Model):
 
     @property
     def number_of_rows_formated(self):
-        size = long(self.number_of_rows)
-        reminder = 0
-        power = 1000
-        n = 0
-        Dic_powerN = {0: '', 1: 'thousand', 2: 'million', 3: 'billion'}
-        while size > power:
-            reminder = size % power
-            size /= power
-            n += 1
-        return str(float(int(size) + round(float(reminder*0.001), 1))) + " " + Dic_powerN[n]
+        try:
+            size = long(self.number_of_rows)
+            reminder = 0
+            power = 1000
+            n = 0
+            Dic_powerN = {0: '', 1: 'thousand', 2: 'million', 3: 'billion'}
+            while size > power:
+                reminder = size % power
+                size /= power
+                n += 1
+            return str(float(int(size) + round(float(reminder * 0.001), 1))) + " " + Dic_powerN[n]
+        except:
+            size = 'undefined'
+            return size
 
     def __unicode__(self):
         return self.title

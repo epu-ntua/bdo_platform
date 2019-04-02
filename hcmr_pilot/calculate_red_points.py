@@ -88,7 +88,8 @@ def build_red_points_file(data, polygons, red_points_filename):
             outer_pol = pol['outer']
             shapely_pol = Polygon(outer_pol)
             if shapely_pol.contains(Point(p['Lat'], p['Lon'])):
-                file.write(str(p['Lat']) + ', ' + str(p['Lon']) + '\n')
+                file.write(str(p['Lat']) + ', ' + str(p['Lon']) + ', ' + str(p['Status']) +'\n')
+
                 break
     file.close()
 

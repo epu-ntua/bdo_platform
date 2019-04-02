@@ -37,6 +37,15 @@
     {% endif %}
     {% leaflet_map map_id %}
     <input hidden value="" id="current_time" />
+    <div style="position: fixed; background:#00000063;  bottom:50px; right:50px; z-index:9999; font-size:14px; color: white">
+        <div style="padding: 10px">
+            <i class="fa fa-circle " style="color: blue; margin-right: 5px"></i>Sea Bottom
+            <br><i class="fa fa-circle " style="color: cadetblue; margin-right: 5px"></i>Under Sea
+            <br><i class="fa fa-circle " style="color: lightblue; margin-right: 5px"></i>On Surface
+            <br><i class="fa fa-circle " style="color: orange; margin-right: 5px"></i>On Coast
+            <br><i class="fa fa-circle " style="color: red; margin-right: 5px"></i>In Protected Areas
+        </div>
+    </div>
     <button id="snapshot_button" style="display: none;"></button>
     <input hidden value="" id="snapshot_status" />
     <div id="snapshot" style="position: absolute; top: 1000px; display: none;"></div>
