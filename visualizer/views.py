@@ -276,18 +276,26 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
                 s['exclude'] = False
                 s['aggregate'] = agg_function
                 var_flag = True
-            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
-                s['exclude'] = False
-                s['groupBy'] = True
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'round2'
-                lat_flag = True
-            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
-                s['exclude'] = False
-                if s['aggregate'] == '':
-                    s['aggregate'] = 'round2'
-                s['groupBy'] = True
-                lon_flag = True
+            elif s['name'].split('_', 1)[1] == 'latitude':
+                if 'joined' in s.keys() and s['joined'] != "":
+                    s['exclude'] = True
+                    s['groupBy'] = False
+                else:
+                    s['exclude'] = False
+                    s['groupBy'] = True
+                    if s['aggregate'] == '':
+                        s['aggregate'] = 'round2'
+                    lat_flag = True
+            elif s['name'].split('_', 1)[1] == 'longitude':
+                if 'joined' in s.keys() and s['joined'] != "":
+                    s['exclude'] = True
+                    s['groupBy'] = False
+                else:
+                    s['exclude'] = False
+                    s['groupBy'] = True
+                    if s['aggregate'] == '':
+                        s['aggregate'] = 'round2'
+                    lon_flag = True
             elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
                 # s['exclude'] = True
                 s['groupBy'] = False
@@ -310,6 +318,7 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
     doc['limit'] = marker_limit
 
     query.document = doc
+    print doc
     return query
 
 
@@ -324,7 +333,7 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, ves
                 order_var = s['name']
                 s['groupBy'] = True
                 if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_hour'
+                    s['aggregate'] = 'date_trunc_'
                 time_flag = True
             elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
