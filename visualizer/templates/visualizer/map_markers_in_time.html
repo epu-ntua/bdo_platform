@@ -37,7 +37,9 @@
     {% endif %}
     {% leaflet_map map_id %}
     <input hidden value="" id="current_time" />
-    <div id="snapshot" style="position: absolute; top: 1000px;"></div>
+    <button id="snapshot_button" style="display: none;"></button>
+    <input hidden value="" id="snapshot_status" />
+    <div id="snapshot" style="position: absolute; top: 1000px; display: none;"></div>
 
 {% endblock %}
 
@@ -75,7 +77,7 @@
                 playerOptions: {
                     transitionTime: 600,
                     loop: true}
-                    });
+            });
            map.addControl(map.timeDimensionControl);
 
             var timestamped_geo_json = L.timeDimension.layer.geoJson(
@@ -104,17 +106,26 @@
                 ).addTo(map);
 
 
+         $("#snapshot_button").click(function () {
+             $("#snapshot").empty();
+             $("#snapshot_status").val("working");
+             snap();
+         });
 
-        function get_snapshot(){
+        function get_snapshot(timestamp){
           leafletImage(map, function(err, canvas) {
                 // now you have canvas
                 // example thing to do with that canvas:
                 var img = document.createElement('img');
+                var img_container = document.createElement('div');
                 var dimensions = map.getSize();
                 img.width = dimensions.x;
                 img.height = dimensions.y;
                 img.src = canvas.toDataURL();
-                document.getElementById('snapshot').appendChild(img);
+{#                img.data('timestamp', timestamp);#}
+                img_container.id = timestamp;
+                img_container.appendChild(img);
+                document.getElementById('snapshot').appendChild(img_container);
             });
         }
 
@@ -122,15 +133,31 @@
             map.timeDimensionControl._player.pause();
         }
 
+
+
         function snap(times){
-            for(i=0; i<times; i++){
-                setTimeout(function(){
+            {% for x in available_times %}
+                {% if forloop.counter0 == 0 %}
                     map.timeDimensionControl._player.pause();
-                    map.timeDimension.setCurrentTime(map.timeDimension._availableTimes[i]);
+                    map.timeDimension.setCurrentTime(map.timeDimension._availableTimes[{{ forloop.counter0 }}]);
                     map.timeDimensionControl._player.pause();
-                    get_snapshot();
-                }, i * 5000);
-            }
+                    get_snapshot(map.timeDimension._availableTimes[{{ forloop.counter0 }}]);
+                {% elif forloop.counter0|divisibleby:ignore_every %}
+                    setTimeout(function(){
+                        map.timeDimensionControl._player.pause();
+                        map.timeDimension.setCurrentTime(map.timeDimension._availableTimes[{{ forloop.counter0 }}]);
+                        map.timeDimensionControl._player.pause();
+                        get_snapshot(map.timeDimension._availableTimes[{{ forloop.counter0 }}]);
+                    }, 5000 + {%  widthratio forloop.counter0 ignore_every 1 %} * 1500);
+                {% endif %}
+                {% if forloop.last %}
+                    setTimeout(function(){
+                        $("#snapshot_status").val("done");
+                        map.timeDimensionControl._player.release();
+                    }, 5000 + {%  widthratio forloop.counter0 ignore_every 1 %} * 1500 + 1500);
+
+                {% endif %}
+            {% endfor  %}
         }
 
         $(document).ready(function(){

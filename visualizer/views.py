@@ -2013,7 +2013,7 @@ def map_markers_in_time(request):
             }
             for d in data
         ]
-        tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
+        tdelta = time.strptime(data[1][order_var], FMT) - time.strptime(data[0][order_var], FMT)
         period = 'PT2H'
 
     features = convert_unicode_json(features)
@@ -3395,11 +3395,7 @@ def map_markers_in_time_hcmr(request):
     m = create_map()
     # comment out map_routes until you find a way to cleanup the route-data
     # m = map_routes(m)
-
-    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer = hcmr_service_parameters(request)
-
-
-
+    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer, time_interval = hcmr_service_parameters(request)
     if query_pk != 0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
         q = Query(document=q.document)
@@ -3529,7 +3525,9 @@ def map_markers_in_time_hcmr(request):
         # print data
 
         # tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
-        period = 'PT2H'
+
+        available_times = set([d[order_var] for d in data])
+        period = 'PT'+ str(time_interval) +'H'
 
 
     if has_data:
@@ -3541,6 +3539,16 @@ def map_markers_in_time_hcmr(request):
 
     features = convert_unicode_json(features)
     # folium.LayerControl().add_to(m)
+
+    # FOR SCREENSHOTS EVERY 6 or 4 hours
+    print 'time interval ' + str(time_interval)
+    if int(time_interval) == 4:
+        ignore_every = 4
+    elif int(time_interval) >= 1 and int(time_interval) <= 6:
+        ignore_every = 6/int(time_interval)
+    else:
+        ignore_every = 1
+
 
     m.save('templates/map.html')
     f = open('templates/map.html', 'r')
@@ -3558,7 +3566,7 @@ def map_markers_in_time_hcmr(request):
     os.remove('templates/map.html')
 
     return render(request, 'visualizer/map_markers_in_time.html',
-                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType, 'has_data': has_data})
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType, 'has_data': has_data, 'ignore_every': ignore_every, 'available_times': available_times})
 
 
 def hcmr_service_parameters(request):
@@ -3576,8 +3584,8 @@ def hcmr_service_parameters(request):
     rp_file = str(request.GET.get('red_points_file', ''))
     natura_layer = str(request.GET.get('natura_layer', 'false'))
     ais_layer = str(request.GET.get('ais_layer', 'false'))
-
-    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer
+    time_interval = str(request.GET.get('time_interval',2))
+    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer,time_interval
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
