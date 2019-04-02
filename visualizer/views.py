@@ -324,7 +324,7 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, ves
                 order_var = s['name']
                 s['groupBy'] = True
                 if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_minute'
+                    s['aggregate'] = 'date_trunc_hour'
                 time_flag = True
             elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
