@@ -9,10 +9,10 @@
 
     {% block service_output_head %}
         {# HEADER #}
-        <div class="jumbotron col-sm-12" style="padding: 3vh; position: relative;">
+        <div id="study_jumbotron" class="jumbotron col-sm-12" style="padding: 3vh; position: relative;">
             <div class="col-sm-3" style="text-align: center;">
-                <img src="{% static 'img/logo.png' %}" style="height: 7vh;">
-                <img src="{% static 'hcmr_pilot/img/hcmr-LOGO.jpg' %}" style="height: 8vh; margin-left: 3%;">
+                <img id="bdo_logo" width="150" height="75" src="{% static 'img/logo.png' %}" {# style="height: 7vh;" #}>
+                <img id="hcmr_logo" width="120" height="80" src="{% static 'hcmr_pilot/img/hcmr-LOGO.jpg' %}"  style="{#height: 8vh; #}margin-left: 3%;" >
             </div>
             <div class="col-sm-6" style="text-align: center;">
                 <h1 style="font-size: 4vh; margin: 0;"> Exploiting Oceans of Data for Maritime Apps </h1>
@@ -60,5 +60,7 @@
 {% endblock %}
 
 {% block  js %}
+
+
 
 {% endblock %}

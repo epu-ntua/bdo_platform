@@ -524,6 +524,7 @@ $(function() {
     // *** RUN QUERY / EXPLORE RESULTS *** //
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
+        $('a[href="#dataDiv"]').trigger('click')
         $("#viz_config .list-group").children().each(function () {
                 $(this).find("#selected_viz_span").hide();
             });

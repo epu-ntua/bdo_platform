@@ -27,7 +27,7 @@
 {#    <div style="position:absolute; bottom:30px; left:60px; ">#}
 {#        <img src="{% static legend_id %}" alt="Legend" >#}
 {#    </div>#}
-
+    <div id="snapshot"></div>
 {% endblock %}
 
 
@@ -39,6 +39,7 @@
     <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>
     <script src="{% static 'js/leaflet.markercluster.js'%}"></script>
 
+    <script src="{% static 'js/leaflet-image.js' %}"></script>
 
     {% for js in js_all %}
         {% autoescape off %}
@@ -46,5 +47,8 @@
         {% endautoescape %}
     {% endfor %}
 
+    <script>
+        var map = {{ map_id|safe }};
+    </script>
 
 {% endblock %}

@@ -22,7 +22,7 @@ $("#select_data_popover").click(function () {
             $('#layers-list').dropdown();
             $('#layers-list-title-button').click(function () {
                 $('#layers-list').trigger('click');
-            })
+            });
 
             $("#query_name_span").text(null);
             var layer_count = 0;
@@ -38,7 +38,7 @@ $("#select_data_popover").click(function () {
                 $('#myModal #add_layer_btn').parent().hide();
                 $('#myModal #layers-list').parent().hide();
 
-            })
+            });
             $("#add_layer_btn").parent().click(function () {
                 $(this).hide();
                 if((new_query_id!=null)&&(selected_visualization!=null)) {
@@ -51,7 +51,7 @@ $("#select_data_popover").click(function () {
                     $(".list-group").css('visibility','hidden');
                     $("#viz_config .list-group").children().each(function () {
                         $(this).find("#selected_viz_span").hide();
-                    })
+                    });
                     layer_json = [];
                     for (var i = 0; i < json.length; i++) {
                         var obj = json[i];
@@ -64,7 +64,7 @@ $("#select_data_popover").click(function () {
                     $(".layer_list_element #layer_list_element_btn"+String(layer_count)).click(function () {
                          $("#viz_config .list-group").children().each(function () {
                                 $(this).find("#selected_viz_span").hide();
-                         })
+                         });
                         var del_id = $(this).closest('li').attr('id');
                         for (var i = 0; i < layer_json.length; i++) {
                             var obj = layer_json[i];
@@ -83,7 +83,7 @@ $("#select_data_popover").click(function () {
                             }
                         }
                         mapVizUrlCreator(layer_json,layer_count,'map');
-                    })
+                    });
                     layer_count = layer_count+1;
                 }
                 else{
@@ -139,458 +139,29 @@ $("#select_data_popover").click(function () {
             $(".viz_item").click(function (element) {
                 if($('.popover').length) {
                     $('.viz_item').popover('hide');
-                    // $('#select_conf_cancel').trigger("click");
-                    // $('.popover').hide();
+
                 }
-                var component_id = $(this).attr('data-viz-id');
-                var component_type = $(this).attr('data-viz-type');
-                var component_selector = 'li[data-viz-id="' + component_id + '"]';
-                $(component_selector).popover({
-                    html: true,
-                    title: $(this).text()+' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="'+$(this).attr('data-description') +'"></i>',
-                    trigger:'manual',
-                    content: function () {
-                        return $('.all_viz_forms  #viz_' + String(component_id)).clone();
-                    }
-                });
-
-
-                updateVariables();
-
-                $(component_selector).popover('show');
-                var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
-                var viz_info_text = "";
-                $(popover_component).find('label.form_field_info').each(function () {
-                    viz_info_text = viz_info_text + "\n-"+$(this).text()+": " + $(this).attr('title');
-                });
-                $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
-                
-                $(component_selector).on("hidden.bs.popover", function(e) {
-                    selected_val = null;
-                    var_list = null;
-                    var_select = null;
-                    col_select = null;
-                    flag = false;
-                    var selects_in_popover = '.popover-content #viz_' + component_id;
-                    $(selects_in_popover).remove();
-                    $(component_selector).popover('destroy');
-
-                });
-                populate_selects();
-                setTimeout(function () {
-                    specific_viz_form_configuration();
-                },150);
-
-
-
-                var popver_id = '#' + $(component_selector).attr('aria-describedby');
-                $(popver_id + ' #select_conf_ok').click(function (e) {
-                    open_modal=true;
-                    selected_visualization = $(component_selector).text();
-                    $("#viz_config .list-group").children().each(function () {
-                        $(this).find("#selected_viz_span").hide();
-                    })
-                    $(component_selector).find("#selected_viz_span").show();
-
-                    submit_conf(component_selector, component_type);
-                    $(component_selector).popover("hide");
-                });
-                $(popver_id + ' #select_conf_cancel').click(function (e) {
-                    $(component_selector).popover("hide");
-                });
-            });
-
-            function updateVariables(){
-                $('#myModal .variable-select').find('option').remove();
-                $('#myModal .variables-select ').find('option').remove();
-                $('#myModal .column-select ').find('option').remove();
-                $('#myModal .columns-select ').find('option').remove();
-                $('#myModal .variable-numeric-select').find('option').remove();
-                $('#myModal .variables-numeric-select ').find('option').remove();
-                $('#myModal .column-numeric-select ').find('option').remove();
-                $('#myModal .columns-numeric-select ').find('option').remove();
-                $('#myModal .ais-select ').find('option').remove();
-                var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
-                var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
-                var variables_numeric_content = '';
-                var dimensions_numeric_content = '';
-                $.each($('#query-variables-select-container #'+String(new_query_id)).find('option'), function (i, el) {
-                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")  || ($(el).data('datatype') === "DOUBLE")  || ($(el).data('datatype') === "BYTE")){
-                        variables_numeric_content += $(el).prop('outerHTML');
-                    }
-                });
-                $.each($('#query-dimensions-select-container #'+String(new_query_id)).find('option'), function (i, el) {
-                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")  || ($(el).data('datatype') === "DOUBLE")  || ($(el).data('datatype') === "BYTE")){
-                        dimensions_numeric_content += $(el).prop('outerHTML');
-                    }
-                });
-                // var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
-                $('#myModal .variable-select ').html(variables_content);
-                $('#myModal .variables-select ').html(variables_content);
-                $('#myModal .column-select ').html(variables_content + dimensions_content);
-                $('#myModal .columns-select ').html(variables_content + dimensions_content);
-                $('#myModal .variable-numeric-select ').html(variables_numeric_content);
-                $('#myModal .variables-numeric-select ').html(variables_numeric_content);
-                $('#myModal .column-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
-                $('#myModal .columns-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
-                // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
-            }
-            function populate_selects(){
-
-                $('.popover-content #use_existing_temp_res').parent().checkbox().first().checkbox({
-                    onChecked: function(){
-                        $('.popover-content #temporal_resolution').parent().addClass('disabled');
-                    },
-                    onUnchecked: function () {
-                        $('.popover-content #temporal_resolution').parent().removeClass('disabled');
-                    }
-                });
-                $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
-
-                $('.popover-content #use_color_column').parent().checkbox().first().checkbox({
-                    onChecked: function(){
-                        $('.popover-content #color_var').parent().removeClass('disabled');
-                    },
-                    onUnchecked: function () {
-                        $('.popover-content #color_var').parent().addClass('disabled');
-                        $('.popover-content #color_var').dropdown('clear');
-                    }
-                });
-                // $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
-
-                $('.popover-content #select_all_columns').parent().checkbox().first().checkbox({
-                    onChecked: function(){
-                        const options = $('.popover-content .columns-select #column_choice> option').toArray().map(
-                        (obj) => obj.value
-                      );
-                      $('.popover-content .columns-select #column_choice').dropdown('set exactly', options);
-                    },
-                    onUnchecked: function() {
-                      $('.popover-content .columns-select #column_choice').dropdown('clear');
-                    },
-                });
-
-                 $(".popover-content .variable-select").dropdown({
-                        clearable: true,
-                        placeholder: 'Select a Variable',
+                else {
+                    var component_id = $(this).attr('data-viz-id');
+                    var component_type = $(this).attr('data-viz-type');
+                    var component_selector = 'li[data-viz-id="' + component_id + '"]';
+                    $(component_selector).popover({
+                        html: true,
+                        title: $(this).text() + ' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="' + $(this).attr('data-description') + '"></i>',
+                        trigger: 'manual',
+                        content: function () {
+                            return $('.all_viz_forms  #viz_' + String(component_id)).clone();
+                        }
                     });
-                $(".popover-content .variable-select").dropdown('clear');
-
-                $(".popover-content .column-select").dropdown({
-                    clearable: true,
-                    placeholder: 'Select a Variable or Dimension',
-
-                });
-                $(".popover-content .column-select").dropdown('clear');
-                $(".popover-content .variables-select").dropdown({
-                    clearable: true,
-                    placeholder: 'Select Variable(s)',
-                });
-
-                 $(".popover-content .columns-select").dropdown({
-                    clearable: true,
-                    placeholder: 'Select Variables or Dimensions',
-                });
-
-                $(".popover-content .variable-numeric-select").dropdown({
-                        clearable: true,
-                        placeholder: 'Select a Variable',
-                    });
-                $(".popover-content .variable-numeric-select").dropdown('clear');
-
-                $(".popover-content .column-numeric-select").dropdown({
-                    clearable: true,
-                    placeholder: 'Select a Variable or Dimension',
-
-                });
-                $(".popover-content .column-numeric-select").dropdown('clear');
-                $(".popover-content .variables-numeric-select").dropdown({
-                    clearable: true,
-                    placeholder: 'Select Variable(s)',
-                });
-
-                 $(".popover-content .columns-numeric-select").dropdown({
-                    clearable: true,
-                    placeholder: 'Select Variables or Dimensions',
-                });
-
-                $(".popover-content .aggregate-select").dropdown({
-                    placeholder: 'Select an Aggregate Function'
-                });
-                $(".popover-content .aggregate-select").dropdown('restore defaults');
-
-                $(".popover-content .select-select").dropdown({
-                    placeholder: 'Select an Option'
-                });
-                $(".popover-content .select-select").dropdown('restore defaults');
-
-                $(".popover-content .dataset-argument-select").dropdown({
-                    placeholder: 'Select one of the chosen arguments'
-                });
-                $(".popover-content .dataset-argument-select").dropdown('restore defaults');
-
-                $(".control-label").css("margin-bottom","3px");
-
-                $(".popover-content .column-select").dropdown('setting','onChange',function () {
-                    selected_val = $(".popover-content .column-select").dropdown('get value');
-                    var_list = $(".popover-content .variables-select").dropdown('get value');
-                    var_select = $(".popover-content .variable-select").dropdown('get value');
-                    if (((jQuery.inArray(selected_val,var_list)!== -1)||(selected_val===var_select))&&(selected_val!=='') && (selected_val!=null)){
-                        alert('Please choose a variable or dimension that is not already in use.');
-                        $(".popover-content .column-select").dropdown('clear');
-                        selected_val = null;
-                        col_select = null;
-                    }
-                 });
-
-                $(".popover-content .variable-select").dropdown('setting','onChange',function () {
-                    selected_val = $(".popover-content .variable-select").dropdown('get value');
-                    var_list = $(".popover-content .variables-select").dropdown('get value');
-                    col_select = $(".popover-content .column-select").dropdown('get value');
-                    if (((jQuery.inArray(selected_val,var_list)!== -1)||(selected_val===col_select)) &&(selected_val!=='') && (selected_val!=null)){
-                        alert('Please choose a variable that is not already in use.');
-                        $(".popover-content .variable-select").dropdown('clear');
-                        selected_val = null;
-                        var_select = null;
-                    }
-                 });
-
-                $(".popover-content .variables-select").dropdown('setting','onChange',function () {
-                    selected_val = $(".popover-content .variables-select").dropdown('get value');
-                    var_select = $(".popover-content .variable-select").dropdown('get value');
-                    col_select = $(".popover-content .column-select").dropdown('get value');
-                    flag = false;
-                    if (selected_val!==null && selected_val!=='' && selected_val!==undefined) {
-                        var limit = selected_val.length
-                        for (var i = 0; i < limit; i++) {
-                            if (selected_val[i] === var_select) {
-                                $(".popover-content .variable-select").dropdown('clear');
-                                flag = true;
-                                selected_val = null;
-                                var_select = null;
-                            }
-                            if (selected_val[i] === col_select) {
-                                $(".popover-content .column-select").dropdown('clear');
-                                flag = true;
-                                selected_val = null;
-                                col_select = null;
-                            }
-                        }
-                        if ((selected_val !== '') && (selected_val !== null) && flag) {
-                            alert('Please choose a variable that is not already in use.');
-                        }
-                    }
-                })
-            }
-
-            function submit_conf(component_selector,component_type) {
-                var conf_popover_id;
-                var submitted_args;
-                var selects;
-                var myData;
-                $('#add_layer_btn').parent().hide();
-                $('#layers-list').parent().hide();
-                $('#myModal #submit-modal-btn').hide();
-                if(component_type!='map') {
-                    var viz_request = "/visualizations/";
-                    viz_request += $('#myModal').find('.modal-body').find('#action').val();
-                    conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-                    submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
-                    selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
-                    $(selects).each(function (i) {
-                        var select = this;
-                        $(submitted_args).find("select").eq(i).val($(select).val());
-                        $('#config-viz-form').append(select);
-                    });
-                    $('#config-viz-form').empty();
-                    $('#config-viz-form').append(submitted_args);
-                    myData = $("#config-viz-form").serialize();
-                    viz_request += '?';
-                    viz_request += myData;
-                    viz_request += '&query=' + $('#myModal #selected_query').val();
-                    vis_created_flag = true;
-                    show_viz(viz_request, component_type);
+                    var chosen_viz = $(this).attr('data-viz-name');
+                    updateVariables(chosen_viz, component_id, component_type, component_selector, createPopover);
+                    // createPopover(component_id, component_type, component_selector, populate_selects(specific_viz_form_configuration));
                 }
-                else{
-                    conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-                    submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
-                    selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
-                    $(selects).each(function (i) {
-                        var select = this;
-                        $(submitted_args).find("select").eq(i).val($(select).val());
-                        $('#config-viz-form').append(select);
-                    });
-                    $('#config-viz-form').empty();
-                    $('#config-viz-form').append(submitted_args);
-                    myData = getFormData($("#config-viz-form"),layer_count,$('#myModal #selected_query').val());
-                    json=[];
-                    for (var i = 0; i < layer_json.length; i++) {
-                        var obj = layer_json[i];
-                        json.push({});
-                        for (var key in obj) {
-                            json[i][key] = obj[key];
-                        }
-                    }
-                    json.push(myData);
-                    if (first_time){
-                        mapVizUrlCreator(json, layer_count + 1, component_type);
-                    }
-                    else{
-                        first_time = false;
-                        mapVizUrlCreator(json, layer_count, component_type);
-                    }
-                };
-                vis_created_flag = true;
 
-            };
-            function mapVizUrlCreator(json,my_layer_count, comp_type){
-                var viz_request = "/visualizations/get_map_visualization/?";
-                viz_request += "layer_count="+String(my_layer_count)+"&";
-                var url="";
-                for (var i = 0; i < json.length; i++) {
-                    var obj =json[i];
-                    for (var key in obj) {
-                        url = url + "&" + (key)+obj['layer_id'] + "=" + (obj[key]);
-                    }
-                }
-                url = url.replace("&","");
-                viz_request += url;
-                show_viz(viz_request, comp_type);
-            }
-            function getFormData(form,count,query){
-                var unindexed_array = form.serializeArray();
-                var indexed_array = {};
-                $.map(unindexed_array, function(n, i){
-                    indexed_array[n['name']] = n['value'];
-                });
-                indexed_array['query'] = query;
-                indexed_array['layer_id'] = String(count);
-                indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000))+'layer'+String(count) ;
-                return indexed_array;
-            }
-            function show_viz(viz_request, comp_type) {
-                $("#viz_container").html('<div class="loadingFrame"><img src="' + img_source_path + '"/></div><iframe class="iframe-class" id="viz-iframe" ' +
-                    'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
-                    '></iframe>');
-
-
-                // $('#myModal #submit-modal-btn').show();
-                $("#myModal #viz_container .loadingFrame").css( "display", "block" );
-                $("#myModal #viz_container iframe").on( "load", function(){
-                    $(this).siblings(".loadingFrame").css( "display", "none" );
-                    var execution_flag = $(this).contents().find('.visualisation_execution_input').val();
-                    if ((execution_flag === 'success')&&(comp_type === 'map')&&(open_modal === true)){
-                        $('#add_layer_btn').parent().show();
-                        $('#layers-list').parent().show();
-                        $('#myModal #submit-modal-btn').show();
-                        var map_iframe = $(this).contents();
-                        map_iframe.find('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
-                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
-                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
-                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
-
-                    }
-                    else{
-                        $('#add_layer_btn').parent().hide();
-                        $('#layers-list').parent().hide();
-                        $('#myModal #submit-modal-btn').hide();
-                    }
-                });
-            }
-
-            $("#dismiss-modal-btn").click(function m(e) {
-                refresh_visualisation_modal();
-                $('#select_viz_popover').prop('disabled', true);
-                $('#select_conf_popover').prop('disabled', true);
-                // $('#myModal #viz_container').html('<div class="loadingFrame">' +
-                //     '                    <img src="' + img_source_path + '"/>' +
-                //     '                </div>');
             });
-
-            $("#myModal #submit-modal-btn").click(function () {
-                if (vis_created_flag!==false){
-                    refresh_visualisation_modal();
-                }else{
-                    alert('Please create a Visualisation first.')
-                }
-            });
-            $("#myModal #submit-note-btn").click(function () {
-                refresh_visualisation_modal();
-            });
-
-            function refresh_visualisation_modal(){
-                open_modal = false;
-                $('#layers-list ul').empty();
-                $("#query_name_span").text(null);
-                layer_count = 0;
-                layer_json = [];
-                selected_visualization = null;
-                first_time = true ;
-                vis_created_flag = false;
-                $('#myModal #viz_config #add_layer_btn').parent().hide();
-                $('#myModal #viz_config #layers-list').parent().hide();
-                $("#viz_config .list-group").children().each(function () {
-                    $(this).find("#selected_viz_span").hide();
-                });
-                $("#viz_config").find("ul").children().each(function (index) {
-                        $(this).removeClass('disabled');
-                });
-                $('.viz_item').popover('hide');
-                $('#myModal #viz_config .list-group').hide();
-                $('#myModal #viz_config #viz_container').hide();
-
-
-            }
-
-            function check_list(list){
-                flag = true;
-                for(var i=0; i<list.length; i++){
-                    if(list[i]===false){
-                        flag=false;
-                    }
-                }
-                return flag;
-            }
-
-            function limit_points(input, viz_conf, allow_submit, unit, parameter_id){
-                if (input.val()>=viz_conf['limit'] || input.val()<=0 || (input.val()==='')){
-                        if(allow_submit[parameter_id]===true) {
-                            $("<div class='conf-error-message limit_oob_message'>* Number of "+unit+" must be below " + String(viz_conf['limit']) + " and above 0.</div>").insertBefore("#select_conf_ok");
-                            $('#select_conf_ok').addClass('disabled');
-                        }
-                        allow_submit[parameter_id] = false;
-                    }else{
-                        allow_submit[parameter_id] = true;
-                        $('.limit_oob_message').remove();
-                        if(check_list(allow_submit)) {
-                            $('#select_conf_ok').removeClass('disabled');
-                        }
-                    }
-                return allow_submit
-            }
-
-
-            function missing_parameter(col_select, allow_submit,parameter_name,parameter_id){
-                if((col_select.val()=== null)||(col_select.val().length===0)){
-                        if(allow_submit[parameter_id]===true) {
-                            $('#select_conf_ok').addClass('disabled');
-                            $("<div class='conf-error-message "+parameter_name+"_missing_error'>* Selection of "+ parameter_name +" is required.</div>").insertBefore("#select_conf_ok");
-                        }
-                        allow_submit[parameter_id] = false;
-                    }
-                    else{
-                        allow_submit[parameter_id] = true;
-                        $('.'+parameter_name+'_missing_error').remove();
-                        if(check_list(allow_submit)){
-                            $('#select_conf_ok').removeClass('disabled');
-                        }
-                    }
-                return allow_submit
-            }
-
-
 
             function specific_viz_form_configuration(){
+
                 //AGGREGATE-VALUE
                 var allow_aggregate_value_submit = [true];
                 var aggregate_value_id = $('#viz_config ul li[data-viz-name="get_aggregate_value"]').attr('data-viz-id');
@@ -603,6 +174,18 @@ $("#select_data_popover").click(function () {
 
 
                 //DATA-TABLE
+                $('.popover-content #select_all_columns').parent().checkbox().first().checkbox({
+                    onChecked: function(){
+                        const options = $('.popover-content .columns-select #column_choice> option').toArray().map(
+                        (obj) => obj.value
+                      );
+                      $('.popover-content .columns-select #column_choice').dropdown('set exactly', options);
+                    },
+                    onUnchecked: function() {
+                      $('.popover-content .columns-select #column_choice').dropdown('clear');
+
+                    },
+                });
                 var allow_datatable_submit = [true];
                 var datatable_id = $('#viz_config ul li[data-viz-name="get_data_table"]').attr('data-viz-id');
                 var datatable_col_select = $('.popover-content #viz_'+datatable_id+' #column_choice');
@@ -727,6 +310,17 @@ $("#select_data_popover").click(function () {
 
 
                 //TIME SERIES
+                 $('.popover-content #use_existing_temp_res').parent().checkbox().first().checkbox({
+                    onChecked: function(){
+                        $('.popover-content #temporal_resolution').parent().addClass('disabled');
+                    },
+                    onUnchecked: function () {
+                        $('.popover-content #temporal_resolution').parent().removeClass('disabled');
+                    }
+                });
+                $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
+
+                // $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
                 var allow_time_series_submit = [true];
                 var time_series_id = $('#viz_config ul li[data-viz-name="get_time_series_am"]').attr('data-viz-id');
                 var time_series_checkbox = $('.popover-content #viz_'+time_series_id+' #use_existing_temp_res');
@@ -741,16 +335,38 @@ $("#select_data_popover").click(function () {
 
 
                 // PLOTLINE VESSEL COURSE
-                var allow_plotline_submit = [true];
+                var allow_plotline_submit = [true, true, true];
                 var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
                 var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
                 var plotline_platform_id_input = $('.popover-content #viz_'+ plotline_vessel_course_id+' #platform_id');
                 var viz_conf_plotline = viz_conf_json['visualiser']['map_plotline_vessel_course'];
+                var plotline_vessel_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id');
                 plotline_platform_id_input.val(' ');
                 plotline_vessel_course_input.val(viz_conf_plotline['default_points']);
                 plotline_vessel_course_input.on('input',function () {
                     allow_plotline_submit = limit_points(plotline_vessel_course_input,viz_conf_plotline,allow_plotline_submit,'positions',0);
                 });
+                aggregate_value_col_select.parent().dropdown('clear');
+                var plotline_vessel_col_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id-columns-select');
+                plotline_vessel_col_id_select.on('change', function(){
+                    allow_plotline_submit = missing_parameter(plotline_vessel_col_id_select, allow_plotline_submit, 'Vessel-ID-Column',1 )
+                    if ((plotline_vessel_col_id_select.val()!== '')&&(plotline_vessel_col_id_select.val()!==null)){
+                        plotline_vessel_id_select.parent().removeClass('disabled');
+                        plotline_vessel_id_select.find('option').remove();
+                        $('.vessel-id-select option[data-type="'+ String(plotline_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+                        plotline_vessel_id_select.parent().dropdown('clear');
+                    }else{
+                        plotline_vessel_id_select.find('option').remove();
+                        plotline_vessel_id_select.parent().dropdown('clear');
+                        plotline_vessel_id_select.parent().addClass('disabled');
+                    }
+                });
+                plotline_vessel_col_id_select.parent().dropdown('clear');
+                plotline_vessel_id_select.on('change', function(){
+                    allow_plotline_submit = missing_parameter(plotline_vessel_id_select, allow_plotline_submit, 'Vessel-ID', 2 )
+                });
+                plotline_vessel_id_select.parent().dropdown('clear');
+                plotline_vessel_id_select.parent().addClass('disabled');
 
 
                 //CONTOURS
@@ -782,14 +398,15 @@ $("#select_data_popover").click(function () {
 
 
                 //HEATMAP
-                var allow_heatmap_submit = [true,true];
+                // var allow_heatmap_submit = [true,true];
+                var allow_heatmap_submit = [true];
                 var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
-                var heatmap_points_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
+                // var heatmap_points_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
                 var viz_conf_heatmap = viz_conf_json['visualiser']['map_heatmap'];
-                heatmap_points_input.val(viz_conf_heatmap['default_points']);
-                heatmap_points_input.on('input',function () {
-                    allow_heatmap_submit = limit_points(heatmap_points_input, viz_conf_heatmap, allow_heatmap_submit, 'points',1);
-                });
+                // heatmap_points_input.val(viz_conf_heatmap['default_points']);
+                // heatmap_points_input.on('input',function () {
+                //     allow_heatmap_submit = limit_points(heatmap_points_input, viz_conf_heatmap, allow_heatmap_submit, 'points',1);
+                // });
                 var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
                 heatmap_col_select.append('<option value="heatmap_frequency">Frequency</option>');
                 heatmap_col_select.on('change',function () {
@@ -800,26 +417,85 @@ $("#select_data_popover").click(function () {
 
 
                  //MAP MARKERS VESSEL COURSE
-                var allow_markers_vessel_submit = [true,true];
+                var markers_checkbox_flag = false;
+                var allow_markers_vessel_submit = [true, true, true, true, true];
+                 $('.popover-content #use_color_column').parent().checkbox().first().checkbox({
+                    onChecked: function(){
+                        $('.popover-content #color_var').parent().removeClass('disabled');
+                        markers_checkbox_flag = true;
+                        allow_markers_vessel_submit = missing_parameter(markers_vessel_color_var, allow_markers_vessel_submit, 'color-column', 4);
+
+                    },
+                    onUnchecked: function () {
+                        $('.popover-content #color_var').parent().addClass('disabled');
+                        $('.popover-content #color_var').dropdown('clear');
+                        markers_checkbox_flag = false;
+                        allow_markers_vessel_submit[4] = true;
+                        $('.color-column_missing_error').remove();
+
+                        var flag = true;
+                        for (var el=0; el<allow_markers_vessel_submit.length;el++){
+                            if (allow_markers_vessel_submit[el]===false){
+                                flag = false;
+                            }
+                        }
+                        if (flag=== true){
+                            $('#select_conf_ok').removeClass('disabled');
+                        }
+
+                    }
+                });
                 var markers_vessel_id = $('#viz_config ul li[data-viz-name="get_map_markers_vessel_course"]').attr('data-viz-id');
                 var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
-                var markers_platform_id_input = $('.popover-content #viz_'+ markers_vessel_id+' #platform_id');
-                markers_platform_id_input.val(' ');
                 var viz_conf_markers_vessel = viz_conf_json['visualiser']['map_markers_vessel_course'];
+                var markers_vessel_col_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-columns-select');
+                var markers_vessel_col_select = $('.popover-content #viz_'+markers_vessel_id+' #variable');
+                var markers_vessel_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id');
                 markers_vessel_input.val(viz_conf_markers_vessel['default_points']);
                 markers_vessel_input.on('input',function () {
                     allow_markers_vessel_submit = limit_points(markers_vessel_input,viz_conf_markers_vessel,allow_markers_vessel_submit,'markers',1)
                 });
-                var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var').parent();
-                markers_vessel_color_var.find('option[value= "i0_platform_id"]').remove();
+                var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var');
+                markers_vessel_color_var.find('option[value= "i0_longitude"]').remove();
+                markers_vessel_color_var.find('option[value= "i0_latitude"]').remove();
+                markers_vessel_color_var.find('option[value= "i0_time"]').remove();
                 $('.popover-content #color_var').parent().addClass('disabled');
-
-                var markers_vessel_col_select = $('.popover-content #viz_'+markers_vessel_id+' #variable');
+                markers_vessel_color_var.on('change',function () {
+                    if (markers_checkbox_flag) {
+                        allow_markers_vessel_submit = missing_parameter(markers_vessel_color_var, allow_markers_vessel_submit, 'color-column', 4);
+                    }
+                });
+                markers_vessel_color_var.dropdown('clear');
                 markers_vessel_col_select.on('change',function () {
                     allow_markers_vessel_submit = missing_parameter(markers_vessel_col_select, allow_markers_vessel_submit,'variable',0);
                 });
                 markers_vessel_col_select.dropdown('refresh');
                 markers_vessel_col_select.parent().dropdown('clear');
+
+
+                markers_vessel_col_id_select.on('change', function(){
+                    allow_markers_vessel_submit = missing_parameter(markers_vessel_col_id_select, allow_markers_vessel_submit, 'Vessel-ID-Column',2 )
+                    if ((markers_vessel_col_id_select.val()!== '')&&(markers_vessel_col_id_select.val()!==null)){
+                        markers_vessel_id_select.parent().removeClass('disabled');
+                        markers_vessel_id_select.find('option').remove();
+                        $('.vessel-id-select option[data-type="'+ String(markers_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+                    }else{
+                        $('.popover-content #vessel-id').append('<option value=1>test</option>');
+                        setTimeout(function() {
+                            markers_vessel_id_select.dropdown('set selected',markers_vessel_id_select.find('option').val());
+                            markers_vessel_id_select.parent().dropdown('clear');
+                            markers_vessel_id_select.find('option').remove();
+                            markers_vessel_id_select.parent().addClass('disabled');
+                        }, 20);
+                    }
+                });
+                markers_vessel_col_id_select.parent().dropdown('clear');
+                markers_vessel_id_select.on('change', function(){
+                    allow_markers_vessel_submit = missing_parameter(markers_vessel_id_select, allow_markers_vessel_submit, 'Vessel-ID', 3 )
+                });
+
+
+
 
 
                  //MAP MARKERS GRID
@@ -838,7 +514,470 @@ $("#select_data_popover").click(function () {
                 });
                 markers_grid_col_select.dropdown('refresh');
                 markers_grid_col_select.parent().dropdown('clear');
+
             }
+
+            function createPopover(component_id, component_type, component_selector){
+                $(component_selector).on("hidden.bs.popover", function(e) {
+                    $(".viz_item").removeClass('waiting-disable');
+                    selected_val = null;
+                    var_list = null;
+                    var_select = null;
+                    col_select = null;
+                    flag = false;
+                    var selects_in_popover = '.popover-content #viz_' + component_id;
+                    $(selects_in_popover).remove();
+                    $(component_selector).popover('destroy');
+
+                });
+                $(component_selector).on("shown.bs.popover", function(e) {
+                    $(".viz_item").removeClass('waiting-disable');
+                    populate_selects(specific_viz_form_configuration);
+                });
+                $(component_selector).popover('show');
+                var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
+                var viz_info_text = "";
+                $(popover_component).find('label.form_field_info').each(function () {
+                    viz_info_text = viz_info_text + "\n-"+$(this).text()+": " + $(this).attr('title');
+                });
+                $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
+
+
+                // setTimeout(function () {
+                //     specific_viz_form_configuration();
+                // },150);
+
+
+
+                var popver_id = '#' + $(component_selector).attr('aria-describedby');
+                $(popver_id + ' #select_conf_ok').click(function (e) {
+                    open_modal=true;
+                    selected_visualization = $(component_selector).text();
+                    $("#viz_config .list-group").children().each(function () {
+                        $(this).find("#selected_viz_span").hide();
+                    })
+                    $(component_selector).find("#selected_viz_span").show();
+
+                    submit_conf(component_selector, component_type);
+                    $(component_selector).popover("hide");
+                });
+                $(popver_id + ' #select_conf_cancel').click(function (e) {
+                    $(component_selector).popover("hide");
+                });
+
+            }
+
+            function updateVariables(chosen_viz,component_id, component_type, component_selector,_callback){
+                $('#myModal .variable-select').find('option').remove();
+                $('#myModal .variables-select ').find('option').remove();
+                $('#myModal .column-select ').find('option').remove();
+                $('#myModal .columns-select ').find('option').remove();
+                $('#myModal .variable-numeric-select').find('option').remove();
+                $('#myModal .variables-numeric-select ').find('option').remove();
+                $('#myModal .column-numeric-select ').find('option').remove();
+                $('#myModal .columns-numeric-select ').find('option').remove();
+                $('#myModal .vessel-id-columns-select ').find('option').remove();
+                $('#myModal .vessel-id-select ').find('option').remove();
+                $('#myModal .ais-select ').find('option').remove();
+                var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
+                var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
+                var variables_numeric_content = '';
+                var dimensions_numeric_content = '';
+                $.each($('#query-variables-select-container #'+String(new_query_id)).find('option'), function (i, el) {
+                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")  || ($(el).data('datatype') === "DOUBLE")  || ($(el).data('datatype') === "BYTE")){
+                        variables_numeric_content += $(el).prop('outerHTML');
+                    }
+                });
+                $.each($('#query-dimensions-select-container #'+String(new_query_id)).find('option'), function (i, el) {
+                    if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")  || ($(el).data('datatype') === "DOUBLE")  || ($(el).data('datatype') === "BYTE")){
+                        dimensions_numeric_content += $(el).prop('outerHTML');
+                    }
+                });
+                // var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
+                $('#myModal .variable-select ').html(variables_content);
+                $('#myModal .variables-select ').html(variables_content);
+                $('#myModal .column-select ').html(variables_content + dimensions_content);
+                $('#myModal .columns-select ').html(variables_content + dimensions_content);
+                $('#myModal .variable-numeric-select ').html(variables_numeric_content);
+                $('#myModal .variables-numeric-select ').html(variables_numeric_content);
+                $('#myModal .column-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
+                $('#myModal .columns-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
+                // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
+                if((chosen_viz ==='get_map_plotline_vessel_course')||(chosen_viz==='get_map_markers_vessel_course')) {
+                    $(".viz_item").addClass('waiting-disable');
+                    $.ajax({
+                        "type": "GET",
+                        "url": "/visualizations/get_vessel_ids_info/" + String(new_query_id) + "/",
+                        "success": function (result) {
+                            console.log(result);
+                            $.each(result, function (col_name, values_list) {
+                                $('#myModal .vessel-id-columns-select').append("<option value='" + col_name + "'>" + col_name + "</option>");
+                                $.each(values_list, function (_, id_value) {
+                                    $('#myModal .vessel-id-select').append("<option data-type='"+ String(col_name) +"' value='" + id_value + "'>" + id_value + "</option>");
+                                });
+                            });
+                        },
+                        "error": function () {
+                            console.log('error getting vessel identifiers');
+                        },
+                        "complete": function (data) {
+                            _callback(component_id, component_type, component_selector);
+                        }
+                    });
+                }else{
+                    _callback(component_id, component_type, component_selector);
+                }
+
+            }
+            function populate_selects(_mycallback){
+
+
+                 $(".popover-content .variable-select").dropdown({
+                        clearable: true,
+                        placeholder: 'Select a Variable',
+                    });
+                $(".popover-content .variable-select").dropdown('clear');
+
+                $(".popover-content .column-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select a Variable or Dimension',
+
+                });
+                $(".popover-content .column-select").dropdown('clear');
+                $(".popover-content .variables-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select Variable(s)',
+                });
+
+                $(".popover-content .columns-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select Variables or Dimensions',
+                });
+
+                $(".popover-content .variable-numeric-select").dropdown({
+                        clearable: true,
+                        placeholder: 'Select a Variable',
+                    });
+                $(".popover-content .variable-numeric-select").dropdown('clear');
+
+                $(".popover-content .column-numeric-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select a Variable or Dimension',
+
+                });
+                $(".popover-content .column-numeric-select").dropdown('clear');
+                $(".popover-content .variables-numeric-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select Variable(s)',
+                });
+
+                 $(".popover-content .columns-numeric-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select Variables or Dimensions',
+                });
+
+                $(".popover-content .vessel-id-columns-select").dropdown({
+                    clearable: true,
+                    placeholder: 'Select the column to use as vessel identifier',
+                });
+
+                $(".popover-content .vessel-id").dropdown({
+                    clearable: true,
+                    placeholder: 'Select the vessel identifier',
+                });
+
+
+                $(".popover-content .aggregate-select").dropdown({
+                    placeholder: 'Select an Aggregate Function'
+                });
+                $(".popover-content .aggregate-select").dropdown('restore defaults');
+
+                $(".popover-content .select-select").dropdown({
+                    placeholder: 'Select an Option'
+                });
+                $(".popover-content .select-select").dropdown('restore defaults');
+
+                $(".popover-content .dataset-argument-select").dropdown({
+                    placeholder: 'Select one of the chosen arguments'
+                });
+                $(".popover-content .dataset-argument-select").dropdown('restore defaults');
+
+                $(".control-label").css("margin-bottom","3px");
+
+                $(".popover-content .column-select").dropdown('setting','onChange',function () {
+                    selected_val = $(".popover-content .column-select").dropdown('get value');
+                    var_list = $(".popover-content .variables-select").dropdown('get value');
+                    var_select = $(".popover-content .variable-select").dropdown('get value');
+                    if (((jQuery.inArray(selected_val,var_list)!== -1)||(selected_val===var_select))&&(selected_val!=='') && (selected_val!=null)){
+                        alert('Please choose a variable or dimension that is not already in use.');
+                        $(".popover-content .column-select").dropdown('clear');
+                        selected_val = null;
+                        col_select = null;
+                    }
+                 });
+
+                $(".popover-content .variable-select").dropdown('setting','onChange',function () {
+                    selected_val = $(".popover-content .variable-select").dropdown('get value');
+                    var_list = $(".popover-content .variables-select").dropdown('get value');
+                    col_select = $(".popover-content .column-select").dropdown('get value');
+                    if (((jQuery.inArray(selected_val,var_list)!== -1)||(selected_val===col_select)) &&(selected_val!=='') && (selected_val!=null)){
+                        alert('Please choose a variable that is not already in use.');
+                        $(".popover-content .variable-select").dropdown('clear');
+                        selected_val = null;
+                        var_select = null;
+                    }
+                 });
+
+                $(".popover-content .variables-select").dropdown('setting','onChange',function () {
+                    selected_val = $(".popover-content .variables-select").dropdown('get value');
+                    var_select = $(".popover-content .variable-select").dropdown('get value');
+                    col_select = $(".popover-content .column-select").dropdown('get value');
+                    flag = false;
+                    if (selected_val!==null && selected_val!=='' && selected_val!==undefined) {
+                        var limit = selected_val.length
+                        for (var i = 0; i < limit; i++) {
+                            if (selected_val[i] === var_select) {
+                                $(".popover-content .variable-select").dropdown('clear');
+                                flag = true;
+                                selected_val = null;
+                                var_select = null;
+                            }
+                            if (selected_val[i] === col_select) {
+                                $(".popover-content .column-select").dropdown('clear');
+                                flag = true;
+                                selected_val = null;
+                                col_select = null;
+                            }
+                        }
+                        if ((selected_val !== '') && (selected_val !== null) && flag) {
+                            alert('Please choose a variable that is not already in use.');
+                        }
+                    }
+                 })
+                _mycallback();
+
+            }
+
+            function submit_conf(component_selector,component_type) {
+                var conf_popover_id;
+                var submitted_args;
+                var selects;
+                var myData;
+                $('#add_layer_btn').parent().hide();
+                $('#layers-list').parent().hide();
+                $('#myModal #submit-modal-btn').hide();
+                if(component_type!='map') {
+                    var viz_request = "/visualizations/";
+                    viz_request += $('#myModal').find('.modal-body').find('#action').val();
+                    conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+                    submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
+                    selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
+                    $(selects).each(function (i) {
+                        var select = this;
+                        $(submitted_args).find("select").eq(i).val($(select).val());
+                        $('#config-viz-form').append(select);
+                    });
+                    $('#config-viz-form').empty();
+                    $('#config-viz-form').append(submitted_args);
+                    myData = $("#config-viz-form").serialize();
+                    viz_request += '?';
+                    viz_request += myData;
+                    viz_request += '&query=' + $('#myModal #selected_query').val();
+                    vis_created_flag = true;
+                    show_viz(viz_request, component_type);
+                }
+                else{
+                    conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+                    submitted_args = $('#myModal').find(conf_popover_id).find('.popover-content').clone();
+                    selects = $('#myModal').find(conf_popover_id).find('.popover-content').find("select");
+                    $(selects).each(function (i) {
+                        var select = this;
+                        $(submitted_args).find("select").eq(i).val($(select).val());
+                        $('#config-viz-form').append(select);
+                    });
+                    $('#config-viz-form').empty();
+                    $('#config-viz-form').append(submitted_args);
+                    myData = getFormData($("#config-viz-form"),layer_count,$('#myModal #selected_query').val());
+                    json=[];
+                    for (var i = 0; i < layer_json.length; i++) {
+                        var obj = layer_json[i];
+                        json.push({});
+                        for (var key in obj) {
+                            json[i][key] = obj[key];
+                        }
+                    }
+                    json.push(myData);
+                    if (first_time){
+                        mapVizUrlCreator(json, layer_count + 1, component_type);
+                    }
+                    else{
+                        first_time = false;
+                        mapVizUrlCreator(json, layer_count, component_type);
+                    }
+                };
+                vis_created_flag = true;
+
+            };
+            function mapVizUrlCreator(json,my_layer_count, comp_type){
+                var viz_request = "/visualizations/get_map_visualization/?";
+                viz_request += "layer_count="+String(my_layer_count)+"&";
+                var url="";
+                for (var i = 0; i < json.length; i++) {
+                    var obj =json[i];
+                    for (var key in obj) {
+                        if (key.includes('[]')){
+                            for (var jcount = 0; jcount<obj[key].length; jcount++) {
+                                url = url + "&" + (key.replace('[]', '')) + obj['layer_id'] + "[]" + "=" + (obj[key][jcount]);
+                            }
+                        }else {
+                            url = url + "&" + (key) + obj['layer_id'] + "=" + (obj[key]);
+                        }
+                    }
+                }
+                url = url.replace("&","");
+                viz_request += url;
+                show_viz(viz_request, comp_type);
+            }
+            function getFormData(form,count,query){
+                var unindexed_array = form.serializeArray();
+                var indexed_array = {};
+                $.map(unindexed_array, function(n, i){
+                    if(n['name'].includes('[]')){
+                        if(indexed_array.hasOwnProperty(n['name'])){
+                            indexed_array[n['name']].push(n['value']);
+                        }else{
+                            indexed_array[n['name']] = [n['value']];
+                        }
+                    }else {
+                        indexed_array[n['name']] = n['value'];
+                    }
+                });
+                indexed_array['query'] = query;
+                indexed_array['layer_id'] = String(count);
+                indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000))+'layer'+String(count) ;
+                return indexed_array;
+            }
+            function show_viz(viz_request, comp_type) {
+                $("#viz_container").html('<div class="loadingFrame"><img src="' + img_source_path + '"/></div><iframe class="iframe-class" id="viz-iframe" ' +
+                    'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
+                    '></iframe>');
+
+
+                // $('#myModal #submit-modal-btn').show();
+                $("#myModal #viz_container .loadingFrame").css( "display", "block" );
+                $("#myModal #viz_container iframe").on( "load", function(){
+                    $(this).siblings(".loadingFrame").css( "display", "none" );
+                    var execution_flag = $(this).contents().find('.visualisation_execution_input').val();
+                    if ((execution_flag === 'success')&&(comp_type === 'map')&&(open_modal === true)){
+                        $('#add_layer_btn').parent().show();
+                        $('#layers-list').parent().show();
+                        $('#myModal #submit-modal-btn').show();
+                        var map_iframe = $(this).contents();
+                        map_iframe.find('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
+                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
+                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
+                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
+
+                    }
+                    else{
+                        $('#add_layer_btn').parent().hide();
+                        $('#layers-list').parent().hide();
+                        $('#myModal #submit-modal-btn').hide();
+                    }
+                });
+            }
+
+            $("#dismiss-modal-btn").click(function m(e) {
+                refresh_visualisation_modal();
+                $('#select_viz_popover').prop('disabled', true);
+                $('#select_conf_popover').prop('disabled', true);
+                // $('#myModal #viz_container').html('<div class="loadingFrame">' +
+                //     '                    <img src="' + img_source_path + '"/>' +
+                //     '                </div>');
+            });
+
+            $("#myModal #submit-modal-btn").click(function () {
+                if (vis_created_flag!==false){
+                    refresh_visualisation_modal();
+                }else{
+                    alert('Please create a Visualisation first.')
+                }
+            });
+            $("#myModal #submit-note-btn").click(function () {
+                refresh_visualisation_modal();
+            });
+
+            function refresh_visualisation_modal(){
+                open_modal = false;
+                $('#layers-list ul').empty();
+                $("#query_name_span").text(null);
+                layer_count = 0;
+                layer_json = [];
+                selected_visualization = null;
+                first_time = true ;
+                vis_created_flag = false;
+                $('#myModal #viz_config #add_layer_btn').parent().hide();
+                $('#myModal #viz_config #layers-list').parent().hide();
+                $("#viz_config .list-group").children().each(function () {
+                    $(this).find("#selected_viz_span").hide();
+                });
+                $("#viz_config").find("ul").children().each(function (index) {
+                        $(this).removeClass('disabled');
+                });
+                $('.viz_item').popover('hide');
+                $('#myModal #viz_config .list-group').hide();
+                $('#myModal #viz_config #viz_container').hide();
+
+
+            }
+
+            function check_list(list){
+                flag = true;
+                for(var i=0; i<list.length; i++){
+                    if(list[i]===false){
+                        flag=false;
+                    }
+                }
+                return flag;
+            }
+
+            function limit_points(input, viz_conf, allow_submit, unit, parameter_id){
+                if (input.val()>viz_conf['limit'] || input.val()<=0 || (input.val()==='')){
+                        if(allow_submit[parameter_id]===true) {
+                            $("<div class='conf-error-message limit_oob_message'>* Number of "+unit+" must be below " + String(viz_conf['limit']) + " and above 0.</div>").insertBefore("#select_conf_ok");
+                            $('#select_conf_ok').addClass('disabled');
+                        }
+                        allow_submit[parameter_id] = false;
+                    }else{
+                        allow_submit[parameter_id] = true;
+                        $('.limit_oob_message').remove();
+                        if(check_list(allow_submit)) {
+                            $('#select_conf_ok').removeClass('disabled');
+                        }
+                    }
+                return allow_submit
+            }
+
+
+            function missing_parameter(col_select, allow_submit,parameter_name,parameter_id){
+                if((col_select.val()=== null)||(col_select.val().length===0)){
+                        if(allow_submit[parameter_id]===true) {
+                            $('#select_conf_ok').addClass('disabled');
+                            $("<div class='conf-error-message "+parameter_name+"_missing_error'>* Selection of "+ parameter_name +" is required.</div>").insertBefore("#select_conf_ok");
+                        }
+                        allow_submit[parameter_id] = false;
+                    }
+                    else{
+                        allow_submit[parameter_id] = true;
+                        $('.'+parameter_name+'_missing_error').remove();
+                        if(check_list(allow_submit)){
+                            $('#select_conf_ok').removeClass('disabled');
+                        }
+                    }
+                return allow_submit
+            }
+
+
         });
 
 
