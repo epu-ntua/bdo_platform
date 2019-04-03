@@ -865,8 +865,8 @@ def create_livy_session(notebook_id):
 
     data = { 'kind': 'pyspark',
              'jars': ['/user/livy/jars/postgresql-42.2.2.jar', '/user/livy/jars/presto-jdbc-0.213.jar'],
-             'driverMemory': '2g',
-             'driverCores': 2,
+             'driverMemory': '512m',
+             'driverCores': 1,
              'numExecutors': 1,
              'executorMemory': '2g',
              'executorCores': 2,
