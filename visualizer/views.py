@@ -296,11 +296,11 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
                     if s['aggregate'] == '':
                         s['aggregate'] = 'round2'
                     lon_flag = True
-            elif (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
-                # s['exclude'] = True
+            elif (s['name'].split('_', 1)[1] == 'time'):
+                s['exclude'] = True
                 s['groupBy'] = False
                 # if s['aggregate'] == '':
-                s['aggregate'] = 'MAX'
+                # s['aggregate'] = 'MAX'
             else:
                 if s['datatype'] == 'STRING':
                     s['aggregate'] = 'MIN'
@@ -2333,9 +2333,9 @@ def get_histogram_chart_am(request):
         bins -= 1
         if where_clause == '':
             raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
-                        histogram as (select width_bucket({0}, min, max, {2}) ,
-                         (min({0}), max({0})) as range,
-                         count(*) as freq from {1} {4}, drb_stats {3} where {0} IS NOT NULL
+                        histogram as (select width_bucket({{5}.0}, min, max, {2}) ,
+                         (min({5}.{0}), max({5}.{0})) as range,
+                         count(*) as freq from {1} {4}, drb_stats {3} where {5}.{0} IS NOT NULL
     
                          group by 1
                          order by 1)
@@ -2343,9 +2343,9 @@ def get_histogram_chart_am(request):
                         from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
         else:
             raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
-                                histogram as (select width_bucket({0}, min, max, {2}) ,
-                                 (min({0}), max({0})) as range,
-                                 count(*) as freq from {1} {4}, drb_stats {3} AND {0} IS NOT NULL
+                                histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
+                                 (min({5}.{0}), max({5}.{0})) as range,
+                                 count(*) as freq from {1} {4}, drb_stats {3} AND {5}.{0} IS NOT NULL
 
                                  group by 1
                                  order by 1)
