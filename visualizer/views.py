@@ -333,7 +333,7 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, ves
                 order_var = s['name']
                 s['groupBy'] = True
                 if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_'
+                    s['aggregate'] = 'date_trunc_hour'
                 time_flag = True
             elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
@@ -2971,7 +2971,6 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
     query.document = doc
     return query
 
-
 def load_modify_query_aggregate(query_pk, var, agg_function):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
@@ -2983,13 +2982,14 @@ def load_modify_query_aggregate(query_pk, var, agg_function):
                 s['exclude'] = False
                 s['aggregate'] = agg_function
             else:
-                s['aggregate'] = ''
+                # s['aggregate'] = ''
                 s['groupBy'] = False
                 s['exclude'] = True
         doc['orderings'] = []
 
     query.document = doc
     return query
+
 
 
 
