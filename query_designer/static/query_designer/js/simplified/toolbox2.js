@@ -879,74 +879,135 @@ $(function () {
                     url = '/queries/simplified/filter-info/dimension/' + chosenFilter + '/'
                 }
 
+                // INSTEAD OF CALLING THE BACK-END
+                var data = {'type': 'text'};
+                var $input,
+                    $filterOperand = $('#new-filter-operator'),
+                    opSelector = 'option[value="<"], option[value="<="], option[value=">"], option[value=">="]';
+
+                if (data.options) {
+                    $input = $('<select name="new-filter-value" />');
+                    $.each(data.options, function (idx, option) {
+                        var val = option.value;
+                        if (typeof(val) === 'string') {
+                            val = "'" + val + "'";
+                        }
+
+                        $input.append('<option value="' + val + '">' + option.name + '</option>');
+                    });
+
+                    // update operands
+                    $filterOperand.select2()
+                }
+
+                else if (data.type === 'number') {
+                    $input = $('<input type="number" name="new-filter-value" />');
+                }
+                else {
+                    $input = $('<input type="text" name="new-filter-value" />');
+                }
+                if($filterOperand.val() === "not_null"){
+                    $input.val("");
+                    $input.prop("readonly", true);
+                    $input.css({"display": "none"});
+                }
+                else{
+                    $input.val("");
+                    $input.prop("readonly", false);
+                    $input.css({"display": "block"});
+                }
+
+                // enable/disable operators
+                if (data.orderable) {
+                    $filterOperand.find(opSelector).removeAttr('disabled');
+                } else {
+                    $filterOperand.find(opSelector).attr('disabled', 'disabled');
+                }
+                $filterOperand.select2();
+
+                $inputContainer.append($input);
+                if (data.options) {
+                    $input.select2();
+                }
+
+                // show help message
+                var message = '';
+                if (data.orderable && (typeof(data.min) !== 'undefined')) {
+                    message += 'Minimum value: ' + String(data.min)
+                }
+                if (data.orderable && (typeof(data.min) !== 'undefined')) {
+                    message += 'Maximum value: ' + String(data.max)
+                }
+                $info.text(message);
+
                 // get options, comparison type & input type from the backend
-                $.ajax({
-                    url: url,
-                    type: 'GET',
-                    success: function (data) {
-                        var $input,
-                            $filterOperand = $('#new-filter-operator'),
-                            opSelector = 'option[value="<"], option[value="<="], option[value=">"], option[value=">="]';
-
-                        if (data.options) {
-                            $input = $('<select name="new-filter-value" />');
-                            $.each(data.options, function (idx, option) {
-                                var val = option.value;
-                                if (typeof(val) === 'string') {
-                                    val = "'" + val + "'";
-                                }
-
-                                $input.append('<option value="' + val + '">' + option.name + '</option>');
-                            });
-
-                            // update operands
-                            $filterOperand.select2()
-                        }
-
-                        else if (data.type === 'number') {
-                            $input = $('<input type="number" name="new-filter-value" />');
-                        }
-                        else {
-                            $input = $('<input type="text" name="new-filter-value" />');
-                        }
-                        if($filterOperand.val() === "not_null"){
-                            $input.val("");
-                            $input.prop("readonly", true);
-                            $input.css({"display": "none"});
-                        }
-                        else{
-                            $input.val("");
-                            $input.prop("readonly", false);
-                            $input.css({"display": "block"});
-                        }
-
-                        // enable/disable operators
-                        if (data.orderable) {
-                            $filterOperand.find(opSelector).removeAttr('disabled');
-                        } else {
-                            $filterOperand.find(opSelector).attr('disabled', 'disabled');
-                        }
-                        $filterOperand.select2();
-
-                        $inputContainer.append($input);
-                        if (data.options) {
-                            $input.select2();
-                        }
-
-                        // show help message
-                        var message = '';
-                        if (data.orderable && (typeof(data.min) !== 'undefined')) {
-                            message += 'Minimum value: ' + String(data.min)
-                        }
-                        if (data.orderable && (typeof(data.min) !== 'undefined')) {
-                            message += 'Maximum value: ' + String(data.max)
-                        }
-                        $info.text(message);
-                    },
-                    error: function (xhr, status, error) {
-                        console.log(error)
-                    }
-                });
+                // $.ajax({
+                //     url: url,
+                //     type: 'GET',
+                //     success: function (data) {
+                //         var $input,
+                //             $filterOperand = $('#new-filter-operator'),
+                //             opSelector = 'option[value="<"], option[value="<="], option[value=">"], option[value=">="]';
+                //
+                //         if (data.options) {
+                //             $input = $('<select name="new-filter-value" />');
+                //             $.each(data.options, function (idx, option) {
+                //                 var val = option.value;
+                //                 if (typeof(val) === 'string') {
+                //                     val = "'" + val + "'";
+                //                 }
+                //
+                //                 $input.append('<option value="' + val + '">' + option.name + '</option>');
+                //             });
+                //
+                //             // update operands
+                //             $filterOperand.select2()
+                //         }
+                //
+                //         else if (data.type === 'number') {
+                //             $input = $('<input type="number" name="new-filter-value" />');
+                //         }
+                //         else {
+                //             $input = $('<input type="text" name="new-filter-value" />');
+                //         }
+                //         if($filterOperand.val() === "not_null"){
+                //             $input.val("");
+                //             $input.prop("readonly", true);
+                //             $input.css({"display": "none"});
+                //         }
+                //         else{
+                //             $input.val("");
+                //             $input.prop("readonly", false);
+                //             $input.css({"display": "block"});
+                //         }
+                //
+                //         // enable/disable operators
+                //         if (data.orderable) {
+                //             $filterOperand.find(opSelector).removeAttr('disabled');
+                //         } else {
+                //             $filterOperand.find(opSelector).attr('disabled', 'disabled');
+                //         }
+                //         $filterOperand.select2();
+                //
+                //         $inputContainer.append($input);
+                //         if (data.options) {
+                //             $input.select2();
+                //         }
+                //
+                //         // show help message
+                //         var message = '';
+                //         if (data.orderable && (typeof(data.min) !== 'undefined')) {
+                //             message += 'Minimum value: ' + String(data.min)
+                //         }
+                //         if (data.orderable && (typeof(data.min) !== 'undefined')) {
+                //             message += 'Maximum value: ' + String(data.max)
+                //         }
+                //         $info.text(message);
+                //     },
+                //     error: function (xhr, status, error) {
+                //         console.log(error)
+                //     }
+                // });
             },
 
             addFilter: function () {
