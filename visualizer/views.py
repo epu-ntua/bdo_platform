@@ -2319,27 +2319,38 @@ def get_histogram_chart_am(request):
             where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
         except:
             where_clause = ''
+
+        try:
+            join_clause = ' JOIN ' + str(raw.split("JOIN")[1].split('WHERE')[0].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
+        except:
+            join_clause = ''
+
+        initial_from_table = from_table
+        if join_clause != '':
+            if join_clause.split('JOIN')[1].split('ON')[0].strip() == from_table:
+                from_table = raw.split("FROM")[2].split('JOIN')[0].strip()
+
         bins -= 1
         if where_clause == '':
-            raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
+            raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
                         histogram as (select width_bucket({0}, min, max, {2}) ,
                          (min({0}), max({0})) as range,
-                         count(*) as freq from {1}, drb_stats {3} where {0} IS NOT NULL
+                         count(*) as freq from {1} {4}, drb_stats {3} where {0} IS NOT NULL
     
                          group by 1
                          order by 1)
                         select range, freq
-                        from histogram""".format(table_col, from_table, bins, where_clause)
+                        from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
         else:
-            raw_query = """with drb_stats as (select min({0}) as min, max({0}) as max from {1} {3}),
+            raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
                                 histogram as (select width_bucket({0}, min, max, {2}) ,
                                  (min({0}), max({0})) as range,
-                                 count(*) as freq from {1}, drb_stats {3} AND {0} IS NOT NULL
+                                 count(*) as freq from {1} {4}, drb_stats {3} AND {0} IS NOT NULL
 
                                  group by 1
                                  order by 1)
                                 select range, freq
-                                from histogram""".format(table_col, from_table, bins, where_clause)
+                                from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
         # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
         print raw_query
         # result = execute_query_method(query)[0]
