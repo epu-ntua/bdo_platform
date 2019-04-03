@@ -3229,7 +3229,7 @@ def get_pie_chart_am(request):
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
 
-    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': y_var_title_list[0],'category_title':key_var_title, 'agg_function': agg_function.capitalize(), 'unit':y_m_unit[0]})
+    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title).replace("\n", " "), 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
 
 
 
