@@ -906,6 +906,7 @@ $(document).ready(function() {
 
         var lat = $('#lat').val();
         var lng = $("#lon").val();
+        var depth = $("#depth").val();
         var oil_volume = $("#oil_volume").val();
         var oil_density = $("#oil_density").val();
         var time_interval = $("#time_interval").val();
@@ -934,6 +935,17 @@ $(document).ready(function() {
 
             var wave_dataset = $("#sel1").val();
             var hd_dataset = $("#sel2").val();
+
+            if(typeof wave_dataset === 'undefined'){
+                wave_dataset = '201'
+            }
+            if(typeof hd_dataset === 'undefined'){
+                hd_dataset = '001'
+            }
+
+            if(typeof depth === 'undefined'){
+                depth = '0'
+            }
 
             var natura_layer = $('input[name="natura_checkbox"]:checked').length > 0;
             var ais_layer = $('input[name="ais_checkbox"]:checked').length > 0;
@@ -973,7 +985,8 @@ $(document).ready(function() {
                 "&wave_model=" + wave_dataset +
                 "&hd_model=" + hd_dataset +
                 "&natura_layer=" + natura_layer +
-                "&ais_layer=" + ais_layer;
+                "&ais_layer=" + ais_layer +
+                "&depth=" + depth;
 
 
 

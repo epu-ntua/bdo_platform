@@ -9,52 +9,296 @@
         #location_assessment_statistics .panel-warning .panel-heading{background-color: #8a6d3b; color: white;}
         #location_assessment_statistics .panel-success .panel-heading{background-color: #3c763d; color: white;}
         #location_assessment_statistics .panel-default .panel-heading{background-color: #707070; color: white;}
+{#        canvas{display: none;}#}
     </style>
 
     <link rel="stylesheet" href="{% static 'hcmr_pilot/css/service_output.css' %}">
 {% endblock %}
 {% block service_output_results %}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <script>
 
-            <div class="container-fluid">
-                <div class="container" style="width: 100%; text-align: center;">
+
+        mapDataByTime = [];
+        curTime = "{{ depth_data.0.time }}";
+        timeIdx = 0;
+        curTimeList = [];
+        var currenTimeIdx = 0;
+
+        {%  for d in depth_data %}
+
+            if ("{{ d.time  }}"!== curTime) {
+                mapDataByTime.push(curTimeList);
+                curTimeList = [];
+                curTime = "{{ d.time }}";
+            }
+            var x = {{ d.lat }};
+            var y = {{ d.lon }};
+            var z = -{{ d.depth }};
+
+            curTimeList.push([x, y, z]);
+        {% endfor %}
+        mapDataByTime.push(curTimeList);
+
+        var data = null;
+        var graph = null;
+
+        function onclick(point) {
+            console.log(point);
+        }
+
+        // Called when the Visualization API is loaded.
+        function drawVisualization() {
+            // create the data table.
+            data = new vis.DataSet();
+
+
+            var options = {
+                width: '600px',
+                height: '600px',
+                style: 'dot-color',
+                showPerspective: true,
+                showGrid: true,
+                keepAspectRatio: true,
+                verticalRatio: 1.0,
+                legendLabel: 'distance',
+                onclick: onclick,
+                dotSizeRatio: 0.005,
+                xLabel: 'Latitude',
+                yLabel: 'Longitude',
+                zLabel: 'Depth',
+                showLegend: false,
+                cameraPosition: {
+                    horizontal: -0.35,
+                    vertical: 0.22,
+                    distance: 1.8
+                }
+            };
+
+
+            for (var j = 0; j < mapDataByTime[currenTimeIdx].length; j++) {
+
+                x = mapDataByTime[currenTimeIdx][j][0];
+                y = mapDataByTime[currenTimeIdx][j][1];
+                z = mapDataByTime[currenTimeIdx][j][2];
+
+                data.add({x: x, y: y, z: z, style: 0});
+            }
+            var container = document.getElementById('depth_graph');
+            console.log(container);
+            console.log(data[0]);
+            console.log(options);
+
+            graph = new vis.Graph3d(container, data, options);
+
+
+        }
+
+
+        function visualizeInIntervals(interval) {
+            setInterval(function () {
+                drawVisualization();
+                currenTimeIdx++;
+                //console.log(currenTimeIdx);
+                if (currenTimeIdx === mapDataByTime.length)
+                    currenTimeIdx = 0;
+
+            }, interval)
+        }
+        visualizeInIntervals(3000);
+    </script>
+    <h3 style="text-align: center; margin-bottom: 20px;">The evolution of the oil spill in time</h3>
+    <div class="container-fluid">
+        <div class="container" style="width: 100%; text-align: center;">
+            <input value="" id="current_time" class="hidden"/>
+            <table id="legend_table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Initial Volume (m3)</th>
+                        <th>Evap. Volume (%)</th>
+                        <th>Emuls. Volume (%)</th>
+                        <th>Volume on Surface (%)</th>
+                        <th>Volume on coasts (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="hidden legend_row legend_">-</td>
+                        <td class="hidden legend_row legend_">-</td>
+                        <td class="hidden legend_row legend_">-</td>
+                        <td class="hidden legend_row legend_">-</td>
+                        <td class="hidden legend_row legend_">-</td>
+                        <td class="hidden legend_row legend_">-</td>
+                    </tr>
+                    {% for row in legend_data %}
+                        <tr>
+                            <td class="hidden legend_row legend_{{ row.timestamp }}">{{ row.time }}</td>
+                            <td class="hidden legend_row legend_{{ row.timestamp }}">{{ row.init_vol }}</td>
+                            <td class="hidden legend_row legend_{{ row.timestamp }}">{{ row.evap_vol }}</td>
+                            <td class="hidden legend_row legend_{{ row.timestamp }}">{{ row.emul_vol }}</td>
+                            <td class="hidden legend_row legend_{{ row.timestamp }}">{{ row.vol_on_surface }}</td>
+                            <td class="hidden legend_row legend_{{ row.timestamp }}">{{ row.vol_on_coasts }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
 {#                    <h2 style="text-align: center">Oil Spill Simulation Service Results</h2>#}
 {#                    <object type="text/html" data="{{ url }}" width="800px" height="600px"#}
 {#                            style="overflow:auto;border:5px ridge blue">#}
 {#                    </object>#}
 
-                    <div class="viz_container row">
-                        <div class="frame_container" style="position: relative; height: 100%;">
-                            <div class="loadingFrame">
-                                <img src="{% static 'img/loading_gif.gif' %}"/>
-                            </div>
-                            <iframe src="{{ url }}" class=""
-                                style="width: 100%; height: 100%; background-color: white;">
-                            </iframe>
-                        </div>
+            <div class="viz_container row">
+                <div class="frame_container" style="position: relative; height: 100%;">
+                    <div class="loadingFrame">
+                        <img src="{% static 'img/loading_gif.gif' %}"/>
                     </div>
-
-
-                    <div>
-                        <div class="button-container" style="width:100%">
-                            <div id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
-                                 style="width:40%">
-                                <i class="fa fa-download"></i> <a href="/oilspill/download?file={{ out_filepath }}" download style="color:#ffffff">Download out file</a>
-                            </div>
-                            <div id="download-report" class="btn btn-primary btn-sm btn-default" style="width:40%">
-                                <i class="fa fa-download"></i> Download report
-                            </div>
-                        </div>
-                    </div>
+                    <iframe src="{{ url }}" class=""
+                        style="width: 100%; height: 100%; background-color: white;">
+                    </iframe>
                 </div>
             </div>
+
+
+            <div>
+                <div class="button-container" style="width:100%">
+                    <div id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
+                         style="width:30%">
+                        <i class="fa fa-download"></i> <a href="/oilspill/download?file={{ out_filepath }}" download style="color:#ffffff">Download Output File</a>
+                    </div>
+                    <div id="download-report" class="btn btn-primary btn-sm btn-default" style="width:30%">
+                        <i class="fa fa-download"></i> Create & Download Report
+                    </div>
+                    <button id="download-report-loading" class="btn btn-primary btn-sm btn-default" style="width:30%; display: none;">
+                      <i class="fa fa-refresh fa-spin" style="margin-right: 3px;"></i>Generating Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3>Bathymetry Data Over Time</h3>
+    <div id="depth_graph"></div>
+
 
 {% endblock %}
 
 
 {% block  js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.54/pdfmake.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.54/vfs_fonts.js'></script>
+
     <script type="text/javascript">
         $(".viz_container iframe").on( "load", function(){
             $(this).siblings(".loadingFrame").css( "display", "none" )
         });
+
+        $(document).ready(function(){
+            function update_current_time(){
+              $("#current_time").val($("iframe").contents().find("#current_time").val());
+              var current_time = $("#current_time").val();
+              $(".legend_row").not(".legend_"+current_time).addClass("hidden");
+              $(".legend_"+current_time).removeClass("hidden");
+            }
+            setInterval(update_current_time,100);
+        });
+
+
+        function get_legend_values(timestamp) {
+            var i;
+            var legend_row = "";
+            for (i=0; i < $("#legend_table th").length; i++){
+                legend_row += $("#legend_table th").eq(i).html();
+                legend_row += ": ";
+                legend_row +=  $(".legend_row.legend_" + timestamp).eq(i).html();
+                legend_row += ", ";
+            }
+            return legend_row.slice(0, -2); // "12345.0"
+        }
+
+
+        function getBase64Image(img) {
+            // Create an empty canvas element
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+{#            document.getElementById('service_result_container').appendChild(canvas);#}
+
+            // Copy the image contents to the canvas
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+
+            // Get the data-URL formatted image
+            // Firefox supports PNG and JPEG. You could check img.src to
+            // guess the original format, but be aware the using "image/jpg"
+            // will re-encode the image.
+            var dataURL = canvas.toDataURL("image/png");
+
+            return dataURL;
+        }
+
+
+
+        function create_pdf_report(){
+            var docDefinition = {
+                content: []
+            };
+            // Usage
+{#            docDefinition.content.push({image: getBase64Image(document.getElementById("bdo_logo")), width: 200});#}
+{#            docDefinition.content.push({image: getBase64Image(document.getElementById("hcmr_logo")), width: 200});#}
+            docDefinition.content.push(
+            {
+                alignment: 'center',
+                columns: [
+                    {image: getBase64Image(document.getElementById("bdo_logo")), fit: [150, 150]},
+                    {image: getBase64Image(document.getElementById("hcmr_logo")), fit: [120, 90]}
+                ]
+            }
+            );
+            docDefinition.content.push({text: "Exploiting Oceans of Data for Maritime Apps", bold: true, alignment: 'center', fontSize: 20});
+            docDefinition.content.push({text: "Oil Spill Dispersion in the Marine Environment", bold: true, alignment: 'center', fontSize: 20});
+            docDefinition.content.push(" ");
+
+            docDefinition.content.push({text: "Study Conditions", bold: true});
+            $("#conditions_div tr").each(function (i, elem) {
+                docDefinition.content.push($(elem).find("td").eq(1).html() + " " + $(elem).find("td").eq(2).html());
+            });
+
+            docDefinition.content.push(" ");
+            docDefinition.content.push({text: "Results", bold: true});
+            $("iframe").contents().find("#snapshot div").each(function (i, elem) {
+                var new_content = {
+                        image: $(elem).find("img").attr('src'),
+                        width: 450
+                    };
+                docDefinition.content.push(get_legend_values($(elem).attr('id')));
+                docDefinition.content.push(new_content)
+                docDefinition.content.push(" ");
+
+            });
+            pdfMake.createPdf(docDefinition).open();
+        }
+
+        function check() {
+            if ($("iframe").contents().find("#snapshot_status").val() !== "done") {
+{#                console.log("Time out");#}
+                return setTimeout(check, 1000);
+            }
+
+            $('#download-report-loading').hide();
+            $('#download-report').show();
+            create_pdf_report();
+        }
+
+
+        $("#download-report").click(function () {
+            $('#download-report-loading').show();
+            $('#download-report').hide();
+            $("iframe").contents().find("#snapshot_button").click();
+            check();
+        });
+
+
+
+
     </script>
 {% endblock %}
