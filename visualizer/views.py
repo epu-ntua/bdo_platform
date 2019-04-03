@@ -2526,6 +2526,10 @@ def get_histogram_2d_matplotlib(request):
         print('Executing Query')
         # x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_execute_query(query, x_var, y_var)
         raw_query = ("SELECT * FROM (SELECT count(*), round({0}, 0),round({1}, 0) FROM {2} WHERE {0} IS NOT NULL AND {1} IS NOT  NULL group by round({0}, 0), round({1}, 0) order by  round({0}, 0), round({1},0)) AS SQ1 ").format(x_table_col, y_table_col, x_from_table)
+        print raw_query
+        raw_query = str(query.raw_query).replace("(SELECT", "(SELECT count(*), ")
+        print raw_query
+        cursor = get_presto_cursor()
         cursor.execute(raw_query)
         result_data = cursor.fetchall()
         count_index = 0
@@ -2654,22 +2658,23 @@ def histogram2d_load_modify_query(query_pk, x_var, y_var):
     query = TempQuery(document=query.document)
     doc = query.document
 
-    # for f in doc['from']:
-    #     for s in f['select']:
-    #         if s['name'] == y_var:
-    #             s['groupBy'] = True
-    #             s['aggregate'] = 'round0'
-    #             s['exclude'] = False
-    #         elif s['name'] == x_var:
-    #             s['groupBy'] = True
-    #             s['aggregate'] = 'round0'
-    #             s['exclude'] = False
-    #         else:
-    #             s['exclude'] = True
-    # print doc
-    # doc['limit'] = []
-    # # doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
-    # query.document = doc
+    for f in doc['from']:
+        for s in f['select']:
+            if s['name'] == y_var:
+                s['groupBy'] = True
+                s['aggregate'] = 'round0'
+                s['exclude'] = False
+            elif s['name'] == x_var:
+                s['groupBy'] = True
+                s['aggregate'] = 'round0'
+                s['exclude'] = False
+            else:
+                s['exclude'] = True
+                s['groupBy'] = False
+    print doc
+    doc['limit'] = []
+    doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
+    query.document = doc
     # TODO: Query can be created using the query designer.Fix the error about the double grouping
     xfrom_table = ''
     xtable_col = ''
@@ -2678,72 +2683,72 @@ def histogram2d_load_modify_query(query_pk, x_var, y_var):
     xvar_title = ''
     yvar_title = ''
     cursor = None
-    for f in doc['from']:
-        for s in f['select']:
-            if s['name'] == x_var:
-                xvar_title = s['title']
-                if s['type'] == 'VALUE':
-                    v_obj = Variable.objects.get(pk=int(f['type']))
-                    if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-                        xfrom_table = f['name'][:-2] + '_' + f['type']
-                        xtable_col = 'value'
-                        cursor = connections['default'].cursor()
-                    elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                        xfrom_table = str(v_obj.dataset.table_name)
-                        xtable_col = str(v_obj.name)
-                        cursor = connections['UBITECH_POSTGRES'].cursor()
-                    elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-                        xfrom_table = str(v_obj.dataset.table_name)
-                        xtable_col = str(v_obj.name)
-                        cursor = get_presto_cursor()
-                else:
-                    d_obj = Dimension.objects.get(pk=int(s['type']))
-                    v_obj = d_obj.variable
-                    if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-                        xfrom_table = f['name'][:-2] + '_' + f['type']
-                        xtable_col = d_obj.name + '_' + s['type']
-                        cursor = connections['default'].cursor()
-                    elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                        xfrom_table = str(v_obj.dataset.table_name)
-                        xtable_col = str(d_obj.name)
-                        cursor = connections['UBITECH_POSTGRES'].cursor()
-                    elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-                        xfrom_table = str(v_obj.dataset.table_name)
-                        xtable_col = str(d_obj.name)
-                        cursor = get_presto_cursor()
-            elif s['name'] == y_var:
-                yvar_title = s['title']
-                if s['type'] == 'VALUE':
-                    v_obj = Variable.objects.get(pk=int(f['type']))
-                    if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-                        yfrom_table = f['name'][:-2] + '_' + f['type']
-                        ytable_col = 'value'
-                        cursor = connections['default'].cursor()
-                    elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                        yfrom_table = str(v_obj.dataset.table_name)
-                        ytable_col = str(v_obj.name)
-                        cursor = connections['UBITECH_POSTGRES'].cursor()
-                    elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-                        yfrom_table = str(v_obj.dataset.table_name)
-                        ytable_col = str(v_obj.name)
-                        cursor = get_presto_cursor()
-                else:
-                    d_obj = Dimension.objects.get(pk=int(s['type']))
-                    v_obj = d_obj.variable
-                    if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-                        yfrom_table = f['name'][:-2] + '_' + f['type']
-                        ytable_col = d_obj.name + '_' + s['type']
-                        cursor = connections['default'].cursor()
-                    elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                        yfrom_table = str(v_obj.dataset.table_name)
-                        ytable_col = str(d_obj.name)
-                        cursor = connections['UBITECH_POSTGRES'].cursor()
-                    elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-                        yfrom_table = str(v_obj.dataset.table_name)
-                        ytable_col = str(d_obj.name)
-                        cursor = get_presto_cursor()
-            else:
-                s['exclude'] = True
+    # for f in doc['from']:
+    #     for s in f['select']:
+    #         if s['name'] == x_var:
+    #             xvar_title = s['title']
+    #             if s['type'] == 'VALUE':
+    #                 v_obj = Variable.objects.get(pk=int(f['type']))
+    #                 if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+    #                     xfrom_table = f['name'][:-2] + '_' + f['type']
+    #                     xtable_col = 'value'
+    #                     cursor = connections['default'].cursor()
+    #                 elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+    #                     xfrom_table = str(v_obj.dataset.table_name)
+    #                     xtable_col = str(v_obj.name)
+    #                     cursor = connections['UBITECH_POSTGRES'].cursor()
+    #                 elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+    #                     xfrom_table = str(v_obj.dataset.table_name)
+    #                     xtable_col = str(v_obj.name)
+    #                     cursor = get_presto_cursor()
+    #             else:
+    #                 d_obj = Dimension.objects.get(pk=int(s['type']))
+    #                 v_obj = d_obj.variable
+    #                 if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+    #                     xfrom_table = f['name'][:-2] + '_' + f['type']
+    #                     xtable_col = d_obj.name + '_' + s['type']
+    #                     cursor = connections['default'].cursor()
+    #                 elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+    #                     xfrom_table = str(v_obj.dataset.table_name)
+    #                     xtable_col = str(d_obj.name)
+    #                     cursor = connections['UBITECH_POSTGRES'].cursor()
+    #                 elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+    #                     xfrom_table = str(v_obj.dataset.table_name)
+    #                     xtable_col = str(d_obj.name)
+    #                     cursor = get_presto_cursor()
+    #         elif s['name'] == y_var:
+    #             yvar_title = s['title']
+    #             if s['type'] == 'VALUE':
+    #                 v_obj = Variable.objects.get(pk=int(f['type']))
+    #                 if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+    #                     yfrom_table = f['name'][:-2] + '_' + f['type']
+    #                     ytable_col = 'value'
+    #                     cursor = connections['default'].cursor()
+    #                 elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+    #                     yfrom_table = str(v_obj.dataset.table_name)
+    #                     ytable_col = str(v_obj.name)
+    #                     cursor = connections['UBITECH_POSTGRES'].cursor()
+    #                 elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+    #                     yfrom_table = str(v_obj.dataset.table_name)
+    #                     ytable_col = str(v_obj.name)
+    #                     cursor = get_presto_cursor()
+    #             else:
+    #                 d_obj = Dimension.objects.get(pk=int(s['type']))
+    #                 v_obj = d_obj.variable
+    #                 if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+    #                     yfrom_table = f['name'][:-2] + '_' + f['type']
+    #                     ytable_col = d_obj.name + '_' + s['type']
+    #                     cursor = connections['default'].cursor()
+    #                 elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+    #                     yfrom_table = str(v_obj.dataset.table_name)
+    #                     ytable_col = str(d_obj.name)
+    #                     cursor = connections['UBITECH_POSTGRES'].cursor()
+    #                 elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+    #                     yfrom_table = str(v_obj.dataset.table_name)
+    #                     ytable_col = str(d_obj.name)
+    #                     cursor = get_presto_cursor()
+    #         else:
+    #             s['exclude'] = True
     return query, xvar_title, xfrom_table, xtable_col, yvar_title, yfrom_table, ytable_col,cursor
 
 
@@ -2954,7 +2959,7 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
                 s['exclude'] = False
                 x_flag = True
             else:
-                s['aggregate'] = ''
+                # s['aggregate'] = ''   commented out this in order to get values when join on lat/lon (otherwise join on does not have agg)
                 s['groupBy'] = False
                 s['exclude'] = True
     if ordering == True:
@@ -3132,7 +3137,7 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title.replace("\n", " "), 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 
@@ -3192,7 +3197,7 @@ def get_column_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title, 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " "), 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_pie_chart_am(request):
