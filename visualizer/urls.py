@@ -34,7 +34,9 @@ urlpatterns = [
     url('^get_pie_chart_am/$', views.get_pie_chart_am, name='get_pie_chart_am'),
     url('^get_column_chart_am/$', views.get_column_chart_am, name='get_column_chart_am'),
     url('^get_histogram_chart_am/$', views.get_histogram_chart_am, name='get_histogram_chart_am'),
-    url('^get_histogram_2d_am/$', views.get_histogram_2d_am, name='get_histogram_2d_am'),
+    # url('^get_histogram_2d_am/$', views.get_histogram_2d_am, name='get_histogram_2d_am'),
+    url('^get_histogram_2d_am/$', views.get_histogram_2d_matplotlib, name='get_histogram_2d_am'),
+
 
     url('^get_data_table/$', views.get_data_table, name='get_data_table'),
     url('^get_aggregate_value/$', views.get_aggregate_value, name='get_aggregate_value'),
@@ -52,4 +54,5 @@ urlpatterns = [
     url('^get_line_chart/$', views.get_line_chart, name='get_line_chart'),
     url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium-heat'),
 
+    url('^get_vessel_ids_info/(?P<query_id>\d+)/$', views.get_vessel_ids_info, name='get_vessel_ids_info'),
 ]

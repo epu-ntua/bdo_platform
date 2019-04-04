@@ -1,10 +1,9 @@
-
-<form action="/oilspill/process/" method="GET" id="oilspill_form">
+<form action="/oilspill/process/" method="GET" id="oilspill_form" xmlns="http://www.w3.org/1999/html">
     {% csrf_token %}
     <div class="scenario" data-id="{{ scenario }}"></div>
     {% ifequal scenario '1' %}
         <div class="scenario1">
-        <h3 style="text-align: center;" class="application-header">Oil spill dispersion forecast</h3>
+        <h3 style="text-align: center;" class="application-header">Oil Spill Dispersion Forecast</h3>
         <hr style="margin: 11px 0;">
          <div class="row" style="height: 6.5vh;">
             <h4 style="margin-top: 0px;">Service Parameters</h4>
@@ -46,46 +45,61 @@
                     <p>Volume of oil spilled (m<sup>3</sup>): </p>
                 </div>
                 <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="oil_volume" type='number' step="1" value="10000" />
+                    <input class="form-control" id="oil_volume" type='number' step="1" value="10000" min="0" />
                 </div>
             </div>
-
+            <div class="oil-density-container col-sm-12">
+                    <div class='col-sm-6'>
+                        <p>Oil Density (kg/m<sup>3</sup>): </p>
+                    </div>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="oil_density" type='number' step="0.1" value="920"/>
+                    </div>
+            </div>
             <div class="vis-duration-container col-sm-12">
                 <div class='col-sm-6'>
                     <p>Duration of the spill release (hours): </p>
                 </div>
                 <div class='col-sm-6' style="bottom: 10px;">
-                    <input class="form-control" id="vis_duration" type='number' step="1" value="0"/>
+                    <input class="form-control" id="vis_duration" type='number' step="1" value="0" min="0"/>
                 </div>
             </div>
             <br>
         </div>
         <div class="service-parameters">
             <div class="" style="margin-top:15px">
+                 <div class="simulation-length-container col-sm-12">
+                    <div class='col-sm-6'>
+                        <p>Length of the requested simulation (Hours): </p>
+                    </div>
+                     <div class='col-sm-6'>
+                        <select class="ui dropdown" id="simulation_length_hist">
+                            {% for i in sim_len_list %}
+                                <option value={{ i }}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+{#                    <div class='col-sm-6'>#}
+{#                        <input class="form-control" id="simulation_length_hist" style='bottom: 4px; position: relative;' type='number' step="12" value="24" min="0" max="720"/>#}
+{#                    </div>#}
+                </div>
 {#                <div class="coverage-date-filters-icon">#}
 {#                </div>#}
                 <div class="time-interval-container col-sm-12">
                     <div class='col-sm-6'>
+{#                        <p>Time Interval between two outputs (hours): </p>#}
                         <p>Time Interval between two outputs (hours): </p>
                     </div>
-                    <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="time_interval" type='number' step="1" value="2"/>
-                    </div>
-                </div>
-                <div class="simulation-length-container col-sm-12">
                     <div class='col-sm-6'>
-                        <p>Length of the requested simulation (hours): </p>
-                    </div>
-                    <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="simulation_length" type='number' step="1" value="24" max="720" min="1"/>
-                    </div>
-                </div>
-                <div class="oil-density-container col-sm-12">
-                    <div class='col-sm-6'>
-                        <p>Oil Density (kg/m<sup>3</sup>): </p>
-                    </div>
-                    <div class='col-sm-6' style="bottom: 10px;">
-                        <input class="form-control" id="oil_density" type='number' step="0.1" value="920"/>
+                        <select class="ui dropdown" id="time_interval">
+                            <option value=1>1</option>
+                            <option value=2>2</option>
+                            <option value=3>3</option>
+                            <option value=4>4</option>
+                            <option value=6>6</option>
+                            <option value=8>8</option>
+                            <option value=12>12</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -95,17 +109,17 @@
         <hr style="margin: 11px 0;">
         <div class="dataset-selector">
             <h4 style="margin: 0;">Available Datasets</h4>
-            <label for="sel1">Wave Forecast Dataset</label>
-            <select class="form-control" id="sel1">
-                <option value="202">Poseidon Wave Dataset for the Aegean</option>
-                <option value="201">Poseidon Wave Dataset for the Mediterranean</option>
-                <option value="203">Copernicus Wave Dataset</option>
-            </select>
-            <label for="sel2">Hydrodynamic Model</label>
-            <select class="form-control" id="sel2">
+            <label for="sel2">Ocean Circulation Model</label>
+            <select class=" dropdown ui" id="sel2">
                 <option value="001">Poseidon High Resolution Aegean Model</option>
                 <option value="002">Poseidon Mediterranean Model</option>
-                <option value="003">Copernicus Model</option>
+                <option value="003">Copernicus Mediterranean Model</option>
+            </select>
+            <label for="sel1">Wave Model </label>
+            <select class=" dropdown ui" id="sel1">
+                <option value="202">Poseidon WAM Cycle 4 for the Aegean</option>
+                <option value="201">Poseidon WAM Cycle 4 for the Mediterranean</option>
+                <option value="203">Copernicus Wave Model for the Mediterranean</option>
             </select>
         </div>
 
@@ -657,6 +671,7 @@
             <i class="fa fa-play-circle"></i> Run Service
         </div>
     </div>
+
 
 
 </form>

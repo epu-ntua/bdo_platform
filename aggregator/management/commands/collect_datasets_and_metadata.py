@@ -58,6 +58,11 @@ class Command(BaseCommand):
         self.stdout.write(str(tables_to_add))
         self.stdout.write(str(len(tables_to_add)))
 
+        possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
+                               "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
+                               "timestamp", "ship_id", "ship_name", "imo_id", 'imo']
+        possible_vessel_identifiers = ["platform_id", "ship_id", "ship_name", "imo_id", 'imo', "voyage_number", "trip_identifier"]
+
         for i, profile in enumerate(profile_list[:]):
             print "Profile: " + str(i)
             if profile["storageTable"] in tables_to_add:
@@ -94,10 +99,14 @@ class Command(BaseCommand):
             dataset.metadata = metadata
             dataset.save()
 
+
+            ### REMOVE IT
+            # column_list_titles = [var["canonicalName"] for var in profile["variables"]]
+            # dataset_vessel_identifiers = [col for col in column_list_titles if col in possible_vessel_identifiers]
+            ###/ REMOVE IT
+
             if profile["storageTable"] in tables_to_add:
-                possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
-                                       "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
-                                       "timestamp", "ship_id"]
+            # if profile["storageTable"] in tables_to_add and len(dataset_vessel_identifiers)>0:
                 dataset_variables = []
                 dataset_dimensions = []
                 for var in profile["variables"]:
@@ -152,9 +161,6 @@ class Command(BaseCommand):
                         dimension.save()
             else:
                 if options['update_old']:
-                    possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
-                                           "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
-                                           "timestamp", "ship_id"]
                     dataset_variables = []
                     dataset_dimensions = []
                     for var in profile["variables"]:

@@ -74,7 +74,7 @@ def clean(request, pk=None):
             if datetime(s.year, s.month, s.day) < datetime.now() < datetime(e.year, e.month, e.day):
                 user_with_access_datasets_list.append(access.dataset.id)
 
-    user_with_access_datasets = Dataset.objects.filter(id__in=user_with_access_datasets_list)
+    user_with_access_datasets = Dataset.objects.filter(id__in=user_with_access_datasets_list, stored_at=storage_target)
 
     # combine user and public datasets to show to the user
     user_datasets = user_datasets | public_datasets

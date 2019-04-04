@@ -21,7 +21,10 @@ def init(request):
                                                "Simulation running", "Simulation results received",
                                                "Transforming data to be shown on map",
                                                "Calculating oil spill intersections with protected areas", "done"]
-    return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps})
+    list = []
+    for i in range(0, 61):
+        list.append(i*12)
+    return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps, 'sim_len_list': list})
 
 
 def scenario1_results(request, exec_instance):
@@ -133,7 +136,7 @@ def process(request, exec_instance):
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
 
-        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density= parse_request_params(request)
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density = parse_request_params(request)
         service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
         service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
         service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
@@ -179,9 +182,17 @@ def process(request, exec_instance):
             service_exec.save()
             output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
             spill_data, parcel_data = create_json_from_out_file(output_path)
+            # spill_data = [spill_infos[0]['start_date']+':00', spill_infos[0]['latitude'], spill_infos[0]['longitude'], spill_data[0][3], spill_data[0][4], spill_data[0][3], spill_infos[0]['oil_volume'],spill_data[0][5], spill_data[0][6]]
+
+            parcel_data.insert(0,[spill_infos[0]['start_date'].encode('ascii') + ':00', float(spill_infos[0]['latitude']),float(spill_infos[0]['longitude']),
+                          parcel_data[0][3], parcel_data[0][4], float(spill_infos[0]['oil_volume']),
+                          parcel_data[0][6], parcel_data[0][7]])
+            spill_data.insert(0,
+                               [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
+
             print 'create_json_from_out_file done'
             headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
-            parcel_df = DataFrame(parcel_data, columns = headers_parcel)
+            parcel_df = DataFrame(parcel_data, columns=headers_parcel)
             print 'parcel_df = DataFrame done'
             print(parcel_df.head(2))
             parcel_df.to_json('visualizer/static/visualizer/files/'+ hcmr_data_filename, orient = 'records')
@@ -198,12 +209,13 @@ def process(request, exec_instance):
             service_exec.status = "Calculating oil spill intersections with protected areas"
             service_exec.save()
             if natura_layer == "true":
-                red_points_calc.calculate(hcmr_data_filename, red_points_filename)
+                # red_points_calc.calculate(hcmr_data_filename, red_points_filename)
+                pass
 
             print 'red points calculated'
             # 5)Create Visualization
             visualization_url = "http://" + request.META[
-                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer
+                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer + "&time_interval=" + time_interval
 
             service_exec.dataframe_visualizations = {"v1": visualization_url}
             service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output
@@ -272,10 +284,10 @@ def create_json_from_out_file(filename_output):
 def wait_until_output_ready(params, request):
     found = False
     error = False
-    tries = 36
+    tries = 40
     while (not found) and (tries > 0) and (not error):
         tries -= 1
-        time.sleep(5)
+        time.sleep(8)
         response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/?" + params)
         print(response)
         print "<status>" + str(response.status_code) + "</status>"
@@ -366,3 +378,106 @@ def download(request):
     print(content)
     response = HttpResponse(content, content_type='text/plain')
     return response
+
+
+def create_map_grid_for_natura(request):
+    import json
+    from shapely.geometry import Polygon
+    from shapely.geometry import Point
+    import csv
+    import time
+    ts = time.time()
+    natura_grid_file_name = str(request.GET.get('natura_file_name', ''))+str(ts).replace('.','')
+    kml_filepath = 'visualizer/static/visualizer/files/kml2.json'
+    with open(kml_filepath) as json_kml_data:
+        kml_data = json.load(json_kml_data)
+    file = open('visualizer/static/visualizer/files/' + natura_grid_file_name, 'w')
+    # resolution in the form of a multiplier
+    multiplier = 1000
+    # max,min lat/lons of the area to be separated into a grid
+    max_lat = 40.000000
+    min_lat = 34.808124
+    max_lon = 28.495422
+    min_lon = 21.750412
+    lat_dist = max_lat - min_lat
+    lon_dist = max_lon - min_lon
+    polygons = []
+    for kd in kml_data['placemarks']:
+        for point in kd['polygons']:
+            polygon = {}
+            outer_p = []
+            o = point['outer_boundary']
+            for c in o['coordinates']:
+                outer_p.append((c['latitude'], c['longitude']))
+            inner_polygons = []
+            for i in point['inner_boundaries']:
+                inner_p = []
+                for c in i['coordinates']:
+                    inner_p.append((c['latitude'], c['longitude']))
+                inner_polygons.append(inner_p)
+            polygon['outer'] = outer_p
+            polygon['inners'] = inner_polygons
+            polygon['min_lat'] = point['outer_boundary']['min_lat']
+            polygon['max_lat'] = point['outer_boundary']['max_lat']
+            polygon['min_lon'] = point['outer_boundary']['min_lon']
+            polygon['max_lon'] = point['outer_boundary']['max_lon']
+            polygons.append(polygon)
+    natura_grid = []
+    lat_max = int(lat_dist*multiplier)
+    lon_max = int(lon_dist*multiplier)
+    for lat in range(0, lat_max):
+        natura_grid_row = []
+        for lon in range(0, lon_max):
+            # clearing irrelevant natura polygons
+            cleared_polygons = []
+            for po in polygons:
+                po_min_lat = float(po['min_lat'])
+                po_max_lat = float(po['max_lat'])
+                po_min_lon = float(po['min_lon'])
+                po_max_lon = float(po['max_lon'])
+                checked_point_lat = (float(lat)/multiplier + min_lat)
+                checked_point_lon = (float(lon)/multiplier + min_lon)
+                if checked_point_lat > po_max_lat or checked_point_lat < po_min_lat or checked_point_lon > po_max_lon or checked_point_lon < po_min_lon:
+                    continue
+                cleared_polygons.append(po)
+
+            print 'checking point:('+str(float(lat)/multiplier + min_lat)+','+str(float(lon)/multiplier + min_lon)+')'
+            is_inner = False
+            found_natura = False
+            for pol in cleared_polygons:
+                inner_pols = pol['inners']
+                if is_inner:
+                    break
+                for in_pol in inner_pols:
+                    shapely_pol = Polygon(in_pol)
+                    if is_inner:
+                        break
+                    if shapely_pol.contains(Point((float(lat)/multiplier + min_lat), (float(lon)/multiplier + min_lon))):
+                        is_inner = True
+                outer_pol = pol['outer']
+                shapely_pol = Polygon(outer_pol)
+                if shapely_pol.contains(Point((float(lat)/multiplier + min_lat), (float(lon)/multiplier + min_lon))):
+                    found_natura = True
+                    break
+            if found_natura:
+                natura_grid_row.append(1)
+            else:
+                natura_grid_row.append(0)
+        natura_grid.append(natura_grid_row)
+    file.close()
+    dic = {}
+    with open('visualizer/static/visualizer/files/natura_grid_fr.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        [writer.writerow(r) for r in natura_grid]
+        csvfile.close()
+    with open('visualizer/static/visualizer/files/natura_grid_info_fr', 'w') as file:
+        dic['resolution'] = multiplier
+        dic['min_lat'] = min_lat
+        dic['min_lon'] = min_lon
+        json.dump(dic, file, default=myconverter)
+
+    return JsonResponse({'status': "completed"})
+
+def myconverter(o):
+    if isinstance(o, datetime):
+        return o.__str__()

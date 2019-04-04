@@ -1,4 +1,55 @@
 $(function() {
+    var display_tour = true;
+    var first_tour = new Tour({
+        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+            "<div class='arrow'></div>" +
+            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+            "<div class='popover-content'></div>" +
+            "<div class='popover-navigation'>" +
+            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            "<span data-role='separator'>|</span>" +
+            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            "</div>" +
+            "</div>",
+    });
+
+    first_tour.addStep({
+        element: "#chart-sidebar .nav li:nth-child(1)",
+        placement: "bottom",
+        title: "Variable",
+        // duration: 3500,
+        content: "See the variables included in your query, add aggregate functions or delete them.",
+    });
+    first_tour.addStep({
+        element: "#chart-sidebar .nav li:nth-child(2)",
+        placement: "bottom",
+        title: "Filters",
+        // duration: 3500,
+        content: "Narrow your query results by applying filters on space, time and the rest of the fields.",
+    });
+    first_tour.addStep({
+        element: "#chart-sidebar .nav li:nth-child(3)",
+        placement: "bottom",
+        title: "Operations",
+        // duration: 3500,
+        content: "Create groups, apply orderings or choose spatial and temporal resolutions.",
+    });
+    first_tour.addStep({
+        element: "#run-query-btn",
+        placement: "left",
+        title: "Run Query",
+        // duration: 3500,
+        content: "Run your query and get the results!",
+    });
+    first_tour.addStep({
+        element: ".add-value-field",
+        placement: "left",
+        title: "Select Data",
+        // duration: 3500,
+        content: "Select data to be added to your query.",
+    });
+
 
     // *** DATA SELECTION MODAL *** //
 
@@ -138,6 +189,12 @@ $(function() {
 
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
+
+        if (display_tour){
+            first_tour.init();
+            first_tour.start(true);
+        }
+        display_tour = false;
     });
 
     /* When the data selection modal closes, hide the confirmation panel at the bottom of the panel */
@@ -524,6 +581,7 @@ $(function() {
     // *** RUN QUERY / EXPLORE RESULTS *** //
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
+        $('a[href="#dataDiv"]').trigger('click')
         $("#viz_config .list-group").children().each(function () {
                 $(this).find("#selected_viz_span").hide();
             });

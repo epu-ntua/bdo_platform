@@ -521,27 +521,28 @@ def fix_round(q, subquery, subquery_cnt):
     if len(re.findall(r'round\d', subquery)) > 0:
         print 'Trying to fix round'
         # round_num = str(subquery.split('round')[1][0])
-        round_num = str(re.findall(r'round\d', subquery)[0])[-1]
-        print round_num
-        # names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
-        # print
-        names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
-        for name in names:
-            subquery = re.sub(r"round" + round_num + "\((" + name + ")\)",
-                              "round(" + name + ", " + round_num + ")", subquery)
-        # print subquery
+        for occurance in set(re.findall(r'round\d', subquery)):
+            round_num = str(occurance)[-1]
+            print round_num
+            # names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
+            # print
+            names = re.findall(r"round" + round_num + "\((.*?)\)", subquery)
+            for name in names:
+                subquery = re.sub(r"round" + round_num + "\((" + name + ")\)",
+                                  "round(" + name + ", " + round_num + ")", subquery)
+            # print subquery
 
-        names = re.findall(r"round" + round_num + "\((.*?)\)", subquery_cnt)
-        for name in names:
-            subquery_cnt = re.sub(r"round" + round_num + "\((" + name + ")\)",
-                                  "round(" + name + ", " + round_num + ")", subquery_cnt)
-        # print subquery_cnt
+            names = re.findall(r"round" + round_num + "\((.*?)\)", subquery_cnt)
+            for name in names:
+                subquery_cnt = re.sub(r"round" + round_num + "\((" + name + ")\)",
+                                      "round(" + name + ", " + round_num + ")", subquery_cnt)
+            # print subquery_cnt
 
-        names = re.findall(r"round" + round_num + "\((.*?)\)", q)
-        for name in names:
-            q = re.sub(r"round" + round_num + "\((" + name + ")\)",
-                       "round(" + name + ", " + round_num + ")", q)
-        # print q
+            names = re.findall(r"round" + round_num + "\((.*?)\)", q)
+            for name in names:
+                q = re.sub(r"round" + round_num + "\((" + name + ")\)",
+                           "round(" + name + ", " + round_num + ")", q)
+            # print q
     return q, subquery, subquery_cnt
 
 

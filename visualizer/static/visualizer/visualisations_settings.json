@@ -31,7 +31,7 @@
       "default_contours":20
     },
     "map_heatmap":{
-      "limit":10000,
+      "limit":50000,
       "default_points":100
     },
     "map_markers_grid":{

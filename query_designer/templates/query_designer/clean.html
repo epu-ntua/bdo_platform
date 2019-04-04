@@ -31,6 +31,8 @@
     <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
     <link href="{% static "query_designer/css/icon_tooltip_css.css" %}" rel="stylesheet">
 
+    <link href="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.css"%}" rel="stylesheet">
+
 
     <style>
         #chart-picker li, #chart-picker li a{
@@ -327,7 +329,9 @@
     <script src="{% static "query_designer/js/simplified/chart_editor.js" %}"></script>
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
+    <script src="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.js"%}"></script>
+
+{#    <script src="//cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>#}
     <script src="{% static "/js/jplist.core.min.js" %}"></script>
     <script src="{% static "/js/jplist.textbox-filter.min.js" %}"></script>
     <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}"></script>
@@ -362,6 +366,7 @@
               panelPath: '.filter-section',
               noResults: '.jplist-no-results'
            });
+
 
         });
     </script>
