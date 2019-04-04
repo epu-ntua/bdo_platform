@@ -1278,7 +1278,7 @@ $(document).ready(function() {
             initialDate: endDate
         });
         startpick5.datetimepicker('update',endDate);
-        return [startpick2, startpick3, startpick4, startpick5]
+        return [startpick1,startpick2, startpick3, startpick4, startpick5]
     }
 
     function markers_initialisation() {
