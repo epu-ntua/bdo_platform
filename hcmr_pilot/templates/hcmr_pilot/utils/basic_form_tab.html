@@ -68,41 +68,37 @@
         </div>
         <div class="service-parameters">
             <div class="" style="margin-top:15px">
-                 <div class="simulation-length-container col-sm-12">
-                    <div class='col-sm-6'>
-                        <p>Length of the requested simulation (Hours): </p>
+                 <div class="" style="margin-top:15px">
+                     <div class="simulation-length-container col-sm-12">
+                        <div class='col-sm-6'>
+                            <p>Length of the requested simulation (Hours): </p>
+                        </div>
+                         <div class='col-sm-6'>
+                            <select class="ui dropdown" id="simulation_length_hist">
+                                {% for i in sim_len_list %}
+                                    <option value={{ i }}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                     </div>
+                     <div class="time-interval-container col-sm-12">
+                        <div class='col-sm-6'>
+    {#                        <p>Time Interval between two outputs (hours): </p>#}
+                            <p>Time Interval between two outputs (hours): </p>
+                        </div>
+                        <div class='col-sm-6'>
+                            <select class="ui dropdown" id="time_interval">
+                                <option value=1>1</option>
+                                <option value=2>2</option>
+                                <option value=3>3</option>
+                                <option value=4>4</option>
+                                <option value=6>6</option>
+                                <option value=8>8</option>
+                                <option value=12>12</option>
+                            </select>
+                        </div>
                     </div>
-                     <div class='col-sm-6'>
-                        <select class="ui dropdown" id="simulation_length_hist">
-                            {% for i in sim_len_list %}
-                                <option value={{ i }}>{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-{#                    <div class='col-sm-6'>#}
-{#                        <input class="form-control" id="simulation_length_hist" style='bottom: 4px; position: relative;' type='number' step="12" value="24" min="0" max="720"/>#}
-{#                    </div>#}
-                </div>
-{#                <div class="coverage-date-filters-icon">#}
-{#                </div>#}
-                <div class="time-interval-container col-sm-12">
-                    <div class='col-sm-6'>
-{#                        <p>Time Interval between two outputs (hours): </p>#}
-                        <p>Time Interval between two outputs (hours): </p>
-                    </div>
-                    <div class='col-sm-6'>
-                        <select class="ui dropdown" id="time_interval">
-                            <option value=1>1</option>
-                            <option value=2>2</option>
-                            <option value=3>3</option>
-                            <option value=4>4</option>
-                            <option value=6>6</option>
-                            <option value=8>8</option>
-                            <option value=12>12</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+                 </div>
         </div>
 
         <br>
@@ -138,8 +134,8 @@
     {% endifequal %}
     {% ifequal scenario '2' %}
         <div class="row">
-            <div class="col-sm-7" style="padding-left: 0px; padding-right: 0px; top: 10px; width: 67.333333%;">
-                <h4>High risk pollution areas</h4>
+            <div class="col-sm-12">
+                <h3>High Risk Pollution Areas</h3>
             </div>
              <div id="unlock-area" class="col-sm-2" style="padding-left: 0px; padding-right: 0px; top: 10px;" hidden>
                 <div  class="btn btn-xs btn-info" >
@@ -150,7 +146,7 @@
 
         <hr style="margin: 11px 0;">
         <div class="spatial-selection" >
-            <h4 style="margin: 0;">Geographic Coverage</h4>
+            <h4 style="margin: 0;">Spatial Coverage</h4>
             <div class="row" style="margin: 25px;">
                 <div class="lat-container">
                      <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
@@ -186,13 +182,11 @@
 
                 <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
             </div>
-            <hr style="margin: 11px 0;">
             <div class="button-container lock-button"  style="width:100%" >
                 <div id="lock_area" class="btn btn-sm btn-dark" style="width:40%">
                     <i class="fa fa-lock"></i> Lock area
                 </div>
             </div>
-            <hr style="margin: 11px 0;">
         </div>
 
 
@@ -218,7 +212,7 @@
             <div class="tab-content" style="margin-bottom: 155px">
 
                 <div  class="tab-pane fade in active" id="point1_form" >
-                    <h4 style="margin: 0;">First point parameters (Blue marker)</h4>
+                    <h4>First point parameters (Blue marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -236,20 +230,20 @@
                                 <input class="form-control" id="lon" type='number' step="0.01" min="-180" max="180"/>
                             </div>
                         </div>
-                        <div class="oil-volume-container">
+                        <div class="oil-volume-container col-sm-12">
                             <div class='col-sm-6'>
-                                <p>Oil Volume: </p>
+                                <p>Volume of oil spilled (m<sup>3</sup>): </p>
                             </div>
                             <div class='col-sm-6' style="bottom: 10px;">
-                                <input class="form-control" id="oil_volume" type='number' step="0.01"/>
+                                <input class="form-control" id="oil_volume" type='number' step="1" value="10000" min="0" />
                             </div>
                         </div>
-                        <div class="vis-duration-container">
+                        <div class="vis-duration-container col-sm-12">
                             <div class='col-sm-6'>
-                                <p>Duration: </p>
+                                <p>Duration of the spill release (hours): </p>
                             </div>
                             <div class='col-sm-6' style="bottom: 10px;">
-                                <input class="form-control" id="vis_duration" type='number' step="1"/>
+                                <input class="form-control" id="vis_duration" type='number' step="1" value="0" min="0"/>
                             </div>
                         </div>
                         <div class="vis-startdate-container" style="width: 100%">
@@ -271,7 +265,7 @@
                         </div>
                     </div>
                     <div class="row points-control">
-                        <div class="col-sm-6">
+                        <div class="col-sm-12">
                              <div class="btn btn-xs btn-success new_point">
                                 <i class="fa fa-plus-circle"></i> Add Oil Spill
                             </div>
@@ -280,7 +274,7 @@
                 </div>
 
                 <div class="tab-pane fade" id="point2_form">
-                 <h4 style="margin: 0;">Second point parameters (Red marker)</h4>
+                 <h4>Second point parameters (Red marker)</h4>
                 <div class="row" style="height: 6.7vh;">
                     <div class="lat-container">
                         <div class='col-sm-6'>
@@ -300,20 +294,20 @@
                     </div>
                 </div>
 
-                <div class="oil-volume-container">
+                <div class="oil-volume-container col-sm-12">
                     <div class='col-sm-6'>
-                        <p>Oil Volume: </p>
+                        <p>Volume of oil spilled (m<sup>3</sup>): </p>
                     </div>
-                    <div class='col-sm-6' style="bottom: 8px;">
-                        <input class="form-control" id="oil_volume2" type='number' step="0.01"/>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="oil_volume2" type='number' step="1" value="10000" min="0" />
                     </div>
                 </div>
-                <div class="vis-duration-container">
+                <div class="vis-duration-container col-sm-12">
                     <div class='col-sm-6'>
-                        <p>Duration: </p>
+                        <p>Duration of the spill release (hours): </p>
                     </div>
-                    <div class='col-sm-6' style="bottom: 16px;">
-                        <input class="form-control" id="vis_duration2" type='number' step="1"/>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="vis_duration2" type='number' step="1" value="0" min="0"/>
                     </div>
                 </div>
                 <div class="vis-startdate-container" style="width: 100%">
@@ -334,7 +328,7 @@
                 <div class="row points-control">
                     <div class="col-sm-6">
                          <div class="btn btn-xs btn-success new_point">
-                            <i class="fa fa-plus-circle"></i> Add point
+                            <i class="fa fa-plus-circle"></i> Add Oil Spill
                         </div>
                     </div>
                     <div class="col-sm-6">
@@ -346,7 +340,7 @@
             </div>
 
                 <div class="tab-pane fade" id="point3_form">
-                 <h4 style="margin: 0;">Third point parameters (Green marker)</h4>
+                 <h4>Third point parameters (Green marker)</h4>
                 <div class="row" style="height: 6.7vh;">
                     <div class="lat-container">
                         <div class='col-sm-6'>
@@ -366,20 +360,20 @@
                     </div>
                 </div>
 
-                <div class="oil-volume-container">
+                <div class="oil-volume-container col-sm-12">
                     <div class='col-sm-6'>
-                        <p>Oil Volume: </p>
+                        <p>Volume of oil spilled (m<sup>3</sup>): </p>
                     </div>
-                    <div class='col-sm-6' style="bottom: 16px;">
-                        <input class="form-control" id="oil_volume3" type='number' step="0.01"/>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="oil_volume3" type='number' step="1" value="10000" min="0" />
                     </div>
                 </div>
-                <div class="vis-duration-container">
+                <div class="vis-duration-container col-sm-12">
                     <div class='col-sm-6'>
-                        <p>Duration: </p>
+                        <p>Duration of the spill release (hours): </p>
                     </div>
-                    <div class='col-sm-6' style="bottom: 16px;">
-                        <input class="form-control" id="vis_duration3" type='number' step="1"/>
+                    <div class='col-sm-6' style="bottom: 10px;">
+                        <input class="form-control" id="vis_duration3" type='number' step="1" value="0" min="0"/>
                     </div>
                 </div>
                 <div class="vis-startdate-container" style="width: 100%">
@@ -400,7 +394,7 @@
                 <div class="row points-control">
                     <div class="col-sm-6">
                          <div class="btn btn-xs btn-success new_point">
-                            <i class="fa fa-plus-circle"></i> Add point
+                            <i class="fa fa-plus-circle"></i> Add Oil Spill
                         </div>
                     </div>
                     <div class="col-sm-6">
@@ -411,7 +405,7 @@
                 </div>
             </div>
                 <div class="tab-pane fade" id="point4_form">
-                    <h4 style="margin: 0;">Fourth point parameters (Orange marker)</h4>
+                    <h4>Fourth point parameters (Orange marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -431,21 +425,21 @@
                         </div>
                     </div>
 
-                    <div class="oil-volume-container">
+                    <div class="oil-volume-container col-sm-12">
                         <div class='col-sm-6'>
-                            <p>Oil Volume: </p>
+                            <p>Volume of oil spilled (m<sup>3</sup>): </p>
                         </div>
-                        <div class='col-sm-6' style="bottom: 16px;">
-                            <input class="form-control" id="oil_volume4" type='number' step="0.01"/>
+                        <div class='col-sm-6' style="bottom: 10px;">
+                            <input class="form-control" id="oil_volume4" type='number' step="1" value="10000" min="0" />
                         </div>
                     </div>
 
-                    <div class="vis-duration-container">
+                    <div class="vis-duration-container col-sm-12">
                         <div class='col-sm-6'>
-                            <p>Duration: </p>
+                            <p>Duration of the spill release (hours): </p>
                         </div>
-                        <div class='col-sm-6' style="bottom: 16px;">
-                            <input class="form-control" id="vis_duration4" type='number' step="1"/>
+                        <div class='col-sm-6' style="bottom: 10px;">
+                            <input class="form-control" id="vis_duration4" type='number' step="1" value="0" min="0"/>
                         </div>
                     </div>
                     <div class="vis-startdate-container" style="width: 100%">
@@ -466,7 +460,7 @@
                     <div class="row points-control">
                         <div class="col-sm-6">
                              <div class="btn btn-xs btn-success new_point">
-                                <i class="fa fa-plus-circle"></i> Add point
+                                <i class="fa fa-plus-circle"></i> Add Oil Spill
                             </div>
                         </div>
                         <div class="col-sm-6">
@@ -478,7 +472,7 @@
                 </div>
 
                 <div class="tab-pane fade" id="point5_form">
-                    <h4 style="margin: 0;">Fifth point parameters (Black marker)</h4>
+                    <h4>Fifth point parameters (Black marker)</h4>
                     <div class="row" style="height: 6.7vh;">
                         <div class="lat-container">
                             <div class='col-sm-6'>
@@ -498,22 +492,22 @@
                         </div>
                     </div>
 
-                    <div class="oil-volume-container">
-                    <div class='col-sm-6'>
-                        <p>Oil Volume: </p>
+                    <div class="oil-volume-container col-sm-12">
+                        <div class='col-sm-6'>
+                            <p>Volume of oil spilled (m<sup>3</sup>): </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 10px;">
+                            <input class="form-control" id="oil_volume5" type='number' step="1" value="10000" min="0" />
+                        </div>
                     </div>
-                    <div class='col-sm-6' style="bottom: 16px;">
-                        <input class="form-control" id="oil_volume5" type='number' step="0.01"/>
+                    <div class="vis-duration-container col-sm-12">
+                        <div class='col-sm-6'>
+                            <p>Duration of the spill release (hours): </p>
+                        </div>
+                        <div class='col-sm-6' style="bottom: 10px;">
+                            <input class="form-control" id="vis_duration5" type='number' step="1" value="0" min="0"/>
+                        </div>
                     </div>
-                </div>
-                    <div class="vis-duration-container">
-                    <div class='col-sm-6'>
-                        <p>Duration: </p>
-                    </div>
-                    <div class='col-sm-6' style="bottom: 16px;">
-                        <input class="form-control" id="vis_duration5" type='number' step="1"/>
-                    </div>
-                </div>
                     <div class="vis-startdate-container" style="width: 100%">
                         <div class="col-sm-6">
                             <p>Start Date:</p>
@@ -532,7 +526,7 @@
                     <div class="row points-control">
                         <div class="col-sm-6">
                              <div class="btn btn-xs btn-success new_point">
-                                <i class="fa fa-plus-circle"></i> Add point
+                                <i class="fa fa-plus-circle"></i> Add Oil Spill
                             </div>
                         </div>
                         <div class="col-sm-6">
@@ -544,39 +538,50 @@
                 </div>
             </div>
 
-            <br>
             <hr style="margin: 11px 0;">
             <div class="service-parameters">
                 <h4 style="margin: 0;">Service Parameters</h4>
                 <div class="row" style="margin-top:15px">
                     <div class="coverage-date-filters-icon">
                     </div>
-                    <div class="time-interval-container">
+                    <div class="oil-density-container col-sm-12">
+                            <div class='col-sm-6'>
+                                <p>Oil Density (kg/m<sup>3</sup>): </p>
+                            </div>
+                            <div class='col-sm-6' style="bottom: 10px;">
+                                <input class="form-control" id="oil_density" type='number' step="0.1" value="920"/>
+                            </div>
+                    </div>
+                    <div class="time-interval-container col-sm-12">
                         <div class='col-sm-6'>
-                            <p>Time Interval: </p>
+    {#                        <p>Time Interval between two outputs (hours): </p>#}
+                            <p>Time Interval between two outputs (hours): </p>
                         </div>
-                        <div class='col-sm-6' style="bottom: 16px;">
-                            <input class="form-control" id="time_interval" type='number' step="0.01"/>
+                        <div class='col-sm-6'>
+                            <select class="ui dropdown" id="time_interval">
+                                <option value=1>1</option>
+                                <option value=2>2</option>
+                                <option value=3>3</option>
+                                <option value=4>4</option>
+                                <option value=6>6</option>
+                                <option value=8>8</option>
+                                <option value=12>12</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="simulation-length-container">
+                    <div class="simulation-length-container col-sm-12">
                         <div class='col-sm-6'>
-                            <p>Simulation Length: </p>
+                            <p>Length of the requested simulation (Hours): </p>
                         </div>
-                        <div class='col-sm-6' style="bottom: 16px;">
-                            <input class="form-control" id="simulation_length" type='number' step="0.01"/>
-                        </div>
-                    </div>
-                    <div class="oil-density-container">
-                        <div class='col-sm-6'>
-                            <p>Oil Density: </p>
-                        </div>
-                        <div class='col-sm-6' style="bottom: 16px;">
-                            <input class="form-control" id="oil_density" type='number' step="0.01"/>
-                        </div>
+                         <div class='col-sm-6'>
+                            <select class="ui dropdown" id="simulation_length_hist">
+                                {% for i in sim_len_list %}
+                                    <option value={{ i }}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                         </div>
                     </div>
                 </div>
-                <hr style="margin: 11px 0;">
             </div>
         </div>
     {% endifequal %}
