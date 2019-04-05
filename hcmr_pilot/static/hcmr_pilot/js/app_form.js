@@ -19,12 +19,12 @@ var area_bounds;
 var bounds = [-90,-180,90,180];
 var lock = 0;
 
-var allow_form_submit1 = [true, true, true, true, true];
-var allow_form_submit2 = [true, true, true, true, true];
-var allow_form_submit3 = [true, true, true, true, true];
-var allow_form_submit4 = [true, true, true, true, true];
-var allow_form_submit5 = [true, true, true, true, true];
-var allow_form_submit_service = [true,true]
+var allow_form_submit1 = [true, true];
+var allow_form_submit2 = [true, true];
+var allow_form_submit3 = [true, true];
+var allow_form_submit4 = [true, true];
+var allow_form_submit5 = [true, true];
+var allow_form_submit_service = [true,true,true]
 
 let MAX_LON_MEDITERRANEAN = 36;
 let MIN_LON_MEDITERRANEAN = -7;
@@ -366,15 +366,31 @@ function interactive_form(onLocationfound, user_marker){
 }
 
 function interactive_multi_point_service_form(){
+    $('#vis_duration').on('input',function(){
+        allow_form_submit_service = missing_parameter($('#vis_duration'), allow_form_submit_service, 'duration', 0, '#run-service-btn','duration');
+        if ($('#vis_duration').val()<0){
+            $('#vis_duration').val(0);
+        }
+    });
+
     $('#oil_density').on('input',function(){
         allow_form_submit_service = missing_parameter($('#oil_density'), allow_form_submit_service, 'oil-density', 1, '#run-service-btn','oil-density');
         if ($('#oil_density').val()<0){
             $('#oil_density').val(0);
         }
     });
+    $('#startdatepicker input').on('change',function () {
+        allow_form_submit_service = missing_parameter($('#startdatepicker input'), allow_form_submit_service, 'date', 2, '#run-service-btn','date');
+        check_sim_len_options();
+    });
+    $('#startdatepicker input').on('input',function () {
+        allow_form_submit_service = missing_parameter($('#startdatepicker input'), allow_form_submit_service, 'date', 2, '#run-service-btn','date');
+        check_sim_len_options();
+    });
+
 }
 
-function interactive_multi_point_form(onLocationfound, user_marker, lat, lon, oil_vol, spill_duration, datepicker, point, allow_form_submit,offset){
+function interactive_multi_point_form(onLocationfound, user_marker, lat, lon, point, allow_form_submit, offset){
     check_sim_len_options();
     lat.on('input',function () {
         allow_form_submit = missing_parameter(lat, allow_form_submit, 'latitude'+point, 0, '#run-service-btn','latitude of Point '+point);
@@ -404,26 +420,7 @@ function interactive_multi_point_form(onLocationfound, user_marker, lat, lon, oi
              check_marker_inside_area_select(parseFloat(lat.val()), parseFloat(lon.val()),user_marker,bounds,lat,lon,'-point'+point, offset);
         }
     });
-    datepicker.on('change',function () {
-        allow_form_submit = missing_parameter(datepicker, allow_form_submit, 'date'+point, 4, '#run-service-btn', 'date of Point '+point);
-        check_sim_len_options();
-    });
-    datepicker.on('input',function () {
-        allow_form_submit = missing_parameter(datepicker, allow_form_submit, 'date'+point, 4, '#run-service-btn', 'date of Point '+point);
-        check_sim_len_options();
-    });
-    oil_vol.on('input',function(){
-        allow_form_submit = missing_parameter(oil_vol, allow_form_submit, 'oil-volume'+point, 2, '#run-service-btn', 'oil volume of Point '+point);
-        if (oil_vol.val()<0){
-            oil_vol.val(0);
-        }
-    });
-    spill_duration.on('input',function(){
-        allow_form_submit = missing_parameter(spill_duration, allow_form_submit, 'duration'+point, 3, '#run-service-btn','duration of Point '+point);
-        if (spill_duration.val()<0){
-            spill_duration.val(0);
-        }
-    });
+
 }
 
 function check_bounds_min_max(input1, input2, allow_submit, parameter, parameter_id){
@@ -454,7 +451,7 @@ function missing_parameter(col_select, allow_submit, parameter_name, parameter_i
     else {
         allow_submit[parameter_id] = true;
         $('.' + parameter_name + '_missing_error').remove();
-        if (check_list(allow_submit)&&check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit5)) {
+        if (check_list(allow_submit)&&check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit5)&&check_list(allow_form_submit_service)) {
             $(disable_button).removeClass('disabled');
         }
     }
@@ -579,13 +576,21 @@ $(document).ready(function() {
     var endDate = new Date();
     startDate.setFullYear(startDate.getFullYear() - 1);
     startDate.setHours(0,0,0,0);
-    interactive_multi_point_service_form();
     if(scenario === 2){
+         var startpick = $('#startdatepicker').datetimepicker({
+            autoclose: true,
+            pickerPosition: 'bottom-left',
+            startDate: startDate,
+            endDate: endDate,
+            initialDate: endDate
+        });
+        startpick.datetimepicker('update',endDate);
         $('#run-service-btn').hide();
         var second_scenario_tour = tour_guide_senario2(true,'');
         create_new_area_select([[MIN_LAT_MEDITERRANEAN+2,MIN_LON_MEDITERRANEAN+2],[MAX_LAT_MEDITERRANEAN-2,MAX_LON_MEDITERRANEAN-2]]);
         interactive_area_select();
-        var datetimepicker_list = datetimepicker_initialisation(startDate, endDate);
+        interactive_multi_point_service_form();
+        // var datetimepicker_list = datetimepicker_initialisation(startDate, endDate);
         // var marker_list = markers_initialisation();
         $('#lock_area').on('click', function(e){
             $('#run-service-btn').show();
@@ -609,7 +614,7 @@ $(document).ready(function() {
                 first_user_marker.setLatLng(e.latlng).update();
             };
             map.on('locationfound', onLocationfound1);
-            interactive_multi_point_form(onLocationfound1,first_user_marker,$('#lat'), $('#lon'),$('#oil_volume'),$('#vis_duration'),$('#startdatepicker input'),'1',allow_form_submit1,[0,0]);
+            interactive_multi_point_form(onLocationfound1,first_user_marker,$('#lat'), $('#lon'),'1',allow_form_submit1,[0,0]);
             tour_guide_senario2(false, second_scenario_tour);
             map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
         });
@@ -694,7 +699,7 @@ $(document).ready(function() {
                     second_user_marker.setLatLng(e.latlng).update();
                 };
                 map.on('locationfound', onLocationfound2);
-                interactive_multi_point_form(onLocationfound2,second_user_marker,$('#lat2'), $('#lon2'),$('#oil_volume2'),$('#vis_duration2'),$('#startdatepicker2 input'),'2',allow_form_submit2,[(bounds[2]-bounds[0])/4, (bounds[3]-bounds[1])/4 ]);
+                interactive_multi_point_form(onLocationfound2,second_user_marker,$('#lat2'), $('#lon2'),'2',allow_form_submit2,[(bounds[2]-bounds[0])/4, (bounds[3]-bounds[1])/4 ]);
             }
             else if(tabid2 === "#point3_form"){
                 if (third_user_marker != undefined) {
@@ -708,7 +713,7 @@ $(document).ready(function() {
                     third_user_marker.setLatLng(e.latlng).update();
                 };
                 map.on('locationfound', onLocationfound3);
-                interactive_multi_point_form(onLocationfound3,third_user_marker,$('#lat3'), $('#lon3'),$('#oil_volume3'),$('#vis_duration3'),$('#startdatepicker3 input'),'3',allow_form_submit3, [-(bounds[2]-bounds[0])/4, (bounds[3]-bounds[1])/4 ]);
+                interactive_multi_point_form(onLocationfound3,third_user_marker,$('#lat3'), $('#lon3'),'3',allow_form_submit3, [-(bounds[2]-bounds[0])/4, (bounds[3]-bounds[1])/4 ]);
 
                 // // var startpick = $('#startdatepicker3').datetimepicker({
                 // //     autoclose: true,
@@ -748,7 +753,7 @@ $(document).ready(function() {
                     fourth_user_marker.setLatLng(e.latlng).update();
                 };
                 map.on('locationfound', onLocationfound4);
-                interactive_multi_point_form(onLocationfound4,fourth_user_marker,$('#lat4'), $('#lon4'),$('#oil_volume4'),$('#vis_duration4'),$('#startdatepicker4 input'),'4',allow_form_submit4,[-(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
+                interactive_multi_point_form(onLocationfound4,fourth_user_marker,$('#lat4'), $('#lon4'),'4',allow_form_submit4,[-(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
 
 
                 // // var startpick = $('#startdatepicker4').datetimepicker({
@@ -789,7 +794,7 @@ $(document).ready(function() {
                     fifth_user_marker.setLatLng(e.latlng).update();
                 };
                 map.on('locationfound', onLocationfound5);
-                interactive_multi_point_form(onLocationfound5,fifth_user_marker,$('#lat5'), $('#lon5'),$('#oil_volume5'),$('#vis_duration5'),$('#startdatepicker5 input'),'5',allow_form_submit5, [(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
+                interactive_multi_point_form(onLocationfound5,fifth_user_marker,$('#lat5'), $('#lon5'),'5',allow_form_submit5, [(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
 
                 // // var startpick = $('#startdatepicker5').datetimepicker({
                 // //     autoclose: true,
@@ -1258,49 +1263,49 @@ $(document).ready(function() {
         init = true;
     }
 
-    function datetimepicker_initialisation(startDate, endDate){
-        var startpick1 = $('#startdatepicker').datetimepicker({
-            autoclose: true,
-            pickerPosition: 'top-left',
-            startDate: startDate,
-            endDate: endDate,
-            initialDate: endDate
-        });
-        startpick1.datetimepicker('update',endDate);
-        var startpick2 = $('#startdatepicker2').datetimepicker({
-            autoclose: true,
-            pickerPosition: 'top-left',
-            startDate: startDate,
-            endDate: endDate,
-            initialDate: endDate
-        });
-        startpick2.datetimepicker('update',endDate);
-        var startpick3 = $('#startdatepicker3').datetimepicker({
-            autoclose: true,
-            pickerPosition: 'top-left',
-            startDate: startDate,
-            endDate: endDate,
-            initialDate: endDate
-        });
-        startpick3.datetimepicker('update',endDate);
-        var startpick4 = $('#startdatepicker4').datetimepicker({
-            autoclose: true,
-            pickerPosition: 'top-left',
-            startDate: startDate,
-            endDate: endDate,
-            initialDate: endDate
-        });
-        startpick4.datetimepicker('update',endDate);
-        var startpick5 = $('#startdatepicker5').datetimepicker({
-            autoclose: true,
-            pickerPosition: 'top-left',
-            startDate: startDate,
-            endDate: endDate,
-            initialDate: endDate
-        });
-        startpick5.datetimepicker('update',endDate);
-        return [startpick1,startpick2, startpick3, startpick4, startpick5]
-    }
+    // function datetimepicker_initialisation(startDate, endDate){
+    //     var startpick1 = $('#startdatepicker').datetimepicker({
+    //         autoclose: true,
+    //         pickerPosition: 'top-left',
+    //         startDate: startDate,
+    //         endDate: endDate,
+    //         initialDate: endDate
+    //     });
+    //     startpick1.datetimepicker('update',endDate);
+    //     var startpick2 = $('#startdatepicker2').datetimepicker({
+    //         autoclose: true,
+    //         pickerPosition: 'top-left',
+    //         startDate: startDate,
+    //         endDate: endDate,
+    //         initialDate: endDate
+    //     });
+    //     startpick2.datetimepicker('update',endDate);
+    //     var startpick3 = $('#startdatepicker3').datetimepicker({
+    //         autoclose: true,
+    //         pickerPosition: 'top-left',
+    //         startDate: startDate,
+    //         endDate: endDate,
+    //         initialDate: endDate
+    //     });
+    //     startpick3.datetimepicker('update',endDate);
+    //     var startpick4 = $('#startdatepicker4').datetimepicker({
+    //         autoclose: true,
+    //         pickerPosition: 'top-left',
+    //         startDate: startDate,
+    //         endDate: endDate,
+    //         initialDate: endDate
+    //     });
+    //     startpick4.datetimepicker('update',endDate);
+    //     var startpick5 = $('#startdatepicker5').datetimepicker({
+    //         autoclose: true,
+    //         pickerPosition: 'top-left',
+    //         startDate: startDate,
+    //         endDate: endDate,
+    //         initialDate: endDate
+    //     });
+    //     startpick5.datetimepicker('update',endDate);
+    //     return [startpick1,startpick2, startpick3, startpick4, startpick5]
+    // }
 
     // function markers_initialisation() {
     //     second_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-2");
