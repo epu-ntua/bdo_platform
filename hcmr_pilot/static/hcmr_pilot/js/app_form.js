@@ -825,17 +825,16 @@ $(document).ready(function() {
         });
 
         $('#remove_point2').click(function () {
-            allow_form_submit2 = [true, true, true, true, true];
+            allow_form_submit2 = [true, true];
             $('#lat2').val("");
             $('#lon2').val("");
-            $('#oil_volume2').val(10000);
-            $('#vis_duration2').val(0);
-            datetimepicker_list[1].datetimepicker('update',endDate);
             $('#lat2').off();
             $('#lon2').off();
-            $('#oil_volume2').off();
-            $('#vis_duration2').off();
-            $('#startdatepicker2 input').off();
+            $('.latitude2_missing_error').remove();
+            $('.longitude2_missing_error').remove();
+            if (check_list(allow_form_submit2)&&check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit5)&&check_list(allow_form_submit_service)) {
+                $("#run-service-btn").removeClass('disabled');
+            }
 
             if (second_user_marker != undefined) {
                 map.removeLayer(second_user_marker);
@@ -851,17 +850,17 @@ $(document).ready(function() {
         });
 
         $('#remove_point3').click(function () {
-            allow_form_submit3 = [true, true, true, true, true];
+            allow_form_submit3 = [true, true];
             $('#lat3').val("");
             $('#lon3').val("");
-            $('#oil_volume3').val(10000);
-            $('#vis_duration3').val(0);
-            datetimepicker_list[2].datetimepicker('update',endDate);
             $('#lat3').off();
             $('#lon3').off();
-            $('#oil_volume3').off();
-            $('#vis_duration3').off();
-            $('#startdatepicker3 input').off();
+            $('.latitude3_missing_error').remove();
+            $('.longitude3_missing_error').remove();
+            if (check_list(allow_form_submit3)&&check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit5)&&check_list(allow_form_submit_service)) {
+                $("#run-service-btn").removeClass('disabled');
+            }
+
             if (third_user_marker != undefined) {
                 map.removeLayer(third_user_marker);
             }
@@ -876,17 +875,16 @@ $(document).ready(function() {
         });
 
         $('#remove_point4').click(function () {
-            allow_form_submit4 = [true, true, true, true, true];
+            allow_form_submit4 = [true, true];
             $('#lat4').val("");
             $('#lon4').val("");
-            $('#oil_volume4').val(10000);
-            $('#vis_duration4').val(0);
-            datetimepicker_list[3].datetimepicker('update',endDate);
             $('#lat4').off();
             $('#lon4').off();
-            $('#oil_volume4').off();
-            $('#vis_duration4').off();
-            $('#startdatepicker4 input').off();
+            $('.latitude4_missing_error').remove();
+            $('.longitude4_missing_error').remove();
+            if (check_list(allow_form_submit4)&&check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit5)&&check_list(allow_form_submit_service)) {
+                $("#run-service-btn").removeClass('disabled');
+            }
             if (fourth_user_marker != undefined) {
                 map.removeLayer(fourth_user_marker);
             }
@@ -904,14 +902,13 @@ $(document).ready(function() {
             allow_form_submit5 = [true, true, true, true, true];
             $('#lat5').val("");
             $('#lon5').val("");
-            $('#oil_volume5').val(10000);
-            $('#vis_duration5').val(0);
-            datetimepicker_list[4].datetimepicker('update',endDate);
             $('#lat5').off();
             $('#lon5').off();
-            $('#oil_volume5').off();
-            $('#vis_duration5').off();
-            $('#startdatepicker5 input').off();
+            $('.latitude5_missing_error').remove();
+            $('.longitude5_missing_error').remove();
+            if (check_list(allow_form_submit5)&&check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit5)&&check_list(allow_form_submit_service)) {
+                $("#run-service-btn").removeClass('disabled');
+            }
             if (fifth_user_marker != undefined) {
                 map.removeLayer(fifth_user_marker);
             }
