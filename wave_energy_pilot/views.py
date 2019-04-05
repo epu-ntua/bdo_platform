@@ -381,13 +381,13 @@ def single_location_evaluation_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
-
+        # clean_up_new_note(service_exec.notebook_id)
     except Exception as e:
         print 'exception in livy execution'
         print '%s (%s)' % (e.message, type(e))
         service_exec.status = "failed"
         service_exec.save()
-        # clean_up_new_note(service_exec.notebook_id)
+        clean_up_new_note(service_exec.notebook_id)
         if 'livy_session' in request.GET.keys():
             pass
         else:
@@ -432,6 +432,7 @@ def cancel_execution(request, exec_instance):
     service_exec.status = "failed"
     service_exec.save()
     close_livy_session(int(service_exec.livy_session))
+    clean_up_new_note(service_exec.notebook_id)
     print "Cancelled?"
     return JsonResponse({'status': "cancelled"})
 
@@ -501,13 +502,13 @@ def area_location_evaluation_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.AREA_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
-
+        clean_up_new_note(service_exec.notebook_id)
     except Exception as e:
         print 'exception in livy execution'
         print '%s (%s)' % (e.message, type(e))
         service_exec.status = "failed"
         service_exec.save()
-        # clean_up_new_note(service_exec.notebook_id)
+        clean_up_new_note(service_exec.notebook_id)
         if 'livy_session' in request.GET.keys():
             pass
         else:
@@ -605,13 +606,13 @@ def wave_forecast_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.WAVE_FORECAST_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
-
+        clean_up_new_note(service_exec.notebook_id)
     except Exception as e:
         print 'exception in livy execution'
         print '%s (%s)' % (e.message, type(e))
         service_exec.status = "failed"
         service_exec.save()
-        # clean_up_new_note(service_exec.notebook_id)
+        clean_up_new_note(service_exec.notebook_id)
         if 'livy_session' in request.GET.keys():
             pass
         else:
