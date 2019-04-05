@@ -825,6 +825,11 @@ $(document).ready(function() {
    }
 
     var exec_instance = '';
+    var execution_status_interval;
+
+    function execution_status_stop() {
+      clearInterval(execution_status_interval);
+    }
     $("#run-service-btn").click(function () {
        // var execution_url = create_execution_url();
        var app_url = get_app_url();
@@ -859,7 +864,7 @@ $(document).ready(function() {
                 }
             });
 
-            var execution_status_interval = setInterval(check_execution_status, 3000);
+            execution_status_interval = setInterval(check_execution_status, 3000);
 
             function check_execution_status() {
                 $.ajax({
@@ -887,9 +892,6 @@ $(document).ready(function() {
                 });
             }
 
-            function execution_status_stop() {
-              clearInterval(execution_status_interval);
-            }
        }
 
    });
@@ -944,10 +946,14 @@ $(document).ready(function() {
         $(".modal #modal_status_div").html('');
     });
 
-    $("#modal_dismiss_btn_cancel").click(function () {
+
+    $('body').on('click', '#modal_dismiss_btn_cancel', function () {
+        console.log("hit cancel");
+        $("#execution_status").val("failed");
+        $(" .modal.in #modal_status_input").val("cancelling");
         $.ajax({
             "type": "GET",
-            "url": "/wave-energy/"+exec_instance+"/",
+            "url": "/wave-energy/cancel_execution/"+exec_instance+"/",
             "data": {},
             "success": function(result) {
                 console.log('service cancelled');
@@ -955,9 +961,6 @@ $(document).ready(function() {
             error: function () {
                 console.log('error cancelling service');
             },
-            complete: function () {
-                exec_instance = '';
-            }
         });
     });
 

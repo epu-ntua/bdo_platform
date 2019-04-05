@@ -18,4 +18,7 @@ urlpatterns = [
     url(r'^wave_forecast/results/(?P<exec_instance>[0-9]+)/$', views.wave_forecast_results, name='wave_forecast_results'),
     url(r'^wave_forecast/status/(?P<exec_instance>[0-9]+)/$', views.wave_forecast_status, name='wave_forecast_status'),
 
+    # Cancel execution
+    url(r'^cancel_execution/(?P<exec_instance>[0-9]+)/$', views.cancel_execution, name='cancel_execution'),
+
 ]

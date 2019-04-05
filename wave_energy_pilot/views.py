@@ -425,6 +425,17 @@ def single_location_evaluation_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
 
+
+def cancel_execution(request, exec_instance):
+    print "Cancelling"
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    service_exec.status = "failed"
+    service_exec.save()
+    close_livy_session(int(service_exec.livy_session))
+    print "Cancelled?"
+    return JsonResponse({'status': "cancelled"})
+
+
 @never_cache
 def area_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.AREA_EVALUATION_SERVICE_ID)
