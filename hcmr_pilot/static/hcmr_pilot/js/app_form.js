@@ -24,6 +24,7 @@ var allow_form_submit2 = [true, true, true, true, true];
 var allow_form_submit3 = [true, true, true, true, true];
 var allow_form_submit4 = [true, true, true, true, true];
 var allow_form_submit5 = [true, true, true, true, true];
+var allow_form_submit_service = [true,true]
 
 let MAX_LON_MEDITERRANEAN = 36;
 let MIN_LON_MEDITERRANEAN = -7;
@@ -232,7 +233,7 @@ function tour_guide_senario_1(){
     first_scenario_tour.start(true);
 }
 
-function check_marker_position(lat, lon, user_marker, bounds, lat_selector, lon_selector,point){
+function check_marker_position(lat, lon, user_marker, bounds, lat_selector, lon_selector,point, offset){
     if (isInsideAegeanIonian(lat,lon)) {
         $("#sel1"+point).dropdown("set selected", "202");
         $("#sel2"+point).dropdown("set selected", "001");
@@ -245,10 +246,10 @@ function check_marker_position(lat, lon, user_marker, bounds, lat_selector, lon_
         lon_selector.val(lon.toFixed(4));
     } else {
         alert("Point outside of Mediterranean sea. Please select another point");
-        var latlng = L.latLng(((bounds[0] + bounds[2]) / 2).toFixed(4), ((bounds[1] + bounds[3]) / 2).toFixed(4));
+        var latlng = L.latLng((((bounds[0] + bounds[2]) / 2)+ offset[0]).toFixed(4), (((bounds[1] + bounds[3]) / 2)+ offset[1]).toFixed(4));
         user_marker.setLatLng(latlng).update(user_marker);
-        lat_selector.val(((bounds[0] + bounds[2]) / 2).toFixed(4));
-        lon_selector.val(((bounds[1] + bounds[3]) / 2).toFixed(4));
+        lat_selector.val((((bounds[0] + bounds[2]) / 2)+ offset[0]).toFixed(4));
+        lon_selector.val((((bounds[1] + bounds[3]) / 2)+ offset[1]).toFixed(4));
         // lat_selector.trigger('change');
         // lon_selector.trigger('change');
         $("#sel1"+point).dropdown("set selected", "202");
@@ -256,13 +257,13 @@ function check_marker_position(lat, lon, user_marker, bounds, lat_selector, lon_
     }
 };
 
-function check_marker_inside_area_select(lat, lon, user_marker,bounds, lat_selector, lon_selector, point){
+function check_marker_inside_area_select(lat, lon, user_marker,bounds, lat_selector, lon_selector, point, offset){
     if ((lat< bounds[0]) || (lon<bounds[1]) || (lat>bounds[2])|| (lon>bounds[3])){
         alert("Point outside of the selected area. Please select another point");
-        var latlng = L.latLng(((bounds[0] + bounds[2]) / 2).toFixed(4), ((bounds[1] + bounds[3]) / 2).toFixed(4));
+        var latlng = L.latLng((((bounds[0] + bounds[2]) / 2)+offset[0]).toFixed(4), (((bounds[1] + bounds[3]) / 2)+offset[1]).toFixed(4));
         user_marker.setLatLng(latlng).update(user_marker);
-        lat_selector.val(((bounds[0] + bounds[2]) / 2).toFixed(4));
-        lon_selector.val(((bounds[1] + bounds[3]) / 2).toFixed(4));
+        lat_selector.val((((bounds[0] + bounds[2]) / 2)+ offset[0]).toFixed(4));
+        lon_selector.val((((bounds[1] + bounds[3]) / 2)+ offset[1]).toFixed(4));
         // lat_selector.trigger('change');
         // lon_selector.trigger('change');
         lat = parseFloat(lat_selector.val());
@@ -271,7 +272,7 @@ function check_marker_inside_area_select(lat, lon, user_marker,bounds, lat_selec
         var latlng = L.latLng(lat, lon);
         user_marker.setLatLng(latlng).update(user_marker);
     }
-    check_marker_position(lat, lon, user_marker, bounds, lat_selector,lon_selector, point);
+    check_marker_position(lat, lon, user_marker, bounds, lat_selector,lon_selector, point, offset);
 }
 
 function check_sim_len_options(){
@@ -309,7 +310,7 @@ function interactive_form(onLocationfound, user_marker){
     });
     $('#lat').on('change',function () {
         if (($('#lat').val() !== '') && ($('#lat').val() !== undefined) && ($('#lat').val()!== null)) {
-            check_marker_position(parseFloat($('#lat').val()),parseFloat($('#lon').val()),user_marker, AEGEAN_BOUNDS,$('#lat'),$('#lon'),'')
+            check_marker_position(parseFloat($('#lat').val()),parseFloat($('#lon').val()),user_marker, AEGEAN_BOUNDS,$('#lat'),$('#lon'),'',[0,0])
         }
     });
     $('#lon').on('input',function () {
@@ -323,7 +324,7 @@ function interactive_form(onLocationfound, user_marker){
     });
     $('#lon').on('change',function () {
         if (($('#lon').val() !== '') && ($('#lon').val() !== undefined) && ($('#lon').val()!== null)) {
-            check_marker_position(parseFloat($('#lat').val()),parseFloat($('#lon').val()),user_marker, AEGEAN_BOUNDS,$('#lat'),$('#lon'),'')
+            check_marker_position(parseFloat($('#lat').val()),parseFloat($('#lon').val()),user_marker, AEGEAN_BOUNDS,$('#lat'),$('#lon'),'',[0,0])
         }
     });
     $('#startdatepicker input').on('change',function () {
@@ -352,9 +353,28 @@ function interactive_form(onLocationfound, user_marker){
             $('#vis_duration').val(0);
         }
     });
+    $('#sel2').on('change',function () {
+        if ($('#sel2').val()==='003'){
+            $('#sel1').parent().dropdown('set selected','203');
+        }
+    });
+    $('#sel1').on('change',function () {
+        if ($('#sel1').val()==='203'){
+            $('#sel2').parent().dropdown('set selected','003');
+        }
+    });
 }
 
-function interactive_multi_point_form(onLocationfound, user_marker, lat, lon, oil_vol, spill_duration, datepicker, point, allow_form_submit){
+function interactive_multi_point_service_form(){
+    $('#oil_density').on('input',function(){
+        allow_form_submit_service = missing_parameter($('#oil_density'), allow_form_submit_service, 'oil-density', 1, '#run-service-btn','oil-density');
+        if ($('#oil_density').val()<0){
+            $('#oil_density').val(0);
+        }
+    });
+}
+
+function interactive_multi_point_form(onLocationfound, user_marker, lat, lon, oil_vol, spill_duration, datepicker, point, allow_form_submit,offset){
     check_sim_len_options();
     lat.on('input',function () {
         allow_form_submit = missing_parameter(lat, allow_form_submit, 'latitude'+point, 0, '#run-service-btn','latitude of Point '+point);
@@ -367,7 +387,7 @@ function interactive_multi_point_form(onLocationfound, user_marker, lat, lon, oi
     });
     lat.on('change',function () {
         if ((lat.val() !== '') && (lat.val() !== undefined) && (lat.val()!== null)) {
-            check_marker_inside_area_select(parseFloat(lat.val()), parseFloat(lon.val()),user_marker,bounds,lat,lon,'-point'+point);
+            check_marker_inside_area_select(parseFloat(lat.val()), parseFloat(lon.val()),user_marker,bounds,lat,lon,'-point'+point,offset);
         }
     });
     lon.on('input',function () {
@@ -381,7 +401,7 @@ function interactive_multi_point_form(onLocationfound, user_marker, lat, lon, oi
     });
     lon.on('change',function () {
         if ((lon.val() !== '') && (lon.val() !== undefined) && (lon.val()!== null)) {
-             check_marker_inside_area_select(parseFloat(lat.val()), parseFloat(lon.val()),user_marker,bounds,lat,lon,'-point'+point);
+             check_marker_inside_area_select(parseFloat(lat.val()), parseFloat(lon.val()),user_marker,bounds,lat,lon,'-point'+point, offset);
         }
     });
     datepicker.on('change',function () {
@@ -455,15 +475,15 @@ function create_new_oilspill(user_marker, lat_selector, lon_selector, offset, na
     user_marker = L.marker([((bounds[0] + bounds[2]) / 2)+offset[0], ((bounds[1] + bounds[3]) / 2)+offset[1]], {draggable: true}).bindPopup(name_oil_spill).addTo(map);
     var marker_layer = L.layerGroup(user_marker);
     user_marker.on('dragend', function (e) {
-        check_marker_inside_area_select(e.target._latlng.lat, e.target._latlng.lng,user_marker, bounds,lat_selector, lon_selector,point);
+        check_marker_inside_area_select(e.target._latlng.lat, e.target._latlng.lng,user_marker, bounds,lat_selector, lon_selector,point,offset);
     });
     user_marker.setIcon(icon);
     map.addLayer(marker_layer);
     map.locate();
     lat_selector.val((bounds[0] + bounds[2]) / 2);
     lon_selector.val((bounds[1] + bounds[3]) / 2);
-    map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 8);
-    check_marker_position(((bounds[0] + bounds[2]) / 2)+offset[0],((bounds[1] + bounds[3]) / 2)+offset[1],user_marker,bounds, lat_selector, lon_selector,point);
+    // map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 8);
+    check_marker_position(((bounds[0] + bounds[2]) / 2),((bounds[1] + bounds[3]) / 2),user_marker,bounds, lat_selector, lon_selector,point, offset);
     return user_marker
 }
 
@@ -559,7 +579,7 @@ $(document).ready(function() {
     var endDate = new Date();
     startDate.setFullYear(startDate.getFullYear() - 1);
     startDate.setHours(0,0,0,0);
-
+    interactive_multi_point_service_form();
     if(scenario === 2){
         $('#run-service-btn').hide();
         var second_scenario_tour = tour_guide_senario2(true,'');
@@ -589,8 +609,9 @@ $(document).ready(function() {
                 first_user_marker.setLatLng(e.latlng).update();
             };
             map.on('locationfound', onLocationfound1);
-            interactive_multi_point_form(onLocationfound1,first_user_marker,$('#lat'), $('#lon'),$('#oil_volume'),$('#vis_duration'),$('#startdatepicker input'),'1',allow_form_submit1);
+            interactive_multi_point_form(onLocationfound1,first_user_marker,$('#lat'), $('#lon'),$('#oil_volume'),$('#vis_duration'),$('#startdatepicker input'),'1',allow_form_submit1,[0,0]);
             tour_guide_senario2(false, second_scenario_tour);
+            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
         });
 
         $('#unlock-area').on('click', function(e){
@@ -673,7 +694,7 @@ $(document).ready(function() {
                     second_user_marker.setLatLng(e.latlng).update();
                 };
                 map.on('locationfound', onLocationfound2);
-                interactive_multi_point_form(onLocationfound2,second_user_marker,$('#lat2'), $('#lon2'),$('#oil_volume2'),$('#vis_duration2'),$('#startdatepicker2 input'),'2',allow_form_submit2);
+                interactive_multi_point_form(onLocationfound2,second_user_marker,$('#lat2'), $('#lon2'),$('#oil_volume2'),$('#vis_duration2'),$('#startdatepicker2 input'),'2',allow_form_submit2,[(bounds[2]-bounds[0])/4, (bounds[3]-bounds[1])/4 ]);
             }
             else if(tabid2 === "#point3_form"){
                 if (third_user_marker != undefined) {
@@ -687,7 +708,7 @@ $(document).ready(function() {
                     third_user_marker.setLatLng(e.latlng).update();
                 };
                 map.on('locationfound', onLocationfound3);
-                interactive_multi_point_form(onLocationfound3,third_user_marker,$('#lat3'), $('#lon3'),$('#oil_volume3'),$('#vis_duration3'),$('#startdatepicker3 input'),'3',allow_form_submit3);
+                interactive_multi_point_form(onLocationfound3,third_user_marker,$('#lat3'), $('#lon3'),$('#oil_volume3'),$('#vis_duration3'),$('#startdatepicker3 input'),'3',allow_form_submit3, [-(bounds[2]-bounds[0])/4, (bounds[3]-bounds[1])/4 ]);
 
                 // // var startpick = $('#startdatepicker3').datetimepicker({
                 // //     autoclose: true,
@@ -727,7 +748,7 @@ $(document).ready(function() {
                     fourth_user_marker.setLatLng(e.latlng).update();
                 };
                 map.on('locationfound', onLocationfound4);
-                interactive_multi_point_form(onLocationfound4,fourth_user_marker,$('#lat4'), $('#lon4'),$('#oil_volume4'),$('#vis_duration4'),$('#startdatepicker4 input'),'4',allow_form_submit4);
+                interactive_multi_point_form(onLocationfound4,fourth_user_marker,$('#lat4'), $('#lon4'),$('#oil_volume4'),$('#vis_duration4'),$('#startdatepicker4 input'),'4',allow_form_submit4,[-(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
 
 
                 // // var startpick = $('#startdatepicker4').datetimepicker({
@@ -768,7 +789,7 @@ $(document).ready(function() {
                     fifth_user_marker.setLatLng(e.latlng).update();
                 };
                 map.on('locationfound', onLocationfound5);
-                interactive_multi_point_form(onLocationfound5,fifth_user_marker,$('#lat5'), $('#lon5'),$('#oil_volume5'),$('#vis_duration5'),$('#startdatepicker5 input'),'5',allow_form_submit5);
+                interactive_multi_point_form(onLocationfound5,fifth_user_marker,$('#lat5'), $('#lon5'),$('#oil_volume5'),$('#vis_duration5'),$('#startdatepicker5 input'),'5',allow_form_submit5, [(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
 
                 // // var startpick = $('#startdatepicker5').datetimepicker({
                 // //     autoclose: true,
@@ -919,7 +940,7 @@ $(document).ready(function() {
             first_user_marker.setLatLng(e.latlng).update();
         };
         first_user_marker.on('dragend', function (e) {
-            check_marker_position(e.target._latlng.lat, e.target._latlng.lng,first_user_marker, AEGEAN_BOUNDS,$('#lat'),$('#lon'),'');
+            check_marker_position(e.target._latlng.lat, e.target._latlng.lng,first_user_marker, AEGEAN_BOUNDS,$('#lat'),$('#lon'),'', [0,0]);
         });
         map.addLayer(first_marker_layer);
         map.on('locationfound', onLocationfound);
@@ -928,7 +949,7 @@ $(document).ready(function() {
         map.on('click', function (e) {
             var latlng = L.latLng(e.latlng.lat, e.latlng.lng);
             first_user_marker.setLatLng(latlng).update(first_user_marker);
-            check_marker_position(e.latlng.lat, e.latlng.lng, first_user_marker, AEGEAN_BOUNDS,$('#lat'),$('#lon'),'');
+            check_marker_position(e.latlng.lat, e.latlng.lng, first_user_marker, AEGEAN_BOUNDS,$('#lat'),$('#lon'),'', [0,0]);
         });
         tour_guide_senario_1();
     }
@@ -1281,22 +1302,22 @@ $(document).ready(function() {
         return [startpick1,startpick2, startpick3, startpick4, startpick5]
     }
 
-    function markers_initialisation() {
-        second_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-2");
-        third_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-3");
-        fourth_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-4");
-        fifth_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-5");
-
-        second_marker_layer = L.layerGroup(second_user_marker);
-        third_marker_layer = L.layerGroup(third_user_marker);
-        fourth_marker_layer = L.layerGroup(fourth_user_marker);
-        fifth_marker_layer = L.layerGroup(fifth_user_marker);
-
-        map.addLayer(second_marker_layer);
-        map.addLayer(third_marker_layer);
-        map.addLayer(fourth_marker_layer);
-        map.addLayer(fifth_marker_layer);
-        return [second_user_marker, third_user_marker, fourth_user_marker, fifth_user_marker]
-    }
+    // function markers_initialisation() {
+    //     second_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-2");
+    //     third_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-3");
+    //     fourth_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-4");
+    //     fifth_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-5");
+    //
+    //     second_marker_layer = L.layerGroup(second_user_marker);
+    //     third_marker_layer = L.layerGroup(third_user_marker);
+    //     fourth_marker_layer = L.layerGroup(fourth_user_marker);
+    //     fifth_marker_layer = L.layerGroup(fifth_user_marker);
+    //
+    //     map.addLayer(second_marker_layer);
+    //     map.addLayer(third_marker_layer);
+    //     map.addLayer(fourth_marker_layer);
+    //     map.addLayer(fifth_marker_layer);
+    //     return [second_user_marker, third_user_marker, fourth_user_marker, fifth_user_marker]
+    // }
 
 });
