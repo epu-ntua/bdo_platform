@@ -18,17 +18,14 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <script>
 
-
-        mapDataByTime = [];
+        depthDataTimeMap = {};
         curTime = "{{ depth_data.0.time }}";
-        timeIdx = 0;
+        firstTime = Date.parse(curTime);
         curTimeList = [];
-        var currenTimeIdx = 0;
 
         {%  for d in depth_data %}
-
             if ("{{ d.time  }}"!== curTime) {
-                mapDataByTime.push(curTimeList);
+                depthDataTimeMap[String(Date.parse(curTime))] = curTimeList;
                 curTimeList = [];
                 curTime = "{{ d.time }}";
             }
@@ -38,7 +35,7 @@
 
             curTimeList.push([x, y, z]);
         {% endfor %}
-        mapDataByTime.push(curTimeList);
+        depthDataTimeMap[String(Date.parse(curTime))] = curTimeList;
 
         var data = null;
         var graph = null;
@@ -48,10 +45,9 @@
         }
 
         // Called when the Visualization API is loaded.
-        function drawVisualization() {
+        function drawVisualization(curTime) {
             // create the data table.
             data = new vis.DataSet();
-
 
             var options = {
                 width: '600px',
@@ -75,37 +71,19 @@
                 }
             };
 
+            for (var j = 0; j < depthDataTimeMap[curTime].length; j++) {
 
-            for (var j = 0; j < mapDataByTime[currenTimeIdx].length; j++) {
-
-                x = mapDataByTime[currenTimeIdx][j][0];
-                y = mapDataByTime[currenTimeIdx][j][1];
-                z = mapDataByTime[currenTimeIdx][j][2];
+                x = depthDataTimeMap[curTime][j][0];
+                y = depthDataTimeMap[curTime][j][1];
+                z = depthDataTimeMap[curTime][j][2];
 
                 data.add({x: x, y: y, z: z, style: 0});
             }
             var container = document.getElementById('depth_graph');
-            console.log(container);
-            console.log(data[0]);
-            console.log(options);
-
             graph = new vis.Graph3d(container, data, options);
 
-
         }
 
-
-        function visualizeInIntervals(interval) {
-            setInterval(function () {
-                drawVisualization();
-                currenTimeIdx++;
-                //console.log(currenTimeIdx);
-                if (currenTimeIdx === mapDataByTime.length)
-                    currenTimeIdx = 0;
-
-            }, interval)
-        }
-        visualizeInIntervals(3000);
     </script>
     <h3 style="text-align: center; margin-bottom: 20px;">The evolution of the oil spill in time</h3>
     <div class="container-fluid">
@@ -143,10 +121,6 @@
                     {% endfor %}
                 </tbody>
             </table>
-{#                    <h2 style="text-align: center">Oil Spill Simulation Service Results</h2>#}
-{#                    <object type="text/html" data="{{ url }}" width="800px" height="600px"#}
-{#                            style="overflow:auto;border:5px ridge blue">#}
-{#                    </object>#}
 
             <div class="viz_container row">
                 <div class="frame_container" style="position: relative; height: 100%;">
@@ -188,28 +162,36 @@
     <script src='https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.54/vfs_fonts.js'></script>
 
     <script type="text/javascript">
-        $(".viz_container iframe").on( "load", function(){
-            $(this).siblings(".loadingFrame").css( "display", "none" )
+        $(".viz_container iframe").on("load", function () {
+            $(this).siblings(".loadingFrame").css("display", "none")
         });
 
-        $(document).ready(function(){
-            function update_current_time(){
-              $("#current_time").val($("iframe").contents().find("#current_time").val());
-              var current_time = $("#current_time").val();
-              $(".legend_row").not(".legend_"+current_time).addClass("hidden");
-              $(".legend_"+current_time).removeClass("hidden");
+        previousTime = 0;
+        curTime = firstTime;
+        $(document).ready(function () {
+            function update_current_time() {
+                $("#current_time").val($("iframe").contents().find("#current_time").val());
+                var current_time = $("#current_time").val();
+                $(".legend_row").not(".legend_" + current_time).addClass("hidden");
+                $(".legend_" + current_time).removeClass("hidden");
+
+                if (previousTime !== current_time && current_time !== "") {
+                    drawVisualization(current_time);
+                    previousTime = current_time;
+                }
             }
-            setInterval(update_current_time,100);
+
+            setInterval(update_current_time, 100);
         });
 
 
         function get_legend_values(timestamp) {
             var i;
             var legend_row = "";
-            for (i=0; i < $("#legend_table th").length; i++){
+            for (i = 0; i < $("#legend_table th").length; i++) {
                 legend_row += $("#legend_table th").eq(i).html();
                 legend_row += ": ";
-                legend_row +=  $(".legend_row.legend_" + timestamp).eq(i).html();
+                legend_row += $(".legend_row.legend_" + timestamp).eq(i).html();
                 legend_row += ", ";
             }
             return legend_row.slice(0, -2); // "12345.0"
@@ -221,7 +203,7 @@
             var canvas = document.createElement("canvas");
             canvas.width = img.width;
             canvas.height = img.height;
-{#            document.getElementById('service_result_container').appendChild(canvas);#}
+            {#            document.getElementById('service_result_container').appendChild(canvas);#}
 
             // Copy the image contents to the canvas
             var ctx = canvas.getContext("2d");
@@ -237,25 +219,34 @@
         }
 
 
-
-        function create_pdf_report(){
+        function create_pdf_report() {
             var docDefinition = {
                 content: []
             };
             // Usage
-{#            docDefinition.content.push({image: getBase64Image(document.getElementById("bdo_logo")), width: 200});#}
-{#            docDefinition.content.push({image: getBase64Image(document.getElementById("hcmr_logo")), width: 200});#}
+            {#            docDefinition.content.push({image: getBase64Image(document.getElementById("bdo_logo")), width: 200});#}
+            {#            docDefinition.content.push({image: getBase64Image(document.getElementById("hcmr_logo")), width: 200});#}
             docDefinition.content.push(
-            {
-                alignment: 'center',
-                columns: [
-                    {image: getBase64Image(document.getElementById("bdo_logo")), fit: [150, 150]},
-                    {image: getBase64Image(document.getElementById("hcmr_logo")), fit: [120, 90]}
-                ]
-            }
+                {
+                    alignment: 'center',
+                    columns: [
+                        {image: getBase64Image(document.getElementById("bdo_logo")), fit: [150, 150]},
+                        {image: getBase64Image(document.getElementById("hcmr_logo")), fit: [120, 90]}
+                    ]
+                }
             );
-            docDefinition.content.push({text: "Exploiting Oceans of Data for Maritime Apps", bold: true, alignment: 'center', fontSize: 20});
-            docDefinition.content.push({text: "Oil Spill Dispersion in the Marine Environment", bold: true, alignment: 'center', fontSize: 20});
+            docDefinition.content.push({
+                text: "Exploiting Oceans of Data for Maritime Apps",
+                bold: true,
+                alignment: 'center',
+                fontSize: 20
+            });
+            docDefinition.content.push({
+                text: "Oil Spill Dispersion in the Marine Environment",
+                bold: true,
+                alignment: 'center',
+                fontSize: 20
+            });
             docDefinition.content.push(" ");
 
             docDefinition.content.push({text: "Study Conditions", bold: true});
@@ -267,9 +258,9 @@
             docDefinition.content.push({text: "Results", bold: true});
             $("iframe").contents().find("#snapshot div").each(function (i, elem) {
                 var new_content = {
-                        image: $(elem).find("img").attr('src'),
-                        width: 450
-                    };
+                    image: $(elem).find("img").attr('src'),
+                    width: 450
+                };
                 docDefinition.content.push(get_legend_values($(elem).attr('id')));
                 docDefinition.content.push(new_content)
                 docDefinition.content.push(" ");
@@ -280,7 +271,7 @@
 
         function check() {
             if ($("iframe").contents().find("#snapshot_status").val() !== "done") {
-{#                console.log("Time out");#}
+                {#                console.log("Time out");#}
                 return setTimeout(check, 1000);
             }
 
