@@ -870,7 +870,7 @@ function reset(){
             '\n' +
             '                </div>')
 
-
+        $('.add-value-field').click();
         // $('#lat_min').val("").trigger('change');
         // $('#lat_max').val("").trigger('change');
     }
