@@ -405,7 +405,7 @@ h2.title {
 }
 
 .text-danger {
-  color: #f44336;
+  color: #a00000;
 }
 
 .text-success {
@@ -1090,7 +1090,7 @@ h2.title {
 .navbar .navbar-nav > li > a.btn.btn-danger.dropdown-toggle, .open >
 .navbar .navbar-nav > li > a.btn.btn-danger.dropdown-toggle:focus, .open >
 .navbar .navbar-nav > li > a.btn.btn-danger.dropdown-toggle:hover {
-  background-color: #f44336;
+  background-color: #a00000;
   color: #FFFFFF;
 }
 .btn.btn-danger:focus, .btn.btn-danger:active, .btn.btn-danger:hover,
@@ -1129,7 +1129,7 @@ h2.title {
 .btn.btn-danger.btn-simple,
 .navbar .navbar-nav > li > a.btn.btn-danger.btn-simple {
   background-color: transparent;
-  color: #f44336;
+  color: #a00000;
   box-shadow: none;
 }
 .btn.btn-danger.btn-simple:hover, .btn.btn-danger.btn-simple:focus, .btn.btn-danger.btn-simple:active,
@@ -1137,7 +1137,7 @@ h2.title {
 .navbar .navbar-nav > li > a.btn.btn-danger.btn-simple:focus,
 .navbar .navbar-nav > li > a.btn.btn-danger.btn-simple:active {
   background-color: transparent;
-  color: #f44336;
+  color: #a00000;
 }
 .btn.btn-white, .btn.btn-white:focus, .btn.btn-white:hover,
 .navbar .navbar-nav > li > a.btn.btn-white,
@@ -1408,7 +1408,7 @@ h2.title {
 }
 .btn-group.open > .dropdown-toggle.btn.btn-danger,
 .btn-group-vertical.open > .dropdown-toggle.btn.btn-danger {
-  background-color: #f44336;
+  background-color: #a00000;
 }
 .btn-group.open > .dropdown-toggle.btn.btn-rose,
 .btn-group-vertical.open > .dropdown-toggle.btn.btn-rose {
@@ -1745,7 +1745,7 @@ output {
   background-color: #aa7424;
 }
 .label.label-danger {
-  background-color: #f44336;
+  background-color: #a00000;
 }
 .label.label-rose {
   background-color: #e91e63;
@@ -2282,7 +2282,7 @@ select.form-control[multiple], .form-group.is-focused select.form-control[multip
   color: #ffffff;
 }
 .alert.alert-danger {
-  background-color: #f55a4e;
+  background-color: #a00000;
   color: #ffffff;
   border-radius: 3px;
   box-shadow: 0 12px 20px -10px rgba(244, 67, 54, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(244, 67, 54, 0.2);
@@ -2783,7 +2783,7 @@ fieldset[disabled] .form-group.is-focused .togglebutton label {
   box-shadow: 0 12px 20px -10px rgba(255, 152, 0, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(255, 152, 0, 0.2);
 }
 .nav-pills.nav-pills-danger > li.active > a, .nav-pills.nav-pills-danger > li.active > a:focus, .nav-pills.nav-pills-danger > li.active > a:hover {
-  background-color: #f44336;
+  background-color: #a00000;
   box-shadow: 0 12px 20px -10px rgba(255, 152, 0, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(255, 152, 0, 0.2);
 }
 
@@ -3244,7 +3244,7 @@ fieldset[disabled] .form-group.is-focused .togglebutton label {
   color: #ffffff;
 }
 .navbar.navbar-danger {
-  background-color: #f44336;
+  background-color: #a00000;
   color: #ffffff;
 }
 .navbar.navbar-danger .navbar-form .form-group input.form-control::-moz-placeholder,
@@ -3264,11 +3264,11 @@ fieldset[disabled] .form-group.is-focused .togglebutton label {
 }
 .navbar.navbar-danger .dropdown-menu li > a:hover, .navbar.navbar-danger .dropdown-menu li > a:focus {
   color: #FFFFFF;
-  background-color: #f44336;
+  background-color: #a00000;
   box-shadow: 0 12px 20px -10px rgba(244, 67, 54, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(244, 67, 54, 0.2);
 }
 .navbar.navbar-danger .dropdown-menu .active > a {
-  background-color: #f44336;
+  background-color: #a00000;
   color: #ffffff;
   box-shadow: 0 12px 20px -10px rgba(244, 67, 54, 0.28), 0 4px 20px 0px rgba(0, 0, 0, 0.12), 0 7px 8px -5px rgba(244, 67, 54, 0.2);
 }
@@ -3276,7 +3276,7 @@ fieldset[disabled] .form-group.is-focused .togglebutton label {
   color: #ffffff;
 }
 .navbar.navbar-rose {
-  background-color: #e91e63;
+  background-color: #a00000;
   color: #ffffff;
 }
 .navbar.navbar-rose .navbar-form .form-group input.form-control::-moz-placeholder,
