@@ -108,7 +108,7 @@ $(function () {
                 }
             });
 
-            var $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%;"/>')
+            var $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%; margin: 2px 0; background-image: none; border: #b4b4b4; border-width: 1px; border-style: solid; border-radius: 5px"/>')
             $fieldInputShown.attr('data-variable-id', config.id);
             $fieldInputShown.val(config.title + ' (' + config.unit + ')');
 
@@ -119,7 +119,7 @@ $(function () {
 
 
             // set field value
-            var $fieldset = $('<div class="fieldset">' +config.label+'<br />' + '<div class="row" style="margin: 0"><div class="col-xs-3 col-prefix" style="' +'">' + '</div><div class="col-xs-8 col-main"></div><div class="col-xs-1 col-suffix"></div></div></div>');
+            var $fieldset = $('<div class="fieldset">' +config.label+'<br />' + '<div class="row" style="margin: 0"><div class="col-xs-5 col-prefix" style="padding: 0;' +'">' + '</div><div class="col-xs-10 col-main" style="padding: 0;"></div><div class="col-xs-1 col-suffix"></div></div></div>');
             $fieldset.find('.col-main').append($fieldInput);
             $fieldset.find('.col-main').append($fieldInputShown);
 

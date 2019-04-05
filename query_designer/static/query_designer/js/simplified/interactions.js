@@ -82,7 +82,7 @@ $(function() {
                 // Get the area of the Query Desinger where the new variable field will be added
                 var $chartControls = $('#chart-control-list  .chart-control');
                 // Add the label
-                var label = 'Metric #<span class="metric-cnt">' + (QueryToolbox.variables.length + 1) + '</span>';
+                var label = 'Metric #<span class="metric-cnt">' + (QueryToolbox.variables.length + 1) + '</span> <span style="font-size: 9pt;">(from ' + newVariable.dataset_name + ')</span>';
                 var obj = QueryToolbox.objects[0];
 
                 // The new variable field
