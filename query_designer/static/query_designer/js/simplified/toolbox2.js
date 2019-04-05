@@ -37,6 +37,8 @@ $(function () {
         temporal_resolution: '',
         spatial_resolution: '',
         filters: [],
+        common_dimensions: [],
+        datasets: [],
 
         // the Query Toolbox objects, only one is created
         objects: [],

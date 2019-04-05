@@ -58,6 +58,38 @@ $(function() {
         $('#select-data-modal').dialog('close');
     });
 
+
+    function onlyUnique(value, index, self) {
+        return self.indexOf(value) === index;
+    }
+
+    function update_datasets_and_common_dimensions() {
+        var all_dimensions = [], common_dimensions = [];
+        var all_datasets = [];
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            $.each(v_obj.dimensions, function (_, d_obj) {
+                 all_dimensions.push(d_obj.title);
+            });
+            all_datasets.push(v_obj.dataset_id);
+        });
+        QueryToolbox.datasets = all_datasets.filter( onlyUnique );
+
+        all_dimensions = all_dimensions.filter( onlyUnique );
+        common_dimensions = all_dimensions;
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            var var_dims = [];
+            $.each(v_obj.dimensions, function (_, d_obj) {
+                var_dims.push(d_obj.title);
+            });
+            common_dimensions  = common_dimensions.filter(value => var_dims.includes(value));
+        });
+        // console.log("common dimensions");
+        // console.log(common_dimensions);
+        QueryToolbox.common_dimensions = common_dimensions;
+        return common_dimensions;
+    }
+
+
     /* Add a variable from the data selection modal */
     $('#selection-confirm-btn').on('click', function() {
         // The new variable to be added for query
@@ -127,13 +159,26 @@ $(function() {
         });
 
 
+        var common_dimensions = update_datasets_and_common_dimensions();
+
+        $("#joined_dimensions_div").html("").addClass("hidden");
         if (joined_flag){
+            $("#joined_dimensions_div").removeClass("hidden");
+            $("#joined_dimensions_div").append("<p style='margin: 0;'>Datasets joined on their common fields:</p>");
+            for (var i=0; i<common_dimensions.length; i++) {
+                if(i === common_dimensions.length-1){
+                    $("#joined_dimensions_div").append("<span>"+common_dimensions[i]+"</span>");
+                }
+                else{
+                    $("#joined_dimensions_div").append("<span>"+common_dimensions[i]+", </span>");
+                }
+            }
             //automatically fill spatial and temporal resolution when joining datasets
-            if( $('#temporal_resolution').val()==='') {
+            if(( $('#temporal_resolution').val()==='') && (common_dimensions.indexOf("time") >= 0) ){
                 $('#temporal_resolution').val('hour');
                 $('#temporal_resolution').trigger('change');
             }
-            if($('#spatial_resolution').val()==='') {
+            if(( $('#spatial_resolution').val()==='') && ((common_dimensions.indexOf("latitude") >= 0) || (common_dimensions.indexOf("longitude") >= 0) )){
                 $('#spatial_resolution').val('0.1');
                 $('#spatial_resolution').trigger('change');
             }
@@ -316,6 +361,31 @@ $(function() {
                 return false; // break
             }
         });
+
+        var common_dimensions = update_datasets_and_common_dimensions();
+        $("#joined_dimensions_div").html("").addClass("hidden");
+
+        if (QueryToolbox.datasets.length === 1){
+            //automatically fill spatial and temporal resolution when joining datasets
+            $('#temporal_resolution').val('');
+            $('#temporal_resolution').trigger('change');
+            $('#spatial_resolution').val('');
+            $('#spatial_resolution').trigger('change');
+        }
+
+        if (QueryToolbox.datasets.length > 1){
+            $("#joined_dimensions_div").removeClass("hidden");
+            $("#joined_dimensions_div").append("<p style='margin: 0;'>Datasets joined on their common fields:</p>");
+            for (var i=0; i<common_dimensions.length; i++) {
+                if(i === common_dimensions.length-1){
+                    $("#joined_dimensions_div").append("<span>"+common_dimensions[i]+"</span>");
+                }
+                else{
+                    $("#joined_dimensions_div").append("<span>"+common_dimensions[i]+", </span>");
+                }
+            }
+        }
+
         updateQDfields();
     });
 
