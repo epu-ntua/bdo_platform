@@ -46,6 +46,8 @@
         }
 
         function findPointColorFromStatus(status) {
+            if (status === "-1")
+                return "red";
             if (status === "0")
                 return 'darkblue';
             else if (status === "1")

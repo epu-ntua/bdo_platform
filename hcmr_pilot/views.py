@@ -105,7 +105,10 @@ def scenario3_results(request, exec_instance):
                     "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
 
     output_json = filename_output.replace('_F.out', '.json')
-    depth_data = extract_depth_data(str(output_json))
+    rp_file = filename_output.replace('_F.out', '.txt')
+    red_points = get_red_points(rp_file)
+
+    depth_data = extract_depth_data(str(output_json), red_points)
     context = {
         'depth_data': depth_data,
         'url': visualization_url,
@@ -388,16 +391,37 @@ def download(request):
     return response
 
 
-def extract_depth_data(json_data_file):
+def extract_depth_data(json_data_file, red_points):
     with open('visualizer/static/visualizer/files/' + json_data_file) as json_file:
         data = json.load(json_file)
         points = []
         for p in data:
+            lat, lon = p['Lat'],p['Lon']
+            status = find_status(lat, lon, p, red_points)
             point = {"depth": p['Dpth'],
-                     "lat": p['Lat'],
-                     "lon": p['Lon'],
+                     "lat": lat,
+                     "lon": lon,
                      "time": p["time"],
-                     "status": p['Status']}
+                     "status": status}
             points.append(point)
         return points
+
+
+def get_red_points(rp_file):
+    red_points = []
+    with open('visualizer/static/visualizer/files/' + rp_file, 'r') as file:
+        line = file.readline()
+        while line:
+            red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
+            line = file.readline()
+        file.close()
+    return red_points
+
+
+def find_status(lat, lon, p, red_points):
+    if (lat, lon) in red_points:
+        status = -1
+    else:
+        status = p['Status']
+    return status
 
