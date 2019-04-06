@@ -32,8 +32,9 @@
             var x = {{ d.lat }};
             var y = {{ d.lon }};
             var z = -{{ d.depth }};
+            var status = {{ d.status }}
 
-            curTimeList.push([x, y, z]);
+            curTimeList.push([x, y, z, status]);
         {% endfor %}
         depthDataTimeMap[String(Date.parse(curTime))] = curTimeList;
 
@@ -42,6 +43,19 @@
 
         function onclick(point) {
             console.log(point);
+        }
+
+        function findPointColorFromStatus(status) {
+            if (status === "0")
+                return 'darkblue';
+            else if (status === "1")
+                return 'lightblue';
+            else if (status === "5")
+                return 'cadetblue';
+            else if (status === "10")
+               return 'orange';
+            else
+                return 'lightblue'
         }
 
         // Called when the Visualization API is loaded.
@@ -76,8 +90,11 @@
                 x = depthDataTimeMap[curTime][j][0];
                 y = depthDataTimeMap[curTime][j][1];
                 z = depthDataTimeMap[curTime][j][2];
+                status = depthDataTimeMap[curTime][j][3];
 
-                data.add({x: x, y: y, z: z, style: 0});
+                color = findPointColorFromStatus(status);
+
+                data.add({x: x, y: y, z: z, style: color});
             }
             var container = document.getElementById('depth_graph');
             graph = new vis.Graph3d(container, data, options);

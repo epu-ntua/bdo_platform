@@ -396,7 +396,8 @@ def extract_depth_data(json_data_file):
             point = {"depth": p['Dpth'],
                      "lat": p['Lat'],
                      "lon": p['Lon'],
-                     "time": p["time"]}
+                     "time": p["time"],
+                     "status": p['Status']}
             points.append(point)
         return points
 
