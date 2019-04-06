@@ -75,6 +75,7 @@ $(function() {
                     unit: $(variable).data('variable-unit'),
                     datatype: $(variable).data('variable-datatype'),
                     dataset_id: $(variable).data('variable-dataset'),
+                    dataset_size: $(variable).closest('#dataset_info_div').find("#dataset_metadata_div").find(".dataset-size").find("td").eq(1).text(),
                     dataset_name: $(variable).closest('#dataset_info_div').find("#dataset_basic_info_div").find(".dataset-title").text(),
                     aggregate: null,
                     groupBy: null,

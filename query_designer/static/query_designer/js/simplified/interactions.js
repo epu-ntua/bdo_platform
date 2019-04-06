@@ -153,7 +153,8 @@ $(function() {
                     datatype: newVariable.datatype,
                     aggregate: $fieldset.find('.col-prefix').find("select").val(),
                     dimensions: newVariable.dimensions,
-                    dataset_id: newVariable.dataset_id
+                    dataset_id: newVariable.dataset_id,
+                    dataset_size: newVariable.dataset_size
                 });
             }
         });
@@ -646,15 +647,42 @@ $(function() {
     });
 
 
+    function decide_message(){
+        var message = "We are fetching your data. ";
+        if(QueryToolbox.datasets.length > 1){
+            message += String(QueryToolbox.datasets.length) + " large datasets are combined. It make take a few minutes, please wait.";
+        }
+        else if(QueryToolbox.groupings.length > 0){
+            message += " They are grouped based on your selection. It make take 1-2 minutes, please wait.";
+        }
+        else if(QueryToolbox.temporal_resolution !== "" && QueryToolbox.spatial_resolution !== "" ){
+            message += " They are being harmonised on space and time. It make take 1-2 minutes, please wait.";
+        }
+        else if(QueryToolbox.spatial_resolution !== ""){
+            message += " They are being harmonised on space. It make take 1-2 minutes, please wait.";
+        }
+        else if(QueryToolbox.temporal_resolution !== ""){
+            message += " They are being harmonised on time. It make take 1-2 minutes, please wait.";
+        }
+        else{
+            message += " It will not take long.";
+        }
+
+        return message;
+    }
 
 
     // *** RUN QUERY / EXPLORE RESULTS *** //
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
-        $('a[href="#dataDiv"]').trigger('click')
+        $('a[href="#dataDiv"]').trigger('click');
         $("#viz_config .list-group").children().each(function () {
                 $(this).find("#selected_viz_span").hide();
             });
+
+        var message = decide_message();
+        $(".outputLoadImg #loading_message").html(message);
+
         $(".outputLoadImg").hide();
         $(".outputLoadImg").delay(100).show();
     // $("#run-query-btn").click(function () {
