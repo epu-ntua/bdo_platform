@@ -1,0 +1,17 @@
+.DS_Store
+.grunt
+.idea
+.vscode
+test/E2ERunner.html
+test/UnitRunner.html
+test/MobileRunner.html
+test/dist/
+src/3rdparty/walkontable/test/dist/
+src/3rdparty/walkontable/dist/
+dev*.html
+npm-debug.log
+
+!dist/README.md
+node_modules/
+commonjs/
+es/
