@@ -14,6 +14,7 @@ from django.views.decorators.cache import never_cache
 from aggregator.models import Variable, Dataset
 from lists import *
 from datasets import *
+from energy_converters import *
 
 from query_designer.models import Query, TempQuery, AbstractQuery
 from service_builder.models import Service, ServiceInstance
@@ -203,6 +204,15 @@ def execute_service_code(request, service_exec, new_arguments_paragraph, paragra
 def clean_up_new_note(notebook_id):
     delete_zep_notebook(notebook_id)
 
+def wec_creation(request):
+    new_wec = request.GET['wec_data'];
+    print new_wec
+
+@never_cache
+def energy_conversion_init(request):
+    return render(request, 'wave_energy_pilot/energy_conversion_service.html',
+    {'datasets_list': DATASETS,
+     'energy_converters': CONVERTERS})
 
 @never_cache
 def init(request):
