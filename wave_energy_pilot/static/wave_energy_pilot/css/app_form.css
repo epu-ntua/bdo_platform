@@ -28,6 +28,7 @@
     padding: 10px;
 }
 
+
 .form-check-label{
     font-size: 14px;
     color: #000000;
@@ -60,4 +61,12 @@
 
 .dropdown.selection{
     width: 100%;
+}
+
+.checkbox label{
+    color: #0b0b0b;
+}
+
+.radio label{
+    color: #0b0b0b;
 }
