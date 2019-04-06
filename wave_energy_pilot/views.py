@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import collections, json
-from threading import Thread
+from threading import Thread, Timer
 from background_task import background
 from datetime import datetime
 
@@ -381,7 +381,8 @@ def single_location_evaluation_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
-        # clean_up_new_note(service_exec.notebook_id)
+        # t = Timer(60.0, clean_up_new_note(service_exec.notebook_id))
+        # t.start()
     except Exception as e:
         print 'exception in livy execution'
         print '%s (%s)' % (e.message, type(e))
