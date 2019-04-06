@@ -117,6 +117,10 @@ select {
     border-radius: 5%;
 }
 
+#chart-control-list li:not(.active) a{
+    background-color: #d4d4d4;
+}
+
 .coverage-date-filters .form-group{
     margin-top: -7px;
 }
