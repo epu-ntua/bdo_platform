@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+{% load leaflet_tags %}
+{% block css %}
+    <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+    <link href="{% static "wave_energy_pilot/css/app_form.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.css"%}" rel="stylesheet">
+    <link href="{% static "vendor/handsontable/dist/handsontable.css" %}" rel="stylesheet">
+
+{% endblock %}
+
+{% block content %}
+    <div class="app-container">
+        <div id="map" style="min-height: 800px; width: 100%; margin-top: 10px; z-index: 1; ">
+        </div>
+        <div id="converters">
+                {% for converter in energy_converters %}
+                    <div class="converter" data-id="{{ converter.id }}" data-title="{{ buoy.title }}" data-min_height="{{ buoy.min_height }}" data-max_height="{{ buoy.max_height }}"
+                                            data-max_period="{{ converter.max_energy_period }}" data-power="{{ converter.power }}" data-values="{{ converter.data }}">
+                    </div>
+                {% endfor %}
+        </div>
+        <div id="app_form" class="form container">
+            {% include "wave_energy_pilot/utils/energy_conversion_form.html" %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block  js %}
+    {% include 'wave_energy_pilot/utils/user_wec_insertion_modal.html' %}
+    {% leaflet_js %}
+
+    <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+    <script src="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.js"%}"></script>
+    <script src="{% static "wave_energy_pilot/js/area-select/simple-shape.js" %}"></script>
+    <script src="{% static "wave_energy_pilot/js/area-select/rectangle.js" %}"></script>
+    <script src="{% static 'wave_energy_pilot/js/spatio_temporal_filter.js'%}" ></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script src="{% static 'wave_energy_pilot/js/energy_conv_form.js' %}"></script>
+    <script src="{% static "vendor/handsontable/dist/handsontable.js" %}"></script>
+
+
+
+{% endblock %}
