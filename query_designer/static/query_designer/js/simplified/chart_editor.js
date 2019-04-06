@@ -771,10 +771,72 @@ $(document).ready(function () {
         return viz_request;
     }
 
+
+    function decide_message(viz_request){
+        var message = "We are fetching the required data and creating your visualisation. ";
+        var magnitude = "";
+        var number_of_digits = 0;
+        // Check if magnitude is thousands
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf("thousand") > 0){
+                magnitude = "thousand";
+            }
+        });
+        // Check if magnitude is millions
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf("million") > 0){
+                magnitude = "million";
+            }
+        });
+        // Check if magnitude is billions
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf("billion") > 0){
+                magnitude = "billion";
+            }
+        });
+        // Check largest number of digits of the largest magnitude
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf(magnitude) > 0){
+                if(number_of_digits < v_obj.dataset_size.split(" ")[0].length){
+                    number_of_digits = v_obj.dataset_size.split(" ")[0].length;
+                }
+            }
+        });
+
+        if(QueryToolbox.datasets.length > 1){
+            message += String(QueryToolbox.datasets.length) + " large datasets are combined. \nIt may take a few minutes, please wait.";
+        }
+        else if(viz_request.indexOf("get_map_markers_vessel_course") > 0 || viz_request.indexOf("get_map_plotline_vessel_course") > 0){
+            if (magnitude === "billion")
+                message += " The dataset used contains billions of rows. \nIt may take a few minutes, please wait.";
+            else if (magnitude === "million" && number_of_digits > 2)
+                message += " The dataset used contains hundreds of millions of rows. \nIt may take a few minutes, please wait.";
+            else
+                message += " It may take 1-2 minutes, please wait.";
+        }
+        else if(viz_request.indexOf("get_map_markers_grid") > 0){
+            if (magnitude === "billion")
+                message += " The dataset used contains billions of rows. \nIt may take a few minutes, please wait.";
+            else if (magnitude === "million" && number_of_digits > 2)
+                message += " The dataset used contains hundreds of millions of rows. \nIt may take 1-2 minutes, please wait.";
+            else
+                message += " It may take 1-2 minutes, please wait.";
+        }
+        else{
+            message += " It will not take long.";
+        }
+
+        return message;
+    }
+
     function show_viz(viz_request) {
         // language=HTML
-        var htmlString = '<div class="outputLoadImg"><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
+        var htmlString = '<div class="outputLoadImg"><h4 id="loading_message" style="text-align: center; white-space: pre-line;"></h4><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
         $("#viz_container").html(htmlString);
+
+        var message = decide_message(viz_request);
+        $(".outputLoadImg #loading_message").html(message);
+
         $('#myModal #submit-modal-btn').show();
         $("#viz_container .outputLoadImg").css("display", "block");
         $("#viz_container iframe").on("load", function () {

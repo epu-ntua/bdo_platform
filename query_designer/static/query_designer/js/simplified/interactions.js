@@ -649,20 +649,21 @@ $(function() {
 
     function decide_message(){
         var message = "We are fetching your data. ";
+
         if(QueryToolbox.datasets.length > 1){
-            message += String(QueryToolbox.datasets.length) + " large datasets are combined. It make take a few minutes, please wait.";
+            message += String(QueryToolbox.datasets.length) + " large datasets are combined. It may take a few minutes, please wait.";
         }
         else if(QueryToolbox.groupings.length > 0){
-            message += " They are grouped based on your selection. It make take 1-2 minutes, please wait.";
+            message += " They are grouped based on your selection. It may take 1-2 minutes, please wait.";
         }
         else if(QueryToolbox.temporal_resolution !== "" && QueryToolbox.spatial_resolution !== "" ){
-            message += " They are being harmonised on space and time. It make take 1-2 minutes, please wait.";
+            message += " They are being harmonised on space and time. It may take 1-2 minutes, please wait.";
         }
         else if(QueryToolbox.spatial_resolution !== ""){
-            message += " They are being harmonised on space. It make take 1-2 minutes, please wait.";
+            message += " They are being harmonised on space. It may take 1-2 minutes, please wait.";
         }
         else if(QueryToolbox.temporal_resolution !== ""){
-            message += " They are being harmonised on time. It make take 1-2 minutes, please wait.";
+            message += " They are being harmonised on time. It may take 1-2 minutes, please wait";
         }
         else{
             message += " It will not take long.";
