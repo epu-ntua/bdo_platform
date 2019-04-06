@@ -174,6 +174,7 @@ $(function() {
                     $("#joined_dimensions_div").append("<span>"+common_dimensions[i]+", </span>");
                 }
             }
+
             //automatically fill spatial and temporal resolution when joining datasets
             if(( $('#temporal_resolution').val()==='') && (common_dimensions.indexOf("time") >= 0) ){
                 $('#temporal_resolution').val('hour');
@@ -183,6 +184,12 @@ $(function() {
                 $('#spatial_resolution').val('0.1');
                 $('#spatial_resolution').trigger('change');
             }
+
+            if($('#spatial_resolution').val() !== "")
+                $("#joined_dimensions_div").append("<p id='harmonised_space' style='margin: 0;'>Harmonised on space: " + $('#spatial_resolution').val() + "deg</p>");
+            if($('#temporal_resolution').val() !== "")
+                $("#joined_dimensions_div").append("<p id='harmonised_time' style='margin: 0;'>Harmonised on time: " + $('#temporal_resolution').val() +"</p>");
+
         }
         // console.log(QueryToolbox.variables);
 
@@ -385,6 +392,11 @@ $(function() {
                     $("#joined_dimensions_div").append("<span>"+common_dimensions[i]+", </span>");
                 }
             }
+            if($('#spatial_resolution').val() !== "")
+                $("#joined_dimensions_div").append("<p id='harmonised_space' style='margin: 0;'>Harmonised on space: " + $('#spatial_resolution').val() + "deg</p>");
+            if($('#temporal_resolution').val() !== "")
+                $("#joined_dimensions_div").append("<p id='harmonised_time' style='margin: 0;'>Harmonised on time: " + $('#temporal_resolution').val() +"</p>");
+
         }
 
         updateQDfields();
@@ -406,6 +418,10 @@ $(function() {
             $("select[name='field_aggregate']").find('option[value=""]').each(function () {
                 $(this).attr('disabled', 'disabled');
             });
+
+
+            $("#joined_dimensions_div #harmonised_space").html("Harmonised on space: " + $('#spatial_resolution').val() + "deg");
+
             // remove latitude and longitude from group by options
             // $("#id_category > option[data-title='longitude']").remove();
             // $("#id_category > option[data-title='latitude']").remove()
@@ -425,6 +441,7 @@ $(function() {
                     });
                 }
             }
+            $("#joined_dimensions_div #harmonised_space").html("");
         }
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
@@ -445,6 +462,8 @@ $(function() {
             $("select[name='field_aggregate']").find('option[value=""]').each(function () {
                 $(this).attr('disabled', 'disabled');
             });
+
+            $("#joined_dimensions_div #harmonised_time").html("Harmonised on time: " + $('#temporal_resolution').val());
             // remove time from group by options
             // $("#id_category > option[data-title='time']").remove()
         }
@@ -462,6 +481,7 @@ $(function() {
                     });
                 }
             }
+            $("#joined_dimensions_div #harmonised_time").html("");
         }
         $("select[name='field_aggregate']").select2();
         // mark as unsaved
