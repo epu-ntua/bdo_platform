@@ -704,20 +704,26 @@ $(document).ready(function () {
             $('.viz_item').popover('hide');
         }
         else {
-            var component_id = $(this).attr('data-viz-id');
-            var component_type = $(this).attr('data-viz-type');
-            var component_selector = 'li[data-viz-id="' + component_id + '"]';
-            $(component_selector).popover({
-                html: true,
-                title: $(this).text() + ' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="' + $(this).attr('data-description') + '"></i>',
-                trigger: 'manual',
-                content: function () {
-                    return $('.all_viz_forms  #viz_' + String(component_id)).clone();
-                }
-            });
-            var chosen_viz = $(this).attr('data-viz-name');
-            updateVariables(chosen_viz, component_id, component_type, component_selector, createPopover);
-            // createPopover(component_id, component_type, component_selector, populate_selects(specific_viz_form_configuration));
+            if(!$(this).hasClass("viz_item_disabled")) {
+                var component_id = $(this).attr('data-viz-id');
+                var component_type = $(this).attr('data-viz-type');
+                var component_selector = 'li[data-viz-id="' + component_id + '"]';
+                $(component_selector).popover({
+                    html: true,
+                    title: $(this).text() + ' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="' + $(this).attr('data-description') + '"></i>',
+                    trigger: 'manual',
+                    content: function () {
+                        return $('.all_viz_forms  #viz_' + String(component_id)).clone();
+                    }
+                });
+                var chosen_viz = $(this).attr('data-viz-name');
+                updateVariables(chosen_viz, component_id, component_type, component_selector, createPopover);
+                // createPopover(component_id, component_type, component_selector, populate_selects(specific_viz_form_configuration));
+            }
+            else{
+                // $(this).tooltip({trigger: 'manual'});
+                // $(this).tooltip('toggle');
+            }
         }
 
     });
