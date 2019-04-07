@@ -221,6 +221,10 @@ select {
     margin: 0;
 }
 
+#chart-container .viz_item_disabled {
+    color: #c5c5c5;
+}
+
 #chart-container .chartdiv {
     min-height: 500px;
     font-size: 11px;
@@ -232,7 +236,7 @@ select {
 #chart-container .chart-top-menu{
     background: none;
     border-bottom: 1px solid #e7e7e7;
-    margin-bottom: 40px;
+    margin-bottom: 10px;
     font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size:20px;
 }
