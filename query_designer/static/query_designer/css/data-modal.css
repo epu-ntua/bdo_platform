@@ -132,9 +132,14 @@
 }
 
 #select-data-modal #dataset-list-section .dataset-section[data-selected="True"]{
-    background-color: #2a8898;
+    background-color: #1c567e;
     color: white;
     font-weight: normal;
+}
+
+#select-data-modal #dataset-list-section .dataset-section[data-selected="True"] .dataset-publisher a{
+    color: white;
+    text-decoration: underline;
 }
 
 #select-data-modal #dataset-list-section .dataset-section[data-selected="True"] .dataset-title{
