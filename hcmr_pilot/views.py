@@ -136,7 +136,7 @@ def process(request, exec_instance):
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
 
-        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density = parse_request_params(request)
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count = parse_request_params(request)
         service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
         service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
         service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
@@ -183,12 +183,14 @@ def process(request, exec_instance):
             output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
             spill_data, parcel_data = create_json_from_out_file(output_path)
             # spill_data = [spill_infos[0]['start_date']+':00', spill_infos[0]['latitude'], spill_infos[0]['longitude'], spill_data[0][3], spill_data[0][4], spill_data[0][3], spill_infos[0]['oil_volume'],spill_data[0][5], spill_data[0][6]]
-
-            parcel_data.insert(0,[spill_infos[0]['start_date'].encode('ascii') + ':00', float(spill_infos[0]['latitude']),float(spill_infos[0]['longitude']),
-                          parcel_data[0][3], parcel_data[0][4], float(spill_infos[0]['oil_volume']),
-                          parcel_data[0][6], parcel_data[0][7]])
-            spill_data.insert(0,
-                               [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
+            print str(spill_infos[0]['latitude'])+ ' ' + spill_infos[0]['longitude']
+            print str(valid_points[0][0]) + ' ' + str(valid_points[0][1])
+            for el in valid_points:
+                parcel_data.insert(0,[spill_infos[0]['start_date'].encode('ascii') + ':00', float(el[0]),float(el[1]),
+                              parcel_data[0][3], parcel_data[0][4], float(spill_infos[0]['oil_volume']),
+                              parcel_data[0][6], parcel_data[0][7]])
+                spill_data.insert(0,
+                                   [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
 
             print 'create_json_from_out_file done'
             headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
@@ -300,7 +302,7 @@ def wait_until_output_ready(params, request):
 
 
 def create_inp_file_from_request_and_upload(request):
-    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density = parse_request_params(request)
+    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count = parse_request_params(request)
     url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model, oil_density, sim_length, time_interval)
     response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
@@ -342,6 +344,8 @@ def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_mo
 
 def parse_request_params(request):
     spill_infos = []
+    valid_points_count = 0
+    valid_points = []
     for i in range(1,6):
         spill_info = {}
         spill_info['latitude'] = latitude = request.GET.get('latitude'+str(i))
@@ -353,6 +357,8 @@ def parse_request_params(request):
             break
         else:
             spill_infos.append(spill_info)
+            valid_points_count = valid_points_count + 1
+            valid_points.append([spill_info['latitude'], spill_info['longitude']])
         print(spill_infos)
 
     wave_model = request.GET.get('wave_model')
@@ -362,7 +368,7 @@ def parse_request_params(request):
     time_interval = request.GET.get('time_interval')
     sim_length = request.GET.get('simulation_length')
     oil_density = request.GET.get('oil_density')
-    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density
+    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count
 
 
 def is_integer_string(s):
