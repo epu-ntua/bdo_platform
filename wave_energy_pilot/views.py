@@ -217,10 +217,23 @@ def init(request):
         try:
             service_dataset = Dataset.objects.get(pk=dataset["id"])
             print "----------------brhkame dataset"
-            dataset["min_lat"] = service_dataset.spatialSouth
-            dataset["max_lat"] = service_dataset.spatialNorth
-            dataset["min_lng"] = service_dataset.spatialWest
-            dataset["max_lng"] = service_dataset.spatialEast
+            try:
+                dataset["min_lat"] = int(service_dataset.spatialSouth)
+            except:
+                dataset["min_lat"] = -90
+            try:
+                dataset["max_lat"] = int(service_dataset.spatialNorth)
+            except:
+                dataset["max_lat"] = 90
+            try:
+                dataset["min_lng"] = int(service_dataset.spatialWest)
+            except:
+                dataset["min_lng"] = -90
+            try:
+                dataset["max_lng"] = int(service_dataset.spatialEast)
+            except:
+                dataset["max_lng"] = -90
+            
             dataset["min_date"] = service_dataset.temporalCoverageBegin
             dataset["max_date"] = service_dataset.temporalCoverageEnd
             print dataset["min_lat"]
