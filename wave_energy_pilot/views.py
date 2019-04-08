@@ -20,7 +20,7 @@ from service_builder.models import Service, ServiceInstance
 from visualizer.utils import delete_zep_notebook, clone_zep_note, create_zep_arguments_paragraph, delete_zep_paragraph, run_zep_note, \
     get_result_dict_from_livy, create_zep_getDict_paragraph, run_zep_paragraph, get_zep_getDict_paragraph_response, close_livy_session, \
     create_livy_session
-
+from time import sleep
 
 def configure_spatial_filter(filters, lat_from, lat_to, lon_from, lon_to):
     if type(filters) == dict:
@@ -200,7 +200,10 @@ def execute_service_code(request, service_exec, new_arguments_paragraph, paragra
 
 
 # @background(schedule=600)
-def clean_up_new_note(notebook_id):
+def clean_up_new_note(notebook_id, wait_time_seconds=0):
+    print "waiting to clean up note " + str(notebook_id)
+    sleep(wait_time_seconds)
+    print "cleaning up note: " + str(notebook_id)
     delete_zep_notebook(notebook_id)
 
 
@@ -381,8 +384,8 @@ def single_location_evaluation_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
-        # t = Timer(60.0, clean_up_new_note(service_exec.notebook_id))
-        # t.start()
+        t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 180))
+        t.start()
     except Exception as e:
         print 'exception in livy execution'
         print '%s (%s)' % (e.message, type(e))
