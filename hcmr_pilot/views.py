@@ -348,7 +348,7 @@ def parse_request_params(request):
         spill_info['longitude'] = longitude = request.GET.get('longitude'+str(i))
         spill_info['start_date'] = start_date = request.GET.get('start_date'+str(i))
         spill_info['oil_volume'] = oil_volume = request.GET.get('oil_volume'+str(i))
-        print (latitude,longitude, start_date, oil_volume)
+        print (latitude, longitude, start_date, oil_volume)
         if (latitude == '' or latitude == 'undefined' or longitude == '' or longitude == 'undefined' or start_date == '' or start_date == 'undefined' or oil_volume == '' or oil_volume == 'undefined' ):
             break
         else:
