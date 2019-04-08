@@ -66,6 +66,13 @@
 {% block content %}
     <!-- begin PAGE TITLE AREA -->
     <!-- Use this section for each page's title and breadcrumb layout. In this example a date range picker is included within the breadcrumb. -->
+    <div id="initialising_div" class="" style="text-align: center; position: absolute; width: 100%; height: 100%; top: 0; bottom: 0; left: 0; right: 0; background-color: #3d3d3dc7; color: white; z-index:1;">
+        <div style="background-color: white; color: #394146; margin: 15% 35%;     border-radius: 10px;">
+            <h3 style="display: inline-block;">Initialising Query Designer</h3>
+            <img  alt="" src="{% static 'wave_energy_pilot/img/service_loading.gif' %}" style="width: 3vh;">
+        </div>
+
+    </div>
 
     <div class="row" style="display: none;">
         <form class="form" id="config-viz-form"></form>
@@ -93,7 +100,7 @@
 
 
     <div style="background-color: #30526a; width: 100%; height: 13px;" ></div>
-    <div id="chart-file-controls" style="text-align: center;" class="row">
+    <div id="chart-file-controls" style="text-align: center; position: relative;" class="row">
         <div class="col-sm-3" style="padding: 0;">
             <div id="new-query" class="chart-file-control" title="Create new chart (Ctrl+Alt+N)" style="margin-right: 10px"><i class="fa fa-plus-circle"></i> {% trans 'New' %}</div>
     {#        <div id="chart-open" class="chart-file-control" title="Open existing chart (Ctrl+O)"><i class="fa fa-file-o"></i> {% trans 'Open' %}</div>#}
@@ -366,6 +373,8 @@
     <script>
         $('document').ready(function(){
 
+           console.log("starting JPLIST");
+           $("#initialising_div").removeClass("hidden");
            //check all jPList javascript options here
            $('#dataset-all-section').jplist({
               itemsBox: '.selection-body',
@@ -373,8 +382,8 @@
               panelPath: '.filter-section',
               noResults: '.jplist-no-results'
            });
-
-
+           console.log("ended JPLIST");
+           $("#initialising_div").addClass("hidden");
         });
     </script>
 

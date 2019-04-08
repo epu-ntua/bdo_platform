@@ -292,14 +292,14 @@ def get_field_policy(user):
         'aggregates': [],
     }
 
-    for variable in Variable.objects.all():
-        field_policy['variables'].append({
-            'name': variable.safe_name,
-            'title': variable.title,
-            'id': variable.pk,
-            'description': variable.description,
-            'dataType': variable.dataType,
-        })
+    # for variable in Variable.objects.all():
+    #     field_policy['variables'].append({
+    #         'name': variable.safe_name,
+    #         'title': variable.title,
+    #         'id': variable.pk,
+    #         'description': variable.description,
+    #         'dataType': variable.dataType,
+    #     })
 
     for aggregate in AGGREGATES:
         field_policy['aggregates'].append({
