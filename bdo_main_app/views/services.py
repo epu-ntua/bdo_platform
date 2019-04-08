@@ -35,7 +35,7 @@ def services(request):
     pilot_services.append(nester_service)
     xmile_service = {'title': 'Anomaly Detection Service',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot4.jpg',
-                      'targeturl': '/pilot/anomaly-detection/',
+                      'targeturl': 'https://www.marinetraffic.com/anomaly-detection',
                       'short_description': 'Detect suspicious anomalies about vessels.',
                       'creator': 'XMILE',
                       'sharing': 'Private'}
