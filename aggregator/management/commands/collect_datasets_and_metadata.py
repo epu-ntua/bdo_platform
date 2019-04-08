@@ -61,7 +61,7 @@ class Command(BaseCommand):
         possible_dimensions = ["latitude", "longitude", "time", "platform_id", "depth", "manually_entered_depth",
                                "automatically_measured_latitude", "automatically_measured_longitude", "voyage_number", "trip_identifier",
                                "timestamp", "ship_id", "ship_name", "imo_id", 'imo']
-        possible_vessel_identifiers = ["platform_id", "ship_id", "ship_name", "imo_id", 'imo', "voyage_number", "trip_identifier"]
+        possible_vessel_identifiers = ["platform_id", "platform_id_hash", "ship_id", "ship_name", "imo_id", 'imo', "voyage_number", "trip_identifier"]
 
         for i, profile in enumerate(profile_list[:]):
             print "Profile: " + str(i)

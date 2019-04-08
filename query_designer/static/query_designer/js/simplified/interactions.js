@@ -693,7 +693,7 @@ $(function() {
     }
 
     function updated_available_visualisations(){
-        var possible_vessel_identifiers = ["platform_id", "ship_id", "ship_name", "imo_id", 'imo', "voyage_number", "trip_identifier"];
+        var possible_vessel_identifiers = ["platform_id", "platform_id_hash", "ship_id", "ship_name", "imo_id", 'imo', "voyage_number", "trip_identifier"];
         $("#viz_group_container .viz_item").removeClass("viz_item_disabled").prop('title', '').prop('data-toggle', '');
         $('.tooltip').remove();
         if (QueryToolbox.common_dimensions.indexOf("latitude") < 0 || QueryToolbox.common_dimensions.indexOf("longitude") < 0){
