@@ -191,6 +191,12 @@ $(function() {
                 $("#joined_dimensions_div").append("<p id='harmonised_time' style='margin: 0;'>Harmonised on time: " + $('#temporal_resolution').val() +"</p>");
 
         }
+
+        $("#join_warning_div").addClass("hidden");
+        if(QueryToolbox.datasets.length > 2){
+            $("#join_warning_div").removeClass("hidden");
+        }
+
         // console.log(QueryToolbox.variables);
 
         // Update all the Query Designer fields (groupby, orderby, resolutions, filters according to the new set of selected variables
@@ -397,6 +403,11 @@ $(function() {
             if($('#temporal_resolution').val() !== "")
                 $("#joined_dimensions_div").append("<p id='harmonised_time' style='margin: 0;'>Harmonised on time: " + $('#temporal_resolution').val() +"</p>");
 
+        }
+
+        $("#join_warning_div").addClass("hidden");
+        if(QueryToolbox.datasets.length > 2){
+            $("#join_warning_div").removeClass("hidden");
         }
 
         updateQDfields();
@@ -721,20 +732,25 @@ $(function() {
     // *** RUN QUERY / EXPLORE RESULTS *** //
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
-        $('a[href="#dataDiv"]').trigger('click');
-        $("#viz_config .list-group").children().each(function () {
-            $(this).find("#selected_viz_span").hide();
-        });
+        if(QueryToolbox.datasets.length <= 2){
+            $('a[href="#dataDiv"]').trigger('click');
+            $("#viz_config .list-group").children().each(function () {
+                $(this).find("#selected_viz_span").hide();
+            });
 
-        var message = decide_message();
-        $(".outputLoadImg #loading_message").html(message);
+            var message = decide_message();
+            $(".outputLoadImg #loading_message").html(message);
 
-        $(".outputLoadImg").hide();
-        $(".outputLoadImg").delay(100).show();
+            $(".outputLoadImg").hide();
+            $(".outputLoadImg").delay(100).show();
 
-        updated_available_visualisations();
+            updated_available_visualisations();
 
-        QueryToolbox.fetchQueryData();
+            QueryToolbox.fetchQueryData();
+        }
+        else{
+            alert("You have selected variables from more than two different datasets. Please update your selection.");
+        }
     });
 
     /* On next page btn click, increase the offset and execute the query to fetch results */
