@@ -91,4 +91,68 @@ $(function() {
     $(".jplist-reset-btn").click(function(){
         setTimeout(function(){$('#dataset-filter-section select').trigger("change");}, 100);
     });
+
+    // $( function() {
+    //     $( "#lat_range" ).slider({
+    //         range: true,
+    //         min: -90,
+    //         max: 90,
+    //         values: [ -90, 90 ],
+    //         slide: function( event, ui ) {
+    //             $( "#lat_range_begin" ).val(ui.values[0]);
+    //             $( "#lat_range_end" ).val(ui.values[1]);
+    //         }
+    //     });
+    //     $( "#lat_range_begin" ).val($( "#lat_range" ).slider( "values", 0 ));
+    //     $( "#lat_range_end" ).val($( "#lat_range" ).slider( "values", 1 ));
+    //
+    //     $( "#lon_range" ).slider({
+    //         range: true,
+    //         min: -180,
+    //         max: 180,
+    //         values: [ -180, 180 ],
+    //         slide: function( event, ui ) {
+    //             $( "#lon_range_begin" ).val(ui.values[0]);
+    //             $( "#lon_range_end" ).val(ui.values[1]);
+    //         }
+    //     });
+    //     $( "#lon_range_begin" ).val($( "#lon_range" ).slider( "values", 0 ));
+    //     $( "#lon_range_end" ).val($( "#lon_range" ).slider( "values", 1 ));
+    // } );
+
+
+    jQuery.fn.jplist.settings = {
+      latSlider: function ($slider, $prev, $next){
+         $slider.slider({
+             min: -90
+            ,max: 90
+            ,range: true
+            ,values: [-90, 90]
+            ,slide: function (event, ui){
+               $prev.text(ui.values[0]);
+               $next.text(ui.values[1]);
+            }
+         });
+      }
+      ,latValues: function ($slider, $prev, $next){
+         $prev.text($slider.slider('values', 0));
+         $next.text($slider.slider('values', 1));
+      }
+      ,lonSlider: function ($slider, $prev, $next){
+         $slider.slider({
+             min: -180
+            ,max: 180
+            ,range: true
+            ,values: [-180, 180]
+            ,slide: function (event, ui){
+               $prev.text(ui.values[0]);
+               $next.text(ui.values[1]);
+            }
+         });
+      }
+      ,lonValues: function ($slider, $prev, $next){
+         $prev.text($slider.slider('values', 0));
+         $next.text($slider.slider('values', 1));
+      }
+   };
 });

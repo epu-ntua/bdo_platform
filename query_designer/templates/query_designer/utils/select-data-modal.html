@@ -12,7 +12,7 @@
             <div class="modal-body">
 
                 <div id="dataset-all-section" class="row">
-                    <form id="dataset-filter-section" class="col-sm-2 filter-section">
+                    <form id="dataset-filter-section" class="col-sm-2 filter-section" style="overflow-y: auto;">
                         <div id="filter-head-div" style="text-align: center; height: 8%;">
                             <h3 style="">Filters</h3>
                         </div>
@@ -192,6 +192,43 @@
                                 </span>
                                 Has depth information
                             </label>
+                        </div>
+
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-lat"
+								data-control-action="filter"
+								data-path=".lat_from, .lat_to"
+								data-slider-func="latSlider"
+								data-setvalues-func="latValues"
+                                style="width: 100%;"
+                            >
+                                <label for="lat_range" style="width: 60%;">Latitude range:</label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
+                        </div>
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-lon"
+								data-control-action="filter"
+								data-path=".lon_from, .lon_to"
+								data-slider-func="lonSlider"
+								data-setvalues-func="lonValues"
+                                style="width: 100%; margin-bottom: 15px;"
+                            >
+                                <label for="lon_range" style="width: 60%;">Longitude range:</label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
                         </div>
 
                     </form>
@@ -389,13 +426,13 @@
                                                 <tbody>
                                                     <tr>
                                                         <td>Spatial coverage (lat)</td>
-                                                        <td>{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-{% else %}{{ dataset.spatialSouth }}{% endif %}</td>
-                                                        <td>{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}-{% else %}{{ dataset.spatialNorth }}{% endif %}</td>
+                                                        <td class="lat_from">{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-{% else %}{{ dataset.spatialSouth }}{% endif %}</td>
+                                                        <td class="lat_to">{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}-{% else %}{{ dataset.spatialNorth }}{% endif %}</td>
                                                     </tr>
                                                     <tr>
                                                         <td>Spatial coverage (lon)</td>
-                                                        <td>{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-{% else %}{{ dataset.spatialWest }}{% endif %}</td>
-                                                        <td>{% if dataset.spatialEast is None or dataset.spatialEast == '' %}-{% else %}{{ dataset.spatialEast }}{% endif %}</td>
+                                                        <td class="lon_from">{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-{% else %}{{ dataset.spatialWest }}{% endif %}</td>
+                                                        <td class="lon_to">{% if dataset.spatialEast is None or dataset.spatialEast == '' %}-{% else %}{{ dataset.spatialEast }}{% endif %}</td>
                                                     </tr>
                                                     <tr>
                                                         <td>Temporal coverage</td>
