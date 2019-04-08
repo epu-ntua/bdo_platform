@@ -465,10 +465,10 @@
                                                         <td>Private</td>
                                                         <td>{{ dataset.private }}</td>
                                                     </tr>
-                                                    <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'time' %}True{% endif %}{% endfor %}'>
+                                                    <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.name == 'time' %}True{% endif %}{% endfor %}'>
 
                                                     </tr>
-                                                    <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.title == 'depth' %}True{% endif %}{% endfor %}'>
+                                                    <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.name == 'depth' %}True{% endif %}{% endfor %}'>
                                                     </tr>
                                                     <tr class="is-updating" data-is-updating='{% if dataset.last_updated == '' or dataset.last_updated == None %}False{% else %}True{% endif %}'>
                                                     </tr>
