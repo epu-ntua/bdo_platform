@@ -213,6 +213,7 @@ def init(request):
     execution_steps['LOCATION_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS] + ['done']
     execution_steps['WAVE_FORECAST_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.WAVE_FORECAST_SERVICE_PARAGRAPHS] + ['done']
     execution_steps['AREA_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + [x['status'] for x in settings.AREA_EVALUATION_SERVICE_PARAGRAPHS] + ['done']
+    execution_steps['DATA_VISUALISATION_SERVICE'] = ['starting service']
     for dataset in DATASETS:
         try:
             service_dataset = Dataset.objects.get(pk=dataset["id"])

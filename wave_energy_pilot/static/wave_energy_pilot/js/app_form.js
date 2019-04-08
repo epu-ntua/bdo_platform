@@ -844,6 +844,9 @@ $(document).ready(function() {
        if (app_url === "/wave-energy/evaluate_area/"){
            $("#execution_btn_AREA_EVALUATION_SERVICE").click();
        }
+       if (app_url === "/wave-energy/data_visualisation/") {
+            $("#execution_btn_DATA_VISUALISATION_SERVICE").click();
+       }
 
        $("#execution_status").val('starting service');
 
