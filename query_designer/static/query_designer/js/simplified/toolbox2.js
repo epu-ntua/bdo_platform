@@ -110,7 +110,7 @@ $(function () {
                 }
             });
 
-            var $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%; margin: 2px 0; background-image: none; border: #b4b4b4; border-width: 1px; border-style: solid; border-radius: 5px"/>')
+            var $fieldInputShown = $('<input class="form-control" readonly style="width: 100%; height: 100%; margin: 2px 0; padding-left: 5px; background-image: none; border: #b4b4b4; border-width: 1px; border-style: solid; border-radius: 5px"/>')
             $fieldInputShown.attr('data-variable-id', config.id);
             $fieldInputShown.val(config.title + ' (' + config.unit + ')');
 
