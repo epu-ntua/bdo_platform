@@ -228,11 +228,11 @@ def init(request):
             try:
                 dataset["min_lng"] = int(service_dataset.spatialWest)
             except:
-                dataset["min_lng"] = -90
+                dataset["min_lng"] = -180
             try:
                 dataset["max_lng"] = int(service_dataset.spatialEast)
             except:
-                dataset["max_lng"] = -90
+                dataset["max_lng"] = 180
             
             dataset["min_date"] = service_dataset.temporalCoverageBegin
             dataset["max_date"] = service_dataset.temporalCoverageEnd
