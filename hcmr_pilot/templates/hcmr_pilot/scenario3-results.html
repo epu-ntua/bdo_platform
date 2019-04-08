@@ -9,6 +9,23 @@
         #location_assessment_statistics .panel-warning .panel-heading{background-color: #8a6d3b; color: white;}
         #location_assessment_statistics .panel-success .panel-heading{background-color: #3c763d; color: white;}
         #location_assessment_statistics .panel-default .panel-heading{background-color: #707070; color: white;}
+
+        .left {
+            float: left;
+            width: 50%;
+        }
+
+        .right {
+            float: left;
+            width: 40%;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
 {#        canvas{display: none;}#}
     </style>
 
@@ -142,13 +159,17 @@
             </table>
 
             <div class="viz_container row">
-                <div class="frame_container" style="position: relative; height: 100%;">
+                <div class="frame_container left" style="position: relative; height: 100%;">
                     <div class="loadingFrame">
                         <img src="{% static 'img/loading_gif.gif' %}"/>
                     </div>
                     <iframe src="{{ url }}" class=""
                         style="width: 100%; height: 100%; background-color: white;">
                     </iframe>
+                </div>
+                <div class="depth-container right">
+                    <h3>Bathymetry Data Over Time</h3>
+                    <div id="depth_graph"  style="position: relative; height: 100%;"></div>
                 </div>
             </div>
 
@@ -169,8 +190,6 @@
             </div>
         </div>
     </div>
-    <h3>Bathymetry Data Over Time</h3>
-    <div id="depth_graph"></div>
 
 
 {% endblock %}

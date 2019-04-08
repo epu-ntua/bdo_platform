@@ -947,7 +947,9 @@ $(document).ready(function() {
                 depth = '0'
             }
 
-            var natura_layer = $('input[name="natura_checkbox"]:checked').length > 0;
+            var natura_layer = (scenario===3) ?
+                true:
+                $('input[name="natura_checkbox"]:checked').length > 0;
             var ais_layer = $('input[name="ais_checkbox"]:checked').length > 0;
 
             var url = "/oilspill/" +
