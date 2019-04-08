@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/jplist.filter-toggle-bundle.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/jplist.pagination-bundle.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/jplist.history-bundle.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.jquery-ui-bundle.min.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -403,6 +404,42 @@
                     </label>
                 </div>
 
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-lat"
+                        data-control-action="filter"
+                        data-path=".lat_from, .lat_to"
+                        data-slider-func="latSlider"
+                        data-setvalues-func="latValues"
+                        style="width: 100%;"
+                    >
+                        <label for="lat_range" style="width: 60%;">Latitude range:</label>
+                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-lon"
+                        data-control-action="filter"
+                        data-path=".lon_from, .lon_to"
+                        data-slider-func="lonSlider"
+                        data-setvalues-func="lonValues"
+                        style="width: 100%; margin-bottom: 15px;"
+                    >
+                        <label for="lon_range" style="width: 60%;">Longitude range:</label>
+                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                    </div>
+                </div>
 
 
             </form>
@@ -473,6 +510,14 @@
                                                     <tr class="is-updating" data-is-updating='{% if dataset.last_updated == '' or dataset.last_updated == None %}False{% else %}True{% endif %}'>
                                                     </tr>
                                                     <tr class="dataset-category" data-category='{{ dataset.category }}'>
+                                                    </tr>
+                                                    <tr class="lat_from">{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-{% else %}{{ dataset.spatialSouth }}{% endif %}
+                                                    </tr>
+                                                    <tr class="lat_to">{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}-{% else %}{{ dataset.spatialNorth }}{% endif %}
+                                                    </tr>
+                                                    <tr class="lon_from">{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-{% else %}{{ dataset.spatialWest }}{% endif %}
+                                                    </tr>
+                                                    <tr class="lat_to">{% if dataset.spatialEast is None or dataset.spatialEast == '' %}-{% else %}{{ dataset.spatialEast }}{% endif %}
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -612,6 +657,7 @@
     <script src="{% static "/js/jplist.pagination-bundle.min.js" %}"></script>
     <script src="{% static "/js/jplist.history-bundle.min.js" %}"></script>
     <script src="{% static "/js/jplist.bootstrap-sort-dropdown.min.js" %}"></script>
+    <script src="{% static "/js/jplist.jquery-ui-bundle.min.js" %}"></script>
 
     <script>
         $('document').ready(function(){
@@ -628,6 +674,41 @@
 
            $("#title-filter").attr({"placeholder": "Search for datasets in the BDO platform..."});
         });
+
+        jQuery.fn.jplist.settings = {
+              latSlider: function ($slider, $prev, $next){
+                 $slider.slider({
+                     min: -90
+                    ,max: 90
+                    ,range: true
+                    ,values: [-90, 90]
+                    ,slide: function (event, ui){
+                       $prev.text(ui.values[0]);
+                       $next.text(ui.values[1]);
+                    }
+                 });
+              }
+              ,latValues: function ($slider, $prev, $next){
+                 $prev.text($slider.slider('values', 0));
+                 $next.text($slider.slider('values', 1));
+              }
+              ,lonSlider: function ($slider, $prev, $next){
+                 $slider.slider({
+                     min: -180
+                    ,max: 180
+                    ,range: true
+                    ,values: [-180, 180]
+                    ,slide: function (event, ui){
+                       $prev.text(ui.values[0]);
+                       $next.text(ui.values[1]);
+                    }
+                 });
+              }
+              ,lonValues: function ($slider, $prev, $next){
+                 $prev.text($slider.slider('values', 0));
+                 $next.text($slider.slider('values', 1));
+              }
+        };
     </script>
 
     <script>
