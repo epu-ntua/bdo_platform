@@ -3252,8 +3252,11 @@ def color_point_oil_spill2(natura_table, point, resolution, min_lat, min_lon):
         try:
             x = int((point[0] - min_lat)*resolution)
             y = int((point[1] - min_lon)*resolution)
-            if natura_table[x][y] == 1:
-                return 'red'
+            if (x>0) and (y>0):
+                if natura_table[x][y] == 1:
+                    return 'red'
+            else:
+                pass
         except:
             pass
     if point[2] == 0:

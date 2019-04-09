@@ -1061,6 +1061,7 @@ $(document).ready(function() {
             var url = "/oilspill/" +
                 "scenario" + scenario +
                 "/process/?" +
+                "scenario="+ scenario +
                 "&latitude1=" + lat +
                 "&longitude1=" + lng +
                 "&start_date1=" + start_date +

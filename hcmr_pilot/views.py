@@ -21,6 +21,14 @@ def init(request):
                                                "Simulation running", "Simulation results received",
                                                "Transforming data to be shown on map",
                                                "Calculating oil spill intersections with protected areas", "done"]
+    execution_steps['OIL_SPILL_SCENARIO_2'] = ["starting service", "Creating simulation request",
+                                               "Simulation running", "Simulation results received",
+                                               "Transforming data to be shown on map",
+                                               "Calculating oil spill intersections with protected areas", "done"]
+    execution_steps['OIL_SPILL_SCENARIO_3'] = ["starting service", "Creating simulation request",
+                                               "Simulation running", "Simulation results received",
+                                               "Transforming data to be shown on map",
+                                               "Calculating oil spill intersections with protected areas", "done"]
     list = []
     for i in range(0, 61):
         list.append(i*12)
@@ -66,22 +74,39 @@ def scenario2_results(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     visualization_url = service_exec.dataframe_visualizations['v1']
     filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
-    location_lat = '123'
-    location_lon = '321'
-    start_date = '2019-03-12 12:00'
-    model_title = 'Agean/Ionias Posidon'
+    list_of_points = []
+    alg_arguments = service_exec.arguments['algorithm-arguments'][0]
+    # import pdb
+    # pdb.set_trace()
+    for i in range(1, alg_arguments['number_of_points']+1):
+        list_of_points.append((round(float(alg_arguments['latitude' + str(i)]), 3), (round(float(alg_arguments['longitude' + str(i)]), 3))))
+    start_date = service_exec.arguments['algorithm-arguments'][0]['start_date']
+    oil_volume = service_exec.arguments['algorithm-arguments'][0]['oil_volume']
+    wave_forecast_dataset = service_exec.arguments['algorithm-arguments'][0]['wave_model']
+    hydrodynamic_model = service_exec.arguments['algorithm-arguments'][0]['ocean_model']
+    import time
+    from datetime import datetime
+
+    spill_data = service_exec.arguments['algorithm-arguments'][1]['spill_data']
+    headers_spill = service_exec.arguments['algorithm-arguments'][1]['headers_spill']
+    legend_data = [{"timestamp": long(time.mktime(datetime.strptime(d[0], "%Y-%m-%d %H:%M:%S").timetuple()) * 1000),
+                    "time": d[0], "init_vol": oil_volume, "evap_vol": d[2], "emul_vol": d[4],
+                    "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
 
     context = {
         'url': visualization_url,
         'out_filepath': filename_output,
+        'legend_data': legend_data,
         'result': [],
-        'service_title': 'Oil Spill - Scenario 2 title',
+        'service_title': 'Oil Spill Dispersion in the Marine Environment',
         'back_url': '/oilspill/?scenario=2',
         'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
-                              'value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
-                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': 'from ' + str(start_date)},
-                             {'icon': 'fas fa-database', 'text': 'Model used:', 'value': str(model_title)}],
-
+                              'value': str(list_of_points)},
+                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': str(start_date)},
+                             {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
+                             {'icon': 'fas fa-database', 'text': 'Wave Forecast Dataset:',
+                              'value': str(wave_forecast_dataset)},
+                             {'icon': 'fas fa-box', 'text': 'Hydrodynamic Model:', 'value': str(hydrodynamic_model)}],
     }
     return render(request, 'hcmr_pilot/scenario1-results.html', context)
 
@@ -136,9 +161,21 @@ def process(request, exec_instance):
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
 
-        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count = parse_request_params(request)
-        service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
-        service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count, scenario = parse_request_params(request)
+        if (scenario == '1') or (scenario == '3'):
+            service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
+            service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
+            if scenario == '3':
+                service_exec.arguments["algorithm-arguments"][0]["depth"] = spill_infos[0]['depth']
+
+        elif scenario == '2':
+            count = 1
+            for el in spill_infos:
+                service_exec.arguments["algorithm-arguments"][0]["latitude"+str(count)] = spill_infos[count-1]['latitude']
+                service_exec.arguments["algorithm-arguments"][0]["longitude"+str(count)] = spill_infos[count-1]['longitude']
+                count = count + 1
+            service_exec.arguments["algorithm-arguments"][0]["number_of_points"] = count - 1
+
         service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
         service_exec.arguments["algorithm-arguments"][0]["oil_volume"] = spill_infos[0]['oil_volume']
         if wave_model == '202':
@@ -189,8 +226,8 @@ def process(request, exec_instance):
                 parcel_data.insert(0,[spill_infos[0]['start_date'].encode('ascii') + ':00', float(el[0]),float(el[1]),
                               parcel_data[0][3], parcel_data[0][4], float(spill_infos[0]['oil_volume']),
                               parcel_data[0][6], parcel_data[0][7]])
-                spill_data.insert(0,
-                                   [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
+            spill_data.insert(0,
+                               [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
 
             print 'create_json_from_out_file done'
             headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
@@ -302,7 +339,7 @@ def wait_until_output_ready(params, request):
 
 
 def create_inp_file_from_request_and_upload(request):
-    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count = parse_request_params(request)
+    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario = parse_request_params(request)
     url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model, oil_density, sim_length, time_interval)
     response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
@@ -346,6 +383,7 @@ def parse_request_params(request):
     spill_infos = []
     valid_points_count = 0
     valid_points = []
+    scenario = str(request.GET.get('scenario'))
     for i in range(1,6):
         spill_info = {}
         spill_info['latitude'] = latitude = request.GET.get('latitude'+str(i))
@@ -360,7 +398,8 @@ def parse_request_params(request):
             valid_points_count = valid_points_count + 1
             valid_points.append([spill_info['latitude'], spill_info['longitude']])
         print(spill_infos)
-
+    if scenario == '3':
+        spill_info[0]['depth'] = request.GET.get('depth')
     wave_model = request.GET.get('wave_model')
     ocean_model = request.GET.get('hd_model')
     natura_layer = request.GET.get('natura_layer')
@@ -368,7 +407,7 @@ def parse_request_params(request):
     time_interval = request.GET.get('time_interval')
     sim_length = request.GET.get('simulation_length')
     oil_density = request.GET.get('oil_density')
-    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count
+    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario
 
 
 def is_integer_string(s):
