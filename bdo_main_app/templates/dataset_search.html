@@ -250,7 +250,7 @@
             </div>
         </div>
         <div id="dataset-all-section" class="row">
-            <form id="dataset-filter-section" class="col-sm-2 filter-section">
+            <form id="dataset-filter-section" style="padding-bottom: 15px;" class="col-sm-2 filter-section">
                 <h3>Filters</h3>
                 <!-- text filter control -->
                 <div class="form-group ">
@@ -409,8 +409,8 @@
                         class="jplist-range-slider"
                         data-control-type="range-slider"
                         data-control-name="range-slider-lat"
-                        data-control-action="filter"
-                        data-path=".lat_from, .lat_to"
+{#								data-control-action="filter"#}
+{#								data-path=""#}
                         data-slider-func="latSlider"
                         data-setvalues-func="latValues"
                         style="width: 100%;"
@@ -426,14 +426,88 @@
                     <div
                         class="jplist-range-slider"
                         data-control-type="range-slider"
-                        data-control-name="range-slider-lon"
+                        data-control-name="range-slider-lat-to"
                         data-control-action="filter"
-                        data-path=".lon_from, .lon_to"
+                        data-path=".lat_to"
+                        data-slider-func="latSliderTo"
+                        data-setvalues-func="latValuesTo"
+                        style="width: 100%; display: none;"
+                    >
+                        <label for="lat_range" style="width: 60%;"></label>
+                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-lat-from"
+                        data-control-action="filter"
+                        data-path=".lat_from"
+                        data-slider-func="latSliderFrom"
+                        data-setvalues-func="latValuesFrom"
+                        style="width: 100%;  display: none;"
+                    >
+                        <label for="lat_range" style="width: 60%;"></label>
+                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                    </div>
+                </div>
+
+
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-lon"
+{#								data-control-action="filter"#}
+{#								data-path=""#}
                         data-slider-func="lonSlider"
                         data-setvalues-func="lonValues"
-                        style="width: 100%; margin-bottom: 15px;"
+                        style="width: 100%;"
                     >
                         <label for="lon_range" style="width: 60%;">Longitude range:</label>
+                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-lon-to"
+                        data-control-action="filter"
+                        data-path=".lon_to"
+                        data-slider-func="lonSliderTo"
+                        data-setvalues-func="lonValuesTo"
+                        style="width: 100%; display: none;"
+                    >
+                        <label for="lon_range" style="width: 60%;"></label>
+                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-lon-from"
+                        data-control-action="filter"
+                        data-path=".lon_from"
+                        data-slider-func="lonSliderFrom"
+                        data-setvalues-func="lonValuesFrom"
+                        style="width: 100%;  display: none;"
+                    >
+                        <label for="lon_range" style="width: 60%;"></label>
                         <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                         <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                         <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
@@ -502,22 +576,22 @@
                                                         <td>Private</td>
                                                         <td>{{ dataset.private }}</td>
                                                     </tr>
-                                                    <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.name == 'time' %}True{% endif %}{% endfor %}'>
+                                                    <tr><td></td> <td class="lat_from">{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-90{% else %}{{ dataset.spatialSouth }}{% endif %} </td>
+                                                    </tr>
+                                                    <tr><td></td> <td class="lat_to">{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}90{% else %}{{ dataset.spatialNorth }}{% endif %} </td>
+                                                    </tr>
+                                                    <tr><td></td> <td class="lon_from">{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-180{% else %}{{ dataset.spatialWest }}{% endif %} </td>
+                                                    </tr>
+                                                    <tr><td></td> <td class="lon_to">{% if dataset.spatialEast is None or dataset.spatialEast == '' %}180{% else %}{{ dataset.spatialEast }}{% endif %} </td>
+                                                    </tr>
 
+                                                    <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.name == 'time' %}True{% endif %}{% endfor %}'>
                                                     </tr>
                                                     <tr class="has-depth" data-has-depth='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.name == 'depth' %}True{% endif %}{% endfor %}'>
                                                     </tr>
                                                     <tr class="is-updating" data-is-updating='{% if dataset.last_updated == '' or dataset.last_updated == None %}False{% else %}True{% endif %}'>
                                                     </tr>
                                                     <tr class="dataset-category" data-category='{{ dataset.category }}'>
-                                                    </tr>
-                                                    <tr class="lat_from">{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-{% else %}{{ dataset.spatialSouth }}{% endif %}
-                                                    </tr>
-                                                    <tr class="lat_to">{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}-{% else %}{{ dataset.spatialNorth }}{% endif %}
-                                                    </tr>
-                                                    <tr class="lon_from">{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-{% else %}{{ dataset.spatialWest }}{% endif %}
-                                                    </tr>
-                                                    <tr class="lat_to">{% if dataset.spatialEast is None or dataset.spatialEast == '' %}-{% else %}{{ dataset.spatialEast }}{% endif %}
                                                     </tr>
                                                 </tbody>
                                             </table>
@@ -676,39 +750,111 @@
         });
 
         jQuery.fn.jplist.settings = {
-              latSlider: function ($slider, $prev, $next){
-                 $slider.slider({
-                     min: -90
-                    ,max: 90
-                    ,range: true
-                    ,values: [-90, 90]
-                    ,slide: function (event, ui){
-                       $prev.text(ui.values[0]);
-                       $next.text(ui.values[1]);
-                    }
-                 });
-              }
-              ,latValues: function ($slider, $prev, $next){
-                 $prev.text($slider.slider('values', 0));
-                 $next.text($slider.slider('values', 1));
-              }
-              ,lonSlider: function ($slider, $prev, $next){
-                 $slider.slider({
-                     min: -180
-                    ,max: 180
-                    ,range: true
-                    ,values: [-180, 180]
-                    ,slide: function (event, ui){
-                       $prev.text(ui.values[0]);
-                       $next.text(ui.values[1]);
-                    }
-                 });
-              }
-              ,lonValues: function ($slider, $prev, $next){
-                 $prev.text($slider.slider('values', 0));
-                 $next.text($slider.slider('values', 1));
-              }
-        };
+            latSlider: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: -90
+                ,max: 90
+                ,range: true
+                ,values: [-90, 90]
+                ,slide: function (event, ui){
+                    $prev.text(ui.values[0]);
+                    $next.text(ui.values[1]);
+                    $("div[data-control-name='range-slider-lat-to']").find(".ui-slider").slider('values', 0, ui.values[0]);
+                    $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 1, ui.values[1]);
+                }
+             });
+          }
+          ,latValues: function ($slider, $prev, $next){
+             $prev.text($slider.slider('values', 0));
+             $next.text($slider.slider('values', 1));
+          }
+          ,latSliderTo: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: -90
+                ,max: 90
+                ,range: true
+                ,values: [-90, 90]
+                ,slide: function (event, ui){
+                    $prev.text(ui.values[0]);
+                    $next.text(ui.values[1]);
+                    // $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 0, parseInt($("div[data-control-name='range-slider-lat-to']").find(".value").eq(0).html()));
+                    // $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 1, parseInt($("div[data-control-name='range-slider-lat-to']").find(".value").eq(1).html()));
+                }
+             });
+          }
+          ,latValuesTo: function ($slider, $prev, $next){
+             $prev.text($slider.slider('values', 0));
+             $next.text($slider.slider('values', 1));
+          }
+          ,latSliderFrom: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: -90
+                ,max: 90
+                ,range: true
+                ,values: [-90, 90]
+                ,slide: function (event, ui){
+                    $prev.text(ui.values[0]);
+                    $next.text(ui.values[1]);
+                 }
+             });
+          }
+          ,latValuesFrom: function ($slider, $prev, $next){
+             $prev.text($slider.slider('values', 0));
+             $next.text($slider.slider('values', 1));
+          }
+          ,lonSlider: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: -180
+                ,max: 180
+                ,range: true
+                ,values: [-180, 180]
+                ,slide: function (event, ui){
+                    $prev.text(ui.values[0]);
+                    $next.text(ui.values[1]);
+                    $("div[data-control-name='range-slider-lon-to']").find(".ui-slider").slider('values', 0, ui.values[0]);
+                    $("div[data-control-name='range-slider-lon-from']").find(".ui-slider").slider('values', 1, ui.values[1]);
+                }
+             });
+          }
+          ,lonValues: function ($slider, $prev, $next){
+             $prev.text($slider.slider('values', 0));
+             $next.text($slider.slider('values', 1));
+          }
+          ,lonSliderTo: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: -180
+                ,max: 180
+                ,range: true
+                ,values: [-180, 180]
+                ,slide: function (event, ui){
+                    $prev.text(ui.values[0]);
+                    $next.text(ui.values[1]);
+                    // $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 0, parseInt($("div[data-control-name='range-slider-lat-to']").find(".value").eq(0).html()));
+                    // $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 1, parseInt($("div[data-control-name='range-slider-lat-to']").find(".value").eq(1).html()));
+                }
+             });
+          }
+          ,lonValuesTo: function ($slider, $prev, $next){
+             $prev.text($slider.slider('values', 0));
+             $next.text($slider.slider('values', 1));
+          }
+          ,lonSliderFrom: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: -180
+                ,max: 180
+                ,range: true
+                ,values: [-180, 180]
+                ,slide: function (event, ui){
+                    $prev.text(ui.values[0]);
+                    $next.text(ui.values[1]);
+                 }
+             });
+          }
+          ,lonValuesFrom: function ($slider, $prev, $next){
+             $prev.text($slider.slider('values', 0));
+             $next.text($slider.slider('values', 1));
+          }
+     };
     </script>
 
     <script>
