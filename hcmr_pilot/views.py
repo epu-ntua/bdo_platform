@@ -200,14 +200,20 @@ def process(request, exec_instance):
         service_exec.arguments["algorithm-arguments"][0]["ais_layer"] = ais_layer
 
         # 1)Create input file
+        if service_exec.status == 'failed':
+            raise Exception
         service_exec.status = "Creating simulation request"
         service_exec.save()
         filename, url_params = create_inp_file_from_request_and_upload(request)
         # 2)Calculate oil spill
+        if service_exec.status == 'failed':
+            raise Exception
         service_exec.status = "Simulation running"
         service_exec.save()
         found = wait_until_output_ready(url_params, request)
         if found:
+            if service_exec.status == 'failed':
+                raise Exception
             service_exec.status = "Simulation results received"
             service_exec.save()
             filename_output = str(filename).replace("_F.inp", "_F.out")
@@ -215,6 +221,8 @@ def process(request, exec_instance):
             red_points_filename = str(filename).replace("_F.inp", ".txt")
 
             # 3)Transforming data to be shown on map
+            if service_exec.status == 'failed':
+                raise Exception
             service_exec.status = "Transforming data to be shown on map"
             service_exec.save()
             output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
@@ -245,6 +253,8 @@ def process(request, exec_instance):
             print 'spill_data done'
 
             # 4)Calculate red points
+            if service_exec.status == 'failed':
+                raise Exception
             service_exec.status = "Calculating oil spill intersections with protected areas"
             service_exec.save()
             if natura_layer == "true":
@@ -258,6 +268,8 @@ def process(request, exec_instance):
 
             service_exec.dataframe_visualizations = {"v1": visualization_url}
             service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output
+            if service_exec.status == 'failed':
+                raise Exception
             service_exec.status = "done"
             service_exec.save()
 
@@ -527,3 +539,12 @@ def create_map_grid_for_natura(request):
 def myconverter(o):
     if isinstance(o, datetime):
         return o.__str__()
+
+
+def cancel_execution(request, exec_instance):
+    print "Cancelling"
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    service_exec.status = "failed"
+    service_exec.save()
+    print "Cancelled?"
+    return JsonResponse({'status': "cancelled"})

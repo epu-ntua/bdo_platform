@@ -1,5 +1,5 @@
 
-
+var execution_status_interval;
 var single_marker_layer;
 var user_marker = {};
 var mode=null;
@@ -980,6 +980,7 @@ $(document).ready(function() {
             $("#execution_btn_OIL_SPILL_SCENARIO_2").click();
         else if(parseInt(scenario) === 3)
             $("#execution_btn_OIL_SPILL_SCENARIO_3").click();
+        $('#modal_dismiss_btn_cancel').hide()
         var lat ;
         var lng ;
         var oil_volume ;
@@ -1106,6 +1107,7 @@ $(document).ready(function() {
                 "data": {},
                 "cache": false,
                 "success": function(result) {
+                        $('#modal_dismiss_btn_cancel').show();
                         console.log(result);
                         exec_instance = result['exec_instance'];
                     },
@@ -1114,7 +1116,7 @@ $(document).ready(function() {
                 }
             });
 
-            var execution_status_interval = setInterval(check_execution_status, 3000);
+            execution_status_interval = setInterval(check_execution_status, 3000);
 
             function check_execution_status() {
                 $.ajax({
@@ -1209,22 +1211,27 @@ $(document).ready(function() {
         $(".modal #modal_status_div").html('');
     });
 
-    // $("#modal_dismiss_btn_cancel").click(function () {
-    //     $.ajax({
-    //         "type": "GET",
-    //         "url": "/wave-energy/"+exec_instance+"/",
-    //         "data": {},
-    //         "success": function(result) {
-    //             console.log('service cancelled');
-    //         },
-    //         error: function () {
-    //             console.log('error cancelling service');
-    //         },
-    //         complete: function () {
-    //             exec_instance = '';
-    //         }
-    //     });
-    // });
+    $("#modal_dismiss_btn_cancel").click(function () {
+        console.log("hit cancel");
+        set_execution_failed();
+        clearInterval(execution_status_interval);
+        $("#execution_status").val("failed");
+        $(" .modal.in #modal_status_input").val("cancelling");
+        $.ajax({
+            "type": "GET",
+            "url": "/oilspill/cancel_execution/"+exec_instance,
+            "data": {},
+            "success": function(result) {
+                console.log('service cancelled');
+            },
+            error: function () {
+                console.log('error cancelling service');
+            },
+            // complete: function () {
+            //     exec_instance = '';
+            // }
+        });
+    });
     function map_init() {
         var maplayer = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=';
         var token = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ';
@@ -1262,66 +1269,5 @@ $(document).ready(function() {
             }
     }
 
-    // function datetimepicker_initialisation(startDate, endDate){
-    //     var startpick1 = $('#startdatepicker').datetimepicker({
-    //         autoclose: true,
-    //         pickerPosition: 'top-left',
-    //         startDate: startDate,
-    //         endDate: endDate,
-    //         initialDate: endDate
-    //     });
-    //     startpick1.datetimepicker('update',endDate);
-    //     var startpick2 = $('#startdatepicker2').datetimepicker({
-    //         autoclose: true,
-    //         pickerPosition: 'top-left',
-    //         startDate: startDate,
-    //         endDate: endDate,
-    //         initialDate: endDate
-    //     });
-    //     startpick2.datetimepicker('update',endDate);
-    //     var startpick3 = $('#startdatepicker3').datetimepicker({
-    //         autoclose: true,
-    //         pickerPosition: 'top-left',
-    //         startDate: startDate,
-    //         endDate: endDate,
-    //         initialDate: endDate
-    //     });
-    //     startpick3.datetimepicker('update',endDate);
-    //     var startpick4 = $('#startdatepicker4').datetimepicker({
-    //         autoclose: true,
-    //         pickerPosition: 'top-left',
-    //         startDate: startDate,
-    //         endDate: endDate,
-    //         initialDate: endDate
-    //     });
-    //     startpick4.datetimepicker('update',endDate);
-    //     var startpick5 = $('#startdatepicker5').datetimepicker({
-    //         autoclose: true,
-    //         pickerPosition: 'top-left',
-    //         startDate: startDate,
-    //         endDate: endDate,
-    //         initialDate: endDate
-    //     });
-    //     startpick5.datetimepicker('update',endDate);
-    //     return [startpick1,startpick2, startpick3, startpick4, startpick5]
-    // }
-
-    // function markers_initialisation() {
-    //     second_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-2");
-    //     third_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-3");
-    //     fourth_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-4");
-    //     fifth_user_marker = L.marker([38.06, 25.36],  {draggable:true}).bindPopup("Oil-Spill-5");
-    //
-    //     second_marker_layer = L.layerGroup(second_user_marker);
-    //     third_marker_layer = L.layerGroup(third_user_marker);
-    //     fourth_marker_layer = L.layerGroup(fourth_user_marker);
-    //     fifth_marker_layer = L.layerGroup(fifth_user_marker);
-    //
-    //     map.addLayer(second_marker_layer);
-    //     map.addLayer(third_marker_layer);
-    //     map.addLayer(fourth_marker_layer);
-    //     map.addLayer(fifth_marker_layer);
-    //     return [second_user_marker, third_user_marker, fourth_user_marker, fifth_user_marker]
-    // }
 
 });
