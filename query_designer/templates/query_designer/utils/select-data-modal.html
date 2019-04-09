@@ -199,8 +199,8 @@
 								class="jplist-range-slider"
 								data-control-type="range-slider"
 								data-control-name="range-slider-lat"
-								data-control-action="filter"
-								data-path=".lat_from, .lat_to"
+{#								data-control-action="filter"#}
+{#								data-path=""#}
 								data-slider-func="latSlider"
 								data-setvalues-func="latValues"
                                 style="width: 100%;"
@@ -216,14 +216,88 @@
                             <div
 								class="jplist-range-slider"
 								data-control-type="range-slider"
-								data-control-name="range-slider-lon"
+								data-control-name="range-slider-lat-to"
 								data-control-action="filter"
-								data-path=".lon_from, .lon_to"
+								data-path=".lat_to"
+								data-slider-func="latSliderTo"
+								data-setvalues-func="latValuesTo"
+                                style="width: 100%; display: none;"
+                            >
+                                <label for="lat_range" style="width: 60%;"></label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
+                        </div>
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-lat-from"
+								data-control-action="filter"
+								data-path=".lat_from"
+								data-slider-func="latSliderFrom"
+								data-setvalues-func="latValuesFrom"
+                                style="width: 100%;  display: none;"
+                            >
+                                <label for="lat_range" style="width: 60%;"></label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
+                        </div>
+
+
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-lon"
+{#								data-control-action="filter"#}
+{#								data-path=""#}
 								data-slider-func="lonSlider"
 								data-setvalues-func="lonValues"
-                                style="width: 100%; margin-bottom: 15px;"
+                                style="width: 100%;"
                             >
                                 <label for="lon_range" style="width: 60%;">Longitude range:</label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
+                        </div>
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-lon-to"
+								data-control-action="filter"
+								data-path=".lon_to"
+								data-slider-func="lonSliderTo"
+								data-setvalues-func="lonValuesTo"
+                                style="width: 100%; display: none;"
+                            >
+                                <label for="lon_range" style="width: 60%;"></label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
+                        </div>
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-lon-from"
+								data-control-action="filter"
+								data-path=".lon_from"
+								data-slider-func="lonSliderFrom"
+								data-setvalues-func="lonValuesFrom"
+                                style="width: 100%;  display: none;"
+                            >
+                                <label for="lon_range" style="width: 60%;"></label>
 								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                                 <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
 								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
@@ -426,13 +500,25 @@
                                                 <tbody>
                                                     <tr>
                                                         <td>Spatial coverage (lat)</td>
-                                                        <td class="lat_from">{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-{% else %}{{ dataset.spatialSouth }}{% endif %}</td>
-                                                        <td class="lat_to">{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}-{% else %}{{ dataset.spatialNorth }}{% endif %}</td>
+                                                        <td>
+                                                            <span class="lat_from hidden">{% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-90{% else %}{{ dataset.spatialSouth }}{% endif %}</span>
+                                                            {% if dataset.spatialSouth is None or dataset.spatialSouth == '' %}-{% else %}{{ dataset.spatialSouth }}{% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <span class="lat_to hidden">{% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}90{% else %}{{ dataset.spatialNorth }}{% endif %}</span>
+                                                            {% if dataset.spatialNorth is None or dataset.spatialNorth == '' %}-{% else %}{{ dataset.spatialNorth }}{% endif %}
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td>Spatial coverage (lon)</td>
-                                                        <td class="lon_from">{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-{% else %}{{ dataset.spatialWest }}{% endif %}</td>
-                                                        <td class="lon_to">{% if dataset.spatialEast is None or dataset.spatialEast == '' %}-{% else %}{{ dataset.spatialEast }}{% endif %}</td>
+                                                        <td>
+                                                            <span class="lon_from hidden">{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-180{% else %}{{ dataset.spatialWest }}{% endif %}</span>
+                                                            {% if dataset.spatialWest is None or dataset.spatialWest == '' %}-{% else %}{{ dataset.spatialWest }}{% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <span class="lon_to hidden">{% if dataset.spatialEast is None or dataset.spatialEast == '' %}180{% else %}{{ dataset.spatialEast }}{% endif %}</span>
+                                                            {% if dataset.spatialEast is None or dataset.spatialEast == '' %}-{% else %}{{ dataset.spatialEast }}{% endif %}
+                                                        </td>
                                                     </tr>
                                                     <tr>
                                                         <td>Temporal coverage</td>

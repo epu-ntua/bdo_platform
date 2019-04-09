@@ -122,19 +122,55 @@ $(function() {
 
 
     jQuery.fn.jplist.settings = {
-      latSlider: function ($slider, $prev, $next){
+        latSlider: function ($slider, $prev, $next){
          $slider.slider({
              min: -90
             ,max: 90
             ,range: true
             ,values: [-90, 90]
             ,slide: function (event, ui){
-               $prev.text(ui.values[0]);
-               $next.text(ui.values[1]);
+                $prev.text(ui.values[0]);
+                $next.text(ui.values[1]);
+                $("div[data-control-name='range-slider-lat-to']").find(".ui-slider").slider('values', 0, ui.values[0]);
+                $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 1, ui.values[1]);
             }
          });
       }
       ,latValues: function ($slider, $prev, $next){
+         $prev.text($slider.slider('values', 0));
+         $next.text($slider.slider('values', 1));
+      }
+      ,latSliderTo: function ($slider, $prev, $next){
+         $slider.slider({
+             min: -90
+            ,max: 90
+            ,range: true
+            ,values: [-90, 90]
+            ,slide: function (event, ui){
+                $prev.text(ui.values[0]);
+                $next.text(ui.values[1]);
+                // $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 0, parseInt($("div[data-control-name='range-slider-lat-to']").find(".value").eq(0).html()));
+                // $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 1, parseInt($("div[data-control-name='range-slider-lat-to']").find(".value").eq(1).html()));
+            }
+         });
+      }
+      ,latValuesTo: function ($slider, $prev, $next){
+         $prev.text($slider.slider('values', 0));
+         $next.text($slider.slider('values', 1));
+      }
+      ,latSliderFrom: function ($slider, $prev, $next){
+         $slider.slider({
+             min: -90
+            ,max: 90
+            ,range: true
+            ,values: [-90, 90]
+            ,slide: function (event, ui){
+                $prev.text(ui.values[0]);
+                $next.text(ui.values[1]);
+             }
+         });
+      }
+      ,latValuesFrom: function ($slider, $prev, $next){
          $prev.text($slider.slider('values', 0));
          $next.text($slider.slider('values', 1));
       }
@@ -145,8 +181,10 @@ $(function() {
             ,range: true
             ,values: [-180, 180]
             ,slide: function (event, ui){
-               $prev.text(ui.values[0]);
-               $next.text(ui.values[1]);
+                $prev.text(ui.values[0]);
+                $next.text(ui.values[1]);
+                $("div[data-control-name='range-slider-lon-to']").find(".ui-slider").slider('values', 0, ui.values[0]);
+                $("div[data-control-name='range-slider-lon-from']").find(".ui-slider").slider('values', 1, ui.values[1]);
             }
          });
       }
@@ -154,5 +192,41 @@ $(function() {
          $prev.text($slider.slider('values', 0));
          $next.text($slider.slider('values', 1));
       }
-   };
+      ,lonSliderTo: function ($slider, $prev, $next){
+         $slider.slider({
+             min: -180
+            ,max: 180
+            ,range: true
+            ,values: [-180, 180]
+            ,slide: function (event, ui){
+                $prev.text(ui.values[0]);
+                $next.text(ui.values[1]);
+                // $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 0, parseInt($("div[data-control-name='range-slider-lat-to']").find(".value").eq(0).html()));
+                // $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 1, parseInt($("div[data-control-name='range-slider-lat-to']").find(".value").eq(1).html()));
+            }
+         });
+      }
+      ,lonValuesTo: function ($slider, $prev, $next){
+         $prev.text($slider.slider('values', 0));
+         $next.text($slider.slider('values', 1));
+      }
+      ,lonSliderFrom: function ($slider, $prev, $next){
+         $slider.slider({
+             min: -180
+            ,max: 180
+            ,range: true
+            ,values: [-180, 180]
+            ,slide: function (event, ui){
+                $prev.text(ui.values[0]);
+                $next.text(ui.values[1]);
+             }
+         });
+      }
+      ,lonValuesFrom: function ($slider, $prev, $next){
+         $prev.text($slider.slider('values', 0));
+         $next.text($slider.slider('values', 1));
+      }
+     };
+
+
 });
