@@ -375,7 +375,7 @@ $(function() {
     // *** OPEN - LOAD - SAVE - RENAME QUERY *** //
     /* Add a new query - Reset the toolbox */
     $('#new-query').on('click', function () {
-        reset();
+        $('.value-remove-btn').click();
     });
 
 
@@ -1114,7 +1114,11 @@ function reset(){
             '\n' +
             '                </div>')
 
-        $('.add-value-field').click();
+        // $('.add-value-field').click();
+        if(!$('#select-data-modal').is(':visible')){
+            $('.add-value-field').click();
+        }
+
         // $('#lat_min').val("").trigger('change');
         // $('#lat_max').val("").trigger('change');
     }
