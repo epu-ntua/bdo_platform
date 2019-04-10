@@ -255,6 +255,9 @@ $(function() {
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
 
+        // reset to variables tab
+        $("#chart-control-list ul li").eq(0).find("a").click();
+
         if (display_tour){
             first_tour.init();
             first_tour.start(true);
