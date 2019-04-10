@@ -550,7 +550,11 @@
                                         <div class="dataset-dimensions-div">
                                             <ul class="list-group">
                                                 {% for dimension in dataset.variables.first.dimensions.all %}
-                                                    <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
+                                                    <li class="dimension-section list-group-item"
+                                                        data-dimension-name="{{ dimension.name }}"
+                                                        data-toggle="tooltip"
+                                                        data-placement="left"
+                                                        title="{{ dimension.description }}">
                                                         <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
                                                     </li>
                                                 {% endfor %}
