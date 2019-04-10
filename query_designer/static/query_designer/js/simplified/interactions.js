@@ -277,7 +277,7 @@ $(function() {
     });
 
 
-    $('#select-data-modal').on('show.bs.modal', function() {
+    $('#select-data-modal').on('shown.bs.modal', function() {
         // At first hide the "add" button (it should be visible only if a variable has been slected to be added)
         $('.selection-confirm').hide();
 
