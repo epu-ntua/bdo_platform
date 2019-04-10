@@ -1118,6 +1118,7 @@ function reset(){
         if(!$('#select-data-modal').is(':visible')){
             $('.add-value-field').click();
         }
+        $('.jplist-reset-btn').click();
 
         // $('#lat_min').val("").trigger('change');
         // $('#lat_max').val("").trigger('change');
