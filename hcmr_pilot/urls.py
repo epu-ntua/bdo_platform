@@ -18,5 +18,7 @@ urlpatterns = [
 
     url('download', views.download, name='download'),
     url('form', views.index, name='index'),
-    url('create_natura_grid/', views.create_map_grid_for_natura, name='natura_grid')
+    url('create_natura_grid/', views.create_map_grid_for_natura, name='natura_grid'),
+
+    url(r'^cancel_execution/(?P<exec_instance>[0-9]+)/$', views.cancel_execution, name='cancel_execution')
 ]
