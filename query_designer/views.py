@@ -90,13 +90,9 @@ def clean(request, pk=None):
     #         organization_list.append(dataset.organization.title)
     variable_list = Variable.objects.all()
 
-
-
-    time_start = datetime.now() - timedelta(days=10000)
-    time_end = datetime.now() + timedelta(days=7)
-    time_start_timestamp = long(time.mktime(time_start.timetuple())) * 1000
-    time_end_timestamp = long(time.mktime(time_end.timetuple())) * 1000
-
+    time_start_timestamp = min([d.temporalCoverageBeginTimestamp for d in Dataset.objects.all() if d.temporalCoverageBeginTimestamp != ""])
+    date_now = datetime.now()
+    time_end_timestamp = max([d.temporalCoverageEndTimestamp for d in Dataset.objects.all() if d.temporalCoverageEndTimestamp != ""] + [long(time.mktime(date_now.timetuple())) * 1000])
 
     try:
         with open('visualizer/static/visualizer/visualisations_settings.json') as f:

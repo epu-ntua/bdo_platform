@@ -300,7 +300,9 @@ $(function() {
 
     function filter_datasets_on_coverage() {
         // Filter datasets on selected variables' coverages
-        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180;
+        var time_start = new Date();
+        var time_end = new Date();
+        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180, min_time=time_start_timestamp, max_time=time_end_timestamp;
         $.each(QueryToolbox.variables, function (_, variable) {
             if(variable.dataset_lat_min > min_lat)
                 min_lat = variable.dataset_lat_min;
@@ -310,7 +312,12 @@ $(function() {
                 min_lon = variable.dataset_lon_min;
             if(variable.dataset_lon_max < max_lon)
                 max_lon = variable.dataset_lon_max;
+            if(variable.dataset_time_min > min_time)
+                min_time = variable.dataset_time_min;
+            if(variable.dataset_time_max < max_time)
+                max_time = variable.dataset_time_max;
         });
+
         $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 0, min_lat);
         $("div[data-control-name='range-slider-lat-to']").find(".ui-slider").slider('values', 0, min_lat);
         $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 1, max_lat);
@@ -320,11 +327,16 @@ $(function() {
         $("div[data-control-name='range-slider-lon-to']").find(".ui-slider").slider('values', 0, min_lon);
         $("div[data-control-name='range-slider-lon']").find(".ui-slider").slider('values', 1, max_lon);
         $("div[data-control-name='range-slider-lon-from']").find(".ui-slider").slider('values', 1, max_lon);
+
+        $("div[data-control-name='range-slider-time']").find(".ui-slider").slider('values', 0, min_time);
+        $("div[data-control-name='range-slider-time-to']").find(".ui-slider").slider('values', 0, min_time);
+        $("div[data-control-name='range-slider-time']").find(".ui-slider").slider('values', 1, max_time);
+        $("div[data-control-name='range-slider-time-from']").find(".ui-slider").slider('values', 1, max_time);
     }
 
     function reset_datasets_coverage() {
         // Filter datasets on selected variables' coverages
-        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180;
+        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180, min_time=time_start_timestamp, max_time=time_end_timestamp;
         $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 0, min_lat);
         $("div[data-control-name='range-slider-lat-to']").find(".ui-slider").slider('values', 0, min_lat);
         $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 1, max_lat);
@@ -334,7 +346,11 @@ $(function() {
         $("div[data-control-name='range-slider-lon-to']").find(".ui-slider").slider('values', 0, min_lon);
         $("div[data-control-name='range-slider-lon']").find(".ui-slider").slider('values', 1, max_lon);
         $("div[data-control-name='range-slider-lon-from']").find(".ui-slider").slider('values', 1, max_lon);
-    }
+
+        $("div[data-control-name='range-slider-time']").find(".ui-slider").slider('values', 0, min_time);
+        $("div[data-control-name='range-slider-time-to']").find(".ui-slider").slider('values', 0, min_time);
+        $("div[data-control-name='range-slider-time']").find(".ui-slider").slider('values', 1, max_time);
+        $("div[data-control-name='range-slider-time-from']").find(".ui-slider").slider('values', 1, max_time);    }
 
     $('#select-data-modal').on('shown.bs.modal', function() {
         if($('#select-data-modal').find('#selected_coverage_filter').prop("checked")) {

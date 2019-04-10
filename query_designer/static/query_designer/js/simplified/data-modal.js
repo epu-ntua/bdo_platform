@@ -129,11 +129,6 @@ $(function() {
     // } );
 
 
-    var time_start = new Date();
-    var time_start_timestamp = time_start.setDate(time_start.getDate() - 10000);
-    var time_end = new Date();
-    var time_end_timestamp = time_end.setDate(time_end.getDate() + 7);
-
     jQuery.fn.jplist.settings = {
         latSlider: function ($slider, $prev, $next){
          $slider.slider({

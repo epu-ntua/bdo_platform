@@ -110,7 +110,9 @@ class Dataset(Model):
     def temporalCoverageBeginTimestamp(self):
         try:
             temporalCoverageBegin = self.temporalCoverageBegin
-            temporalCoverageBegin_timestamp = long(time.mktime(temporalCoverageBegin.timetuple())) * 1000
+            # temporalCoverageBegin_timestamp = long(time.mktime(temporalCoverageBegin.timetuple())) * 1000
+            td = temporalCoverageBegin.replace(tzinfo=None) - datetime(1970, 1, 1)
+            temporalCoverageBegin_timestamp = long(td.total_seconds()) * 1000
             return temporalCoverageBegin_timestamp
         except:
             return ''
@@ -119,7 +121,9 @@ class Dataset(Model):
     def temporalCoverageEndTimestamp(self):
         try:
             temporalCoverageEnd = self.temporalCoverageEnd
-            temporalCoverageEnd_timestamp = long(time.mktime(temporalCoverageEnd.timetuple())) * 1000
+            # temporalCoverageBegin_timestamp = long(time.mktime(temporalCoverageBegin.timetuple())) * 1000
+            td = temporalCoverageEnd.replace(tzinfo=None) - datetime(1970, 1, 1)
+            temporalCoverageEnd_timestamp = long(td.total_seconds()) * 1000
             return temporalCoverageEnd_timestamp
         except:
             return ''
