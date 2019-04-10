@@ -990,6 +990,7 @@ $(document).ready(function() {
         var duration ;
         var wave_dataset;
         var hd_dataset;
+        var depth = 0;
         if (scenario === 1 || scenario ===3) {
             lat = $('#lat').val();
             lng = $("#lon").val();
@@ -1001,7 +1002,7 @@ $(document).ready(function() {
             wave_dataset = $("#sel1").val();
             hd_dataset = $("#sel2").val();
             if (scenario===3){
-                var depth = $('#depth').val();
+                depth = $('#depth').val();
             }
         }else if(scenario ===2) {
             var wave_dataset_list = [];
@@ -1094,7 +1095,8 @@ $(document).ready(function() {
                 "&wave_model=" + wave_dataset +
                 "&hd_model=" + hd_dataset +
                 "&natura_layer=" + natura_layer +
-                "&ais_layer=" + ais_layer;
+                "&ais_layer=" + ais_layer +
+                "&depth=" + depth;
 
 
 

@@ -1,3 +1,5 @@
+import json
+
 import requests
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -115,24 +117,43 @@ def scenario3_results(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     visualization_url = service_exec.dataframe_visualizations['v1']
     filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
-    location_lat = '123'
-    location_lon = '321'
-    start_date = '2019-03-12 12:00'
-    model_title = 'Agean/Ionias Posidon'
+    location_lat = float(service_exec.arguments['algorithm-arguments'][0]['latitude'])
+    location_lon = float(service_exec.arguments['algorithm-arguments'][0]['longitude'])
+    start_date = service_exec.arguments['algorithm-arguments'][0]['start_date']
+    oil_volume = service_exec.arguments['algorithm-arguments'][0]['oil_volume']
+    wave_forecast_dataset = service_exec.arguments['algorithm-arguments'][0]['wave_model']
+    hydrodynamic_model = service_exec.arguments['algorithm-arguments'][0]['ocean_model']
+    import time
+    from datetime import datetime
 
+    spill_data = service_exec.arguments['algorithm-arguments'][1]['spill_data']
+    headers_spill = service_exec.arguments['algorithm-arguments'][1]['headers_spill']
+    legend_data = [{"timestamp": long(time.mktime(datetime.strptime(d[0], "%Y-%m-%d %H:%M:%S").timetuple()) * 1000),
+                    "time": d[0], "init_vol": oil_volume, "evap_vol": d[2], "emul_vol": d[4],
+                    "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
+
+    output_json = filename_output.replace('_F.out', '.json')
+    rp_file = filename_output.replace('_F.out', '.txt')
+    red_points = get_red_points(rp_file)
+
+    depth_data = extract_depth_data(str(output_json), red_points)
     context = {
+        'depth_data': depth_data,
         'url': visualization_url,
         'out_filepath': filename_output,
+        'legend_data': legend_data,
         'result': [],
-        'service_title': 'Oil Spill - Scenario 3 title',
-        'back_url': '/oilspill/?scenario=3',
+        'service_title': 'Oil Spill Dispersion in the Marine Environment',
+        'back_url': '/oilspill/?scenario=1',
         'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
-                              'value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
-                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': 'from ' + str(start_date)},
-                             {'icon': 'fas fa-database', 'text': 'Model used:', 'value': str(model_title)}],
-
+                              'value': '(' + str(round(location_lat, 3)) + ', ' + str(round(location_lon, 3)) + ')'},
+                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': str(start_date)},
+                             {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
+                             {'icon': 'fas fa-database', 'text': 'Wave Forecast Dataset:',
+                              'value': str(wave_forecast_dataset)},
+                             {'icon': 'fas fa-box', 'text': 'Hydrodynamic Model:', 'value': str(hydrodynamic_model)}],
     }
-    return render(request, 'hcmr_pilot/scenario1-results.html', context)
+    return render(request, 'hcmr_pilot/scenario3-results.html', context)
 
 
 def index(request):
@@ -351,8 +372,8 @@ def wait_until_output_ready(params, request):
 
 
 def create_inp_file_from_request_and_upload(request):
-    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario = parse_request_params(request)
-    url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model, oil_density, sim_length, time_interval)
+    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario, depth = parse_request_params(request)
+    url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model, oil_density, sim_length, time_interval,depth)
     response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
     filename = ''
@@ -362,7 +383,7 @@ def create_inp_file_from_request_and_upload(request):
     return filename, url_params
 
 
-def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_model, oil_density, sim_length, time_interval):
+def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_model, oil_density, sim_length, time_interval, depth):
     url_params = ''
     idx = 0
     for point in spill_info_list:
@@ -387,6 +408,7 @@ def build_request_params_for_file_creation(spill_info_list, wave_model, ocean_mo
     url_params += '&SIM_LENGTH=' + str(sim_length)
     url_params += '&DENSITYOILTYPE=' + str(oil_density)
     url_params += '&STEP=' + str(time_interval)
+    url_params += '&DEPTH0=' + str(depth)
 
     return url_params
 
@@ -419,7 +441,8 @@ def parse_request_params(request):
     time_interval = request.GET.get('time_interval')
     sim_length = request.GET.get('simulation_length')
     oil_density = request.GET.get('oil_density')
-    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario
+    depth = request.GET.get('depth')
+    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario, depth
 
 
 def is_integer_string(s):
@@ -439,7 +462,6 @@ def download(request):
 
 
 def create_map_grid_for_natura(request):
-    import json
     from shapely.geometry import Polygon
     from shapely.geometry import Point
     import csv
@@ -548,3 +570,39 @@ def cancel_execution(request, exec_instance):
     service_exec.save()
     print "Cancelled?"
     return JsonResponse({'status': "cancelled"})
+
+
+def extract_depth_data(json_data_file, red_points):
+    with open('visualizer/static/visualizer/files/' + json_data_file) as json_file:
+        data = json.load(json_file)
+        points = []
+        for p in data:
+            lat, lon = p['Lat'],p['Lon']
+            status = find_status(lat, lon, p, red_points)
+            point = {"depth": p['Dpth'],
+                     "lat": lat,
+                     "lon": lon,
+                     "time": p["time"],
+                     "status": status}
+            points.append(point)
+        return points
+
+
+def get_red_points(rp_file):
+    red_points = []
+    with open('visualizer/static/visualizer/files/' + rp_file, 'r') as file:
+        line = file.readline()
+        while line:
+            red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
+            line = file.readline()
+        file.close()
+    return red_points
+
+
+def find_status(lat, lon, p, red_points):
+    if (lat, lon) in red_points:
+        status = -1
+    else:
+        status = p['Status']
+    return status
+
