@@ -1,3 +1,4 @@
+import csv
 import json
 
 import requests
@@ -576,6 +577,7 @@ def extract_depth_data(json_data_file):
     with open('visualizer/static/visualizer/files/' + json_data_file) as json_file:
         data = json.load(json_file)
         points = []
+        natura_table, resolution, min_lat, min_lon = get_natura_table()
         for p in data:
             lat, lon = p['Lat'],p['Lon']
             status = p['Status']
@@ -583,26 +585,43 @@ def extract_depth_data(json_data_file):
                      "lat": lat,
                      "lon": lon,
                      "time": p["time"],
-                     "status": status}
+                     "color": get_color(natura_table, lat, lon, status, resolution, min_lat, min_lon)}
             points.append(point)
         return points
 
 
-def get_red_points(rp_file):
-    red_points = []
-    with open('visualizer/static/visualizer/files/' + rp_file, 'r') as file:
-        line = file.readline()
-        while line:
-            red_points.append((float(line.split(',')[0]), float(line.split(',')[1])))
-            line = file.readline()
-        file.close()
-    return red_points
+def get_natura_table():
+    with open('visualizer/static/visualizer/files/natura_grid_fr.csv', 'r') as csvfile:
+        reader = csv.reader(csvfile)
+        natura_table = [[int(e) for e in r] for r in reader]
+        csvfile.close()
+    with open('visualizer/static/visualizer/files/natura_grid_info_fr', 'r') as file:
+        natura_info = json.load(file)
+    min_grid_lat = natura_info['min_lat']
+    min_grid_lon = natura_info['min_lon']
+    resolution = natura_info['resolution']
+    return natura_table, resolution, min_grid_lat, min_grid_lon
 
 
-# def find_status(lat, lon, p, red_points):
-#     if (lat, lon) in red_points:
-#         status = -1
-#     else:
-#         status = p['Status']
-#     return status
-
+def get_color(natura_table, lat, lon, status, resolution, min_lat, min_lon):
+    if len(natura_table) != 0:
+        try:
+            x = int((lat - min_lat)*resolution)
+            y = int((lon - min_lon)*resolution)
+            if (x>0) and (y>0):
+                if natura_table[x][y] == 1:
+                    return 'red'
+            else:
+                pass
+        except:
+            pass
+    if status == 0:
+        return 'darkblue'
+    elif status == 1:
+        return 'lightblue'
+    elif status == 5:
+        return 'cadetblue'
+    elif status == 10:
+        return 'orange'
+    else:
+        return 'lightblue'
