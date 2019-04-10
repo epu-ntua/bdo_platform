@@ -37,6 +37,8 @@ $(function() {
                  $(variable).attr({'data-disabled': 'False'});
              }
         });
+
+        $("#dataset-variables-div").find('[data-toggle="tooltip"]').tooltip();
     });
 
    $('#dataset_info_div').on('click', ".variable-section[data-disabled='False']", function() {
@@ -49,7 +51,7 @@ $(function() {
        }
        $(this).attr({'data-disabled': 'False'});
 
-       if($("#dataset-variables-div .variable-section[data-selected='True']").length > 0 ) {
+       if($("#dataset-variables-div .variable-section[data-selected='True'][data-disabled='False']").length > 0 ) {
            $('.selection-confirm').show();
        }
        else{
@@ -77,6 +79,12 @@ $(function() {
                     dataset_id: $(variable).data('variable-dataset'),
                     dataset_size: $(variable).closest('#dataset_info_div').find("#dataset_metadata_div").find(".dataset-size").find("td").eq(1).text(),
                     dataset_name: $(variable).closest('#dataset_info_div').find("#dataset_basic_info_div").find(".dataset-title").text(),
+                    dataset_lat_min: Math.floor(parseFloat($(variable).closest('#dataset_info_div').find("#dataset-coverage-div").find(".lat_from").text())),
+                    dataset_lat_max: Math.ceil(parseFloat($(variable).closest('#dataset_info_div').find("#dataset-coverage-div").find(".lat_to").text())),
+                    dataset_lon_min: Math.floor(parseFloat($(variable).closest('#dataset_info_div').find("#dataset-coverage-div").find(".lon_from").text())),
+                    dataset_lon_max: Math.ceil(parseFloat($(variable).closest('#dataset_info_div').find("#dataset-coverage-div").find(".lon_to").text())),
+                    dataset_time_min: $(variable).closest('#dataset_info_div').find("#dataset-coverage-div").find(".time_from").text(),
+                    dataset_time_max: $(variable).closest('#dataset_info_div').find("#dataset-coverage-div").find(".time_to").text(),
                     aggregate: null,
                     groupBy: null,
                     dimensions: dims
@@ -227,6 +235,4 @@ $(function() {
          $next.text($slider.slider('values', 1));
       }
      };
-
-
 });

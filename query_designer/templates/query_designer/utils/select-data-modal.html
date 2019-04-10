@@ -311,6 +311,16 @@
                         <h3>BDO Datasets</h3>
 
                         <div class="selection-body filter-section">
+                        <label style="position: absolute; top: 5px; right: 10px; color: #1d567e; font-weight: bold; cursor: pointer;">
+                            <input type="checkbox" checked id="selected_coverage_filter" name="selected_coverage_filter">
+                            Filter on selected coverage
+                            <i class="fas fa-question-circle" data-toggle="tooltip" title="If checked, the list of the available datasets will be
+                            filtered according to the spatial and temporal coverage of the already selected variables. So, only datasets that can
+                            be potentially combined with the already selected ones will be displayed. Note that if no spatial or temporal coverage
+                            information is available for a dataset, it will NOT be filtered out."
+                               style="color: #979797; cursor: help;" >
+                            </i>
+                        </label>
                         <div
                              class="dropdown"
                              style="width: 35%; position: absolute; top: 5px;"
@@ -556,7 +566,10 @@
                                                         data-variable-title="{{ variable.title }}"
                                                         data-variable-datatype="{{ variable.dataType }}"
                                                         data-selected="False"
-                                                        data-variable-dataset="{{ dataset.id }}">
+                                                        data-variable-dataset="{{ dataset.id }}"
+                                                        data-toggle="tooltip"
+                                                        data-placement="left"
+                                                        title="{{ variable.description }}">
                                                         <span class="variable-id" hidden>{{ variable.id }}</span>
                                                         <ul class="variable-dimensions" hidden>
                                                             {% for dimension in variable.dimensions.all %}
@@ -565,7 +578,7 @@
                                                                 </li>
                                                             {% endfor %}
                                                         </ul>
-                                                        <span data-dataset={{ dataset.id }} class="variable-title" title="{{ variable.description }}">{{ variable.title }}
+                                                        <span data-dataset={{ dataset.id }} class="variable-title">{{ variable.title }}
                                                             (<span class="variable-unit">{{ variable.unit }}</span>)
 {#                                                            <span class="variable-info-icon"><i class="fas fa-info"></i></span>#}
                                                             <span class="variable-check-icon pull-right"><i class="fas fa-check"></i></span>

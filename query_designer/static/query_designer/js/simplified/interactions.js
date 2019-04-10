@@ -154,7 +154,13 @@ $(function() {
                     aggregate: $fieldset.find('.col-prefix').find("select").val(),
                     dimensions: newVariable.dimensions,
                     dataset_id: newVariable.dataset_id,
-                    dataset_size: newVariable.dataset_size
+                    dataset_size: newVariable.dataset_size,
+                    dataset_lat_min: newVariable.dataset_lat_min,
+                    dataset_lat_max: newVariable.dataset_lat_max,
+                    dataset_lon_min: newVariable.dataset_lon_min,
+                    dataset_lon_max: newVariable.dataset_lon_max,
+                    dataset_time_min: newVariable.dataset_time_min,
+                    dataset_time_max: newVariable.dataset_time_max
                 });
             }
         });
@@ -272,6 +278,9 @@ $(function() {
 
 
     $('#select-data-modal').on('show.bs.modal', function() {
+        // At first hide the "add" button (it should be visible only if a variable has been slected to be added)
+        $('.selection-confirm').hide();
+
          // Mark as selected the variables that are already added to the Query Designer
          var included_vars = [];
          $.each(QueryToolbox.variables, function (_, variable) {
@@ -287,6 +296,63 @@ $(function() {
                  $(variable).attr({'data-disabled': 'False'});
              }
         });
+    });
+
+    function filter_datasets_on_coverage() {
+        // Filter datasets on selected variables' coverages
+        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180;
+        $.each(QueryToolbox.variables, function (_, variable) {
+            if(variable.dataset_lat_min > min_lat)
+                min_lat = variable.dataset_lat_min;
+            if(variable.dataset_lat_max < max_lat)
+                max_lat = variable.dataset_lat_max;
+            if(variable.dataset_lon_min > min_lon)
+                min_lon = variable.dataset_lon_min;
+            if(variable.dataset_lon_max < max_lon)
+                max_lon = variable.dataset_lon_max;
+        });
+        $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 0, min_lat);
+        $("div[data-control-name='range-slider-lat-to']").find(".ui-slider").slider('values', 0, min_lat);
+        $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 1, max_lat);
+        $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 1, max_lat);
+
+        $("div[data-control-name='range-slider-lon']").find(".ui-slider").slider('values', 0, min_lon);
+        $("div[data-control-name='range-slider-lon-to']").find(".ui-slider").slider('values', 0, min_lon);
+        $("div[data-control-name='range-slider-lon']").find(".ui-slider").slider('values', 1, max_lon);
+        $("div[data-control-name='range-slider-lon-from']").find(".ui-slider").slider('values', 1, max_lon);
+    }
+
+    function reset_datasets_coverage() {
+        // Filter datasets on selected variables' coverages
+        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180;
+        $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 0, min_lat);
+        $("div[data-control-name='range-slider-lat-to']").find(".ui-slider").slider('values', 0, min_lat);
+        $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 1, max_lat);
+        $("div[data-control-name='range-slider-lat-from']").find(".ui-slider").slider('values', 1, max_lat);
+
+        $("div[data-control-name='range-slider-lon']").find(".ui-slider").slider('values', 0, min_lon);
+        $("div[data-control-name='range-slider-lon-to']").find(".ui-slider").slider('values', 0, min_lon);
+        $("div[data-control-name='range-slider-lon']").find(".ui-slider").slider('values', 1, max_lon);
+        $("div[data-control-name='range-slider-lon-from']").find(".ui-slider").slider('values', 1, max_lon);
+    }
+
+    $('#select-data-modal').on('shown.bs.modal', function() {
+        if($('#select-data-modal').find('#selected_coverage_filter').prop("checked")) {
+            filter_datasets_on_coverage();
+        }
+        else{
+            reset_datasets_coverage();
+        }
+    });
+
+
+    $('#select-data-modal').find('#selected_coverage_filter').change(function() {
+        if(this.checked) {
+            filter_datasets_on_coverage();
+        }
+        else{
+            reset_datasets_coverage();
+        }
     });
 
 
