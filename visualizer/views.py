@@ -40,7 +40,7 @@ from aggregator.models import *
 
 from utils import *
 from tests import *
-
+from django.views.decorators.cache import never_cache
 from folium import CustomIcon
 from folium.plugins import HeatMap, MarkerCluster
 from shapely.geometry import Point
@@ -53,6 +53,7 @@ FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige'
 AGGREGATE_VIZ = ['max', 'min', 'avg', 'sum', 'count']
 
 
+@never_cache
 def get_vessel_ids_info(request, query_id):
     return_dict = dict()
     q = AbstractQuery.objects.get(pk=int(query_id))
