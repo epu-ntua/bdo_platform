@@ -224,7 +224,7 @@
 								data-setvalues-func="latValuesTo"
                                 style="width: 100%; display: none;"
                             >
-                                <label for="lat_range" style="width: 60%;"></label>
+                                <label for="lat_range" style="width: 40%;"></label>
 								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                                 <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
 								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
@@ -242,7 +242,7 @@
 								data-setvalues-func="latValuesFrom"
                                 style="width: 100%;  display: none;"
                             >
-                                <label for="lat_range" style="width: 60%;"></label>
+                                <label for="lat_range" style="width: 40%;"></label>
 								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                                 <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
 								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
@@ -280,7 +280,7 @@
 								data-setvalues-func="lonValuesTo"
                                 style="width: 100%; display: none;"
                             >
-                                <label for="lon_range" style="width: 60%;"></label>
+                                <label for="lon_range" style="width: 40%;"></label>
 								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                                 <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
 								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
@@ -298,7 +298,63 @@
 								data-setvalues-func="lonValuesFrom"
                                 style="width: 100%;  display: none;"
                             >
-                                <label for="lon_range" style="width: 60%;"></label>
+                                <label for="lon_range" style="width: 40%;"></label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
+                        </div>
+
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-time"
+{#								data-control-action="filter"#}
+{#								data-path=""#}
+								data-slider-func="timeSlider"
+								data-setvalues-func="timeValues"
+                                style="width: 100%;"
+                            >
+                                <label for="time_range" style="width: 39%;">Time range:</label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 1px; font-size: 7pt;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 1px; font-size: 7pt;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
+                        </div>
+
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-time-to"
+								data-control-action="filter"
+								data-path=".time_to"
+								data-slider-func="timeSliderTo"
+								data-setvalues-func="timeValuesTo"
+                                style="width: 100%; display: none;"
+                            >
+                                <label for="time_range" style="width: 40%;"></label>
+								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                            </div>
+                        </div>
+                        <div>
+                            <div
+								class="jplist-range-slider"
+								data-control-type="range-slider"
+								data-control-name="range-slider-time-from"
+								data-control-action="filter"
+								data-path=".time_from"
+								data-slider-func="timeSliderFrom"
+								data-setvalues-func="timeValuesFrom"
+                                style="width: 100%;  display: none;"
+                            >
+                                <label for="time_range" style="width: 40%;"></label>
 								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                                 <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
 								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
@@ -533,8 +589,14 @@
                                                     </tr>
                                                     <tr>
                                                         <td>Temporal coverage</td>
-                                                        <td>{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}-{% else %}{{ dataset.temporalCoverageBegin }}{% endif %}</td>
-                                                        <td>{% if dataset.temporalCoverageEnd is None or dataset.temporalCoverageEnd == '' %}-{% else %}{{ dataset.temporalCoverageEnd }}{% endif %}</td>
+                                                        <td>
+                                                            <span class="time_from hidden">{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}{{ time_start_timestamp }}{% else %}{{ dataset.temporalCoverageBeginTimestamp }}{% endif %}</span>
+                                                            {% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}-{% else %}{{ dataset.temporalCoverageBegin }}{% endif %}
+                                                        </td>
+                                                        <td>
+                                                            <span class="time_to hidden">{% if dataset.temporalCoverageEnd is None or dataset.temporalCoverageEnd == '' %}{{ time_end_timestamp }}{% else %}{{ dataset.temporalCoverageEndTimestamp }}{% endif %}</span>
+                                                            {% if dataset.temporalCoverageEnd is None or dataset.temporalCoverageEnd == '' %}-{% else %}{{ dataset.temporalCoverageEnd }}{% endif %}
+                                                        </td>
                                                     </tr>
                                                 </tbody>
                                             </table>

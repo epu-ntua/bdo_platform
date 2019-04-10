@@ -10,7 +10,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.conf import settings
 from visualizer.models import Visualization
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 
 def index(request):
     return render(request, 'query_designer/index.html', {
@@ -88,6 +89,15 @@ def clean(request, pk=None):
     #     if dataset.organization.title not in organization_list:
     #         organization_list.append(dataset.organization.title)
     variable_list = Variable.objects.all()
+
+
+
+    time_start = datetime.now() - timedelta(days=10000)
+    time_end = datetime.now() + timedelta(days=7)
+    time_start_timestamp = long(time.mktime(time_start.timetuple())) * 1000
+    time_end_timestamp = long(time.mktime(time_end.timetuple())) * 1000
+
+
     try:
         with open('visualizer/static/visualizer/visualisations_settings.json') as f:
             conf_viz_json = json.dumps(json.load(f))
@@ -104,7 +114,9 @@ def clean(request, pk=None):
         # 'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user
         'available_viz': Visualization.objects.filter(hidden=False).order_by('order'),
         'AGGREGATES': AGGREGATES,
-        'visualisation_configuration': conf_viz_json
+        'visualisation_configuration': conf_viz_json,
+        'time_start_timestamp': time_start_timestamp,
+        'time_end_timestamp': time_end_timestamp,
     })
 
 

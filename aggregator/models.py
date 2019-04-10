@@ -11,7 +11,8 @@ import math
 
 from netCDF4._netCDF4 import num2date
 from django.contrib.postgres.fields import JSONField
-from datetime import datetime
+from datetime import datetime, timedelta
+import time
 
 ACCESS_REQUEST_STATUS_CHOICES = (('open', 'open'),
                                  ('accepted', 'accepted'),
@@ -104,6 +105,24 @@ class Dataset(Model):
             return str(float(int(size) + round(float(reminder*0.001), 1))) + " " + Dic_powerN[n]
         except:
             return 'undefined'
+
+    @property
+    def temporalCoverageBeginTimestamp(self):
+        try:
+            temporalCoverageBegin = self.temporalCoverageBegin
+            temporalCoverageBegin_timestamp = long(time.mktime(temporalCoverageBegin.timetuple())) * 1000
+            return temporalCoverageBegin_timestamp
+        except:
+            return ''
+
+    @property
+    def temporalCoverageEndTimestamp(self):
+        try:
+            temporalCoverageEnd = self.temporalCoverageEnd
+            temporalCoverageEnd_timestamp = long(time.mktime(temporalCoverageEnd.timetuple())) * 1000
+            return temporalCoverageEnd_timestamp
+        except:
+            return ''
 
     def __unicode__(self):
         return self.title

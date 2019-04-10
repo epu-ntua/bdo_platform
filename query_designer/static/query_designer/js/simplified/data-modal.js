@@ -129,6 +129,11 @@ $(function() {
     // } );
 
 
+    var time_start = new Date();
+    var time_start_timestamp = time_start.setDate(time_start.getDate() - 10000);
+    var time_end = new Date();
+    var time_end_timestamp = time_end.setDate(time_end.getDate() + 7);
+
     jQuery.fn.jplist.settings = {
         latSlider: function ($slider, $prev, $next){
          $slider.slider({
@@ -233,6 +238,80 @@ $(function() {
       ,lonValuesFrom: function ($slider, $prev, $next){
          $prev.text($slider.slider('values', 0));
          $next.text($slider.slider('values', 1));
+      }
+      ,timeSlider: function ($slider, $prev, $next){
+         $slider.slider({
+             min: time_start_timestamp
+            ,max: time_end_timestamp
+            ,range: true
+            ,values: [time_start_timestamp, time_end_timestamp]
+            ,slide: function (event, ui){
+                 // $prev.text(ui.values[0]);
+                // $next.text(ui.values[1]);
+                var start_date = new Date(ui.values[0]);
+                var end_date = new Date(ui.values[1]);
+                $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+                $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+                $("div[data-control-name='range-slider-time-to']").find(".ui-slider").slider('values', 0, ui.values[0]);
+                $("div[data-control-name='range-slider-time-from']").find(".ui-slider").slider('values', 1, ui.values[1]);
+            }
+         });
+      }
+      ,timeValues: function ($slider, $prev, $next){
+          // $prev.text($slider.slider('values', 0));
+         // $next.text($slider.slider('values', 1));
+         var start_date = new Date($slider.slider('values', 0));
+         var end_date = new Date($slider.slider('values', 1));
+         $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+         $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+      }
+      ,timeSliderTo: function ($slider, $prev, $next){
+         $slider.slider({
+             min: time_start_timestamp
+            ,max: time_end_timestamp
+            ,range: true
+            ,values: [time_start_timestamp, time_end_timestamp]
+            ,slide: function (event, ui){
+                 // $prev.text(ui.values[0]);
+                // $next.text(ui.values[1]);
+                var start_date = new Date(ui.values[0]);
+                var end_date = new Date(ui.values[1]);
+                $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+                $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+            }
+         });
+      }
+      ,timeValuesTo: function ($slider, $prev, $next){
+          // $prev.text($slider.slider('values', 0));
+         // $next.text($slider.slider('values', 1));
+         var start_date = new Date($slider.slider('values', 0));
+         var end_date = new Date($slider.slider('values', 1));
+         $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+         $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+      }
+      ,timeSliderFrom: function ($slider, $prev, $next){
+         $slider.slider({
+             min: time_start_timestamp
+            ,max: time_end_timestamp
+            ,range: true
+            ,values: [time_start_timestamp, time_end_timestamp]
+            ,slide: function (event, ui){
+                 // $prev.text(ui.values[0]);
+                // $next.text(ui.values[1]);
+                var start_date = new Date(ui.values[0]);
+                var end_date = new Date(ui.values[1]);
+                $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+                $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+             }
+         });
+      }
+      ,timeValuesFrom: function ($slider, $prev, $next){
+          // $prev.text($slider.slider('values', 0));
+         // $next.text($slider.slider('values', 1));
+         var start_date = new Date($slider.slider('values', 0));
+         var end_date = new Date($slider.slider('values', 1));
+         $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+         $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
       }
      };
 });
