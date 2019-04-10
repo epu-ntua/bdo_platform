@@ -133,10 +133,10 @@ def scenario3_results(request, exec_instance):
                     "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
 
     output_json = filename_output.replace('_F.out', '.json')
-    rp_file = filename_output.replace('_F.out', '.txt')
-    red_points = get_red_points(rp_file)
+    # rp_file = filename_output.replace('_F.out', '.txt')
+    # red_points = get_red_points(rp_file)
 
-    depth_data = extract_depth_data(str(output_json), red_points)
+    depth_data = extract_depth_data(str(output_json))
     context = {
         'depth_data': depth_data,
         'url': visualization_url,
@@ -182,7 +182,7 @@ def process(request, exec_instance):
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
 
-        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count, scenario = parse_request_params(request)
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count, scenario, depth = parse_request_params(request)
         if (scenario == '1') or (scenario == '3'):
             service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
             service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
@@ -433,7 +433,7 @@ def parse_request_params(request):
             valid_points.append([spill_info['latitude'], spill_info['longitude']])
         print(spill_infos)
     if scenario == '3':
-        spill_info[0]['depth'] = request.GET.get('depth')
+        spill_infos[0]['depth'] = request.GET.get('depth')
     wave_model = request.GET.get('wave_model')
     ocean_model = request.GET.get('hd_model')
     natura_layer = request.GET.get('natura_layer')
@@ -572,13 +572,13 @@ def cancel_execution(request, exec_instance):
     return JsonResponse({'status': "cancelled"})
 
 
-def extract_depth_data(json_data_file, red_points):
+def extract_depth_data(json_data_file):
     with open('visualizer/static/visualizer/files/' + json_data_file) as json_file:
         data = json.load(json_file)
         points = []
         for p in data:
             lat, lon = p['Lat'],p['Lon']
-            status = find_status(lat, lon, p, red_points)
+            status = p['Status']
             point = {"depth": p['Dpth'],
                      "lat": lat,
                      "lon": lon,
@@ -599,10 +599,10 @@ def get_red_points(rp_file):
     return red_points
 
 
-def find_status(lat, lon, p, red_points):
-    if (lat, lon) in red_points:
-        status = -1
-    else:
-        status = p['Status']
-    return status
+# def find_status(lat, lon, p, red_points):
+#     if (lat, lon) in red_points:
+#         status = -1
+#     else:
+#         status = p['Status']
+#     return status
 
