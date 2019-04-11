@@ -589,7 +589,7 @@ $(document).ready(function() {
     $('#sel1').parent().css('min-width','100%');
     $('.glyphicon-calendar').css('top','-15px');
     var startDate = new Date();
-    var endDate = new Date();
+    var endDate = new Date(2019,1,28); // month starts at 0
     startDate.setFullYear(startDate.getFullYear() - 1);
     startDate.setHours(0,0,0,0);
     if(scenario === 2){
