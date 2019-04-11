@@ -40,7 +40,7 @@ def services(request):
                       'creator': 'XMILE',
                       'sharing': 'Private'}
     pilot_services.append(xmile_service)
-    hcmr_service = {'title': 'Oil Spill Simulation Service',
+    hcmr_service = {'title': 'Mare Protection Service',
                       'imageurl': 'https://thumbs-prod.si-cdn.com/bAo1rCpazij8Cq9aaICgsfyo8ZM=/800x600/filters:no_upscale()/https://public-media.si-cdn.com/filer/fa/8d/fa8d22e3-9b93-426c-bb3e-a0b8c28d122f/12685861633_1708f2dbff_o1.jpg',
                       'targeturl': '/pilot/oil-spill-simulation/',
                       'short_description': 'Define the oil spill accident detected and receive a report on the highly affected areas during the specified time period.',

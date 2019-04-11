@@ -101,6 +101,14 @@
     padding-top: 4vh;
 }
 
+#carousel_container #services_showcase_container a{
+    color: white;
+}
+
+#carousel_container #services_showcase_container a .card-body{
+    color: rgba(0, 0, 0, 0.87);
+}
+
 #datasets_showcase_container.active #sources{
     right: 25vw;
     opacity: 1;
@@ -151,8 +159,8 @@
 #carousel_container #services_showcase_container .card-text,
 #carousel_container #tools_showcase_container .card-text{
     text-align: center;
-    padding: 4% 0%;
-    font-size: 125%;
+    padding: 3% 0%;
+    font-size: 110%;
 }
 
 #carousel_container #services_showcase_container .card,
