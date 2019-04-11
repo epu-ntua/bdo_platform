@@ -274,6 +274,8 @@
 #main-section[data-on-top='false'] #select-data-modal{
     opacity: 0;
     visibility: hidden;
+    max-height: 0;
+    overflow: hidden;
 }
 
 #main-section .jplist-group{
