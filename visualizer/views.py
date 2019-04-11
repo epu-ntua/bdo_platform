@@ -2334,7 +2334,7 @@ def get_histogram_chart_am(request):
         bins -= 1
         if where_clause == '':
             raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
-                        histogram as (select width_bucket({{5}.0}, min, max, {2}) ,
+                        histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
                          (min({5}.{0}), max({5}.{0})) as range,
                          count(*) as freq from {1} {4}, drb_stats {3} where {5}.{0} IS NOT NULL
     
@@ -2534,11 +2534,11 @@ def get_histogram_2d_matplotlib(request):
     bins = int(str(request.GET.get('bins', '3')))
     if query_pk != 0:
         print('Loading/Modifying Query')
-        query, y_var_title, y_from_table, y_table_col, x_var_title, x_from_table, x_table_col,cursor = histogram2d_load_modify_query(query_pk, x_var, y_var)
+        query, y_var_title, x_var_title = histogram2d_load_modify_query(query_pk, x_var, y_var)
         print('Executing Query')
         # x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_execute_query(query, x_var, y_var)
-        raw_query = ("SELECT * FROM (SELECT count(*), round({0}, 0),round({1}, 0) FROM {2} WHERE {0} IS NOT NULL AND {1} IS NOT  NULL group by round({0}, 0), round({1}, 0) order by  round({0}, 0), round({1},0)) AS SQ1 ").format(x_table_col, y_table_col, x_from_table)
-        print raw_query
+        # raw_query = ("SELECT * FROM (SELECT count(*), round({0}, 0),round({1}, 0) FROM {2} WHERE {0} IS NOT NULL AND {1} IS NOT  NULL group by round({0}, 0), round({1}, 0) order by  round({0}, 0), round({1},0)) AS SQ1 ").format(x_table_col, y_table_col, x_from_table)
+        # print raw_query
         raw_query = str(query.raw_query).replace("(SELECT", "(SELECT count(*), ")
         print raw_query
         cursor = get_presto_cursor()
@@ -2615,11 +2615,15 @@ def get_histogram_2d_matplotlib(request):
     fig.tight_layout()
     plt.draw()
     ts = str(time.time()).replace(".", "")
-    html_path = ts + 'histogram2d.png'
-    histpath = 'visualizer/static/visualizer/img/temp/' + html_path
+    img_name = ts + 'histogram2d.png'
+    import sys
+    if sys.argv[1] == 'runserver':
+        histpath = 'visualizer/static/visualizer/img/temp/' + img_name
+    else:
+        histpath = settings.STATIC_ROOT + '/visualizer/img/temp/' + img_name
     plt.savefig(histpath,  transparent=True, frameon=False, pad_inches=0)
     return render(request, 'visualizer/histogram_2d_matplotlib.html',
-                  {'hist_path': html_path})
+                  {'img_name': img_name})
 
 
 def histogram2d_dataframe(x_var, y_var):
@@ -2670,13 +2674,18 @@ def histogram2d_load_modify_query(query_pk, x_var, y_var):
     query = TempQuery(document=query.document)
     doc = query.document
 
+    xvar_title = ''
+    yvar_title = ''
+
     for f in doc['from']:
         for s in f['select']:
             if s['name'] == y_var:
+                yvar_title = s['title']
                 s['groupBy'] = True
                 s['aggregate'] = 'round0'
                 s['exclude'] = False
             elif s['name'] == x_var:
+                xvar_title = s['title']
                 s['groupBy'] = True
                 s['aggregate'] = 'round0'
                 s['exclude'] = False
@@ -2687,83 +2696,8 @@ def histogram2d_load_modify_query(query_pk, x_var, y_var):
     doc['limit'] = []
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
     query.document = doc
-    # TODO: Query can be created using the query designer.Fix the error about the double grouping
-    xfrom_table = ''
-    xtable_col = ''
-    yfrom_table = ''
-    ytable_col = ''
-    xvar_title = ''
-    yvar_title = ''
-    cursor = None
-    # for f in doc['from']:
-    #     for s in f['select']:
-    #         if s['name'] == x_var:
-    #             xvar_title = s['title']
-    #             if s['type'] == 'VALUE':
-    #                 v_obj = Variable.objects.get(pk=int(f['type']))
-    #                 if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-    #                     xfrom_table = f['name'][:-2] + '_' + f['type']
-    #                     xtable_col = 'value'
-    #                     cursor = connections['default'].cursor()
-    #                 elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-    #                     xfrom_table = str(v_obj.dataset.table_name)
-    #                     xtable_col = str(v_obj.name)
-    #                     cursor = connections['UBITECH_POSTGRES'].cursor()
-    #                 elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-    #                     xfrom_table = str(v_obj.dataset.table_name)
-    #                     xtable_col = str(v_obj.name)
-    #                     cursor = get_presto_cursor()
-    #             else:
-    #                 d_obj = Dimension.objects.get(pk=int(s['type']))
-    #                 v_obj = d_obj.variable
-    #                 if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-    #                     xfrom_table = f['name'][:-2] + '_' + f['type']
-    #                     xtable_col = d_obj.name + '_' + s['type']
-    #                     cursor = connections['default'].cursor()
-    #                 elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-    #                     xfrom_table = str(v_obj.dataset.table_name)
-    #                     xtable_col = str(d_obj.name)
-    #                     cursor = connections['UBITECH_POSTGRES'].cursor()
-    #                 elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-    #                     xfrom_table = str(v_obj.dataset.table_name)
-    #                     xtable_col = str(d_obj.name)
-    #                     cursor = get_presto_cursor()
-    #         elif s['name'] == y_var:
-    #             yvar_title = s['title']
-    #             if s['type'] == 'VALUE':
-    #                 v_obj = Variable.objects.get(pk=int(f['type']))
-    #                 if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-    #                     yfrom_table = f['name'][:-2] + '_' + f['type']
-    #                     ytable_col = 'value'
-    #                     cursor = connections['default'].cursor()
-    #                 elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-    #                     yfrom_table = str(v_obj.dataset.table_name)
-    #                     ytable_col = str(v_obj.name)
-    #                     cursor = connections['UBITECH_POSTGRES'].cursor()
-    #                 elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-    #                     yfrom_table = str(v_obj.dataset.table_name)
-    #                     ytable_col = str(v_obj.name)
-    #                     cursor = get_presto_cursor()
-    #             else:
-    #                 d_obj = Dimension.objects.get(pk=int(s['type']))
-    #                 v_obj = d_obj.variable
-    #                 if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-    #                     yfrom_table = f['name'][:-2] + '_' + f['type']
-    #                     ytable_col = d_obj.name + '_' + s['type']
-    #                     cursor = connections['default'].cursor()
-    #                 elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-    #                     yfrom_table = str(v_obj.dataset.table_name)
-    #                     ytable_col = str(d_obj.name)
-    #                     cursor = connections['UBITECH_POSTGRES'].cursor()
-    #                 elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-    #                     yfrom_table = str(v_obj.dataset.table_name)
-    #                     ytable_col = str(d_obj.name)
-    #                     cursor = get_presto_cursor()
-    #         else:
-    #             s['exclude'] = True
-    return query, xvar_title, xfrom_table, xtable_col, yvar_title, yfrom_table, ytable_col,cursor
 
-
+    return query, xvar_title, yvar_title
 
 
 def get_histogram_2d_am(request):

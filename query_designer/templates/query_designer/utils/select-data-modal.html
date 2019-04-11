@@ -204,13 +204,15 @@
 {#								data-path=""#}
 								data-slider-func="latSlider"
 								data-setvalues-func="latValues"
-                                style="width: 100%; margin-bottom: 2%;"
+                                style="width: 100%; margin-bottom: 4%;"
                             >
-                                <label for="lat_range" style="width: 60%;">Latitude range:</label>
-								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
-                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
-								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
-
+                                <label for="lat_range" style="width: 30%; margin-bottom: 0;">Latitude:</label>
+                                <span style="color: white; float: right;">
+                                    <span class="value" data-type="prev-value" style="border:0; width: 35px; float: none; margin: 2px;"></span>
+                                    <span> , </span>
+                                    <span class="value" data-type="next-value" style="border:0; width: 35px; float: none; margin: 2px;"></span>
+                                </span>
+                                <div class="ui-slider" data-type="ui-slider" style="width: 100%; margin-top: 0;"></div>
                             </div>
                         </div>
                         <div>
@@ -260,13 +262,15 @@
 {#								data-path=""#}
 								data-slider-func="lonSlider"
 								data-setvalues-func="lonValues"
-                                style="width: 100%;"
+                                style="width: 100%; margin-bottom: 4%;"
                             >
-                                <label for="lon_range" style="width: 60%;">Longitude range:</label>
-								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
-                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
-								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
-
+                                <label for="lon_range" style="width: 30%; margin-bottom: 0;">Longitude:</label>
+                                <span style="color: white; float: right;">
+                                    <span class="value" data-type="prev-value" style="border:0; width: 35px; float: none; margin: 2px;"></span>
+                                    <span> , </span>
+                                    <span class="value" data-type="next-value" style="border:0; width: 35px; float: none; margin: 2px;"></span>
+                                </span>
+                                <div class="ui-slider" data-type="ui-slider" style="width: 100%; margin-top: 0;"></div>
                             </div>
                         </div>
                         <div>
@@ -315,13 +319,16 @@
 {#								data-path=""#}
 								data-slider-func="timeSlider"
 								data-setvalues-func="timeValues"
-                                style="width: 100%;"
+                                style="width: 100%; margin-bottom: 0%;"
                             >
-                                <label for="time_range" style="width: 39%;">Time range:</label>
-								<span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 1px; font-size: 7pt;"></span>
-                                <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 1px; font-size: 7pt;"></span>
-								<div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
 
+                                <label for="time_range" style="width: 20%; margin-bottom: 0;">Time:</label>
+                                <span style="color: white; float: right;">
+                                    <span class="value" data-type="prev-value" style="border:0; width: 35px; float: none; margin: 1px;"></span>
+                                    <span>,</span>
+                                    <span class="value" data-type="next-value" style="border:0; width: 35px; float: none; margin: 1px;"></span>
+                                </span>
+                                <div class="ui-slider" data-type="ui-slider" style="width: 100%; margin-top: 0;"></div>
                             </div>
                         </div>
 
@@ -617,7 +624,7 @@
                                                         data-toggle="tooltip"
                                                         data-placement="left"
                                                         title="{{ dimension.description }}">
-                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.title }}</span>
+                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-title="{{ dimension.title }}" data-datatype="{{ dimension.dataType }}">{{ dimension.title }}</span>
                                                     </li>
                                                 {% endfor %}
                                             </ul>
@@ -640,7 +647,7 @@
                                                         <ul class="variable-dimensions" hidden>
                                                             {% for dimension in variable.dimensions.all %}
                                                                 <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
-                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
+                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-title="{{ dimension.title }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
                                                                 </li>
                                                             {% endfor %}
                                                         </ul>

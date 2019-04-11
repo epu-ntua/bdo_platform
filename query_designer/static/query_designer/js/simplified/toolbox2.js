@@ -227,7 +227,7 @@ $(function () {
                 _from.select.push({
                    type: 'VALUE',
                    name: 'i' + String(idx) + '_' + variable.name,
-                   title: variable.name,
+                   title: variable.title,
                    datatype: variable.datatype,
                    aggregate: variable.aggregate,
                    groupBy: false,
@@ -236,7 +236,7 @@ $(function () {
 
                 // push dimensions
                 $.each(variable.dimensions, function(jdx, dim) {
-                    var name = dim.title;
+                    var name = dim.name;
                     var groupBy = false;
                     $.each(QueryToolbox.groupings, function (_, elem) {
                        if(parseInt(dim.id) === parseInt(elem.dimension_id)){
@@ -403,7 +403,7 @@ $(function () {
         create_grouping_list: function () {
             var grouping_list=[];
             $.each(QueryToolbox.groupings, function (_, elem) {
-                grouping_list.push(elem.dimension_title);
+                grouping_list.push(elem.dimension_name);
             });
             if (QueryToolbox.temporal_resolution !== ""){
                 grouping_list.push('time');
@@ -414,9 +414,9 @@ $(function () {
             }
             if (grouping_list.length>0) {
                 $.each(QueryToolbox.orderings, function (index, elem) {
-                    if (!(grouping_list.includes(elem.title))) {
+                    if (!(grouping_list.includes(elem.name))) {
                         QueryToolbox.orderings.splice(index,1);
-                        var $sel =  $('[name="orderby"] option[data-title="'+ String(elem.title) +'"]');
+                        var $sel =  $('[name="orderby"] option[data-name="'+ String(elem.name) +'"]');
                         $sel.prop('selected', false);
                         $sel.removeAttr('disabled');
                         refresh_selects2();
@@ -705,7 +705,7 @@ $(function () {
             var time_dim_id = null;
             $.each(QueryToolbox.variables, function (vidx, variable) {
                 $.each(variable.dimensions, function (didx, dimension) {
-                    if(dimension.title === 'time'){
+                    if(dimension.name === 'time'){
                         time_dim_id = dimension.id
                     }
                 });
@@ -728,10 +728,10 @@ $(function () {
             var longitude_dim_id = null;
             $.each(QueryToolbox.variables, function (vidx, variable) {
                 $.each(variable.dimensions, function (didx, dimension) {
-                    if(dimension.title === 'latitude'){
+                    if(dimension.name === 'latitude'){
                         latitude_dim_id = dimension.id
                     }
-                    if(dimension.title === 'longitude'){
+                    if(dimension.name === 'longitude'){
                         longitude_dim_id = dimension.id
                     }
                 });

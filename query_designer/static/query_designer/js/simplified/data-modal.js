@@ -66,8 +66,9 @@ $(function() {
                $(this).find(".dimension-section span").each(function (_, dim) {
                    dims.push({
                         id: $(dim).data('type'),
-                        title: $(this).data('name'),
-                        datatype: $(this).data('datatype')
+                        name: $(dim).data('name'),
+                        title: $(dim).data('title'),
+                        datatype: $(dim).data('datatype')
                     })
                });
                selection.push({
@@ -128,11 +129,6 @@ $(function() {
     //     $( "#lon_range_end" ).val($( "#lon_range" ).slider( "values", 1 ));
     // } );
 
-
-    var time_start = new Date();
-    var time_start_timestamp = time_start.setDate(time_start.getDate() - 10000);
-    var time_end = new Date();
-    var time_end_timestamp = time_end.setDate(time_end.getDate() + 7);
 
     jQuery.fn.jplist.settings = {
         latSlider: function ($slider, $prev, $next){

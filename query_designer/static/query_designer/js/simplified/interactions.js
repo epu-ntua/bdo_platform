@@ -68,7 +68,7 @@ $(function() {
         var all_datasets = [];
         $.each(QueryToolbox.variables, function (_, v_obj) {
             $.each(v_obj.dimensions, function (_, d_obj) {
-                 all_dimensions.push(d_obj.title);
+                 all_dimensions.push(d_obj.name);
             });
             all_datasets.push(v_obj.dataset_id);
         });
@@ -79,7 +79,7 @@ $(function() {
         $.each(QueryToolbox.variables, function (_, v_obj) {
             var var_dims = [];
             $.each(v_obj.dimensions, function (_, d_obj) {
-                var_dims.push(d_obj.title);
+                var_dims.push(d_obj.name);
             });
             common_dimensions  = common_dimensions.filter(value => var_dims.includes(value));
         });
@@ -255,6 +255,9 @@ $(function() {
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
 
+        // reset to variables tab
+        $("#chart-control-list ul li").eq(0).find("a").click();
+
         if (display_tour){
             first_tour.init();
             first_tour.start(true);
@@ -277,7 +280,7 @@ $(function() {
     });
 
 
-    $('#select-data-modal').on('show.bs.modal', function() {
+    $('#select-data-modal').on('shown.bs.modal', function() {
         // At first hide the "add" button (it should be visible only if a variable has been slected to be added)
         $('.selection-confirm').hide();
 
@@ -300,7 +303,9 @@ $(function() {
 
     function filter_datasets_on_coverage() {
         // Filter datasets on selected variables' coverages
-        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180;
+        var time_start = new Date();
+        var time_end = new Date();
+        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180, min_time=time_start_timestamp, max_time=time_end_timestamp;
         $.each(QueryToolbox.variables, function (_, variable) {
             if(variable.dataset_lat_min > min_lat)
                 min_lat = variable.dataset_lat_min;
@@ -310,7 +315,12 @@ $(function() {
                 min_lon = variable.dataset_lon_min;
             if(variable.dataset_lon_max < max_lon)
                 max_lon = variable.dataset_lon_max;
+            if(variable.dataset_time_min > min_time)
+                min_time = variable.dataset_time_min;
+            if(variable.dataset_time_max < max_time)
+                max_time = variable.dataset_time_max;
         });
+
         $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 0, min_lat);
         $("div[data-control-name='range-slider-lat-to']").find(".ui-slider").slider('values', 0, min_lat);
         $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 1, max_lat);
@@ -320,11 +330,16 @@ $(function() {
         $("div[data-control-name='range-slider-lon-to']").find(".ui-slider").slider('values', 0, min_lon);
         $("div[data-control-name='range-slider-lon']").find(".ui-slider").slider('values', 1, max_lon);
         $("div[data-control-name='range-slider-lon-from']").find(".ui-slider").slider('values', 1, max_lon);
+
+        $("div[data-control-name='range-slider-time']").find(".ui-slider").slider('values', 0, min_time);
+        $("div[data-control-name='range-slider-time-to']").find(".ui-slider").slider('values', 0, min_time);
+        $("div[data-control-name='range-slider-time']").find(".ui-slider").slider('values', 1, max_time);
+        $("div[data-control-name='range-slider-time-from']").find(".ui-slider").slider('values', 1, max_time);
     }
 
     function reset_datasets_coverage() {
         // Filter datasets on selected variables' coverages
-        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180;
+        var min_lat=-90, max_lat=90, min_lon=-180, max_lon=180, min_time=time_start_timestamp, max_time=time_end_timestamp;
         $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 0, min_lat);
         $("div[data-control-name='range-slider-lat-to']").find(".ui-slider").slider('values', 0, min_lat);
         $("div[data-control-name='range-slider-lat']").find(".ui-slider").slider('values', 1, max_lat);
@@ -334,7 +349,11 @@ $(function() {
         $("div[data-control-name='range-slider-lon-to']").find(".ui-slider").slider('values', 0, min_lon);
         $("div[data-control-name='range-slider-lon']").find(".ui-slider").slider('values', 1, max_lon);
         $("div[data-control-name='range-slider-lon-from']").find(".ui-slider").slider('values', 1, max_lon);
-    }
+
+        $("div[data-control-name='range-slider-time']").find(".ui-slider").slider('values', 0, min_time);
+        $("div[data-control-name='range-slider-time-to']").find(".ui-slider").slider('values', 0, min_time);
+        $("div[data-control-name='range-slider-time']").find(".ui-slider").slider('values', 1, max_time);
+        $("div[data-control-name='range-slider-time-from']").find(".ui-slider").slider('values', 1, max_time);    }
 
     $('#select-data-modal').on('shown.bs.modal', function() {
         if($('#select-data-modal').find('#selected_coverage_filter').prop("checked")) {
@@ -359,7 +378,7 @@ $(function() {
     // *** OPEN - LOAD - SAVE - RENAME QUERY *** //
     /* Add a new query - Reset the toolbox */
     $('#new-query').on('click', function () {
-        reset();
+        $('.value-remove-btn').click();
     });
 
 
@@ -575,7 +594,7 @@ $(function() {
         $.each($selected_options, function (_, option) {
             QueryToolbox.groupings.push(
                 {'dimension_id': $(option).data('dimension-id'),
-                 'dimension_title': $(option).data('title'),
+                 'dimension_name': $(option).data('name'),
                  'dimension_forVariable': $(option).data('forvariable')
                 })
         });
@@ -650,7 +669,7 @@ $(function() {
             if($(option).data('type') === 'dimension'){
                 QueryToolbox.orderings.push(
                     {'dimension_id': $(option).data('dimension-id'),
-                     'title': $(option).data('title'),
+                     'name': $(option).data('name'),
                      'dimension_forVariable': $(option).data('forvariable'),
                      'ordering': $(option).data('ordering'),
                      'type': 'dimension'
@@ -660,7 +679,7 @@ $(function() {
             else{
                 QueryToolbox.orderings.push(
                     {'variable_id': $(option).data('variable-id'),
-                     'title': $(option).data('title'),
+                     'name': $(option).data('name'),
                      'ordering': $(option).data('ordering'),
                      'type': 'variable'
                     }
@@ -883,20 +902,20 @@ function updateGroupByField(common_dimension_list) {
 
     $.each(QueryToolbox.variables, function (_, variable) {
         $.each(variable.dimensions, function (_, dimension) {
-            if (($categorySelectField.find("option[data-title='" + dimension.title + "']").length === 0)&&(common_dimension_list.includes(dimension.title))) {
+            if (($categorySelectField.find("option[data-name='" + dimension.name + "']").length === 0)&&(common_dimension_list.includes(dimension.name))) {
                 // Create a DOM Option and pre-select by default
                 var newOption = new Option(dimension.title, dimension.id, false, false);
                 newOption.setAttribute('data-forVariable', variable.id);
                 newOption.setAttribute('data-dimension-id', dimension.id);
-                newOption.setAttribute('data-title', dimension.title);
-                if((dimension.title==='time')&&($('#temporal_resolution').val() !== '')){
+                newOption.setAttribute('data-name', dimension.name);
+                if((dimension.name==='time')&&($('#temporal_resolution').val() !== '')){
                     newOption.setAttribute('disabled','disabled');
-                }else if(((dimension.title==='latitude')||(dimension.title==='longitude'))&&($('#spatial_resolution').val() !== '')){
+                }else if(((dimension.name==='latitude')||(dimension.name==='longitude'))&&($('#spatial_resolution').val() !== '')){
                     newOption.setAttribute('disabled','disabled');
                 }
                 // if a dimensions was previously selected, then select it again
                 $.each(QueryToolbox.groupings, function (idx, elem) {
-                    if(elem.dimension_title === dimension.title){
+                    if(elem.dimension_name === dimension.name){
                         newOption.setAttribute('selected','selected');
                     }
                 });
@@ -919,17 +938,17 @@ function updateOrderByField(common_dimension_list) {
     $.each(QueryToolbox.variables, function (idx, variable) {
         $.each(variable.dimensions, function (_, dimension) {
             // Append the dimensions
-            if (($orderbySelectField.find("option[data-title='" + dimension.title + "']").length === 0)&&(common_dimension_list.includes(dimension.title))) {
+            if (($orderbySelectField.find("option[data-name='" + dimension.name + "']").length === 0)&&(common_dimension_list.includes(dimension.name))) {
                 //Ascending order
                 var newOption = new Option('<i class="fa fa-arrow-up"></i> ' + dimension.title, 'dimension__'+dimension.id+'__ASC', false, false);
                 newOption.setAttribute('data-forVariable', variable.id);
                 newOption.setAttribute('data-dimension-id', dimension.id);
                 newOption.setAttribute('data-ordering', 'ASC');
-                newOption.setAttribute('data-title', dimension.title);
+                newOption.setAttribute('data-name', dimension.name);
                 newOption.setAttribute('data-type', 'dimension');
                 // if a dimensions was previously selected, then select it again
                 $.each(QueryToolbox.orderings, function (idx, elem) {
-                    if((elem.type === 'dimension') && (elem.title === dimension.title) && (elem.ordering === 'ASC')){
+                    if((elem.type === 'dimension') && (elem.name === dimension.name) && (elem.ordering === 'ASC')){
                         newOption.setAttribute('selected','selected');
 
                     }
@@ -940,11 +959,11 @@ function updateOrderByField(common_dimension_list) {
                 newOption.setAttribute('data-forVariable', variable.id);
                 newOption.setAttribute('data-dimension-id', dimension.id);
                 newOption.setAttribute('data-ordering', 'DESC');
-                newOption.setAttribute('data-title', dimension.title);
+                newOption.setAttribute('data-name', dimension.name);
                 newOption.setAttribute('data-type', 'dimension');
                 // if a dimensions was previously selected, then select it again
                 $.each(QueryToolbox.orderings, function (idx, elem) {
-                    if((elem.type === 'dimension') && (elem.title === dimension.title) && (elem.ordering === 'DESC')){
+                    if((elem.type === 'dimension') && (elem.name === dimension.name) && (elem.ordering === 'DESC')){
                         newOption.setAttribute('selected','selected');
                     }
                 });
@@ -956,7 +975,7 @@ function updateOrderByField(common_dimension_list) {
         var newOption = new Option('<i class="fa fa-arrow-up"></i> ' + variable.title + ' (Metric #'+(idx+1)+')', 'variable__'+variable.id+'__ASC', false, false);
         newOption.setAttribute('data-variable-id', variable.id);
         newOption.setAttribute('data-ordering', 'ASC');
-        newOption.setAttribute('data-title', variable.title);
+        newOption.setAttribute('data-name', variable.name);
         newOption.setAttribute('data-type', 'variable');
         // if the variable was previously selected, then select it again
         $.each(QueryToolbox.orderings, function (idx, elem) {
@@ -969,7 +988,7 @@ function updateOrderByField(common_dimension_list) {
         newOption = new Option('<i class="fa fa-arrow-down"></i> ' + variable.title + ' (Metric #'+(idx+1)+')', 'variable__'+variable.id+'__DESC', false, false);
         newOption.setAttribute('data-variable-id', variable.id);
         newOption.setAttribute('data-ordering', 'DESC');
-        newOption.setAttribute('data-title', variable.title);
+        newOption.setAttribute('data-name', variable.name);
         newOption.setAttribute('data-type', 'variable');
         // if the variable was previously selected, then select it again
         $.each(QueryToolbox.orderings, function (idx, elem) {
@@ -994,7 +1013,7 @@ function joined_datasets_common_dimensions_list(){
             for (var j_var = 1; j_var < curr_var.length; j_var++) {
                 var exists_in_var = false;
                 for (var i_dim = 0; i_dim < curr_var[j_var].dimensions.length; i_dim++) {
-                    if (single_var[i].title === curr_var[j_var].dimensions[i_dim].title) {
+                    if (single_var[i].name === curr_var[j_var].dimensions[i_dim].name) {
                         exists_in_var = true;
                     }
                 }
@@ -1003,14 +1022,14 @@ function joined_datasets_common_dimensions_list(){
                 }
             }
             if (common_dimension_flag === true) {
-                common_dimensions_list.push(single_var[i].title);
+                common_dimensions_list.push(single_var[i].name);
             }
         }
     }
     else if (QueryToolbox.variables.length===1){
         single_var = QueryToolbox.variables[0].dimensions;
         for (var i = 0; i < single_var.length; i++) {
-            common_dimensions_list.push(single_var[i].title);
+            common_dimensions_list.push(single_var[i].name);
         }
     }
     else{
@@ -1024,20 +1043,20 @@ function update_fields_when_ordering_asc_desc() {
     var $opposite_ordering_option;
     $.each(QueryToolbox.orderings, function (idx, elem) {
         if (elem.ordering === 'ASC') {
-            $opposite_ordering_option = $('[name="orderby"] option[data-title="' + elem.title + '"][data-ordering="DESC"]');
+            $opposite_ordering_option = $('[name="orderby"] option[data-name="' + elem.name + '"][data-ordering="DESC"]');
             $opposite_ordering_option.attr('disabled', 'disabled');
         }else if(elem.ordering === 'DESC'){
-            $opposite_ordering_option = $('[name="orderby"] option[data-title="' + elem.title + '"][data-ordering="ASC"]');
+            $opposite_ordering_option = $('[name="orderby"] option[data-name="' + elem.name + '"][data-ordering="ASC"]');
             $opposite_ordering_option.attr('disabled', 'disabled');
         }
     });
 
 
-    setTimeout(refresh_selects2, 500);
+    setTimeout(refresh_selects2, 1000);
 }
 
 function update_group_by_when_temporal_resolution() {
-    var $group_option = $('[name="category"] option[data-title="time"]');
+    var $group_option = $('[name="category"] option[data-name="time"]');
     $group_option.removeAttr('disabled');
     if ($('#temporal_resolution').val() !== ''){
         $group_option.attr('disabled', 'disabled');
@@ -1046,8 +1065,8 @@ function update_group_by_when_temporal_resolution() {
 }
 
 function update_group_by_when_spatial_resolution() {
-    var $group_option1 = $('[name="category"] option[data-title="latitude"]');
-    var $group_option2 = $('[name="category"] option[data-title="longitude"]');
+    var $group_option1 = $('[name="category"] option[data-name="latitude"]');
+    var $group_option2 = $('[name="category"] option[data-name="longitude"]');
     $group_option1.removeAttr('disabled');
     $group_option2.removeAttr('disabled');
     if ($('#spatial_resolution').val() !== ''){
@@ -1061,9 +1080,9 @@ function update_fields_when_grouping() {
     $('#temporal_resolution').removeAttr('disabled');
     $('#spatial_resolution').removeAttr('disabled');
     $.each(QueryToolbox.groupings, function (idx, elem) {
-        if (elem.dimension_title === 'time') {
+        if (elem.dimension_name === 'time') {
             $('#temporal_resolution').attr('disabled', 'disabled');
-        } else if ((elem.dimension_title === 'latitude') || (elem.dimension_title === 'longitude')) {
+        } else if ((elem.dimension_name === 'latitude') || (elem.dimension_name === 'longitude')) {
             $('#spatial_resolution').attr('disabled', 'disabled');
         }
     });
@@ -1098,7 +1117,12 @@ function reset(){
             '\n' +
             '                </div>')
 
-        $('.add-value-field').click();
+        // $('.add-value-field').click();
+        if(!$('#select-data-modal').is(':visible')){
+            $('.add-value-field').click();
+        }
+        $('.jplist-reset-btn').click();
+
         // $('#lat_min').val("").trigger('change');
         // $('#lat_max').val("").trigger('change');
     }
@@ -1113,12 +1137,12 @@ function updateFilterByField(){
 
     $.each(QueryToolbox.variables, function (idx, variable) {
         $.each(variable.dimensions, function (_, dimension) {
-            if ($filterSelectField.find("option[data-title='" + dimension.title + "']").length === 0) {
-                if((dimension.title !== 'time') && (dimension.title !== 'latitude') && (dimension.title !== 'longitude')) {
+            if ($filterSelectField.find("option[data-name='" + dimension.name + "']").length === 0) {
+                if((dimension.name !== 'time') && (dimension.name !== 'latitude') && (dimension.name !== 'longitude')) {
                     var newOption = new Option(dimension.title, 'dimension__' + dimension.id, false, false);
                     newOption.setAttribute('data-forvariable', variable.id);
                     newOption.setAttribute('data-id', dimension.id);
-                    newOption.setAttribute('data-title', dimension.title);
+                    newOption.setAttribute('data-name', dimension.name);
                     newOption.setAttribute('data-type', 'dimension');
                     $filterSelectField.append(newOption);
                 }
@@ -1127,7 +1151,7 @@ function updateFilterByField(){
         // Append the variable, too
         var newOption = new Option(variable.title + ' (Metric #'+(idx+1)+')', 'variable__'+variable.id, false, false);
         newOption.setAttribute('data-id', variable.id);
-        newOption.setAttribute('data-title', variable.title);
+        newOption.setAttribute('data-name', variable.name);
         newOption.setAttribute('data-type', 'variable');
         newOption.setAttribute('data-forvariable', variable.id);
         $filterSelectField.append(newOption);
