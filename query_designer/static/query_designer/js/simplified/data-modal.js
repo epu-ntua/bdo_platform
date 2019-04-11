@@ -66,8 +66,9 @@ $(function() {
                $(this).find(".dimension-section span").each(function (_, dim) {
                    dims.push({
                         id: $(dim).data('type'),
-                        title: $(this).data('name'),
-                        datatype: $(this).data('datatype')
+                        name: $(dim).data('name'),
+                        title: $(dim).data('title'),
+                        datatype: $(dim).data('datatype')
                     })
                });
                selection.push({

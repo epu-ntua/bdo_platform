@@ -2334,7 +2334,7 @@ def get_histogram_chart_am(request):
         bins -= 1
         if where_clause == '':
             raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
-                        histogram as (select width_bucket({{5}.0}, min, max, {2}) ,
+                        histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
                          (min({5}.{0}), max({5}.{0})) as range,
                          count(*) as freq from {1} {4}, drb_stats {3} where {5}.{0} IS NOT NULL
     

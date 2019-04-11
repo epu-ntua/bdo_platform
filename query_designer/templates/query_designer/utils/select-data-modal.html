@@ -624,7 +624,7 @@
                                                         data-toggle="tooltip"
                                                         data-placement="left"
                                                         title="{{ dimension.description }}">
-                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.title }}</span>
+                                                        <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-title="{{ dimension.title }}" data-datatype="{{ dimension.dataType }}">{{ dimension.title }}</span>
                                                     </li>
                                                 {% endfor %}
                                             </ul>
@@ -647,7 +647,7 @@
                                                         <ul class="variable-dimensions" hidden>
                                                             {% for dimension in variable.dimensions.all %}
                                                                 <li class="dimension-section list-group-item" data-dimension-name="{{ dimension.name }}">
-                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
+                                                                    <span data-type="{{ dimension.pk }}" data-name="{{ dimension.name }}" data-title="{{ dimension.title }}" data-datatype="{{ dimension.dataType }}">{{ dimension.name }}</span>
                                                                 </li>
                                                             {% endfor %}
                                                         </ul>
