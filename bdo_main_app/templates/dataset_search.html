@@ -413,12 +413,15 @@
 {#								data-path=""#}
                         data-slider-func="latSlider"
                         data-setvalues-func="latValues"
-                        style="width: 100%;"
+                        style="width: 100%; margin-bottom: 4%;"
                     >
-                        <label for="lat_range" style="width: 60%;">Latitude range:</label>
-                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
-                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
-                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+                        <label for="lat_range" style="width: 30%; margin-bottom: 0;">Latitude:</label>
+                        <span style="color: white; float: right;">
+                            <span class="value" data-type="prev-value" style="border:0; width: 35px; float: none; margin: 2px;"></span>
+                            <span> , </span>
+                            <span class="value" data-type="next-value" style="border:0; width: 35px; float: none; margin: 2px;"></span>
+                        </span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%; margin-top: 0;"></div>
 
                     </div>
                 </div>
@@ -469,12 +472,15 @@
 {#								data-path=""#}
                         data-slider-func="lonSlider"
                         data-setvalues-func="lonValues"
-                        style="width: 100%;"
+                        style="width: 100%; margin-bottom: 4%;"
                     >
-                        <label for="lon_range" style="width: 60%;">Longitude range:</label>
-                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
-                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
-                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+                        <label for="lon_range" style="width: 30%; margin-bottom: 0;">Longitude:</label>
+                        <span style="color: white; float: right;">
+                            <span class="value" data-type="prev-value" style="border:0; width: 35px; float: none; margin: 2px;"></span>
+                            <span> , </span>
+                            <span class="value" data-type="next-value" style="border:0; width: 35px; float: none; margin: 2px;"></span>
+                        </span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%; margin-top: 0;"></div>
 
                     </div>
                 </div>
@@ -508,6 +514,65 @@
                         style="width: 100%;  display: none;"
                     >
                         <label for="lon_range" style="width: 60%;"></label>
+                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                    </div>
+                </div>
+
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-time"
+{#								data-control-action="filter"#}
+{#								data-path=""#}
+                        data-slider-func="timeSlider"
+                        data-setvalues-func="timeValues"
+                        style="width: 100%; margin-bottom: 0%;"
+                    >
+
+                        <label for="time_range" style="width: 20%; margin-bottom: 0;">Time:</label>
+                        <span style="color: white; float: right;">
+                            <span class="value" data-type="prev-value" style="border:0; width: 35px; float: none; margin: 1px;"></span>
+                            <span>,</span>
+                            <span class="value" data-type="next-value" style="border:0; width: 35px; float: none; margin: 1px;"></span>
+                        </span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%; margin-top: 0;"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-time-to"
+                        data-control-action="filter"
+                        data-path=".time_to"
+                        data-slider-func="timeSliderTo"
+                        data-setvalues-func="timeValuesTo"
+                        style="width: 100%; display: none;"
+                    >
+                        <label for="time_range" style="width: 40%;"></label>
+                        <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
+                        <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
+
+                    </div>
+                </div>
+                <div>
+                    <div
+                        class="jplist-range-slider"
+                        data-control-type="range-slider"
+                        data-control-name="range-slider-time-from"
+                        data-control-action="filter"
+                        data-path=".time_from"
+                        data-slider-func="timeSliderFrom"
+                        data-setvalues-func="timeValuesFrom"
+                        style="width: 100%;  display: none;"
+                    >
+                        <label for="time_range" style="width: 40%;"></label>
                         <span class="value" data-type="prev-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                         <span class="value" data-type="next-value" style="border:0; color:white; width: 35px; float: none; margin: 2px;"></span>
                         <div class="ui-slider" data-type="ui-slider" style="width: 100%;"></div>
@@ -583,6 +648,10 @@
                                                     <tr><td></td> <td class="lon_from">{% if dataset.spatialWest is None or dataset.spatialWest == '' %}-180{% else %}{{ dataset.spatialWest }}{% endif %} </td>
                                                     </tr>
                                                     <tr><td></td> <td class="lon_to">{% if dataset.spatialEast is None or dataset.spatialEast == '' %}180{% else %}{{ dataset.spatialEast }}{% endif %} </td>
+                                                    </tr>
+                                                    <tr><td></td> <td class="time_from">{% if dataset.temporalCoverageBegin is None or dataset.temporalCoverageBegin == '' %}{{ time_start_timestamp }}{% else %}{{ dataset.temporalCoverageBeginTimestamp }}{% endif %} </td>
+                                                    </tr>
+                                                    <tr><td></td> <td class="time_to">{% if dataset.temporalCoverageEnd is None or dataset.temporalCoverageEnd == '' %}{{ time_end_timestamp }}{% else %}{{ dataset.temporalCoverageEndTimestamp }}{% endif %} </td>
                                                     </tr>
 
                                                     <tr class="has-time" data-has-time='{% for dim in dataset.variables.first.dimensions.all %}{% if dim.name == 'time' %}True{% endif %}{% endfor %}'>
@@ -734,6 +803,9 @@
     <script src="{% static "/js/jplist.jquery-ui-bundle.min.js" %}"></script>
 
     <script>
+        var time_start_timestamp = {{time_start_timestamp}}
+        var time_end_timestamp = {{ time_end_timestamp }}
+
         $('document').ready(function(){
            //check all jPList javascript options here
            $('#main-section').jplist({
@@ -853,6 +925,80 @@
           ,lonValuesFrom: function ($slider, $prev, $next){
              $prev.text($slider.slider('values', 0));
              $next.text($slider.slider('values', 1));
+          }
+          ,timeSlider: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: time_start_timestamp
+                ,max: time_end_timestamp
+                ,range: true
+                ,values: [time_start_timestamp, time_end_timestamp]
+                ,slide: function (event, ui){
+                     // $prev.text(ui.values[0]);
+                    // $next.text(ui.values[1]);
+                    var start_date = new Date(ui.values[0]);
+                    var end_date = new Date(ui.values[1]);
+                    $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+                    $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+                    $("div[data-control-name='range-slider-time-to']").find(".ui-slider").slider('values', 0, ui.values[0]);
+                    $("div[data-control-name='range-slider-time-from']").find(".ui-slider").slider('values', 1, ui.values[1]);
+                }
+             });
+          }
+          ,timeValues: function ($slider, $prev, $next){
+              // $prev.text($slider.slider('values', 0));
+             // $next.text($slider.slider('values', 1));
+             var start_date = new Date($slider.slider('values', 0));
+             var end_date = new Date($slider.slider('values', 1));
+             $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+             $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+          }
+          ,timeSliderTo: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: time_start_timestamp
+                ,max: time_end_timestamp
+                ,range: true
+                ,values: [time_start_timestamp, time_end_timestamp]
+                ,slide: function (event, ui){
+                     // $prev.text(ui.values[0]);
+                    // $next.text(ui.values[1]);
+                    var start_date = new Date(ui.values[0]);
+                    var end_date = new Date(ui.values[1]);
+                    $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+                    $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+                }
+             });
+          }
+          ,timeValuesTo: function ($slider, $prev, $next){
+              // $prev.text($slider.slider('values', 0));
+             // $next.text($slider.slider('values', 1));
+             var start_date = new Date($slider.slider('values', 0));
+             var end_date = new Date($slider.slider('values', 1));
+             $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+             $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+          }
+          ,timeSliderFrom: function ($slider, $prev, $next){
+             $slider.slider({
+                 min: time_start_timestamp
+                ,max: time_end_timestamp
+                ,range: true
+                ,values: [time_start_timestamp, time_end_timestamp]
+                ,slide: function (event, ui){
+                     // $prev.text(ui.values[0]);
+                    // $next.text(ui.values[1]);
+                    var start_date = new Date(ui.values[0]);
+                    var end_date = new Date(ui.values[1]);
+                    $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+                    $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
+                 }
+             });
+          }
+          ,timeValuesFrom: function ($slider, $prev, $next){
+              // $prev.text($slider.slider('values', 0));
+             // $next.text($slider.slider('values', 1));
+             var start_date = new Date($slider.slider('values', 0));
+             var end_date = new Date($slider.slider('values', 1));
+             $prev.text(start_date.getFullYear() + "/" + (start_date.getMonth()+1) + "/" + start_date.getDate());
+             $next.text(end_date.getFullYear() + "/" + (end_date.getMonth()+1) + "/" + end_date.getDate());
           }
      };
     </script>
