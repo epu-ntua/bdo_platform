@@ -2277,12 +2277,14 @@ def get_histogram_chart_am(request):
         from_table = ''
         table_col = ''
         cursor = None
+        var_unit = ''
         for f in doc['from']:
             for s in f['select']:
                 if s['name'] == x_var:
                     var_title = s['title']
                     if s['type'] == 'VALUE':
                         v_obj = Variable.objects.get(pk=int(f['type']))
+                        var_unit = v_obj.unit
                         if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
                             from_table = f['name'][:-2] + '_' + f['type']
                             table_col = 'value'
@@ -2298,6 +2300,7 @@ def get_histogram_chart_am(request):
                     else:
                         d_obj = Dimension.objects.get(pk=int(s['type']))
                         v_obj = d_obj.variable
+                        var_unit = d_obj.unit
                         if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
                             from_table = f['name'][:-2] + '_' + f['type']
                             table_col = d_obj.name + '_' + s['type']
@@ -2407,11 +2410,12 @@ def get_histogram_chart_am(request):
 
         for i in range(0, len(json_data) - 1):
             json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
+        var_unit = ''
         json_data = json_data[:-1]
         y_var = 'counts'
         x_var = 'startValues'
 
-    return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var, 'category_title': var_title})
+    return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var, 'category_title': var_title + " (" +str(var_unit) + ")"})
 
 
 def heatmap(data, row_labels, col_labels, ax=None,
@@ -2534,7 +2538,7 @@ def get_histogram_2d_matplotlib(request):
     bins = int(str(request.GET.get('bins', '3')))
     if query_pk != 0:
         print('Loading/Modifying Query')
-        query, y_var_title, x_var_title = histogram2d_load_modify_query(query_pk, x_var, y_var)
+        query, y_var_title, x_var_title, y_var_unit, x_var_unit = histogram2d_load_modify_query(query_pk, x_var, y_var)
         print('Executing Query')
         # x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_execute_query(query, x_var, y_var)
         # raw_query = ("SELECT * FROM (SELECT count(*), round({0}, 0),round({1}, 0) FROM {2} WHERE {0} IS NOT NULL AND {1} IS NOT  NULL group by round({0}, 0), round({1}, 0) order by  round({0}, 0), round({1},0)) AS SQ1 ").format(x_table_col, y_table_col, x_from_table)
@@ -2548,7 +2552,7 @@ def get_histogram_2d_matplotlib(request):
         x_var_index = 1
         y_var_index = 2
     else:
-        x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_dataframe(x_var, y_var)
+        x_var_index, y_var_index, result_data, y_var_title, x_var_title, y_var_unit, x_var_unit = histogram2d_dataframe(x_var, y_var)
 
     print('Creating lists of data for histogram-2d')
     list_x = []
@@ -2610,8 +2614,8 @@ def get_histogram_2d_matplotlib(request):
     im, cbar = heatmap(new_table, xedges, yedges, ax=ax,
                        cmap="YlGn", cbarlabel="Percentage %")
 
-    plt.xlabel(x_var_title, labelpad=10)
-    plt.ylabel(y_var_title,  labelpad=10)
+    plt.xlabel(x_var_title + " (" + str(x_var_unit) + ")", labelpad=10)
+    plt.ylabel(y_var_title + " (" + str(y_var_unit) + ")",  labelpad=10)
     fig.tight_layout()
     plt.draw()
     ts = str(time.time()).replace(".", "")
@@ -2640,9 +2644,11 @@ def histogram2d_dataframe(x_var, y_var):
         jsondata.append([float(s[x_var].encode('ascii')), float(s[y_var].encode('ascii'))])
     x_var_title = 'X Title'
     y_var_title = 'Y Title'
+    x_var_unit = ''
+    y_var_unit = ''
     result_data = jsondata
     print result_data
-    return x_var_index, y_var_index, result_data, x_var_title, y_var_title
+    return x_var_index, y_var_index, result_data, y_var_title, x_var_title, y_var_unit, x_var_unit
 
 
 
@@ -2676,16 +2682,26 @@ def histogram2d_load_modify_query(query_pk, x_var, y_var):
 
     xvar_title = ''
     yvar_title = ''
+    y_var_unit = ''
+    x_var_unit = ''
 
     for f in doc['from']:
         for s in f['select']:
             if s['name'] == y_var:
                 yvar_title = s['title']
+                if s['type'] == "VALUE":
+                    y_var_unit = Variable.objects.get(pk=int(f['type'])).unit
+                else:
+                    y_var_unit = Dimension.objects.get(pk=int(s['type'])).unit
                 s['groupBy'] = True
                 s['aggregate'] = 'round0'
                 s['exclude'] = False
             elif s['name'] == x_var:
                 xvar_title = s['title']
+                if s['type'] == "VALUE":
+                    x_var_unit = Variable.objects.get(pk=int(f['type'])).unit
+                else:
+                    x_var_unit = Dimension.objects.get(pk=int(s['type'])).unit
                 s['groupBy'] = True
                 s['aggregate'] = 'round0'
                 s['exclude'] = False
@@ -2697,7 +2713,7 @@ def histogram2d_load_modify_query(query_pk, x_var, y_var):
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
     query.document = doc
 
-    return query, xvar_title, yvar_title
+    return query, yvar_title, xvar_title, y_var_unit, x_var_unit
 
 
 def get_histogram_2d_am(request):
@@ -2997,6 +3013,7 @@ def get_chart_query_data(query, x_var, y_var_list):
     y_var_index = []
     y_var_indlist = []
     y_m_unit = []
+    x_m_unit = ''
     y_title_list = []
 
     for idx, c in enumerate(result_headers['columns']):
@@ -3007,6 +3024,7 @@ def get_chart_query_data(query, x_var, y_var_list):
             y_title_list.insert(len(y_title_list), c['title'].encode('ascii'))
         elif c['name'] == x_var:
             x_var_index = idx
+            x_m_unit = c['unit'].encode('ascii')
             x_var_title = c['title'].encode('ascii')
 
     json_data = []
@@ -3020,11 +3038,12 @@ def get_chart_query_data(query, x_var, y_var_list):
 
         dict.update({x_var: str(d[x_var_index])})
         json_data.append(dict)
-    return json_data, y_m_unit, y_title_list, x_var_title
+    return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
 
 def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, ordering = True):
     y_m_unit = []
+    x_m_unit = ''
     y_title_list = []
     livy = False
     service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
@@ -3055,7 +3074,7 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, orderi
         y_m_unit.insert(0, str('unknown unit'))
     x_var_title = x_var
 
-    return json_data, y_m_unit, y_title_list, x_var_title
+    return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
 
 
@@ -3069,9 +3088,9 @@ def get_line_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am')
-            json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
+            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
-            json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
@@ -3083,7 +3102,7 @@ def get_line_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title.replace("\n", " "), 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 
@@ -3099,10 +3118,10 @@ def get_time_series_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
-            json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
             min_chart_period = chart_min_period_finder(min_period)
         elif df != '':
-            json_data, y_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
             order_var = 'time'.encode('ascii')
             min_chart_period = 'ss'
         else:
@@ -3115,7 +3134,7 @@ def get_time_series_am(request):
                       {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
     else:
         return render(request, 'visualizer/column_chart_am.html',
-                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period': min_chart_period})
+                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'category_title': str(order_var) + " " + str(x_m_unit), 'isDate': 'true', 'min_period': min_chart_period})
 
 
 def get_column_chart_am(request):
@@ -3129,9 +3148,9 @@ def get_column_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
-            json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
+            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
-            json_data, y_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
@@ -3143,7 +3162,7 @@ def get_column_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " "), 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_pie_chart_am(request):
@@ -3156,15 +3175,15 @@ def get_pie_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
-            json_data, y_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
+            json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
         elif df !='':
-            json_data, y_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
 
-    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title).replace("\n", " "), 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
+    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title).replace("\n", " ") + " (" + str(x_m_unit) + ")", 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
 
 
 
@@ -3697,7 +3716,7 @@ def get_aggregate_value(request):
             query = load_modify_query_aggregate(query_pk, variable, agg_function)
             value, unit, var_title = get_aggregate_query_data(query, variable)
         else:
-            value, unit, var_list, var_title = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
+            value, unit, var_list, var_title, _ = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
 

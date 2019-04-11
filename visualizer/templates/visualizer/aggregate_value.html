@@ -16,9 +16,12 @@
 {% block viz_content %}
 
     <div id="chartdiv" class="text-center" style="color: #30526a;overflow: visible; margin-top: 50px; height: auto;">
+        <h1> {{ var_title }} </h1>
         <h1> {{ value }} </h1>
-        {% if agg_func == 'COUNT' %} <h2>{{ var_title }} records</h2>
-        {% else %}  <h2> {{ unit }} </h2>
+        {% if agg_func == 'COUNT' %}
+            <h2> records</h2>
+        {% else %}
+            <h2> {{ unit }} </h2>
         {% endif %}
     </div>
 

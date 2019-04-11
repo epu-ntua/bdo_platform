@@ -367,7 +367,7 @@ $(function () {
                             var $header = $('<tr />');
                             console.log(response);
                             $.each(response.headers.columns, function (idx, col) {
-                                $header.append($('<td />').text(col.title).css({"white-space":"pre-line"}))
+                                $header.append($('<td />').text(col.title + "\n(" + col.unit + ")").css({"white-space":"pre-line"}))
                             });
                             $table.find('thead').append($header);
                             var limit = 50;

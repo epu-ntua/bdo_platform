@@ -24,7 +24,7 @@
             <thead>
                 <tr>
                     {% for h in headers %}
-                        <th>{{ h.title }}</th>
+                        <th style="white-space: pre-line;">{{ h.title }} {% if not h.unit %} {% else %}&#10;&#13; ({{ h.unit }}) {% endif %}</th>
                     {% endfor %}
                 </tr>
             </thead>
