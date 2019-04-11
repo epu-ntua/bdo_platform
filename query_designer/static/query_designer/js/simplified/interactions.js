@@ -1052,7 +1052,7 @@ function update_fields_when_ordering_asc_desc() {
     });
 
 
-    setTimeout(refresh_selects2, 500);
+    setTimeout(refresh_selects2, 1000);
 }
 
 function update_group_by_when_temporal_resolution() {
