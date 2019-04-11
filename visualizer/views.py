@@ -2615,11 +2615,15 @@ def get_histogram_2d_matplotlib(request):
     fig.tight_layout()
     plt.draw()
     ts = str(time.time()).replace(".", "")
-    html_path = ts + 'histogram2d.png'
-    histpath = 'visualizer/static/visualizer/img/temp/' + html_path
+    img_name = ts + 'histogram2d.png'
+    import sys
+    if sys.argv[1] == 'runserver':
+        histpath = 'visualvi    izer/static/visualizer/img/temp/' + img_name
+    else:
+        histpath = settings.STATIC_ROOT + '/visualizer/img/temp/' + img_name
     plt.savefig(histpath,  transparent=True, frameon=False, pad_inches=0)
     return render(request, 'visualizer/histogram_2d_matplotlib.html',
-                  {'hist_path': html_path})
+                  {'img_name': img_name})
 
 
 def histogram2d_dataframe(x_var, y_var):

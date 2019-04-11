@@ -29,7 +29,7 @@
 {#        <img src="{{ hist_path }}" alt="Histogram2D">#}
 {#        <img src="/static/visualiser/img/temp/{{ hist_path }}" alt="Histogram2D">#}
 
-        {% with 'visualizer/img/temp/'|add:hist_path as image_static %}
+        {% with 'visualizer/img/temp/'|add:img_name as image_static %}
             <img src="{% static image_static %}" alt="Histogram2D">
         {% endwith %}
     </div>
