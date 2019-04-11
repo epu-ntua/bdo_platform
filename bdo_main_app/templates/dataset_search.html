@@ -762,9 +762,9 @@
                         <p>
                             <strong>Access type: </strong>
                             {% if dataset.private %}
-                                <button class="btn btn-danger btn-sm">Private</button>
+                                <button class="btn btn-danger btn-sm" style="cursor: default;">Private</button>
                             {%  else %}
-                                <button class="btn btn-success btn-sm">Open</button>
+                                <button class="btn btn-success btn-sm" style="cursor: default;">Open</button>
                             {% endif %}
                         </p>
                         <p><strong>Category: </strong>{{ dataset.category }}</p>
