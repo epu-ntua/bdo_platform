@@ -744,14 +744,14 @@ $(document).ready(function () {
         if (component_type !== 'map') {
             var viz_request = "/visualizations/" + $(component_selector).data('viz-name');
             var chartData = $("#config-viz-form").serialize();
-            viz_request += '?' + chartData + '&query=' + $('#selected_query').attr('value');
+            viz_request += '?' + chartData + '&query=' + $('#selected_query').attr('value') + '&timestamp='+ String(new Date().getTime());
             show_viz(viz_request);
         }
         else {
             var json = [];
             var mapChartData = getFormData($("#config-viz-form"), 0, $('#selected_query').attr('value'));
             json.push(mapChartData);
-            viz_request = getMapVisualizationRequest(json);
+            viz_request = getMapVisualizationRequest(json) + '&timestamp='+ String(new Date().getTime());;
             show_viz(viz_request)
         }
         ;
