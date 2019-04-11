@@ -148,18 +148,11 @@
                 <button id="all-btn" data-path=".dataset-category" data-button="true" data-selected="true" class="jplist-selected ">
                     All
                 </button>
-                <button id="oceanography-btn" data-path="[data-category='oceanography']" data-button="true" class="">
-                    Oceanography
-                </button>
-                <button id="ais-btn" data-path="[data-category='ais']" data-button="true" class="">
-                    AIS
-                </button>
-                <button id="weather-btn" data-path="[data-category='weather']" data-button="true" class="">
-                    Weather
-                </button>
-                <button id="weather-btn" data-path="[data-category='vessel']" data-button="true" class="">
-                    Vessel
-                </button>
+                {% for category in categories %}
+                    <button id="{{ category }}-btn" data-path="[data-category='{{ category }}']" data-button="true" class="">
+                        {{ category }}
+                    </button>
+                {% endfor %}
             </div>
 
             <div

@@ -29,17 +29,18 @@ def dataset_search(request):
     organization_list = set([d.publisher for d in dataset_list])
     observation_list = set([d.observations for d in dataset_list])
     license_list = set([d.license for d in dataset_list])
+    category_list = set([d.category for d in dataset_list if d.category is not None and d.category.strip() != ""])
     variable_list = Variable.objects.all()
 
     time_start_timestamp = min([d.temporalCoverageBeginTimestamp for d in Dataset.objects.all() if d.temporalCoverageBeginTimestamp != ""])
     date_now = datetime.now()
     time_end_timestamp = max([d.temporalCoverageEndTimestamp for d in Dataset.objects.all() if d.temporalCoverageEndTimestamp != ""] + [long(time.mktime(date_now.timetuple())) * 1000])
 
-
     return render(request, 'dataset_search.html', {
         'organizations': organization_list,
         'observations': observation_list,
         'licenses': license_list,
+        'categories': category_list,
         'variables': variable_list,
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
