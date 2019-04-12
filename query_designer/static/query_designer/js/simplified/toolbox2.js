@@ -585,6 +585,7 @@ $(function () {
 
         /* Load an existing query */
         load: function (queryId) {
+            $("#new-query").click();
             $.ajax({
                 url: '/queries/load/' + queryId + '/',
                 type: 'GET',

@@ -1148,10 +1148,10 @@ function reset(){
             '\n' +
             '                </div>')
 
-        // $('.add-value-field').click();
-        if(!$('#select-data-modal').is(':visible')){
-            $('.add-value-field').click();
-        }
+
+        // if(!$('#select-data-modal').is(':visible')){
+        //     $('.add-value-field').click();
+        // }
         $('.jplist-reset-btn').click();
 
         // $('#lat_min').val("").trigger('change');
