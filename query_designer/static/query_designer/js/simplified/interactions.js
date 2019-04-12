@@ -95,6 +95,10 @@ $(function() {
         // The new variable to be added for query
         var selection = window.getDataSelection();
         console.log(selection);
+        add_selection(selection);
+    });
+
+    window.add_selection = function (selection) {
         var included_vars = [];
         var first_var = selection[0].dataset_id;
         console.log('new dataset_id '+first_var);
@@ -263,7 +267,7 @@ $(function() {
             first_tour.start(true);
         }
         display_tour = false;
-    });
+    };
 
     /* When the data selection modal closes, hide the confirmation panel at the bottom of the panel */
     $('#select-data-modal').on('hidden.bs.modal', function() {

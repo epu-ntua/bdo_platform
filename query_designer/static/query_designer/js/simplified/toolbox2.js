@@ -27,6 +27,83 @@ function buildCustomFilterFromExpressionMapAndExpression(customExpressionMap, ex
     return filterTree;
 }
 
+function load_filters(filters, doc) {
+    if (filters['op'] && (filters['op'] === "AND")){
+        $("#filters-expr-type").val('ALL_AND').trigger("change");
+        load_filters(filters['a'], doc);
+        load_filters(filters['b'], doc);
+    }
+    else if (filters['op'] && (filters['op'] === "OR")){
+        $("#filters-expr-type").val('ALL_OR').trigger("change");
+        load_filters(filters['a'], doc);
+        load_filters(filters['b'], doc);
+    }
+    else if (filters['op']){
+        if (filters['op'] === "inside_rect"){
+            var min_values = filters['b'].split("<<")[1].split(">,<")[0];
+            var max_values = filters['b'].split(">,<")[1].split(">>")[0];
+            $("#lat_min").val(min_values.split(",")[0]);
+            $("#lon_min").val(min_values.split(",")[1]);
+            $("#lat_max").val(max_values.split(",")[0]);
+            $("#lon_max").val(max_values.split(",")[1]);
+            setTimeout(function(){$("#lat_min, #lon_min, #lat_max, #lon_max").trigger("change");}, 1000);
+        }
+        else if ((filters['op'] === "gte_time") && (filters['a'].split(/_(.+)/)[1] === "time")){
+            $("#startdatepicker input").val(String(filters['b']).slice(1,-1));
+            $('#startdatepicker').datetimepicker("update", new Date(Date.parse(String(filters['b']).slice(1,-1))));
+            // console.log(filters['b']);
+            // console.log(Date.parse(filters['b']));
+            // console.log(new Date(Date.parse(filters['b'])));
+            startdate = $('#startdatepicker input').val();
+        }
+        else if ((filters['op'] === "lte_time") && (filters['a'].split(/_(.+)/)[1] === "time")){
+            $('#enddatepicker').datetimepicker("update", new Date(Date.parse(String(filters['b']).slice(1,-1))));
+            enddate = $('#enddatepicker input').val();
+        }
+        else{
+            var a, a_forVariable, a_title, a_type;
+            $.each(doc['from'], function (f_index, _f) {
+                if(parseInt(filters['a'].split(/_(.+)/)[0].slice(1)) === f_index) {
+                    $.each(_f['select'], function (_, _s) {
+                        if (_s['type'] === "VALUE") {
+                            if(filters['a'] === _s['name']){
+                                a = parseInt(_f['type']);
+                                a_type = "variable";
+                                a_title = _s['title'];
+                                a_forVariable = parseInt(_f['type']);
+                            }
+                        }
+                        else {
+                            if(filters['a'] === _s['name']){
+                                a = parseInt(_s['type']);
+                                a_type = "dimension";
+                                a_title = _s['title'];
+                                a_forVariable = parseInt(_f['type']);
+                            }
+                        }
+                    });
+                }
+            });
+            var last_filter = 0;
+            $.each(Object.keys(QueryToolbox.filters), function (_, fName) {
+                if(last_filter < parseInt(String(fName).split('F')[1])){
+                    last_filter = parseInt(String(fName).split('F')[1])
+                }
+            });
+            var filterName = 'F' + (last_filter + 1);
+            QueryToolbox.filters[filterName]= {
+                a: a,
+                a_forVariable: a_forVariable,
+                a_title: a_title,
+                a_type: a_type,
+                b: filters['b'],
+                filter_string: a_title + ' ' + $("#filters-modal #new-filter-operator option[value='"+filters['op']+"']").text() + ' ' + filters['b'],
+                op: filters['op']
+            };
+        }
+    }
+}
+
 $(function () {
     /* `QueryToolbox` is the object responsible for the behaviour of the Toolbox Charts component */
     var QueryToolbox = {
@@ -508,12 +585,117 @@ $(function () {
 
         /* Load an existing query */
         load: function (queryId) {
-            var that = this;
             $.ajax({
-                url: '/queries/simplified/open/' + queryId + '/',
+                url: '/queries/load/' + queryId + '/',
                 type: 'GET',
                 success: function (data) {
-                    that.addChart(data.chartFilters, data.chartPolicy, queryId, data.title)
+                    var doc = data.document;
+                    var selection = [];
+                    $.each(doc['from'], function (_, _f) {
+                        var id = _f['type'];
+                        var dims = [];
+                        var name, title, datatype, unit, aggregate, groupBy, dataset_id, dataset_size, dataset_name, dataset_lat_min, dataset_lat_max, dataset_lon_min, dataset_lon_max, dataset_time_min, dataset_time_max;
+                        $.each(_f['select'], function (_, _s) {
+                            if (_s['type'] === "VALUE"){
+                                name = String(_s['name']).split(/_(.+)/)[1];
+                                title = _s['title'];
+                                datatype = _s['datatype'];
+                                dataset_id = $("#select-data-modal #dataset-list-section .dataset-variables-div li[data-variable-id='"+id+"']").data("variable-dataset");
+                                dataset_size = $("#select-data-modal #dataset-list-section .dataset-section .dataset-name[data-dataset-id='"+dataset_id+"']").closest(".dataset-section").find(".dataset-metadata .dataset-size td").eq(1).text();
+                                dataset_name = $("#select-data-modal #dataset-list-section .dataset-section .dataset-name[data-dataset-id='"+dataset_id+"']").closest(".dataset-section").find(".dataset-name .dataset-title").text();
+                                dataset_lat_min = $("#select-data-modal #dataset-list-section .dataset-section .dataset-name[data-dataset-id='"+dataset_id+"']").closest(".dataset-section").find(".dataset-coverage-div").find(".lat_from").text();
+                                dataset_lat_max = $("#select-data-modal #dataset-list-section .dataset-section .dataset-name[data-dataset-id='"+dataset_id+"']").closest(".dataset-section").find(".dataset-coverage-div").find(".lat_to").text();
+                                dataset_lon_min = $("#select-data-modal #dataset-list-section .dataset-section .dataset-name[data-dataset-id='"+dataset_id+"']").closest(".dataset-section").find(".dataset-coverage-div").find(".lon_from").text();
+                                dataset_lon_max = $("#select-data-modal #dataset-list-section .dataset-section .dataset-name[data-dataset-id='"+dataset_id+"']").closest(".dataset-section").find(".dataset-coverage-div").find(".lon_to").text();
+                                dataset_time_min = $("#select-data-modal #dataset-list-section .dataset-section .dataset-name[data-dataset-id='"+dataset_id+"']").closest(".dataset-section").find(".dataset-coverage-div").find(".time_from").text();
+                                dataset_time_max = $("#select-data-modal #dataset-list-section .dataset-section .dataset-name[data-dataset-id='"+dataset_id+"']").closest(".dataset-section").find(".dataset-coverage-div").find(".time_to").text();
+                                unit = $("#select-data-modal #dataset-list-section .dataset-variables-div li[data-variable-id='"+id+"']").data("variable-unit");
+                                aggregate = _s['aggregate'];
+                                groupBy = _s['groupBy'];
+                            }
+                            else{
+                                dims.push({id: _s['type'], name: String(_s['name']).split(/_(.+)/)[1], title: _s['title'], datatype: _s['datatype']});
+                            }
+                        });
+                        selection.push({
+                            id: id,
+                            name: name,
+                            title: title,
+                            datatype: datatype,
+                            dataset_id: dataset_id,
+                            dataset_size: dataset_size,
+                            dataset_name: dataset_name,
+                            dataset_lat_min: dataset_lat_min,
+                            dataset_lat_max: dataset_lat_max,
+                            dataset_lon_min: dataset_lon_min,
+                            dataset_lon_max: dataset_lon_max,
+                            dataset_time_min: dataset_time_min,
+                            dataset_time_max: dataset_time_max,
+                            unit: unit,
+                            aggregate: aggregate,
+                            groupBy: groupBy,
+                            dimensions: dims
+                        })
+                    });
+                    console.log(doc);
+                    console.log(selection);
+                    console.log(QueryToolbox.groupings);
+                    add_selection(selection);
+                    var $categorySelectField = $('[name="category"]');
+                    var $spatial_resolution_field = $('#spatial_resolution');
+                    var $temporal_resolution_field = $('#temporal_resolution');
+                    $.each(doc['from'], function (_, _f) {
+                        var id = _f['type'];
+                        $.each(_f['select'], function (_, _s) {
+                            if (_s['type'] === "VALUE"){
+
+                            }
+                            else{
+                                if (_s['groupBy'] === true){
+                                    if ((_s['name'].split(/_(.+)/)[1] !== "latitude") && (_s['name'].split(/_(.+)/)[1] !== "longitude") && (_s['name'].split(/_(.+)/)[1] !== "time"))
+                                        $categorySelectField.find("option[value='"+ _s['type'] +"']").attr('selected', 'selected');
+                                }
+                                if ((_s['name'].split(/_(.+)/)[1] === "latitude") || (_s['name'].split(/_(.+)/)[1] === "longitude")){
+                                    if (_s['aggregate'].startsWith("round")){
+                                        if(_s['aggregate'].slice(-1) === "0")
+                                            $spatial_resolution_field.val("1");
+                                        else if (_s['aggregate'].slice(-1) === "1")
+                                            $spatial_resolution_field.val("0.1");
+                                        else if (_s['aggregate'].slice(-1) === "2")
+                                            $spatial_resolution_field.val("0.01");
+                                    }
+                                    else{
+                                        $spatial_resolution_field.val("");
+                                    }
+
+                                }
+                                if (_s['name'].split(/_(.+)/)[1] === "time"){
+                                    if (_s['aggregate'].startsWith("date_trunc")){
+                                        $temporal_resolution_field.val(_s['aggregate'].split("date_trunc_")[1]);
+                                    }
+                                    else{
+                                        $temporal_resolution_field.val("");
+                                    }
+
+                                }
+                            }
+                        })
+                    });
+                    setTimeout(function(){$('[name="category"]').trigger("change");}, 1000);
+                    setTimeout(function(){$('#spatial_resolution').trigger("change");}, 1000);
+                    setTimeout(function(){$('#temporal_resolution').trigger("change");}, 1000);
+
+                    var $order_by_field = $('#id_order');
+                    $.each(doc['orderings'], function (_, _ordering) {
+                        $order_by_field.find("option[data-name='"+ _ordering['name'].split(/_(.+)/)[1] +"'][data-ordering='"+ _ordering['type'] +"']").attr('selected', 'selected');
+                    });
+                    setTimeout(function(){$('#id_order').trigger("change");}, 1000);
+
+                    var filters = doc['filters'];
+                    load_filters(filters, doc);
+                    $(".filter-counter").text(Object.keys(QueryToolbox.filters).length);
+
+
                 },
                 error: function (xhr, status, error) {
                     console.log(error)
@@ -540,24 +722,19 @@ $(function () {
                 // show the modal & autcscroll
                 $('#chart-modal').dialog({
                     title: 'Select a query to open',
-                    width: '50vw'
+                    width: '60vw',
+                    // height: '50vh',
+                    // top: '30px'
                 });
-
+                $modalBody.css('height', '60vh');
+                $modalBody.closest('.ui-dialog').css('top', '30px');
                 // get the user's charts
                 $.ajax({
                     url: '/queries/simplified/list/',
                     type: 'GET',
                     success: function (data) {
                         $modalBody.html(data);
-
-                        // apply Data Tables
-                        $modalBody.find('table').DataTable({
-                            bLengthChange: false,
-                            language: {
-                                emptyTable: 'No queries available',
-                                zeroRecords: 'No queries found'
-                            }
-                        });
+                        $modalBody.find('th').css('text-align', 'center');
                     },
                     error: function (xhr, status, error) {
                         console.log(error)

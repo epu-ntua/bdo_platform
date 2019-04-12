@@ -22,6 +22,9 @@ urlpatterns = [
     # load
     url('load/(?P<pk>\d+)/$', views.load_query, name='load-query'),
 
+    # delete
+    url('delete/(?P<pk>\d+)/$', views.delete_query, name='delete-query'),
+
     # save
     url('save/(?P<temp>\d+)/$', views.save_query, name='save-query'),
     url('save/(?P<pk>\d+)/(?P<temp>\d+)/$', views.save_query, name='save-query'),

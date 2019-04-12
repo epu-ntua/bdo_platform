@@ -26,6 +26,7 @@ def load_query(request, pk):
         'pk': q.pk,
         'title': q.title,
         'design': q.design,
+        'document': q.document
     })
 
 
@@ -331,7 +332,7 @@ def list_queries(request):
         return HttpResponse('Only `GET` method allowed', status=400)
 
     ctx = {
-        'queries': Query.objects.filter(user=user, generated_by='QDv2').order_by().order_by('-created', '-updated'),
+        'queries': Query.objects.filter(user=user, generated_by='CUSTOM').order_by().order_by('-created', '-updated'),
     }
 
     return render(request, 'query_designer/utils/query-table.html', ctx)
@@ -343,13 +344,11 @@ def delete_query(request, pk):
         return HttpResponse('Only `POST` method allowed', status=400)
 
     try:
-        chart = Query.objects.get(pk=pk, created_by=request.user)
+        query = AbstractQuery.objects.get(pk=int(pk), created_by=request.user)
+        query.delete()
+        return HttpResponse('', status=204)
     except Query.DoesNotExist as e:
-        return HttpResponse('Chart not found', status=404)
-
-    # delete & send OK response
-    chart.delete()
-    return HttpResponse('', status=204)
+        return HttpResponse('Query not found', status=404)
 
 
 def open_chart(request, pk):
