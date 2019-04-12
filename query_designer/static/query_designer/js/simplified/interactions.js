@@ -420,9 +420,11 @@ $(function() {
             // $("#saveModal").modal("hide");
         }
         else{
-            $("#saveModal .modal-body").replaceWith('<div class="modal-body" style="height: inherit;margin-bottom: 20px; ">\n' +
-                '                    <div id="save-modal-text">Do you want to save the query: '+ String($("#chart-name input").val()) +' ?</div>\n' +
-                '<input class="form-control" id="query-save-name" type="text" style="display: none" value="'+String($("#chart-name input").val())+'">                </div>')
+            $("#saveModal .modal-body").replaceWith('' +
+                '<div class="modal-body" style="height: inherit;margin-bottom: 20px; ">\n' +
+                '<div id="save-modal-text">Do you want to save the query: </div>\n' +
+                '<input class="form-control" id="query-save-name" type="text" style="width: 75%;" value="'+String($("#chart-name input").val())+'"> ?               ' +
+                '</div>')
 
         }
     });
