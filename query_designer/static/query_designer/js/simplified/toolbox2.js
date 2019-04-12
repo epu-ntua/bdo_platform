@@ -695,7 +695,9 @@ $(function () {
                     load_filters(filters, doc);
                     $(".filter-counter").text(Object.keys(QueryToolbox.filters).length);
 
-
+                    QueryToolbox.objects[0].queryId = data.pk;
+                    // QueryToolbox.rename(data.title);
+                    $("#chart-name input").val(data.title);
                 },
                 error: function (xhr, status, error) {
                     console.log(error)
@@ -706,6 +708,7 @@ $(function () {
         rename: function (title) {
             this.objects[0].queryTitle = title;
             $('#query-name-li a #query--title').text(title);
+            $("#query-save-name").val(title);
             this.tabMarker.currentUnsaved();
         },
 

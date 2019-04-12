@@ -344,7 +344,7 @@ def delete_query(request, pk):
         return HttpResponse('Only `POST` method allowed', status=400)
 
     try:
-        query = AbstractQuery.objects.get(pk=int(pk), created_by=request.user)
+        query = AbstractQuery.objects.get(pk=int(pk), user=request.user)
         query.delete()
         return HttpResponse('', status=204)
     except Query.DoesNotExist as e:

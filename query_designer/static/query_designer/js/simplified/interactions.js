@@ -435,9 +435,9 @@ $(function() {
     });
 
     /* On chart open */
-    $('body').on('click', '.chart-open-teaser', function () {
+    $('body').on('click', '.chart-open-teaser td:not(:last-child)', function () {
         QueryToolbox.chartLoadDialog.close();
-        QueryToolbox.load($(this).data('chart_id'));
+        QueryToolbox.load($(this).closest('.chart-open-teaser').data('query_id'));
     });
 
     /* On chart rename */
@@ -876,6 +876,31 @@ $(function() {
             $(this).prop('disabled', true);
         }
     });
+
+
+    $('body').on('click', '.delete_query_icon', function () {
+        var $that_row = $(this).closest('tr');
+        var queryId = $(this).closest('tr').find('td').eq(0).html();
+        var r = confirm("Are you sure you want to delete the selected query?");
+        if (r == true) {
+            $.ajax({
+                url: '/queries/delete/' + queryId + '/',
+                type: 'POST',
+                data: {
+                    csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val()
+                },
+                success: function (data) {
+                    $that_row.remove();
+                    alert("Query successfully deleted.");
+                },
+                error: function (data) {
+                    alert("An error occured.");
+                    console.log(data);
+                }
+            })
+        }
+    });
+
 
 
 

@@ -7,21 +7,20 @@
             <th>{% trans 'Name' %}</th>
             <th>{% trans 'Created' %}</th>
             <th>{% trans 'Last modified' %}</th>
-            {% if actions %}
-                <th>{% trans 'Actions' %}</th>
-            {% endif %}
+            <th></th>
         </tr>
     </thead>
     <tbody>
         {% for query in queries %}
             <tr class="full-chart-row{% if not actions %} chart-open-teaser{% endif %}"
-                data-chart_id="{{ query.pk }}">
+                data-query_id="{{ query.pk }}">
                 <td>{{ query.pk }}</td>
                 <td>
                         <span class="chart-title">{{ query.title }}</span>
                 </td>
                 <td>{{ query.created }}</td>
                 <td>{{ query.updated|timesince }} ago</td>
+                <td><span class="delete_query_icon" style="color: darkred;"><i class="fas fa-trash-alt"></i></span></td>
             </tr>
         {% endfor %}
     </tbody>
