@@ -82,14 +82,14 @@ def clean(request, pk=None):
     user_datasets = user_datasets | public_datasets
     dataset_list = public_datasets | user_datasets | user_with_access_datasets
     # dataset_list.order_by('order')
-    publisher_list = set([d.publisher for d in dataset_list])
-    organization_list = set([d.publisher for d in dataset_list])
-    observation_list = set([d.observations for d in dataset_list])
-    license_list = set([d.license for d in dataset_list])
+    publisher_list = sorted(set([d.publisher for d in dataset_list]))
+    organization_list = sorted(set([d.publisher for d in dataset_list]))
+    observation_list = sorted(set([d.observations for d in dataset_list]))
+    license_list = sorted(set([d.license for d in dataset_list]))
     # for dataset in dataset_list:
     #     if dataset.organization.title not in organization_list:
     #         organization_list.append(dataset.organization.title)
-    variable_list = Variable.objects.all()
+    variable_list = Variable.objects.all().order_by('title')
 
     time_start_timestamp = min([d.temporalCoverageBeginTimestamp for d in Dataset.objects.all() if d.temporalCoverageBeginTimestamp != ""])
     date_now = datetime.now()

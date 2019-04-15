@@ -26,11 +26,11 @@ def dataset_search(request):
     storage_target = 'UBITECH_PRESTO'
     dataset_list = Dataset.objects.filter(stored_at=storage_target).exclude(variables=None)
     # organization_list = Organization.objects.all()
-    organization_list = set([d.publisher for d in dataset_list])
-    observation_list = set([d.observations for d in dataset_list])
-    license_list = set([d.license for d in dataset_list])
-    category_list = set([d.category for d in dataset_list if d.category is not None and d.category.strip() != ""])
-    variable_list = Variable.objects.all()
+    organization_list = sorted(set([d.publisher for d in dataset_list]))
+    observation_list = sorted(set([d.observations for d in dataset_list]))
+    license_list = sorted(set([d.license for d in dataset_list]))
+    category_list = sorted(set([d.category for d in dataset_list if d.category is not None and d.category.strip() != ""]))
+    variable_list = Variable.objects.all().order_by('title')
 
     time_start_timestamp = min([d.temporalCoverageBeginTimestamp for d in Dataset.objects.all() if d.temporalCoverageBeginTimestamp != ""])
     date_now = datetime.now()
