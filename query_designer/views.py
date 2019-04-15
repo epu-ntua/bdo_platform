@@ -90,6 +90,7 @@ def clean(request, pk=None):
     #     if dataset.organization.title not in organization_list:
     #         organization_list.append(dataset.organization.title)
     variable_list = Variable.objects.all().order_by('title')
+    variable_list_filter = sorted(set([(v.safe_name, v.title) for v in variable_list]))
 
     time_start_timestamp = min([d.temporalCoverageBeginTimestamp for d in Dataset.objects.all() if d.temporalCoverageBeginTimestamp != ""])
     date_now = datetime.now()
@@ -106,6 +107,7 @@ def clean(request, pk=None):
         'observations': observation_list,
         'licenses': license_list,
         'variables': variable_list,
+        'variable_list_filter': variable_list_filter,
         'datasets': dataset_list.order_by('order'),
         'dimensions': Dimension.objects.all(),
         # 'query': TempQuery.objects.filter(user=request.user).latest('created'), #last temporary query of this particular user

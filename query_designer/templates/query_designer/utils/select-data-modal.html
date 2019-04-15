@@ -55,8 +55,8 @@
                                 id="variable-filter"
                             >
                                 <option value="0" data-path="default" selected>All</option>
-                                {% for var in variables %}
-                                    <option value="{{ var.safe_name }}" data-path="[data-variable-name='{{ var.safe_name }}']">{{ var.title }}</option>
+                                {% for var in variable_list_filter %}
+                                    <option value="{{ var.0 }}" data-path="[data-variable-name='{{ var.0 }}']">{{ var.1 }}</option>
                                 {% endfor %}
                             </select>
                         </div>

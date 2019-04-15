@@ -31,6 +31,7 @@ def dataset_search(request):
     license_list = sorted(set([d.license for d in dataset_list]))
     category_list = sorted(set([d.category for d in dataset_list if d.category is not None and d.category.strip() != ""]))
     variable_list = Variable.objects.all().order_by('title')
+    variable_list_filter = sorted(set([(v.safe_name, v.title) for v in variable_list]))
 
     time_start_timestamp = min([d.temporalCoverageBeginTimestamp for d in Dataset.objects.all() if d.temporalCoverageBeginTimestamp != ""])
     date_now = datetime.now()
@@ -42,6 +43,7 @@ def dataset_search(request):
         'licenses': license_list,
         'categories': category_list,
         'variables': variable_list,
+        'variable_list_filter': variable_list_filter,
         'datasets': dataset_list,
         'dimensions': Dimension.objects.all(),
         'data_on_top': data_on_top,
