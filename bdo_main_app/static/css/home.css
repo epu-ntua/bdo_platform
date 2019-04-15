@@ -195,12 +195,13 @@
 #main-section[data-on-top='true'] #main-row img{
     height: 5vh;
     margin-top: 1vh;
+    display: inline-block;
 }
 
 #main-section[data-on-top='true'] #main-row {
     margin: 0;
     padding: 0;
-    height: 13vh;
+    height: 10vh;
     -webkit-transition:0.5s;
 }
 
@@ -222,6 +223,7 @@
 #main-section[data-on-top='true'] h5 {
     margin: 0;
     padding: 0;
+    display: none;
     font-size: 10pt;
     line-height: 1.2em;
     -webkit-transition:0.5s;
@@ -229,7 +231,9 @@
 
 #main-section[data-on-top='true'] .home-search-form {
     font-size: 15px;
-    height: 40px;
+    height: 50px;
+    width: 35%;
+    display: inline-block;
     -webkit-transition:0.5s;
 }
 
@@ -240,10 +244,10 @@
 }
 
 #main-section[data-on-top='true'] .home-search-form .form-group .form-control {
-    width: 50%;
+    width: 85%;
     padding: 0;
     margin: 0;
-    height: 30px;
+    height: 50px;
     transition:0.5s;
         -o-transition:0.5s;
         -ms-transition:0.5s;
