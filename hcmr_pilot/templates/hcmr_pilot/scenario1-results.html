@@ -214,7 +214,8 @@
                 docDefinition.content.push(" ");
 
             });
-            pdfMake.createPdf(docDefinition).open();
+{#            pdfMake.createPdf(docDefinition).open();#}
+            pdfMake.createPdf(docDefinition).download();
         }
 
         function check() {
