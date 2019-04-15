@@ -40,7 +40,7 @@
                     </button>
                 </div>
             </div>
-            <button id="explore_btn1_loading" class="btn btn-success"><i class="fa fa-refresh fa-spin" style="margin-right: 3px;"></i>Loading datasets...</button>
+            <button id="explore_btn1_loading" class="btn btn-success" {% if data_on_top == 'true' %}style="display: none;" {% endif %}><i class="fa fa-refresh fa-spin" style="margin-right: 3px;"></i>Loading datasets...</button>
             <button id="explore_btn1" class="btn btn-success" style="display: none;">View the platform's datasets</button>
         </div>
     </div>
@@ -822,7 +822,9 @@
 {#              fps: 24 //frames per second value#}
            });
            $("#explore_btn1_loading").hide();
-           $("#explore_btn1").show();
+           if($("#main-section").attr("data-on-top") !== "true"){
+               $("#explore_btn1").show();
+            }
            $("#title-filter").attr({"placeholder": "Search for datasets in the BDO platform..."});
         });
 
