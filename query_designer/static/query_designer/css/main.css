@@ -679,7 +679,6 @@ body.qd-body {
 .sparql .loading {
     padding: 10px;
     padding-right: 16px;
-    /*background: url('/static/query_designer/img/loading.gif') no-repeat right center;*/
     background-size: 16px;
 }
 
@@ -785,7 +784,6 @@ body.qd-body {
     cursor: pointer;
     padding: 10px;
     padding-right: 16px;
-    /*background: url('/static/images/sort_both.png') no-repeat right center;*/
     background-size: 16px;
 }
 
@@ -1043,10 +1041,6 @@ body.qd-body {
 /* Context */
 .context-menu-item.context-menu-icon { min-height: 18px; background-repeat: no-repeat; background-position: 5px 5px; background-size: 15px 15px;}
 
-/*.context-menu-item.context-menu-icon-move-up {background-image: url("../img/up.png"); }*/
-/*.context-menu-item.context-menu-icon-move-down {background-image: url("../img/down.png"); }*/
-/*.context-menu-item.context-menu-icon-edit { background-image: url("../img/edit.png"); }*/
-/*.context-menu-item.context-menu-icon-delete { background-image: url("../img/delete.png"); }*/
 
 .context-menu-item:hover {
     cursor: pointer;
