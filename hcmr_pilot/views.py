@@ -335,7 +335,7 @@ def create_json_from_out_file(filename_output):
 def wait_until_output_ready(params, request):
     found = False
     error = False
-    tries = 40
+    tries = 100
     while (not found) and (tries > 0) and (not error):
         tries -= 1
         time.sleep(8)
