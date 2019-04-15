@@ -697,8 +697,9 @@ $(function () {
                     $(".filter-counter").text(Object.keys(QueryToolbox.filters).length);
 
                     QueryToolbox.objects[0].queryId = data.pk;
-                    // QueryToolbox.rename(data.title);
+                    QueryToolbox.rename(data.title);
                     $("#chart-name input").val(data.title);
+                    setTimeout(function(){QueryToolbox.tabMarker.currentSaved();}, 1500);
                 },
                 error: function (xhr, status, error) {
                     console.log(error)
