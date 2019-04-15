@@ -457,7 +457,7 @@ def is_integer_string(s):
 def download(request):
     out = request.GET.get('file')
     content = open('service_builder/static/services_files/hcmr_service_1/'+out).read()
-    print(content)
+    # print(content)
     response = HttpResponse(content, content_type='text/plain')
     return response
 
