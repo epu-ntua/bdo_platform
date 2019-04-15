@@ -54,6 +54,23 @@
                                         <div class="row">
                                             <div class="col-xs-12">
                                                 <div class="form-group">
+                                                    <label class="section-label o-blue">First Name</label>
+                                                    <div>{{ user.profile.first_name|default:"-" }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="section-label o-blue">Last Name</label>
+                                                    <div>{{ user.profile.last_name|default:"-" }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
                                                     <label class="section-label o-blue">Organization</label>
                                                     <div>{{ user.profile.organization|default:"-" }}</div>
                                                 </div>
@@ -74,6 +91,15 @@
                                                 <div class="form-group">
                                                     <label class="section-label o-blue">Expertise / Business role</label>
                                                     <div>{{ user.profile.business_role|default:"-" }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="form-group">
+                                                    <label class="section-label o-blue">Social Media Link / Website</label>
+                                                    <div>{{ user.profile.external_url|default:"-" }}</div>
                                                 </div>
                                             </div>
                                         </div>
