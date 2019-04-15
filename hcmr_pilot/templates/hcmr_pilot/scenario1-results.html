@@ -12,7 +12,7 @@
 {#        canvas{display: none;}#}
     </style>
 
-    <link rel="stylesheet" href="{% static 'hcmr_pilot/css/service_output.css' %}">
+    <link rel="stylesheet" href="{% static 'hcmr_pilot/css/service_output.css' %}?bdo_version={{ settings.BDO_VERSION }}">
 {% endblock %}
 {% block service_output_results %}
     <h3 style="text-align: center; margin-bottom: 20px;">The evolution of the oil spill in time</h3>

@@ -3,9 +3,9 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
-    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
-    <link href="{% static 'css/parser.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
+    <link href="{% static 'css/home.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+    <link href="{% static 'css/parser.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
@@ -57,5 +57,5 @@
 
 
 {% block js %}
-    <script src="{% static 'js/parser.js' %}"></script>
+    <script src="{% static 'js/parser.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 {% endblock %}

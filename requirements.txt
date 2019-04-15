@@ -49,3 +49,4 @@ python-memcached
 scipy
 unidecode
 django-background-tasks
+django-settings-export

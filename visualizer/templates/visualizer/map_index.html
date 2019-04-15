@@ -11,7 +11,7 @@
         {% endautoescape %}
     {% endfor %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
 
     <link rel="shortcut icon" href="http://designm.ag/favicon.ico">
     <link rel="icon" href="http://designm.ag/favicon.ico">
@@ -57,7 +57,7 @@
 
 
 {% block js %}
-    <script src="{% static 'js/mapscript.js' %}"></script>
+    <script src="{% static 'js/mapscript.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 

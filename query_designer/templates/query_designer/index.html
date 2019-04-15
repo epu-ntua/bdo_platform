@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'query_designer/css/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'query_designer/css/main.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
@@ -20,29 +20,29 @@
     <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
     <script src="https://www.amcharts.com/lib/3/themes/light.js"></script>
 
-    <script src="{% static 'query_designer/js/components/ace/src/ace.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/ace/src/mode-json.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/ace/src/ext-language_tools.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/ace/src/ace.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/ace/src/mode-json.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/ace/src/ext-language_tools.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
-    <script src="{% static 'query_designer/js/components/editor.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/designer-menu.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/toolbar.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/query-options.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/property-options.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/dataset-select.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/property-select.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/arrows.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/filters.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/document-builder.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/chartTypes/unknown.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/chartTypes/map.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/chart-builder.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/query-executor.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/storage.js' %}"></script>
-    <script src="{% static 'query_designer/js/components/workbench.js' %}"></script>
+    <script src="{% static 'query_designer/js/components/editor.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/designer-menu.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/toolbar.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/query-options.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/property-options.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/dataset-select.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/property-select.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/arrows.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/filters.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/document-builder.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/chartTypes/unknown.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/chartTypes/map.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/chart-builder.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/query-executor.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/storage.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/components/workbench.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
-    <script src="{% static 'query_designer/js/languages/bdo-mongo.js' %}"></script>
-    <script src="{% static 'query_designer/js/qd.js' %}"></script>
+    <script src="{% static 'query_designer/js/languages/bdo-mongo.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'query_designer/js/qd.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     <script>
         $(function() {

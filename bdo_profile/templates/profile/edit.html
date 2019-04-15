@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
     {{ form.media }}
 {% endblock %}
 

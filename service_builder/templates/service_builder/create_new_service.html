@@ -3,11 +3,11 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'service_builder/css/create_service.css' %}" rel="stylesheet" />
-    <link href="{% static 'service_builder/css/mycss.css' %}" rel="stylesheet"/>
+    <link href="{% static 'service_builder/css/create_service.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+    <link href="{% static 'service_builder/css/mycss.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
-    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
     <style>
         #loadImg{position:absolute;z-index:999;}
         #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
@@ -111,16 +111,16 @@
 
     {# End Code Mirror    #}
 
-    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
-    <script src="{% static 'service_builder/js/visualisations.js' %}"></script>
+    <script src="{% static 'service_builder/js/visualisations.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
-    <script src="{% static 'service_builder/js/queries_tab.js' %}"></script>
-    <script src="{% static 'service_builder/js/arguments_tab.js' %}"></script>
-    <script src="{% static 'service_builder/js/code_tab.js' %}"></script>
-    <script src="{% static 'service_builder/js/output_tab.js' %}"></script>
-    <script src="{% static 'service_builder/js/publish.js' %}"></script>
-    <script src="{% static 'service_builder/js/templates.js' %}"></script>
+    <script src="{% static 'service_builder/js/queries_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'service_builder/js/arguments_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'service_builder/js/code_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'service_builder/js/output_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'service_builder/js/publish.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'service_builder/js/templates.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 {% endblock %}
 

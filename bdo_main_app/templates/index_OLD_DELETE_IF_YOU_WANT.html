@@ -3,8 +3,8 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
-    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+    <link href="{% static 'css/home.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
     <style>
         .landing-page-tile > .card{
             background-size: cover;

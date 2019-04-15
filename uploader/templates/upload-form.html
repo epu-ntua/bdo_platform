@@ -3,10 +3,10 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
-    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
-    <link href="{% static 'css/uploader.css' %}" rel="stylesheet" />
-{#    <link rel="stylesheet" href="{% static 'css/jquery-steps.css' %}">#}
+    <link href="{% static 'css/main.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
+    <link href="{% static 'css/home.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+    <link href="{% static 'css/uploader.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+{#    <link rel="stylesheet" href="{% static 'css/jquery-steps.css' %}?bdo_version={{ settings.BDO_VERSION }}">#}
 {% endblock %}
 
 {% block content %}
@@ -146,6 +146,6 @@
 {% block js %}
 
 {#    <script src={% static 'js/jquery-steps.min.js' %} ></script>#}
-    <script src="{% static 'js/uploader.js' %}"></script>
+    <script src="{% static 'js/uploader.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 {% endblock %}

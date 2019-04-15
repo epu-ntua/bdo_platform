@@ -1,7 +1,7 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
     <style>
         .datetimepicker {
             width: 300px;
@@ -100,7 +100,7 @@
 {% endfor %}
 
 
-<script src="{% static "js/leaflet-areaselect.js" %}"></script>
-<script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}"></script>
-<script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
-<script type="text/javascript" src="{% static 'js/datepicker.js' %}"></script>
+<script src="{% static "js/leaflet-areaselect.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script src="{% static "js/bootstrap-datetimepicker.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script type="text/javascript" src="{% static 'js/datepicker.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>

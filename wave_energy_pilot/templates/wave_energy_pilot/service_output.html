@@ -2,7 +2,7 @@
 {% load static %}
 {% load leaflet_tags %}
 {% block css %}
-    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}">
+    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}?bdo_version={{ settings.BDO_VERSION }}">
 {% endblock %}
 
 {% block content %}

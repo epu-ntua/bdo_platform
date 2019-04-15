@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'visualizer/css/basic_viz.css' %}" rel="stylesheet" />
+    <link href="{% static 'visualizer/css/basic_viz.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
     <style>
         #loadImg{position:absolute;z-index:999;}
         #loadImg {display:table-cell;width:90%;height:100%;background:#fff;text-align:center;vertical-align:middle;}

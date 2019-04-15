@@ -20,9 +20,9 @@
         {% endautoescape %}
     {% endfor %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}?bdo_version={{ settings.BDO_VERSION }}"/>
     <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="{% static 'css/control.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/control.css' %}?bdo_version={{ settings.BDO_VERSION }}"/>
 
 
 {% endblock %}
@@ -57,10 +57,10 @@
 {% block js %}
 
     {% leaflet_js %}
-{#    <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>#}
-{#    <script src="{% static 'js/leaflet.markercluster.js'%}"></script>#}
+{#    <script src="{% static 'js/leaflet.awesome-markers.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>#}
+{#    <script src="{% static 'js/leaflet.markercluster.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>#}
 
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
@@ -68,7 +68,7 @@
     <script src="https://rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.min.js"></script>
 
 
-    <script src="{% static 'js/leaflet-image.js' %}"></script>
+    <script src="{% static 'js/leaflet-image.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 
     {% for js in js_all %}

@@ -12,7 +12,7 @@
         #service_visualisations_container .viz_container{width: 49%; display: inline-block;}
     </style>
 
-    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}">
+    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}?bdo_version={{ settings.BDO_VERSION }}">
 {% endblock %}
 
 {% block service_output_results %}

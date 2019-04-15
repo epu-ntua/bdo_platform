@@ -3,15 +3,15 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
-    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+    <link href="{% static 'css/home.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
     <!-- jPList CSS -->
-    <link rel="stylesheet" href="{% static 'css/jplist.core.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/jplist.textbox-filter.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/jplist.filter-toggle-bundle.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/jplist.pagination-bundle.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/jplist.history-bundle.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/jplist.jquery-ui-bundle.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.core.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.textbox-filter.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.filter-toggle-bundle.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.pagination-bundle.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.history-bundle.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.jquery-ui-bundle.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
 {% endblock %}
 
 {% block content %}
@@ -809,15 +809,15 @@
         });
     </script>
 
-    <script src="{% static "/js/jplist.core.min.js" %}"></script>
-    <script src="{% static "/js/jplist.textbox-filter.min.js" %}"></script>
-    <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}"></script>
-    <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}"></script>
-    <script src="{% static "/js/jplist.ext-animation.min.js" %}"></script>
-    <script src="{% static "/js/jplist.pagination-bundle.min.js" %}"></script>
-    <script src="{% static "/js/jplist.history-bundle.min.js" %}"></script>
-    <script src="{% static "/js/jplist.bootstrap-sort-dropdown.min.js" %}"></script>
-    <script src="{% static "/js/jplist.jquery-ui-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.core.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.textbox-filter.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.ext-animation.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.pagination-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.history-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.bootstrap-sort-dropdown.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.jquery-ui-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     <script>
         var time_start_timestamp = {{time_start_timestamp}}

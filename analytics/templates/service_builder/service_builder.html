@@ -6,9 +6,9 @@
 
 {% block css %}
     {% leaflet_css %}
-    <link href="{% static 'css/vis-network.min.css' %}" rel="stylesheet" />
-    <link href="{% static 'service_builder/css/basic.css' %}" rel="stylesheet" />
-    <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
+    <link href="{% static 'css/vis-network.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+    <link href="{% static 'service_builder/css/basic.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+    <link href="{% static "css/leaflet-areaselect.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -94,7 +94,7 @@
 {% block js %}
     {% leaflet_js %}
     <!-- viz.js Network methods -->
-	<script src="{% static 'js/vis-network.min.js' %}"></script>
+	<script src="{% static 'js/vis-network.min.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     <script type="text/javascript">
       var numOfNodes;

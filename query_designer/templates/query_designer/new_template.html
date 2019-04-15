@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'query_designer/css/new_template.css' %}" rel="stylesheet" />
+    <link href="{% static 'query_designer/css/new_template.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}

@@ -9,7 +9,7 @@
 {% load static from staticfiles %}
 
 {% block css %}
-    <link href="{% static 'query_designer/css/formulas.css' %}" rel="stylesheet">
+    <link href="{% static 'query_designer/css/formulas.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -28,7 +28,7 @@
 {% endblock %}
 
 {% block js %}
-    <script src="{% static "query_designer/js/simplified/formula-editor.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/formula-editor.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script>
         $(function() {
             onFormulaLoad();

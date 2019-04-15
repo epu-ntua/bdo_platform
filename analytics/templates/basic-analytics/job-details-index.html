@@ -4,8 +4,8 @@
 {% load extra_tags %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" />
-    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
+    <link href="{% static 'css/home.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
@@ -41,5 +41,5 @@
 {% endblock %}
 
 {% block js %}
-	<script src="{% static 'basic-analytics/job-details.js' %}"></script>
+	<script src="{% static 'basic-analytics/job-details.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 {% endblock %}

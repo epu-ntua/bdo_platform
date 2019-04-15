@@ -5,7 +5,7 @@
 {% block css %}
 
     <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
-    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
     {% for viz in available_viz %}
         <style>
             #{{ viz.view_name}}_tip{
@@ -20,7 +20,7 @@
             }
         </style>
     {% endfor %}
-    <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}?bdo_version={{ settings.BDO_VERSION }}"/>
 
 
 {% endblock %}
@@ -277,15 +277,15 @@
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>
     <script src="https://cdn.ckeditor.com/4.9.2/standard/ckeditor.js"></script>
-    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script type="text/javascript">
         var img_source_path =  "{% static "img/loading_gif.gif" %}";
         var to_create_ = "{{ toCreate }}";
         $('#prebuilt_viz').val(to_create_);
         var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');
     </script>
-    <script type="text/javascript" src="{% static 'dashboard_builder/js/angular_dashboard_layout.js' %}"></script>
-    <script type="text/javascript" src="{% static 'dashboard_builder/js/multilayer_viz_dashboard_ui.js' %}"></script>
+    <script type="text/javascript" src="{% static 'dashboard_builder/js/angular_dashboard_layout.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script type="text/javascript" src="{% static 'dashboard_builder/js/multilayer_viz_dashboard_ui.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 
 {% endblock %}

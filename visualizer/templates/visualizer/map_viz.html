@@ -5,7 +5,7 @@
 
 {% block css %}
     {% leaflet_css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
 {% endblock %}
 
 {% block viz_content %}
@@ -21,7 +21,7 @@
     {% leaflet_js %}
 
 
-    <script src="{% static 'js/leaflet-heat.js' %}"></script>
+    <script src="{% static 'js/leaflet-heat.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 
     <script type="text/javascript">

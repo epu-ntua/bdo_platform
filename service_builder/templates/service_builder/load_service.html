@@ -24,7 +24,7 @@
     <style>
         {{ output_css|safe }}
     </style>
-{#    <link href="{% static 'service_builder/css/service_template_1.css' %}" rel="stylesheet"/>#}
+{#    <link href="{% static 'service_builder/css/service_template_1.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet"/>#}
 
 {% endblock %}
 
@@ -50,7 +50,7 @@
 
 
     {{ output_js|safe }}
-{#    <script type="text/javascript" src="{% static 'service_builder/js/service_template_1.js' %}"></script>#}
+{#    <script type="text/javascript" src="{% static 'service_builder/js/service_template_1.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>#}
 
 {% endblock %}
 

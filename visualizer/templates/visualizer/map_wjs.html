@@ -8,9 +8,9 @@
     {% leaflet_css %}
 
     <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
-    <link rel="stylesheet" href="{% static 'css/leaflet.awesome-markers.css' %}">
-{#    <link rel="stylesheet" href="{% static 'css/MarkerCluster.css' %}">#}
-{#    <link rel="stylesheet" href="{% static 'css/easy-button.css' %}">#}
+    <link rel="stylesheet" href="{% static 'css/leaflet.awesome-markers.css' %}?bdo_version={{ settings.BDO_VERSION }}">
+{#    <link rel="stylesheet" href="{% static 'css/MarkerCluster.css' %}?bdo_version={{ settings.BDO_VERSION }}">#}
+{#    <link rel="stylesheet" href="{% static 'css/easy-button.css' %}?bdo_version={{ settings.BDO_VERSION }}">#}
 
     {% for css in css_all %}
         {% autoescape off %}
@@ -18,7 +18,7 @@
         {% endautoescape %}
     {% endfor %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
 
 {% endblock %}
 
@@ -38,14 +38,14 @@
 
 
     {% leaflet_js %}
-    <script src="{% static 'js/leaflet.awesome-markers.js' %}"></script>
-{#    <script src="{% static 'js/leaflet.markercluster.js'%}"></script>#}
-    <script src="{% static 'js/MovingMarker.js'%}"></script>
-    <script src="{% static 'js/leaflet.polylineDecorator.js' %}"></script>
-    <script src="{% static 'js/L.Polyline.SnakeAnim.js'%}"></script>
-    <script src="{% static 'js/easy-button.js' %}"></script>
+    <script src="{% static 'js/leaflet.awesome-markers.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+{#    <script src="{% static 'js/leaflet.markercluster.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>#}
+    <script src="{% static 'js/MovingMarker.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'js/leaflet.polylineDecorator.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'js/L.Polyline.SnakeAnim.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'js/easy-button.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
-    <script src="{% static 'js/leaflet_script.js' %}"></script>
+    <script src="{% static 'js/leaflet_script.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     {% for js in js_all %}
         {% autoescape off %}

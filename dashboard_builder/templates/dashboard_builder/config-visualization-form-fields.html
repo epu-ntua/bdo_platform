@@ -3,7 +3,7 @@
     <input id="{{ order }}+++viz_id" type="hidden" class="form-control full-width " name="viz_id"  value="{{ viz_id }}">
     <input id="action" type="hidden" class="form-control full-width " name="action"  value="{{ action }}">
 {% block css %}
-    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 {% endblock %}
 
     <input id="{{ order }}+++viz_id" type="hidden" class="form-control full-width" name="viz_id"  value="{{ viz_id }}">
@@ -94,9 +94,9 @@
         <p>This visualization requires no further arguments.</p>
     {% endfor %}
 
-<script src="{% static "js/leaflet-areaselect.js" %}"></script>
-<script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}"></script>
-<script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
-<script type="text/javascript" src="{% static 'js/datepicker.js' %}"></script>
+<script src="{% static "js/leaflet-areaselect.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script type="text/javascript" src="{% static 'js/spatial_coverage_filter.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script src="{% static "js/bootstrap-datetimepicker.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script type="text/javascript" src="{% static 'js/datepicker.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 

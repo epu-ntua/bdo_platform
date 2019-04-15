@@ -12,27 +12,27 @@
 {% block css %}
 
     {% leaflet_css %}
-    <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
-    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    <link href="{% static "css/leaflet-areaselect.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
-    <link href="{% static "query_designer/css/toolbox.css" %}" rel="stylesheet">
-    <link href="{% static "query_designer/css/data-modal.css" %}" rel="stylesheet">
+    <link href="{% static "query_designer/css/toolbox.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
+    <link href="{% static "query_designer/css/data-modal.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
-    <link href="{% static 'query_designer/js/handsontable/handsontable.full.min.css' %}" rel="stylesheet">
+    <link href="{% static 'query_designer/js/handsontable/handsontable.full.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
-    <link href="{% static 'query_designer/css/formulas.css' %}" rel="stylesheet">
+    <link href="{% static 'query_designer/css/formulas.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
     <!-- jPList CSS -->
-    <link rel="stylesheet" href="{% static 'css/jplist.core.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/jplist.textbox-filter.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/jplist.filter-toggle-bundle.min.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/jplist.jquery-ui-bundle.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.core.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.textbox-filter.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.filter-toggle-bundle.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
+    <link rel="stylesheet" href="{% static 'css/jplist.jquery-ui-bundle.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" />
 
-    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
-    <link href="{% static "query_designer/css/icon_tooltip_css.css" %}" rel="stylesheet">
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
+    <link href="{% static "query_designer/css/icon_tooltip_css.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
-    <link href="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.css"%}" rel="stylesheet">
+    <link href="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
 
     <style>
@@ -322,40 +322,40 @@
     {% leaflet_js %}
 
 {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>#}
-{#    <script src="{% static 'query_designer/js/handsontable/handsontable.full.min.js' %}"></script>#}
+{#    <script src="{% static 'query_designer/js/handsontable/handsontable.full.min.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>#}
 
 {#    <link href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">#}
 {#    <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>#}
 
-    <script src="{% static "query_designer/js/simplified/toolbox2.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/toolbox2.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
-    <script src="{% static "query_designer/js/simplified/data-modal.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/data-modal.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
-    <script src="{% static "query_designer/js/simplified/interactions.js" %}"></script>
+    <script src="{% static "query_designer/js/simplified/interactions.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>#}
 
-    <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+    <script src="{% static "js/bootstrap-datetimepicker.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
-{#    <script src="{% static "js/leaflet-areaselect.js" %}"></script>#}
-    <script src="{% static "query_designer/js/simplified/area-select/simple-shape.js" %}"></script>
-    <script src="{% static "query_designer/js/simplified/area-select/rectangle.js" %}"></script>
-    <script src="{% static "query_designer/js/simplified/spatio_temporal_filters.js" %}"></script>
-    <script src="{% static "query_designer/js/simplified/chart_editor.js" %}"></script>
-    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+{#    <script src="{% static "js/leaflet-areaselect.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>#}
+    <script src="{% static "query_designer/js/simplified/area-select/simple-shape.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "query_designer/js/simplified/area-select/rectangle.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "query_designer/js/simplified/spatio_temporal_filters.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "query_designer/js/simplified/chart_editor.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
-    <script src="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.js"%}"></script>
+    <script src="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 {#    <script src="//cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>#}
-    <script src="{% static "/js/jplist.core.min.js" %}"></script>
-    <script src="{% static "/js/jplist.textbox-filter.min.js" %}"></script>
-    <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}"></script>
-    <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}"></script>
-    <script src="{% static "/js/jplist.ext-animation.min.js" %}"></script>
-    <script src="{% static "/js/jplist.pagination-bundle.min.js" %}"></script>
-    <script src="{% static "/js/jplist.history-bundle.min.js" %}"></script>
-    <script src="{% static "/js/jplist.bootstrap-sort-dropdown.min.js" %}"></script>
-    <script src="{% static "/js/jplist.jquery-ui-bundle.min.js" %}"></script>
+    <script src="{% static "/js/jplist.core.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.textbox-filter.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.filter-toggle-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.filter-dropdown-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.ext-animation.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.pagination-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.history-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.bootstrap-sort-dropdown.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static "/js/jplist.jquery-ui-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     <script>var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');</script>
     <script>

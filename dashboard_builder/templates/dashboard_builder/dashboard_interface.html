@@ -3,8 +3,8 @@
 {% load static %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/slick.css' %}"/>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/slick-theme.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/slick.css' %}?bdo_version={{ settings.BDO_VERSION }}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/slick-theme.css' %}?bdo_version={{ settings.BDO_VERSION }}"/>
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
 {% endblock %}
 
 {% block js %}
-    <script type="text/javascript" src="{% static 'js/slick.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/slick.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script type="text/javascript">
         $(document).ready(function(){
           $('.your-class').slick({

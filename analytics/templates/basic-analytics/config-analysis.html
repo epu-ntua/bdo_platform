@@ -3,8 +3,8 @@
 {% load static %}
 
 {% block css %}
-    <link href="{% static 'css/main.css' %}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
-    <link href="{% static 'css/home.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/main.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" xmlns="http://www.w3.org/1999/html"/>
+    <link href="{% static 'css/home.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" />
 {% endblock %}
 
 {% block content %}
@@ -87,7 +87,7 @@
 
 {% block js %}
 
-    <script src="{% static 'basic-analytics/analytics_config.js' %}"></script>
+    <script src="{% static 'basic-analytics/analytics_config.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
 
     <script type="text/javascript">
