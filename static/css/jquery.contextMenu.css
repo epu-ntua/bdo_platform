@@ -91,16 +91,6 @@
  */
 .context-menu-item.icon { min-height: 18px; background-repeat: no-repeat; background-position: 5px 5px; background-size: 15px 15px;}
 
-.context-menu-item.icon-visualize { background-image: url(/static/images/visualize.png); }
-.context-menu-item.icon-analyze { background-image: url(/static/images/analyze.png); }
-.context-menu-item.icon-explore {background-image: url("/static/images/search.png"); }
-.context-menu-item.icon-move-up {background-image: url("/static/images/up.png"); }
-.context-menu-item.icon-move-down {background-image: url("/static/images/down.png"); }
-.context-menu-item.icon-edit { background-image: url(/static/images/edit.png); }
-.context-menu-item.icon-delete { background-image: url(/static/images/remove.png); }
-.context-menu-item.icon-download { background-image: url(/static/images/download.png); }
-.context-menu-item.icon-pencil { background-image: url(/static/images/pencil.png); }
-.context-menu-item.icon-copy { background-image: url(/static/images/copy.png); }
 
 /* vertically align inside labels */
 .context-menu-input > label > * { vertical-align: top; }
