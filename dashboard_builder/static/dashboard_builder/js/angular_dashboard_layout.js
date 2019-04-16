@@ -220,6 +220,7 @@ function pageScroll() {
             });
 
             $('#save_dashboard_btn').click(function () {
+                tour.end();
                 var postEndpoint = "/dashboards/save/";
                 var pk = $('#dashboard_pk').val();
                 if (pk !== '') {

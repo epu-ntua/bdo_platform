@@ -1027,6 +1027,7 @@ $("#select_data_popover").click(function () {
                         "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
                         "<div class='popover-content'></div>" +
                         "<div class='popover-navigation'>" +
+                        "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
                         "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
                         "</div>" +
                         "</div>",
@@ -1044,7 +1045,7 @@ $("#select_data_popover").click(function () {
                 }else if(init===1){
                     tour.addStep({
                         element: "#tour_input_select_data",
-                        placement: "bottom",
+                        placement: "right",
                         title: "Select Query",
                         content: "Select a Query to use for the creation of a visualisation.",
                         });
@@ -1090,7 +1091,7 @@ $("#select_data_popover").click(function () {
                 }else if (init===6){
                     tour.addStep({
                         element: "#tour_input_select_data",
-                        placement: "bottom",
+                        placement: "right",
                         title: "Select Query",
                         content: "Select another Query to use for the creation of another layer of the visualisation.",
                         });
@@ -1122,8 +1123,26 @@ $("#select_data_popover").click(function () {
                         return tour;
                 }
                 else if((init===11)){
-                    tour.end();
-
+                    tour.addStep({
+                            element: "#dashboard_title",
+                            placement: "right",
+                            title: "Dashboard Title",
+                            content: "Fill in the title of the Dashboard.",
+                            });
+                    tour.addStep({
+                            element: "#privacy_status",
+                            placement: "right",
+                            title: "Permission Settings",
+                            content: "Choose whether the dashboard is going to be private or public.",
+                            });
+                    tour.addStep({
+                            element: "#save_dashboard_btn",
+                            placement: "right",
+                            title: "Save Dashboard",
+                            content: "Save the created Dashboard.",
+                            });
+                        tour.next();
+                        return tour;
                 }
             }
 
