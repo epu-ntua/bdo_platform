@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^wave_forecast/status/(?P<exec_instance>[0-9]+)/$', views.wave_forecast_status, name='wave_forecast_status'),
     # SC2_ENERGY CONVERSION
     url(r'energy-conversion/', views.energy_conversion_init, name='energy_conversion_init'),
-    url(r'energy-conversion/new_wec/', views.wec_creation, name='wec_creation')
+    url(r'energy-conversion/new_wec/', views.wec_creation, name='wec_creation'),
 
     # Cancel execution
     url(r'^cancel_execution/(?P<exec_instance>[0-9]+)/$', views.cancel_execution, name='cancel_execution'),
