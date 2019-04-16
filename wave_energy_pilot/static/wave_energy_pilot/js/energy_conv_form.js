@@ -648,13 +648,13 @@ $(document).ready(function() {
                 $(".matching_analysis_dropdown").hide();
             }
         })
-    })
+    });
 
     $("#save_converter").click(function () {
         $.ajax({
             "type": "GET",
             "url": 'energy-conversion/new_wec/',
-            "wec_data":
+            "wec_data": ''
         })
     })
 });
