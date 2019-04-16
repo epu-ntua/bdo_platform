@@ -64,7 +64,7 @@
 
 
         // Called when the Visualization API is loaded.
-        function drawVisualization(curTime) {
+        function drawVisualization(curTime, container_id) {
             // create the data table.
             data = new vis.DataSet();
 
@@ -99,7 +99,7 @@
 
                 data.add({x: x, y: y, z: z, style: color});
             }
-            var container = document.getElementById('depth_graph');
+            var container = document.getElementById(container_id);
             graph = new vis.Graph3d(container, data, options);
 
         }
@@ -173,6 +173,7 @@
                 </div>
             </div>
         </div>
+        <div id="3d_img_container"  hidden style="position: relative; height: 100%;" ></div>
     </div>
 
 
@@ -198,7 +199,7 @@
                 $(".legend_" + current_time).removeClass("hidden");
 
                 if (previousTime !== current_time && current_time !== "") {
-                    drawVisualization(current_time);
+                    drawVisualization(current_time, 'depth_graph');
                     previousTime = current_time;
                 }
             }
@@ -283,8 +284,17 @@
                     image: $(elem).find("img").attr('src'),
                     width: 450
                 };
-                docDefinition.content.push(get_legend_values($(elem).attr('id')));
-                docDefinition.content.push(new_content)
+                var id = $(elem).attr('id');
+                docDefinition.content.push(get_legend_values(id));
+                docDefinition.content.push(new_content);
+                docDefinition.content.push(" ");
+
+
+                var new_content = {
+                    image: $('#3d_im_'+id).find("img").attr('src'),
+                    width: 450
+                };
+                docDefinition.content.push(new_content);
                 docDefinition.content.push(" ");
 
             });
@@ -297,11 +307,33 @@
                 return setTimeout(check, 1000);
             }
 
+            create3dSnapshots();
             $('#download-report-loading').hide();
             $('#download-report').show();
             create_pdf_report();
         }
 
+
+        function create3dSnapshots() {
+            $("iframe").contents().find("#snapshot div").each(function (i, elem) {
+                id = elem.id;
+                drawVisualization(id, 'depth_graph');
+
+                var imgContainer = document.createElement('div');
+                imgContainer.id = '3d_im_'+id;
+                cnvs = $('#depth_graph canvas');
+                var imageData = cnvs[0].toDataURL();
+
+                var img = document.createElement('img');
+
+                img.width = cnvs.width();
+                img.height = cnvs.height();
+                img.src = imageData;
+                imgContainer.appendChild(img);
+
+                document.getElementById('3d_img_container').appendChild(imgContainer);
+            });
+        }
 
         $("#download-report").click(function () {
             $('#download-report-loading').show();
