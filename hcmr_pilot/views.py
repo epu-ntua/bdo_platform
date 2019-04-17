@@ -12,6 +12,10 @@ from django.conf import settings
 from service_builder.models import Service, ServiceInstance
 from threading import Thread
 from datetime import datetime
+from query_designer.models import AbstractQuery
+import prestodb
+import psycopg2
+import requests
 
 
 def init(request):
@@ -120,6 +124,7 @@ def scenario3_results(request, exec_instance):
     filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
     location_lat = float(service_exec.arguments['algorithm-arguments'][0]['latitude'])
     location_lon = float(service_exec.arguments['algorithm-arguments'][0]['longitude'])
+    location_dep = float(service_exec.arguments['algorithm-arguments'][0]['depth'])
     start_date = service_exec.arguments['algorithm-arguments'][0]['start_date']
     oil_volume = service_exec.arguments['algorithm-arguments'][0]['oil_volume']
     wave_forecast_dataset = service_exec.arguments['algorithm-arguments'][0]['wave_model']
@@ -145,9 +150,9 @@ def scenario3_results(request, exec_instance):
         'legend_data': legend_data,
         'result': [],
         'service_title': 'Oil Spill Dispersion in the Marine Environment',
-        'back_url': '/oilspill/?scenario=1',
-        'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
-                              'value': '(' + str(round(location_lat, 3)) + ', ' + str(round(location_lon, 3)) + ')'},
+        'back_url': '/oilspill/?scenario=3',
+        'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude, depth):',
+                              'value': '(' + str(round(location_lat, 3)) + ', ' + str(round(location_lon, 3)) + ', ' + str(round(location_dep, 3))+')'},
                              {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': str(start_date)},
                              {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
                              {'icon': 'fas fa-database', 'text': 'Wave Forecast Dataset:',
@@ -183,12 +188,33 @@ def process(request, exec_instance):
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
 
-        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count, scenario, depth = parse_request_params(request)
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count, scenario= parse_request_params(request)
+        depth = 0
         if (scenario == '1') or (scenario == '3'):
             service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
             service_exec.arguments["algorithm-arguments"][0]["longitude"] = spill_infos[0]['longitude']
             if scenario == '3':
-                service_exec.arguments["algorithm-arguments"][0]["depth"] = spill_infos[0]['depth']
+                cursor_presto = get_presto_cursor()
+                resolution = 1
+                if wave_model == '202':
+                    query = "SELECT * FROM (SELECT avg(depth) FROM hcmr_poseidon_aeg_bathymetry WHERE round(latitude," + str(resolution) +" )=" + str(round(
+                            float(spill_infos[0]['latitude']), resolution)) + " AND round(longitude," + str(resolution) + ")=" + str(round(
+                            float(spill_infos[0]['longitude']),resolution)) + ")"
+                    cursor_presto.execute(query)
+                else:
+                    query = "SELECT * FROM (SELECT avg(depth) FROM hcmr_poseidon_med_bathymetry WHERE round(latitude," + str(resolution) + " )=" + str(round(
+                            float(spill_infos[0]['latitude']),resolution)) + " AND round(longitude," + str(resolution) + ")=" + str(round(
+                            float(spill_infos[0]['longitude']), resolution)) + ")"
+                cursor_presto.execute(query)
+                result = cursor_presto.fetchall()
+                try:
+                    depth = float(result[0][0])
+                except:
+                    depth = 0
+                service_exec.arguments["algorithm-arguments"][0]["depth"] = depth
+                print query
+                print 'Oilspill depth:'+str(depth)
+                # service_exec.arguments["algorithm-arguments"][0]["depth"] = spill_infos[0]['depth']
 
         elif scenario == '2':
             count = 1
@@ -226,7 +252,7 @@ def process(request, exec_instance):
             raise Exception
         service_exec.status = "Creating simulation request"
         service_exec.save()
-        filename, url_params = create_inp_file_from_request_and_upload(request)
+        filename, url_params = create_inp_file_from_request_and_upload(request, depth)
         # 2)Calculate oil spill
         if service_exec.status == 'failed':
             raise Exception
@@ -372,8 +398,8 @@ def wait_until_output_ready(params, request):
             return False
 
 
-def create_inp_file_from_request_and_upload(request):
-    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario, depth = parse_request_params(request)
+def create_inp_file_from_request_and_upload(request,depth):
+    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario = parse_request_params(request)
     url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model, oil_density, sim_length, time_interval,depth)
     response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
@@ -433,8 +459,8 @@ def parse_request_params(request):
             valid_points_count = valid_points_count + 1
             valid_points.append([spill_info['latitude'], spill_info['longitude']])
         print(spill_infos)
-    if scenario == '3':
-        spill_infos[0]['depth'] = request.GET.get('depth')
+    # if scenario == '3':
+        # spill_infos[0]['depth'] = request.GET.get('depth')
     wave_model = request.GET.get('wave_model')
     ocean_model = request.GET.get('hd_model')
     natura_layer = request.GET.get('natura_layer')
@@ -442,8 +468,8 @@ def parse_request_params(request):
     time_interval = request.GET.get('time_interval')
     sim_length = request.GET.get('simulation_length')
     oil_density = request.GET.get('oil_density')
-    depth = request.GET.get('depth')
-    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario, depth
+    # depth = request.GET.get('depth')
+    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario
 
 
 def is_integer_string(s):
@@ -618,10 +644,22 @@ def get_color(natura_table, lat, lon, status, resolution, min_lat, min_lon):
     if status == 0:
         return 'darkblue'
     elif status == 1:
-        return 'lightblue'
-    elif status == 5:
         return 'cadetblue'
+    elif status == 5:
+        return 'lightblue'
     elif status == 10:
         return 'orange'
     else:
         return 'lightblue'
+
+def get_presto_cursor():
+    presto_credentials = settings.DATABASES['UBITECH_PRESTO']
+    conn = prestodb.dbapi.connect(
+        host=presto_credentials['HOST'],
+        port=presto_credentials['PORT'],
+        user=presto_credentials['USER'],
+        catalog=presto_credentials['CATALOG'],
+        schema=presto_credentials['SCHEMA'],
+    )
+    cursor = conn.cursor()
+    return cursor

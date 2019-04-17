@@ -3332,9 +3332,9 @@ def color_point_oil_spill2(natura_table, point, resolution, min_lat, min_lon):
     if point[2] == 0:
         return 'darkblue'
     elif point[2] == 1:
-        return 'lightblue'
-    elif point[2] == 5:
         return 'cadetblue'
+    elif point[2] == 5:
+        return 'lightblue'
     elif point[2] == 10:
         return 'orange'
     else:

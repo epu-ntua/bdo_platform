@@ -151,14 +151,24 @@ function tour_guide_senario_1(scenario){
                 "</div>" +
                 "</div>",
     });
-
-    first_scenario_tour.addStep({
-        element: ".application-header",
-        placement: "left",
-        title: "Oil spill dispersion forecast",
-        // duration: 3500,
-        content: "Perform an oil spill dispersion simulation. Select a starting point on the map and provide all the necessary information.",
-    });
+    if (String(scenario) === '1') {
+        first_scenario_tour.addStep({
+            element: ".application-header",
+            placement: "left",
+            title: "Oil spill dispersion forecast",
+            // duration: 3500,
+            content: "Perform an oil spill dispersion simulation. Select a starting point on the map and provide all the necessary information.",
+        });
+    }
+    if (String(scenario) === '3'){
+        first_scenario_tour.addStep({
+            element: ".application-header",
+            placement: "left",
+            title: "Underwater Accident",
+            // duration: 3500,
+            content: "Perform an underwater oil spill dispersion simulation. Select a starting point on the map and provide all the necessary information.",
+        });
+    }
     first_scenario_tour.addStep({
         element: ".lat-container",
         placement: "left",
@@ -166,15 +176,15 @@ function tour_guide_senario_1(scenario){
         // duration: 3500,
         content: "Click on the map to select the point of an oil spill incident or add manually position latitude and longitude.",
     });
-    if(scenario=== '3') {
-        first_scenario_tour.addStep({
-            element: ".depth-container",
-            placement: "left",
-            title: "Fill the depth field",
-            // duration: 3500,
-            content: "Fill in the depth field, showing the depth that the oil spill occured.",
-        });
-    }
+    // if(scenario=== '3') {
+    //     first_scenario_tour.addStep({
+    //         element: ".depth-container",
+    //         placement: "left",
+    //         title: "Fill the depth field",
+    //         // duration: 3500,
+    //         content: "Fill in the depth field, showing the depth that the oil spill occured.",
+    //     });
+    // }
     first_scenario_tour.addStep({
         element: ".vis-startdate-container",
         placement: "left",
@@ -372,13 +382,13 @@ function interactive_form(onLocationfound, user_marker){
             $('#sel2').parent().dropdown('set selected','003');
         }
     });
-     $('#depth').on('input',function () {
-        allow_form_submit = missing_parameter($('#depth'), allow_form_submit, 'depth', 6, '#run-service-btn','depth' );
-        if($('#depth').val()<0) {
-            $('#depth').val((0).toFixed(4));
-        }
-
-    });
+    //  $('#depth').on('input',function () {
+    //     allow_form_submit = missing_parameter($('#depth'), allow_form_submit, 'depth', 6, '#run-service-btn','depth' );
+    //     if($('#depth').val()<0) {
+    //         $('#depth').val((0).toFixed(4));
+    //     }
+    //
+    // });
 }
 
 function interactive_multi_point_service_form(){
@@ -980,7 +990,7 @@ $(document).ready(function() {
             $("#execution_btn_OIL_SPILL_SCENARIO_2").click();
         else if(parseInt(scenario) === 3)
             $("#execution_btn_OIL_SPILL_SCENARIO_3").click();
-        $('#modal_dismiss_btn_cancel').hide()
+        $('body #modal_dismiss_btn_cancel').hide()
         var lat ;
         var lng ;
         var oil_volume ;
@@ -990,7 +1000,7 @@ $(document).ready(function() {
         var duration ;
         var wave_dataset;
         var hd_dataset;
-        var depth = 0;
+        // var depth = 0;
         if (scenario === 1 || scenario ===3) {
             lat = $('#lat').val();
             lng = $("#lon").val();
@@ -1001,9 +1011,9 @@ $(document).ready(function() {
             duration = $("#vis_duration").val();
             wave_dataset = $("#sel1").val();
             hd_dataset = $("#sel2").val();
-            if (scenario===3){
-                depth = $('#depth').val();
-            }
+            // if (scenario===3){
+            //     depth = $('#depth').val();
+            // }
         }else if(scenario ===2) {
             var wave_dataset_list = [];
             var hd_dataset_list = [];
@@ -1095,8 +1105,7 @@ $(document).ready(function() {
                 "&wave_model=" + wave_dataset +
                 "&hd_model=" + hd_dataset +
                 "&natura_layer=" + natura_layer +
-                "&ais_layer=" + ais_layer +
-                "&depth=" + depth;
+                "&ais_layer=" + ais_layer;
 
 
 
@@ -1109,7 +1118,7 @@ $(document).ready(function() {
                 "data": {},
                 "cache": false,
                 "success": function(result) {
-                        $('#modal_dismiss_btn_cancel').show();
+                        $('body #modal_dismiss_btn_cancel').show();
                         console.log(result);
                         exec_instance = result['exec_instance'];
                     },
@@ -1213,7 +1222,7 @@ $(document).ready(function() {
         $(".modal #modal_status_div").html('');
     });
 
-    $("#modal_dismiss_btn_cancel").click(function () {
+    $('body').on('click','#modal_dismiss_btn_cancel', function () {
         console.log("hit cancel");
         set_execution_failed();
         clearInterval(execution_status_interval);
