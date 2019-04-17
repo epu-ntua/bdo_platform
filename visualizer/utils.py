@@ -13,7 +13,7 @@ import collections
 from django.db import connections
 from django.conf import settings
 from service_builder.models import ServiceInstance
-
+import ast
 
 def convert_unicode_json(data):
     if isinstance(data, basestring):
@@ -1017,7 +1017,8 @@ def get_result_dict_from_livy(session_id, dict_name):
         raise Exception('Failed')
     print 'result'
     print str(response['output']['data'])
-    return_val = json.loads(str(convert_unicode_json(response['output']['data']['text/plain'])).replace("'", '"'))
+    # return_val = json.loads(str(convert_unicode_json(response['output']['data']['text/plain'])).replace("'", '"'))
+    return_val = ast.literal_eval(response['output']['data']['text/plain'])
     print return_val
     return return_val
 

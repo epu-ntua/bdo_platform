@@ -23,6 +23,9 @@ from visualizer.utils import delete_zep_notebook, clone_zep_note, create_zep_arg
     create_livy_session
 from time import sleep
 
+from wave_energy_pilot.models import Wave_Energy_Converters
+
+
 def configure_spatial_filter(filters, lat_from, lat_to, lon_from, lon_to):
     if type(filters) == dict:
         if 'op' in filters.keys() and filters['op'] == 'inside_rect':
@@ -197,10 +200,12 @@ def execute_service_code(request, service_exec, new_arguments_paragraph, paragra
         if 'no_exec' in request.GET.keys():
             pass
         else:
-            run_zep_paragraph(service_exec.notebook_id, paragraph, service_exec.livy_session, 'livy')
+            if service_exec.service.through_livy:
+                run_zep_paragraph(service_exec.notebook_id, paragraph, service_exec.livy_session, 'livy')
+            else:
+                run_zep_paragraph(service_exec.notebook_id, paragraph, service_exec.livy_session, 'zeppelin')
 
 
-# @background(schedule=600)
 def clean_up_new_note(notebook_id, wait_time_seconds=0):
     print "waiting to clean up note " + str(notebook_id)
     sleep(wait_time_seconds)
@@ -215,9 +220,144 @@ def wec_creation(request):
 
 @never_cache
 def energy_conversion_init(request):
+    execution_steps = dict()
+    execution_steps['WEC_LOCATION_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + \
+                                                         [x['status'] for x in settings.WEC_LOCATION_EVALUATION_SERVICE_PARAGRAPHS] + \
+                                                         ['done']
+
     return render(request, 'wave_energy_pilot/energy_conversion_service.html',
-    {'datasets_list': DATASETS,
-     'energy_converters': CONVERTERS})
+                  {'datasets_list': DATASETS,
+                   'energy_converters': CONVERTERS,
+                   'data_radius': DATA_RADIUS,
+                   'execution_steps': execution_steps})
+
+
+def wec_single_location_evaluation_execute(request):
+    service = Service.objects.get(pk=settings.WEC_LOCATION_EVALUATION_SERVICE_ID)
+    service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
+                                   status="starting service", dataframe_visualizations=[])
+    service_exec.save()
+    # Spawn thread to process the data
+    t = Thread(target=wec_single_location_evaluation_execution_process, args=(request, service_exec.id))
+    t.start()
+    return JsonResponse({'exec_instance': service_exec.id})
+
+
+@never_cache
+def wec_single_location_evaluation_execution_process(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    service = Service.objects.get(pk=service_exec.service_id)
+    # GATHER THE SERVICE ARGUMENTS
+    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
+    args_to_note = gather_service_args(service_args, request, service_exec)
+    converters_selection = request.GET.getlist("converters[]")
+    wecs = list()
+    for converter_id in converters_selection:
+        aWec = dict()
+        converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
+        aWec['name'] = converter.title
+        aWec['min_H'] = str(int(round(converter.min_height, 0)))
+        aWec['max_H'] = str(int(round(converter.max_height)))
+        aWec['min_T'] = str(int(round(converter.min_energy_period)))
+        aWec['max_T'] = str(int(round(converter.max_energy_period)))
+        aWec['wec_matrix'] = converter.sample_rows
+        wecs.append(aWec)
+    args_to_note['wecs'] = wecs
+    service_exec.arguments = args_to_note
+    service_exec.save()
+    # new conv
+    # Wave_Energy_Converters(title=conv['title'], owner_id=User.objects.get(pk=4), image_uri='', sample_rows=conv['data'],
+    #                        min_height=conv['min_height'], max_height=conv['max_height'], min_energy_period=conv['min_energy_period'],
+    #                        max_energy_period=conv['max_energy_period']).save()
+    # CONFIGURE THE QUERY TO BE USED
+    dataset_id = str(request.GET["dataset_id"])
+    query_id = settings.WEC_LOCATION_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
+    wave_height_query_id = get_query_with_updated_filters(request, query_id)
+    # CLONE THE SERVICE NOTE
+    new_notebook_id = clone_service_note(request, service, service_exec)
+    # ADD THE VISUALISATIONS TO BE CREATED
+    visualisations = dict()
+    power_cols_str = ''
+    cap_factors_cols_str = ''
+    for i, converter_id in enumerate(converters_selection):
+        converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
+        power_cols_str += '&y_var[]=power for ' + str(converter.title)
+        cap_factors_cols_str += '&y_var[]=capacity factor for ' + str(converter.title)
+
+    visualisations['v1'] = ({'notebook_id': new_notebook_id,
+                             'df': 'power_df',
+                             'query': '',
+                             'title': "Generated Power",
+                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(
+                                 new_notebook_id) + power_cols_str,
+                             'done': False})
+    visualisations['v2'] = ({'notebook_id': new_notebook_id,
+                             'df': 'wec_cap_factors_df',
+                             'query': '',
+                             'title': "Capacity Factor",
+                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=wec_cap_factors_df&notebook_id=" + str(
+                                 new_notebook_id) + cap_factors_cols_str,
+                             'done': False})
+    service_exec.dataframe_visualizations = visualisations
+    service_exec.save()
+    # CREATE NEW ARGUMENTS PARAGRAPH
+    new_arguments_paragraph = create_args_paragraph(request, new_notebook_id, args_to_note, service)
+    # CREATE A LIVY SESSION
+    if service.through_livy:
+        service_exec.status = "Initializing Spark Session"
+        service_exec.save()
+        service_exec.livy_session = create_service_livy_session(request, service_exec)
+        service_exec.save()
+    try:
+        # RUN THE SERVICE CODE
+        execute_service_code(request, service_exec, new_arguments_paragraph, settings.WEC_LOCATION_EVALUATION_SERVICE_PARAGRAPHS)
+        service_exec.status = "done"
+        service_exec.save()
+        t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 180))
+        t.start()
+    except Exception as e:
+        print 'exception in livy execution'
+        print '%s (%s)' % (e.message, type(e))
+        service_exec.status = "failed"
+        service_exec.save()
+        clean_up_new_note(service_exec.notebook_id)
+        if 'livy_session' in request.GET.keys():
+            pass
+        else:
+            if service_exec.service.through_livy:
+                close_livy_session(service_exec.livy_session)
+
+
+@never_cache
+def wec_single_location_evaluation_results(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    # GET THE SERVICE RESULTS
+    result = get_result_dict_from_livy(service_exec.livy_session, 'result')
+    print 'result: ' + str(result)
+    # clean_up_new_note(service_exec.notebook_id)
+
+    dataset_id = str(result['dataset_id'])
+    dataset_title = str(Dataset.objects.get(pk=dataset_id))
+    location_lat = str(result['location_lat'])
+    location_lon = str(result['location_lon'])
+    start_date = str(result['start_date'])
+    end_date = str(result['end_date'])
+
+    # SHOW THE SERVICE OUTPUT PAGE
+    return render(request, 'wave_energy_pilot/wec_location_assessment result.html',
+                  {'result': result,
+                   'service_title': 'Wave Energy - Assessment of Wave Energy Converters in a Single Location',
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
+                                        {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
+                                        {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
+                   'no_viz': 'no_viz' in request.GET.keys(),
+                   'visualisations': service_exec.dataframe_visualizations})
+
+
+@never_cache
+def energy_conversion_status(request, exec_instance):
+    service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
+    return JsonResponse({'status': service_exec.status})
 
 
 @never_cache
@@ -334,6 +474,7 @@ def data_visualization_results(request):
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
+
 @never_cache
 def single_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
@@ -345,7 +486,7 @@ def single_location_evaluation_execute(request):
     t.start()
     return JsonResponse({'exec_instance': service_exec.id})
 
-@never_cache
+
 def single_location_evaluation_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
@@ -451,6 +592,7 @@ def single_location_evaluation_results(request, exec_instance):
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
+
 @never_cache
 def single_location_evaluation_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
@@ -547,7 +689,6 @@ def area_location_evaluation_execution_process(request, exec_instance):
                 close_livy_session(service_exec.livy_session)
 
 
-
 def area_location_evaluation_results(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     # GET THE SERVICE RESULTS
@@ -574,10 +715,12 @@ def area_location_evaluation_results(request, exec_instance):
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 
+
 @never_cache
 def area_location_evaluation_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
+
 
 @never_cache
 def wave_forecast_execute(request):
@@ -590,7 +733,7 @@ def wave_forecast_execute(request):
     t.start()
     return JsonResponse({'exec_instance': service_exec.id})
 
-@never_cache
+
 def wave_forecast_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
@@ -675,6 +818,7 @@ def wave_forecast_results(request, exec_instance):
                                         {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
+
 
 @never_cache
 def wave_forecast_status(request, exec_instance):

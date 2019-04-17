@@ -17,8 +17,12 @@ urlpatterns = [
     url(r'^wave_forecast/execute/$', views.wave_forecast_execute, name='wave_forecast_execute'),
     url(r'^wave_forecast/results/(?P<exec_instance>[0-9]+)/$', views.wave_forecast_results, name='wave_forecast_results'),
     url(r'^wave_forecast/status/(?P<exec_instance>[0-9]+)/$', views.wave_forecast_status, name='wave_forecast_status'),
-    # SC2_ENERGY CONVERSION
-    url(r'energy_conversion/', views.energy_conversion_init, name='energy_conversion_init'),
+    # SC2_TC1 - ENERGY CONVERSION SINGLE LOCATION EVALUATION
+    url(r'energy_conversion/$', views.energy_conversion_init, name='energy_conversion_init'),
+    url(r'^energy_conversion/evaluate_location/execute/$', views.wec_single_location_evaluation_execute, name='wec_single_location_evaluation_execute'),
+    url(r'^energy_conversion/evaluate_location/results/(?P<exec_instance>[0-9]+)/$', views.wec_single_location_evaluation_results, name='wec_single_location_evaluation_results'),
+    url(r'^energy_conversion/evaluate_location/status/(?P<exec_instance>[0-9]+)/$', views.energy_conversion_status, name='energy_conversion_status'),
+
     url(r'energy_conversion/new_wec/', views.wec_creation, name='wec_creation'),
 
     # Cancel execution

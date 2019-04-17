@@ -25,7 +25,7 @@ DATASETS = (
     #                                                        dict(id=3, title="temperatureeeeeeeeee")),
     #              min_lat=42.484251, max_lat=42.484251, min_lng=5.668252, max_lng=5.668252, min_date="03/08/2018", max_date="07/09/2018",
     #      applications=["data_visualisation"]),
-    dict(id="14", title="Maretec Wave Forecast", variables=(dict(id=1, title="sea_surface_wave_zero_upcrossing_period"),
+    dict(id="111", title="Maretec Wave Forecast", variables=(dict(id=1, title="sea_surface_wave_zero_upcrossing_period"),
                                                                dict(id=2, title="sea_surface_wave_significant_height")),
                      min_lat=-12.00, max_lat=12.00, min_lng=-14.00, max_lng=14.00, min_date="12/01/2018", max_date="03/31/2019",
              applications=["data_visualisation", "wave_forecast", "wave_resource_assessment_single",

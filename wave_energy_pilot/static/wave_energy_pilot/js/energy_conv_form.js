@@ -377,51 +377,51 @@ $(document).ready(function() {
 
                     }
                 });
-                (function (window, document, undefined) {
-                        "use strict";
-
-                        var wrap = document.getElementById("wrap"),
-                            setColumn = document.getElementById("column"),
-                            setRow = document.getElementById("row"),
-                            btnGen = document.getElementById("btnGen"),
-                            btnCopy = document.getElementById("btnCopy");
-
-                        btnGen.addEventListener("click", generateTable);
-                        btnCopy.addEventListener("click", copyTo);
-
-                        function generateTable(e) {
-                            var newTable = document.createElement("table"),
-                                tBody = newTable.createTBody(),
-                                nOfColumns = parseInt(setColumn.value, 10),
-                                nOfRows = parseInt(setRow.value, 10),
-                                row = generateRow(nOfColumns);
-
-                            newTable.createCaption().appendChild(document.createTextNode("Generated Table"));
-
-                            for (var i = 0; i < nOfRows; i++) {
-                                tBody.appendChild(row.cloneNode(true));
-                            }
-
-                            (wrap.hasChildNodes() ? wrap.replaceChild : wrap.appendChild).call(wrap, newTable, wrap.children[0]);
-                        }
-
-                        function generateRow(n) {
-                            var row = document.createElement("tr"),
-                                text = document.createElement("input");
-                                text.setAttribute("type", "text");
-                                text.setAttribute("value", "0");
-
-                            for (var i = 0; i < n; i++) {
-                                row.insertCell().appendChild(text.cloneNode(true));
-                            }
-
-                            return row.cloneNode(true);
-                        }
-
-                        function copyTo(e) {
-                            prompt("Copy to clipboard: Ctrl+C, Enter", wrap.innerHTML);
-                        }
-                    }(window, window.document));
+                // (function (window, document, undefined) {
+                //         "use strict";
+                //
+                //         var wrap = document.getElementById("wrap"),
+                //             setColumn = document.getElementById("column"),
+                //             setRow = document.getElementById("row"),
+                //             btnGen = document.getElementById("btnGen"),
+                //             btnCopy = document.getElementById("btnCopy");
+                //
+                //         btnGen.addEventListener("click", generateTable);
+                //         btnCopy.addEventListener("click", copyTo);
+                //
+                //         function generateTable(e) {
+                //             var newTable = document.createElement("table"),
+                //                 tBody = newTable.createTBody(),
+                //                 nOfColumns = parseInt(setColumn.value, 10),
+                //                 nOfRows = parseInt(setRow.value, 10),
+                //                 row = generateRow(nOfColumns);
+                //
+                //             newTable.createCaption().appendChild(document.createTextNode("Generated Table"));
+                //
+                //             for (var i = 0; i < nOfRows; i++) {
+                //                 tBody.appendChild(row.cloneNode(true));
+                //             }
+                //
+                //             (wrap.hasChildNodes() ? wrap.replaceChild : wrap.appendChild).call(wrap, newTable, wrap.children[0]);
+                //         }
+                //
+                //         function generateRow(n) {
+                //             var row = document.createElement("tr"),
+                //                 text = document.createElement("input");
+                //                 text.setAttribute("type", "text");
+                //                 text.setAttribute("value", "0");
+                //
+                //             for (var i = 0; i < n; i++) {
+                //                 row.insertCell().appendChild(text.cloneNode(true));
+                //             }
+                //
+                //             return row.cloneNode(true);
+                //         }
+                //
+                //         function copyTo(e) {
+                //             prompt("Copy to clipboard: Ctrl+C, Enter", wrap.innerHTML);
+                //         }
+                //     }(window, window.document));
                 set_app_dataset_date_pickers("select_dataset_wecs_assessment_location");
             }
             else{
@@ -656,5 +656,254 @@ $(document).ready(function() {
             "url": 'energy-conversion/new_wec/',
             "wec_data": ''
         })
-    })
+    });
+
+
+
+
+
+
+    function get_app_url() {
+
+        if($('.app-selector :selected').val() === "1"){
+            var url = "/wave-energy/energy_conversion/evaluate_location/";
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "3"){
+            var url = "/wave-energy/energy_conversion/wave_forecast/";
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "4"){
+            var url = "/wave-energy/energy_conversion/data_visualisation/";
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "2"){
+
+            var url = "/wave-energy/energy_conversion/evaluate_area/";
+            return url;
+        }
+   }
+
+    function get_parameters(){
+
+        var lat = $("#lat").val();
+        var lng = $("#lon").val();
+
+        var data_radius = $("#data-radius").data('value');
+
+        var lat_to = parseFloat(lat) + parseFloat(data_radius);
+        var lng_to = parseFloat(lng) + parseFloat(data_radius);
+        var lat_from = parseFloat(lat) -  parseFloat(data_radius);
+        var lng_from = parseFloat(lng) -  parseFloat(data_radius);
+
+        var start_date = $( "#startdatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val();
+        var enddate = $( "#enddatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val();
+
+
+        if($('.app-selector :selected').val() === "1"){
+
+            var dataset_id = $("#select_dataset_wecs_assessment_location :selected").val();
+            var selected_converters = [];
+            $("#converters-selector :selected").each(function () {
+                selected_converters.push($(this).val());
+            });
+            var converters_str = "";
+            for(var i = 0; i < selected_converters.length; i++){
+                converters_str +="&converters[]="+selected_converters[i];
+            }
+
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
+                "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
+                "&longitude_from="+lng_from+"&longitude_to="+lng_to+""+converters_str;
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "3"){
+
+            var dataset_id = $("#select_dataset_wave_forecast :selected").val();
+
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
+                "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
+                "&longitude_from="+lng_from+"&longitude_to="+lng_to;
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "4"){
+
+            var dataset_id = $("#select_dataset_data_visualisation :selected").val();
+
+            var selected_variables = [];
+            $("#"+dataset_id+"-variables :selected").each(function () {
+                selected_variables.push($(this).val());
+            });
+            var variables_str = "";
+            for(var i = 0; i < selected_variables.length; i++){
+                variables_str +="&variables[]="+selected_variables[i];
+            }
+
+
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
+                "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+"&longitude_from="+lng_from+
+                "&longitude_to="+lng_to+""+variables_str;
+            return url;
+       }
+        else if($('.app-selector :selected').val() === "2"){
+
+            var lat_from = $("#lat_min").val();
+            var lat_to = $("#lat_max").val();
+            var lng_from = $("#lon_min").val();
+            var lng_to = $("#lon_max").val();
+
+            var dataset_id = $("#select_dataset_wave_resource_assessment_area :selected").val();
+
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
+                "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
+                "&longitude_from="+lng_from+"&longitude_to="+lng_to;
+           return url;
+        }
+
+   }
+
+    var exec_instance = '';
+    var execution_status_interval;
+
+    function execution_status_stop() {
+      clearInterval(execution_status_interval);
+    }
+    $("#run-service-btn").click(function () {
+       // var execution_url = create_execution_url();
+       var app_url = get_app_url();
+       // alert(app_url);
+       var parameters = get_parameters();
+       if (app_url === "/wave-energy/energy_conversion/evaluate_location/"){
+           $("#execution_btn_WEC_LOCATION_EVALUATION_SERVICE").click();
+       }
+       if (app_url === "/wave-energy/energy_conversion/wave_forecast/"){
+           $("#execution_btn_WEC_WAVE_FORECAST_SERVICE").click();
+       }
+       if (app_url === "/wave-energy/energy_conversion/evaluate_area/"){
+           $("#execution_btn_WEC_AREA_EVALUATION_SERVICE").click();
+       }
+       if (app_url === "/wave-energy/energy_conversion/data_visualisation/") {
+            $("#execution_btn_WEC_DATA_VISUALISATION_SERVICE").click();
+       }
+
+       $("#execution_status").val('starting service');
+
+       if (app_url === "/wave-energy/data_visualisation/") {
+            $(location).attr("href", app_url+"execute/"+parameters);
+       }
+       else{
+           console.log(app_url+"execute/"+parameters);
+            $.ajax({
+            "type": "GET",
+            "url": app_url+"execute/"+parameters,
+            "data": {},
+            "success": function(result) {
+                    console.log(result);
+                    exec_instance = result['exec_instance'];
+                },
+                error: function () {
+                    alert('error');
+                }
+            });
+
+            execution_status_interval = setInterval(check_execution_status, 3000);
+
+            function check_execution_status() {
+                $.ajax({
+                    "type": "GET",
+                    "url": app_url+"status/"+exec_instance+"/",
+                    "data": {},
+                    "success": function(result) {
+                        console.log(result["status"]);
+                        $("#execution_status").val(result["status"]);
+                        if(result["status"] === "done"){
+                            setTimeout(function() {
+                                execution_status_stop();
+                                window.location.href = app_url+"results/"+exec_instance+"/";
+                            }, 1000);
+                        }
+                        else if (result["status"] === "failed") {
+                            execution_status_stop();
+                            // alert("execution failed");
+                        }
+                    },
+                    error: function () {
+                        execution_status_stop();
+                        // alert('error');
+                    }
+                });
+            }
+
+       }
+
+   });
+
+
+    window.setInterval(function () {
+        if($(".modal.in").length > 0) {
+            var old_status = $(" .modal.in #modal_status_input").val();
+            var new_status = $("#execution_status").val();
+            if (old_status !== new_status) {
+                console.log(new_status);
+                $(".modal.in #modal_status_input").val(new_status);
+                $(".modal.in #modal_status_div").fadeOut("2000").html(new_status).fadeIn("2000");
+                $(".modal.in .status_counter").each(function (index, elem) {
+                    console.log($(elem).data("status"));
+                    if ($(elem).attr("data-status") === new_status) {
+                        // console.log('found');
+                        var new_step_counter = $(elem).attr("data-counter");
+                        $(".modal.in .status_counter").each(function (i, e) {
+                            if(i <= index){
+                                $(e).removeClass('label-default').addClass('label-primary');
+                            }
+                        });
+
+                        var $total = parseInt($(".modal.in #number_of_steps").val());
+                        var $current = parseInt(new_step_counter);
+                        var $percent = ($current / $total) * 100;
+                        $(".modal.in .progress-bar").css({width: $percent + '%'});
+                    }
+                });
+
+            }
+            if (new_status === "failed"){
+                $(".modal.in .progress-bar").css({width: '100%', background: '#db2828'});
+                $(".modal.in .status_counter").each(function (index, elem) {
+                    $(elem).removeClass('label-default').addClass('label-primary');
+                });
+                $(".modal.in #modal_dismiss_btn_cancel").hide();
+                $(".modal.in #modal_dismiss_btn_close").show();
+            }
+        }
+    }, 1000);
+
+    $('.modal').on('hidden.bs.modal', function () {
+        $(" .modal #modal_status_input").val('');
+        $("#execution_status").val('');
+        $(".modal #modal_dismiss_btn_cancel").show();
+        $(".modal #modal_dismiss_btn_close").hide();
+        $(".modal .status_counter").each(function (index, elem) {
+            $(elem).removeClass('label-default').removeClass('label-primary').addClass('label-default');
+        });
+        $(".modal .progress-bar").css({width: '0%', background: '#337ab7'});
+        $(".modal #modal_status_div").html('');
+    });
+
+
+    $('body').on('click', '#modal_dismiss_btn_cancel', function () {
+        console.log("hit cancel");
+        $("#execution_status").val("failed");
+        $(" .modal.in #modal_status_input").val("cancelling");
+        $.ajax({
+            "type": "GET",
+            "url": "/wave-energy/cancel_execution/"+exec_instance+"/",
+            "data": {},
+            "success": function(result) {
+                console.log('service cancelled');
+            },
+            error: function () {
+                console.log('error cancelling service');
+            },
+        });
+    });
 });
