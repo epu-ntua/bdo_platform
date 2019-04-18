@@ -214,8 +214,23 @@ def clean_up_new_note(notebook_id, wait_time_seconds=0):
 
 
 def wec_creation(request):
-    new_wec = request.GET['wec_data']
+    # import pdb
+    # pdb.set_trace()
+    new_wec = json.loads(request.GET['wec_data'])
     print new_wec
+
+    converter = Wave_Energy_Converters(
+        title=new_wec['title'],
+        image_uri='',
+        min_height=new_wec['min_height'],
+        max_height=new_wec['max_height'],
+        min_energy_period=new_wec['min_energy_period'],
+        max_energy_period=new_wec['max_energy_period'],
+        sample_rows=new_wec['data'],
+        owner_id=request.user
+    )
+    converter.save()
+    return JsonResponse({'id': converter.id})
 
 
 @never_cache
@@ -342,6 +357,7 @@ def wec_single_location_evaluation_results(request, exec_instance):
     location_lon = str(result['location_lon'])
     start_date = str(result['start_date'])
     end_date = str(result['end_date'])
+    converters = [str(name) for name in result['name']]
 
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wec_location_assessment result.html',
@@ -349,7 +365,8 @@ def wec_single_location_evaluation_results(request, exec_instance):
                    'service_title': 'Wave Energy - Assessment of Wave Energy Converters in a Single Location',
                    'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
-                                        {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
+                                        {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
+                                        {'icon': 'fas fa-water', 'text': 'WEC technologies:', 'value': str(converters)}],
                    'no_viz': 'no_viz' in request.GET.keys(),
                    'visualisations': service_exec.dataframe_visualizations})
 

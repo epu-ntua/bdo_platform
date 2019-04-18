@@ -60,9 +60,9 @@ $(document).ready(function() {
         content: "Please select the application for use",
     });
 
-    tour.init();
-
-    tour.start(true);
+    // tour.init();
+    //
+    // tour.start(true);
 
     var wecs_location_assessment_tour = new Tour({
         storage: false,
@@ -78,7 +78,7 @@ $(document).ready(function() {
             // "</div>" +
             "</div>",
     });
-    wecs_location_assessment_tour.init();
+    // wecs_location_assessment_tour.init();
 
     var wec_assessment_area_tour = new Tour({
         storage: false,
@@ -94,7 +94,7 @@ $(document).ready(function() {
             // "</div>" +
             "</div>",
     });
-    wec_assessment_area_tour.init();
+    // wec_assessment_area_tour.init();
 
     var wec_energy_generation_forecast_tour = new Tour({
         storage: false,
@@ -110,7 +110,7 @@ $(document).ready(function() {
             // "</div>" +
             "</div>",
     });
-    wec_energy_generation_forecast_tour.init();
+    // wec_energy_generation_forecast_tour.init();
 
     var matching_analysis_tour = new Tour({
         storage: false,
@@ -126,7 +126,7 @@ $(document).ready(function() {
             // "</div>" +
             "</div>",
     });
-    matching_analysis_tour.init();
+    // matching_analysis_tour.init();
 
     function create_new_area_select(area_select_bounds){
         $(".leaflet-interactive").remove();
@@ -650,13 +650,6 @@ $(document).ready(function() {
         })
     });
 
-    $("#save_converter").click(function () {
-        $.ajax({
-            "type": "GET",
-            "url": 'energy-conversion/new_wec/',
-            "wec_data": ''
-        })
-    });
 
 
 
@@ -906,4 +899,6 @@ $(document).ready(function() {
             },
         });
     });
+
+    $("#add-wec-btn").click();
 });
