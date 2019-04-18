@@ -5,8 +5,9 @@ import collections, json
 from threading import Thread, Timer
 from background_task import background
 from datetime import datetime
-
+from django.db.models import Q
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
@@ -239,10 +240,10 @@ def energy_conversion_init(request):
     execution_steps['WEC_LOCATION_EVALUATION_SERVICE'] = ['starting service', 'Initializing Spark Session'] + \
                                                          [x['status'] for x in settings.WEC_LOCATION_EVALUATION_SERVICE_PARAGRAPHS] + \
                                                          ['done']
-
+    energy_converters = Wave_Energy_Converters.objects.filter(Q(owner_id=User.objects.get(username='BigDataOcean')) | Q(owner_id=request.user))
     return render(request, 'wave_energy_pilot/energy_conversion_service.html',
                   {'datasets_list': DATASETS,
-                   'energy_converters': CONVERTERS,
+                   'energy_converters': energy_converters,
                    'data_radius': DATA_RADIUS,
                    'execution_steps': execution_steps})
 
