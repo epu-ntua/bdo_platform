@@ -17,6 +17,32 @@
 {% block service_output_results %}
     <div id="location_assessment_statistics" class="text-center">
         <div class="col-sm-12" style="text-align: center;">
+            <h3> Forecasted Wave Statistics </h3>
+        </div>
+        <div class="col-sm-12">
+            <div class="col-sm-12">
+                <table class="table" style="margin-bottom: 0;">
+                    <thead style="background-color: #30526a; color: white;">
+                        <tr>
+                            <th class="col-sm-5"></th><th class="col-sm-2">Maximum</th><th class="col-sm-2">Average</th><th class="col-sm-2">Minimum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Wave Significant Height (m)</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.min_height }}</td>
+                        </tr>
+                        <tr>
+                            <td>Wave Mean Period (m)</td><td>{{ result.max_period }}</td><td>{{ result.av_period }}</td><td>{{ result.min_period }}</td>
+                        </tr>
+                        <tr>
+                            <td>Wave Power (W)</td><td>{{ result.max_power_available }}</td><td>{{ result.av_power_available }}</td><td>{{ result.min_power_available }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-sm-12" style="text-align: center;">
             <h3> Forecasted Power Generation </h3>
         </div>
         <div class="col-sm-12">
