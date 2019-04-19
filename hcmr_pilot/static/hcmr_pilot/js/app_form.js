@@ -65,7 +65,7 @@ function create_new_area_select(area_select_bounds){
     if (areaSelect!== undefined) {
         map.removeLayer(areaSelect);
     }
-    $(".leaflet-interactive").remove();
+    $(".leaflet-interactive").not('.leaflet-image-layer').remove();
     areaSelect = L.rectangle(area_select_bounds);
     map.addLayer(areaSelect);
     areaSelect.editing.enable();
@@ -518,7 +518,7 @@ function create_new_oilspill(user_marker, lat_selector, lon_selector, offset, na
     map.locate();
     lat_selector.val((bounds[0] + bounds[2]) / 2);
     lon_selector.val((bounds[1] + bounds[3]) / 2);
-    // map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 8);
+    map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
     check_marker_position(((bounds[0] + bounds[2]) / 2),((bounds[1] + bounds[3]) / 2),user_marker,bounds, lat_selector, lon_selector,point, offset);
     return user_marker
 }
@@ -597,8 +597,8 @@ function check_area_position(area) {
 }
 
 $(document).ready(function() {
-    map_init();
     var scenario = $('.scenario').data('id');
+    map_init([34.6833, 19.1004, 41.3357, 28.6996], scenario);
     $('.ui.dropdown').dropdown();
     $('#time_interval').parent().css('min-width','13rem');
     $('#time_interval').parent().addClass("form-control");
@@ -716,7 +716,7 @@ $(document).ready(function() {
             var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
             var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
             bounds = [swlat,swlon,nelat,nelon];
-            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
+            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 5);
         });
 
         $(".new_point").click(function(){
@@ -1256,18 +1256,50 @@ $(document).ready(function() {
             // }
         });
     });
-    function map_init() {
+    function map_init(image_bounds, scenario) {
         var maplayer = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=';
         var token = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ';
         var attr = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors,' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
         'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
-        map = L.map('map').setView([38.41, 21.97], 4);
-        L.tileLayer(maplayer + token, {
+        // map = L.map('map').setView([38.41, 21.97], 4);
+        // L.tileLayer(maplayer + token, {
+        //     attribution: attr,
+        //     maxZoom: 18,
+        // }).addTo(map);
+        var base_map = L.tileLayer(maplayer + token, {
             attribution: attr,
             maxZoom: 18,
-        }).addTo(map);
-        init = true;
+            layers:[]
+        });
+        if ((scenario===1)||(scenario===3)) {
+            map = L.map('map', {
+                layers: [base_map]
+            }).setView([38.41, 21.97], 5);
+        }else {
+            var ais_layer = L.layerGroup();
+            map = L.map('map', {
+                layers: [base_map, ais_layer]
+            }).setView([38.41, 21.97], 5);
+            var ais_bounds = new L.LatLngBounds(
+                new L.LatLng(image_bounds[0], image_bounds[1]),
+                new L.LatLng(image_bounds[2], image_bounds[3]));
+            var overlay = new L.ImageOverlay('/static/visualizer/img/ais_density_maps/ais_data_photo.png', ais_bounds, {
+                opacity: 0.5,
+                interactive: true,
+            });
+            overlay.addTo(ais_layer);
+            var overlays = {
+                'AIS Density Map': ais_layer
+            };
+            var baseLayers = {
+                "Map": base_map
+            };
+            init = true;
+            L.control.layers(baseLayers, overlays).addTo(map);
+            $('.leaflet-control').css('position', 'relative');
+            $('.leaflet-control').css('right', '330px');
+        }
     }
 
     function delete_point(point_number){
