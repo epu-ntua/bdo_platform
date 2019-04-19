@@ -394,8 +394,6 @@ $(document).ready(function() {
 
             }
             if($('.app-selector :selected').val() === "2"){
-
-
                 mode = "area";
                 $("#map").css("cursor", "grab");
                 $('.spatial-selection').show();
@@ -413,19 +411,6 @@ $(document).ready(function() {
                     $('#lat_max').val(bounds[2]);
                     $('#lon_min').val(bounds[1]);
                     $('#lon_max').val(bounds[3]);
-
-                    //  $(".item").each(function() {
-                    //     if($(this).hasClass("disabled")) {
-                    //         $(this).removeClass("disabled");
-                    //     }
-                    // });
-
-                        //  $('#select_dataset_wave_resource_assessment_area  option').each(function () {
-                        //     if($(this).data("maxlat") < bounds[2] || $(this).data("minlat") >bounds[0] || $(this).data("minlng") > bounds[1] || $(this).data("maxlng") < bounds[3]){
-                        //         var dropdown_id = $(this).val();
-                        //         $(`.item[data-value="${dropdown_id}"]`).addClass("disabled");
-                        //     }
-                        // });
                 });
 
                 $('.leaflet-edit-resize').mouseup(function(){
@@ -439,19 +424,6 @@ $(document).ready(function() {
                     $('#lat_max').val(bounds[2]);
                     $('#lon_min').val(bounds[1]);
                     $('#lon_max').val(bounds[3]);
-
-                    // $(".item").each(function() {
-                    //     if($(this).hasClass("disabled")) {
-                    //         $(this).removeClass("disabled");
-                    //     }
-                    // });
-
-                        //  $('#select_dataset_wave_resource_assessment_area  option').each(function () {
-                        //     if($(this).data("maxlat") < bounds[2] || $(this).data("minlat") >bounds[0] || $(this).data("minlng") > bounds[1] || $(this).data("maxlng") < bounds[3]){
-                        //         var dropdown_id = $(this).val();
-                        //         $(`.item[data-value="${dropdown_id}"]`).addClass("disabled");
-                        //     }
-                        // });
                 });
                 wec_assessment_area_tour.start(true);
                 wec_assessment_area_tour.addSteps([
@@ -621,15 +593,15 @@ $(document).ready(function() {
             var url = "/wave-energy/energy_conversion/evaluate_location/";
             return url;
         }
-        else if($('.app-selector :selected').val() === "3"){
+        else if($('.app-selector :selected').val() === "2"){
+            var url = "/wave-energy/energy_conversion/evaluate_area/";
+            return url;
+        }
+        else if($('.app-selector :selected').val() === "3") {
             var url = "/wave-energy/energy_conversion/generation_forecast/";
             return url;
         }
-        else if($('.app-selector :selected').val() === "3"){
-            var url = "/wave-energy/energy_conversion/data_visualisation/";
-            return url;
-        }
-        else if($('.app-selector :selected').val() === "2"){
+        else if($('.app-selector :selected').val() === "4"){
 
             var url = "/wave-energy/energy_conversion/evaluate_area/";
             return url;
@@ -704,9 +676,11 @@ $(document).ready(function() {
 
             var dataset_id = $("#select_dataset_wave_resource_assessment_area :selected").val();
 
+            var selected_converter = $('input[name=wec]:checked').val();
+
             var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
-                "&longitude_from="+lng_from+"&longitude_to="+lng_to;
+                "&longitude_from="+lng_from+"&longitude_to="+lng_to+"&converters[]="+selected_converter;
            return url;
         }
 
