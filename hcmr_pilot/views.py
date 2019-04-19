@@ -267,14 +267,14 @@ def process(request, exec_instance):
             output_path = 'service_builder/static/services_files/hcmr_service_1/' + filename_output
             spill_data, parcel_data = create_json_from_out_file(output_path)
             # spill_data = [spill_infos[0]['start_date']+':00', spill_infos[0]['latitude'], spill_infos[0]['longitude'], spill_data[0][3], spill_data[0][4], spill_data[0][3], spill_infos[0]['oil_volume'],spill_data[0][5], spill_data[0][6]]
-            print str(spill_infos[0]['latitude'])+ ' ' + spill_infos[0]['longitude']
-            print str(valid_points[0][0]) + ' ' + str(valid_points[0][1])
-            for el in valid_points:
-                parcel_data.insert(0,[spill_infos[0]['start_date'].encode('ascii') + ':00', float(el[0]),float(el[1]),
-                              parcel_data[0][3], parcel_data[0][4], float(spill_infos[0]['oil_volume']),
-                              parcel_data[0][6], parcel_data[0][7]])
-            spill_data.insert(0,
-                               [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
+            # print str(spill_infos[0]['latitude']) + ' ' + spill_infos[0]['longitude']
+            # print str(valid_points[0][0]) + ' ' + str(valid_points[0][1])
+            # for el in valid_points:
+            #     parcel_data.insert(0,[spill_infos[0]['start_date'].encode('ascii') + ':00', float(el[0]),float(el[1]),
+            #                   parcel_data[0][3], parcel_data[0][4], float(spill_infos[0]['oil_volume']),
+            #                   parcel_data[0][6], parcel_data[0][7]])
+            # spill_data.insert(0,
+            #                    [spill_infos[0]['start_date'].encode('ascii') + ':00', spill_data[0][1], spill_data[0][2], spill_data[0][3], spill_data[0][4], spill_data[0][5], spill_data[0][6], spill_data[0][7], spill_data[0][8], spill_data[0][9], spill_data[0][10]])
 
             print 'create_json_from_out_file done'
             headers_parcel = ["time", "Lat", "Lon", "Dpth", "Status", "Volume(m3)", "Dens", "Visc"]
@@ -302,8 +302,15 @@ def process(request, exec_instance):
 
             print 'red points calculated'
             # 5)Create Visualization
+
+            print valid_points
+            oil_spill_start = ''
+            v_count = 1
+            for el in valid_points:
+                oil_spill_start = oil_spill_start + 'start_lat'+str(v_count)+'='+ str(el[0]) + '&start_lon'+str(v_count)+'='+ str(el[1])+'&'
+                v_count = v_count +1
             visualization_url = "http://" + request.META[
-                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer + "&time_interval=" + time_interval
+                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?"+oil_spill_start+"markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer + "&time_interval=" + time_interval + "&valid_points="+ str(len(valid_points))
 
             service_exec.dataframe_visualizations = {"v1": visualization_url}
             service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output

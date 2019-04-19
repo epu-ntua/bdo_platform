@@ -3397,7 +3397,7 @@ def map_markers_in_time_hcmr(request):
     m = create_map()
     # comment out map_routes until you find a way to cleanup the route-data
     # m = map_routes(m)
-    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer, time_interval = hcmr_service_parameters(request)
+    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer, time_interval, start_lat_lon_list = hcmr_service_parameters(request)
     if query_pk != 0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
         q = Query(document=q.document)
@@ -3549,7 +3549,7 @@ def map_markers_in_time_hcmr(request):
             m, shapely_polygons = map_oil_spill_hcmr(m)
 
     features = convert_unicode_json(features)
-    # folium.LayerControl().add_to(m)
+
 
     # FOR SCREENSHOTS EVERY 6 or 4 hours
     print 'time interval ' + str(time_interval)
@@ -3560,7 +3560,24 @@ def map_markers_in_time_hcmr(request):
     else:
         ignore_every = 1
 
+    marker_group_layer = folium.map.FeatureGroup(
+        name='Oilspill Start',
+        overlay=True,
+        control=True).add_to(m)
+    v_count = 1
+    for el in start_lat_lon_list:
+        folium.CircleMarker(
+            location=[el[0], el[1]],
+            radius=6,
+            popup="Oilspill Start " + str(v_count) + "<br>Latitude: " + str(
+                el[0]) + "<br>Longitude: " + str(el[1]),
+            color='purple',
+            fill=True,
+            fill_color='crimson'
+        ).add_to(marker_group_layer)
 
+        v_count = v_count + 1
+    folium.LayerControl().add_to(m)
     m.save('templates/map.html')
     f = open('templates/map.html', 'r')
     map_html = f.read()
@@ -3596,7 +3613,10 @@ def hcmr_service_parameters(request):
     natura_layer = str(request.GET.get('natura_layer', 'false'))
     ais_layer = str(request.GET.get('ais_layer', 'false'))
     time_interval = str(request.GET.get('time_interval',2))
-    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer,time_interval
+    start_lat_lon_list = []
+    for c in range(1,(int(request.GET.get('valid_points', 1000))+1)):
+        start_lat_lon_list.append([float(request.GET.get('start_lat'+str(c), 0)),float(request.GET.get('start_lon'+str(c), 0))])
+    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer,time_interval, start_lat_lon_list
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
