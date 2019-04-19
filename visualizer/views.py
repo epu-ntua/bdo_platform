@@ -3367,29 +3367,56 @@ def map_routes(m):
     return m
 
 
-def add_oil_spill_ais_layer(m):
+def add_oil_spill_ais_layer(m, start_date, latitude, longitude):
     pol_group_layer = folium.map.FeatureGroup(name='AIS data layer : ' + str(time.time()).replace(".", "_"),
                                               overlay=True,
                                               control=True).add_to(m)
 
-    q = AbstractQuery(document={"from": [{"name": "platform_type_name_0", "type": 1824, "select": [
-        {"name": "platform_type_name_0", "type": "VALUE", "title": "platform_type_name_0", "exclude": False, "groupBy": False, "datatype": "STRING",
-         "aggregate": ""},
-        {"name": "i0_time", "type": 5615, "title": "time", "exclude": "", "groupBy": False, "datatype": "TIMESTAMP", "aggregate": ""},
-        {"name": "i0_latitude", "type": 5614, "title": "latitude", "exclude": "", "groupBy": False, "datatype": "FLOAT", "aggregate": ""},
-        {"name": "i0_longitude", "type": 5613, "title": "longitude", "exclude": "", "groupBy": False, "datatype": "FLOAT", "aggregate": ""},
-        {"name": "i0_platform_id", "type": 5612, "title": "platform_id", "exclude": "", "groupBy": False, "datatype": "FLOAT", "aggregate": ""}]}],
-                                "limit": 100, "offset": 0, "filters": {"a": {"a": "<5614,5613>", "b": "<<36,23>,<38,26>>", "op": "inside_rect"},
-                                                                      "b": {"a": {"a": "i0_time", "b": "'2011-03-12 13:00'", "op": "lte_time"},
-                                                                            "b": {"a": "i0_time", "b": "'2011-03-01 12:00'", "op": "gte_time"},
-                                                                            "op": "AND"}, "op": "AND"}, "distinct": False, "orderings": []})
+    marker_group_layer = folium.map.FeatureGroup(name='Platform marker : ' + str(time.time()).replace(".", "_"),
+                                              overlay=True,
+                                              control=True).add_to(m)
+    presto_cur = get_presto_cursor()
 
-    data = q.execute()[0]['results']
+    min_lat = float(latitude) - 1
+    max_lat = float(latitude) + 1
+    min_lon = float(longitude) - 1
+    max_lon = float(longitude) + 1
 
+    # todo handle the start_date of the simulation
+    query = """
+        SELECT latitude, longitude, platform_id FROM XMILE_AIS 
+        WHERE LATITUDE>=%s AND LATITUDE<=%s 
+        AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '2011-03-01 16:00' 
+        AND TIME >= TIMESTAMP '2011-03-01 12:00' and platform_id in (
+            SELECT platform_id FROM XMILE_AIS
+            WHERE LATITUDE>=%s AND LATITUDE<=%s
+            AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '2011-03-01 16:00' 
+            AND TIME >= TIMESTAMP '2011-03-01 12:00' 
+            group by platform_id  having count(*)> 5 )
+        ORDER BY PLATFORM_ID, TIME"""
+
+    presto_cur.execute(query % (min_lat, max_lat, min_lon, max_lon, min_lat, max_lat, min_lon, max_lon))
+    data = presto_cur.fetchall()
+
+    platform_points = {}
+    points = []
+    previous_platform = data[0][2]
     for d in data:
-        folium.Marker(
-            location=[d[2], d[3]],
-            icon=folium.Icon()).add_to(pol_group_layer)
+        if previous_platform != d[2]:
+            platform_points[previous_platform] = points
+            previous_platform = d[2]
+            points = []
+
+        points.append((d[0], d[1]))
+    platform_points[previous_platform] = points
+    icon_url = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png'
+
+    for key in platform_points:
+        folium.PolyLine(platform_points[key], color="red", weight=2.5, opacity=1).add_to(pol_group_layer)
+        icon = folium.features.CustomIcon(icon_url, icon_size=(15, 20)) #follium bug see https://github.com/python-visualization/folium/issues/744
+        folium.Marker(location=[platform_points[key][0][0], platform_points[key][0][1]],
+            popup=str(key), icon=icon).add_to(marker_group_layer)
+
     return m
 
 
@@ -3397,7 +3424,9 @@ def map_markers_in_time_hcmr(request):
     m = create_map()
     # comment out map_routes until you find a way to cleanup the route-data
     # m = map_routes(m)
-    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer, time_interval = hcmr_service_parameters(request)
+    FMT, df, duration, lat_col, lon_col, markerType, marker_limit, \
+    notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, \
+    ais_layer, time_interval, start_date, latitude, longitude= hcmr_service_parameters(request)
     if query_pk != 0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
         q = Query(document=q.document)
@@ -3543,7 +3572,7 @@ def map_markers_in_time_hcmr(request):
 
     if has_data:
         if ais_layer == "true":
-            m = add_oil_spill_ais_layer(m)
+            m = add_oil_spill_ais_layer(m, start_date, latitude, longitude)
 
         if natura_layer == "true":
             m, shapely_polygons = map_oil_spill_hcmr(m)
@@ -3596,7 +3625,11 @@ def hcmr_service_parameters(request):
     natura_layer = str(request.GET.get('natura_layer', 'false'))
     ais_layer = str(request.GET.get('ais_layer', 'false'))
     time_interval = str(request.GET.get('time_interval',2))
-    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, ais_layer,time_interval
+    start_date = str(request.GET.get('start_date', ''))
+    latitude = str(request.GET.get('latitude', ''))
+    longitude = str(request.GET.get('longitude', ''))
+    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, \
+           query_pk, data_file, rp_file, natura_layer, ais_layer,time_interval, start_date, latitude, longitude
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
