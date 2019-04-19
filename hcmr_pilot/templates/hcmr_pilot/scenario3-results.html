@@ -242,6 +242,7 @@
 
 
         function create_pdf_report() {
+            var service_title = $('#service_title').text();
             var docDefinition = {
                 content: []
             };
@@ -264,7 +265,7 @@
                 fontSize: 20
             });
             docDefinition.content.push({
-                text: "Oil Spill Dispersion in the Marine Environment",
+                text: service_title,
                 bold: true,
                 alignment: 'center',
                 fontSize: 20

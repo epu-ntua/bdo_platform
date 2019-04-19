@@ -16,7 +16,8 @@ from query_designer.models import AbstractQuery
 import prestodb
 import psycopg2
 import requests
-
+import time
+from datetime import datetime
 
 def init(request):
     form = HCMRForm()
@@ -52,9 +53,7 @@ def scenario1_results(request, exec_instance):
     oil_volume = service_exec.arguments['algorithm-arguments'][0]['oil_volume']
     wave_forecast_dataset = service_exec.arguments['algorithm-arguments'][0]['wave_model']
     hydrodynamic_model = service_exec.arguments['algorithm-arguments'][0]['ocean_model']
-    import time
-    from datetime import datetime
-
+    sim_length = service_exec.arguments['algorithm-arguments'][0]['sim_length']
     spill_data = service_exec.arguments['algorithm-arguments'][1]['spill_data']
     headers_spill = service_exec.arguments['algorithm-arguments'][1]['headers_spill']
     legend_data = [{"timestamp": long(time.mktime(datetime.strptime(d[0], "%Y-%m-%d %H:%M:%S").timetuple()) * 1000),
@@ -66,13 +65,14 @@ def scenario1_results(request, exec_instance):
         'out_filepath': filename_output,
         'legend_data': legend_data,
         'result': [],
-        'service_title': 'Oil Spill Dispersion in the Marine Environment',
+        'service_title': 'Oil Spill Dispersion Forecast Acquisition',
         'back_url': '/oilspill/?scenario=1',
         'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '(' + str(round(location_lat, 3)) + ', ' + str(round(location_lon,3)) + ')'},
-                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': str(start_date)},
-                             {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
-                             {'icon': 'fas fa-database', 'text': 'Wave Forecast Dataset:', 'value': str(wave_forecast_dataset)},
-                             {'icon': 'fas fa-box', 'text': 'Hydrodynamic Model:', 'value': str(hydrodynamic_model)}],
+                             {'icon': 'far fa-calendar-alt', 'text': 'Date and Time:', 'value': str(start_date)},
+                             # {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
+                             {'icon': 'far fa-clock', 'text': 'Simulation Length', 'value': str(sim_length) + ' hours'},
+                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(wave_forecast_dataset)},
+                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(hydrodynamic_model)}],
     }
     return render(request, 'hcmr_pilot/scenario1-results.html', context)
 
@@ -83,17 +83,13 @@ def scenario2_results(request, exec_instance):
     filename_output = service_exec.arguments['algorithm-arguments'][0]['out_filepath']
     list_of_points = []
     alg_arguments = service_exec.arguments['algorithm-arguments'][0]
-    # import pdb
-    # pdb.set_trace()
     for i in range(1, alg_arguments['number_of_points']+1):
         list_of_points.append((round(float(alg_arguments['latitude' + str(i)]), 3), (round(float(alg_arguments['longitude' + str(i)]), 3))))
     start_date = service_exec.arguments['algorithm-arguments'][0]['start_date']
     oil_volume = service_exec.arguments['algorithm-arguments'][0]['oil_volume']
     wave_forecast_dataset = service_exec.arguments['algorithm-arguments'][0]['wave_model']
     hydrodynamic_model = service_exec.arguments['algorithm-arguments'][0]['ocean_model']
-    import time
-    from datetime import datetime
-
+    sim_length = service_exec.arguments['algorithm-arguments'][0]['sim_length']
     spill_data = service_exec.arguments['algorithm-arguments'][1]['spill_data']
     headers_spill = service_exec.arguments['algorithm-arguments'][1]['headers_spill']
     legend_data = [{"timestamp": long(time.mktime(datetime.strptime(d[0], "%Y-%m-%d %H:%M:%S").timetuple()) * 1000),
@@ -105,15 +101,15 @@ def scenario2_results(request, exec_instance):
         'out_filepath': filename_output,
         'legend_data': legend_data,
         'result': [],
-        'service_title': 'Oil Spill Dispersion in the Marine Environment',
+        'service_title': 'High Risk Pollution Areas',
         'back_url': '/oilspill/?scenario=2',
         'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):',
                               'value': str(list_of_points)},
-                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': str(start_date)},
-                             {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
-                             {'icon': 'fas fa-database', 'text': 'Wave Forecast Dataset:',
-                              'value': str(wave_forecast_dataset)},
-                             {'icon': 'fas fa-box', 'text': 'Hydrodynamic Model:', 'value': str(hydrodynamic_model)}],
+                             {'icon': 'far fa-calendar-alt', 'text': 'Date and Time:', 'value': str(start_date)},
+                             # {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
+                             {'icon': 'far fa-clock', 'text': 'Simulation Length', 'value': str(sim_length) + ' hours'},
+                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(wave_forecast_dataset)},
+                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(hydrodynamic_model)}],
     }
     return render(request, 'hcmr_pilot/scenario1-results.html', context)
 
@@ -129,19 +125,13 @@ def scenario3_results(request, exec_instance):
     oil_volume = service_exec.arguments['algorithm-arguments'][0]['oil_volume']
     wave_forecast_dataset = service_exec.arguments['algorithm-arguments'][0]['wave_model']
     hydrodynamic_model = service_exec.arguments['algorithm-arguments'][0]['ocean_model']
-    import time
-    from datetime import datetime
-
+    sim_length = service_exec.arguments['algorithm-arguments'][0]['sim_length']
     spill_data = service_exec.arguments['algorithm-arguments'][1]['spill_data']
     headers_spill = service_exec.arguments['algorithm-arguments'][1]['headers_spill']
     legend_data = [{"timestamp": long(time.mktime(datetime.strptime(d[0], "%Y-%m-%d %H:%M:%S").timetuple()) * 1000),
                     "time": d[0], "init_vol": oil_volume, "evap_vol": d[2], "emul_vol": d[4],
                     "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
-
     output_json = filename_output.replace('_F.out', '.json')
-    # rp_file = filename_output.replace('_F.out', '.txt')
-    # red_points = get_red_points(rp_file)
-
     depth_data = extract_depth_data(str(output_json))
     context = {
         'depth_data': depth_data,
@@ -149,15 +139,15 @@ def scenario3_results(request, exec_instance):
         'out_filepath': filename_output,
         'legend_data': legend_data,
         'result': [],
-        'service_title': 'Oil Spill Dispersion in the Marine Environment',
+        'service_title': 'Underwater Accident',
         'back_url': '/oilspill/?scenario=3',
         'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude, depth):',
                               'value': '(' + str(round(location_lat, 3)) + ', ' + str(round(location_lon, 3)) + ', ' + str(round(location_dep, 3))+')'},
-                             {'icon': 'far fa-calendar-alt', 'text': 'Time:', 'value': str(start_date)},
-                             {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
-                             {'icon': 'fas fa-database', 'text': 'Wave Forecast Dataset:',
-                              'value': str(wave_forecast_dataset)},
-                             {'icon': 'fas fa-box', 'text': 'Hydrodynamic Model:', 'value': str(hydrodynamic_model)}],
+                             {'icon': 'far fa-calendar-alt', 'text': 'Date and Time:', 'value': str(start_date)},
+                             # {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
+                             {'icon': 'far fa-clock', 'text': 'Simulation Length', 'value': str(sim_length) + ' hours'},
+                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(wave_forecast_dataset)},
+                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(hydrodynamic_model)}],
     }
     return render(request, 'hcmr_pilot/scenario3-results.html', context)
 
@@ -226,6 +216,7 @@ def process(request, exec_instance):
 
         service_exec.arguments["algorithm-arguments"][0]["start_date"] = spill_infos[0]['start_date']
         service_exec.arguments["algorithm-arguments"][0]["oil_volume"] = spill_infos[0]['oil_volume']
+        service_exec.arguments["algorithm-arguments"][0]["sim_length"] = str(sim_length)
         if wave_model == '202':
             service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Aegean'
         elif wave_model == '201':

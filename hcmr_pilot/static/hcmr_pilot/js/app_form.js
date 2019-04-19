@@ -172,7 +172,7 @@ function tour_guide_senario_1(scenario){
     first_scenario_tour.addStep({
         element: ".lat-container",
         placement: "left",
-        title: "Click on the map",
+        title: "Starting point",
         // duration: 3500,
         content: "Click on the map to select the point of an oil spill incident or add manually position latitude and longitude.",
     });
@@ -188,20 +188,26 @@ function tour_guide_senario_1(scenario){
     first_scenario_tour.addStep({
         element: ".vis-startdate-container",
         placement: "left",
-        title: "Datetime Selection",
-        content: "Set the oil spill starting date and time. For historical simulations, you can choose date and time up to one year back.",
+        title: "Date and time",
+        content: "Set the oil spill starting date and time (UTC). For historical simulations, you can choose date and time up to one year back.",
     });
     first_scenario_tour.addStep({
         element: ".oil-volume-container",
         placement: "left",
-        title: "Oil volume input",
+        title: "Oil volume",
+        content: "Set the volume of the oil spilled in the sea.",
+    });
+    first_scenario_tour.addStep({
+        element: ".oil-density-container",
+        placement: "left",
+        title: "Oil volume",
         content: "Set the volume of the oil spilled in the sea.",
     });
 
     first_scenario_tour.addStep({
         element: ".vis-duration-container",
         placement: "left",
-        title: "Simulation duration",
+        title: "Evacuation time",
         content: "Set the duration of the oil volume release in the sea.",
     });
 
@@ -214,29 +220,23 @@ function tour_guide_senario_1(scenario){
     first_scenario_tour.addStep({
         element: ".time-interval-container",
         placement: "left",
-        title: "Time interval",
+        title: "Output time interval",
         content: "Set the time step of the output results.",
     });
 
     first_scenario_tour.addStep({
-        element: "#sel2",
+        element: "label[for='sel2']",
         placement: "left",
-        title: "Ocean Circulation Model",
-        duration: 3500,
-        content: "Choose ocean circulation model. The forecasting product will be used as the hydrodynamic input for the oil spill simulation.",
+        title: "Available Datasets",
+        // duration: 3500,
+        content: "Choose ocean circulation and wave model. The forecasting products will be used as an input for the oil spill simulation.",
     });
-    first_scenario_tour.addStep({
-        element: "#sel1",
-        placement: "left",
-        title: "Wave Model",
-        duration: 3500,
-        content: "Choose the wave model. The forecasting product will be used as wave input for the oil spill simulation.",
-    });
+
     first_scenario_tour.addStep({
         element: ".checkbox",
         placement: "left",
         title: "Additional layers",
-        duration: 3500,
+        // duration: 3500,
         content: "(Optional) Select additional layers to be added to the output of the simulation.",
     });
 
@@ -244,7 +244,7 @@ function tour_guide_senario_1(scenario){
         element: ".service-buttons",
         placement: "left",
         title: "Execution",
-        duration: 3500,
+        // duration: 3500,
         content: "All set. Ready to run the service!",
     });
 
@@ -316,6 +316,7 @@ function check_sim_len_options(){
 }
 
 function interactive_form(onLocationfound, user_marker){
+    $('#sel1').parent().find('div[data-value="203"]').addClass('disabled');
     var allow_form_submit = [true, true, true, true, true, true,true];
     check_sim_len_options();
     $('#lat').on('input',function () {
@@ -373,13 +374,25 @@ function interactive_form(onLocationfound, user_marker){
         }
     });
     $('#sel2').on('change',function () {
+        $('#sel1').parent().find('div').removeClass('disabled');
         if ($('#sel2').val()==='003'){
             $('#sel1').parent().dropdown('set selected','203');
+            $('#sel1').parent().find('div[data-value="202"]').addClass('disabled');
+            $('#sel1').parent().find('div[data-value="201"]').addClass('disabled');
+        }else if($('#sel2').val()==='001'){
+            $('#sel1').parent().dropdown('set selected','202');
+            $('#sel1').parent().find('div[data-value="203"]').addClass('disabled');
+        }else if($('#sel2').val()==='002'){
+            $('#sel1').parent().dropdown('set selected','201');
+            $('#sel1').parent().find('div[data-value="203"]').addClass('disabled');
         }
     });
     $('#sel1').on('change',function () {
+        // $('#sel2').parent().find('div').removeClass('disabled');
         if ($('#sel1').val()==='203'){
             $('#sel2').parent().dropdown('set selected','003');
+            // $('#sel2').parent().find('div[data-value="001"]').addClass('disabled');
+            // $('#sel2').parent().find('div[data-value="002"]').addClass('disabled');
         }
     });
     //  $('#depth').on('input',function () {

@@ -177,6 +177,7 @@
 
 
         function create_pdf_report(){
+            var service_title = $('#service_title').text();
             var docDefinition = {
                 content: []
             };
@@ -194,7 +195,7 @@
             );
             docDefinition.content.push(" ");
             docDefinition.content.push({text: "Exploiting Oceans of Data for Maritime Apps", bold: true, alignment: 'center', fontSize: 20});
-            docDefinition.content.push({text: "Oil Spill Dispersion in the Marine Environment", bold: true, alignment: 'center', fontSize: 20});
+            docDefinition.content.push({text: service_title , bold: true, alignment: 'center', fontSize: 20});
             docDefinition.content.push(" ");
 
             docDefinition.content.push({text: "Study Conditions", bold: true});
