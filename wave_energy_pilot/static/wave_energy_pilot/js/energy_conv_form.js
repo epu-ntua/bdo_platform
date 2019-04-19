@@ -181,7 +181,9 @@ $(document).ready(function() {
                 });
                 $('#enddatepicker').datetimepicker("update", enddate);
             }
-       })
+       });
+        if($('.app-selector :selected').val() === "3")
+            set_forecast_timeframe();
    }
 
     $(function () {
@@ -377,51 +379,6 @@ $(document).ready(function() {
 
                     }
                 });
-                // (function (window, document, undefined) {
-                //         "use strict";
-                //
-                //         var wrap = document.getElementById("wrap"),
-                //             setColumn = document.getElementById("column"),
-                //             setRow = document.getElementById("row"),
-                //             btnGen = document.getElementById("btnGen"),
-                //             btnCopy = document.getElementById("btnCopy");
-                //
-                //         btnGen.addEventListener("click", generateTable);
-                //         btnCopy.addEventListener("click", copyTo);
-                //
-                //         function generateTable(e) {
-                //             var newTable = document.createElement("table"),
-                //                 tBody = newTable.createTBody(),
-                //                 nOfColumns = parseInt(setColumn.value, 10),
-                //                 nOfRows = parseInt(setRow.value, 10),
-                //                 row = generateRow(nOfColumns);
-                //
-                //             newTable.createCaption().appendChild(document.createTextNode("Generated Table"));
-                //
-                //             for (var i = 0; i < nOfRows; i++) {
-                //                 tBody.appendChild(row.cloneNode(true));
-                //             }
-                //
-                //             (wrap.hasChildNodes() ? wrap.replaceChild : wrap.appendChild).call(wrap, newTable, wrap.children[0]);
-                //         }
-                //
-                //         function generateRow(n) {
-                //             var row = document.createElement("tr"),
-                //                 text = document.createElement("input");
-                //                 text.setAttribute("type", "text");
-                //                 text.setAttribute("value", "0");
-                //
-                //             for (var i = 0; i < n; i++) {
-                //                 row.insertCell().appendChild(text.cloneNode(true));
-                //             }
-                //
-                //             return row.cloneNode(true);
-                //         }
-                //
-                //         function copyTo(e) {
-                //             prompt("Copy to clipboard: Ctrl+C, Enter", wrap.innerHTML);
-                //         }
-                //     }(window, window.document));
                 set_app_dataset_date_pickers("select_dataset_wecs_assessment_location");
             }
             else{
@@ -529,6 +486,7 @@ $(document).ready(function() {
 
                 $('.single-spatial-selection').show();
                 $(".run-service-button-container").show();
+                $('.coverage-date-filters').show();
                 $('.radio-container').show();
                 map.on('click', function(e){
                     if (mode == "location") {
@@ -570,6 +528,7 @@ $(document).ready(function() {
                 ]);
                 wec_energy_generation_forecast_tour.start(true);
                 // wec_energy_generation_forecast_tour.next();
+                set_app_dataset_date_pickers("select_dataset_wecs_generation_forecast");
             }
             else{
                 // $('#startdatepicker input').val('');
@@ -663,10 +622,10 @@ $(document).ready(function() {
             return url;
         }
         else if($('.app-selector :selected').val() === "3"){
-            var url = "/wave-energy/energy_conversion/wave_forecast/";
+            var url = "/wave-energy/energy_conversion/generation_forecast/";
             return url;
         }
-        else if($('.app-selector :selected').val() === "4"){
+        else if($('.app-selector :selected').val() === "3"){
             var url = "/wave-energy/energy_conversion/data_visualisation/";
             return url;
         }
@@ -711,12 +670,10 @@ $(document).ready(function() {
             return url;
         }
         else if($('.app-selector :selected').val() === "3"){
-
-            var dataset_id = $("#select_dataset_wave_forecast :selected").val();
-
-            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
+            var selected_converter = $('input[name=wec]:checked').val();
+            var url = "?start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
-                "&longitude_from="+lng_from+"&longitude_to="+lng_to;
+                "&longitude_from="+lng_from+"&longitude_to="+lng_to+"&converters[]="+selected_converter;
             return url;
         }
         else if($('.app-selector :selected').val() === "4"){
@@ -769,8 +726,8 @@ $(document).ready(function() {
        if (app_url === "/wave-energy/energy_conversion/evaluate_location/"){
            $("#execution_btn_WEC_LOCATION_EVALUATION_SERVICE").click();
        }
-       if (app_url === "/wave-energy/energy_conversion/wave_forecast/"){
-           $("#execution_btn_WEC_WAVE_FORECAST_SERVICE").click();
+       if (app_url === "/wave-energy/energy_conversion/generation_forecast/"){
+           $("#execution_btn_WEC_GENERATION_FORECAST_SERVICE").click();
        }
        if (app_url === "/wave-energy/energy_conversion/evaluate_area/"){
            $("#execution_btn_WEC_AREA_EVALUATION_SERVICE").click();

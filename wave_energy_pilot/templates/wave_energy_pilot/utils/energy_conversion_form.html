@@ -175,13 +175,11 @@
 
 <div class="radio-container" hidden>
     <h4>Wave Energy Converter</h4>
-    <div class="radio">
-        <label><input type="radio" name="wec">Pelamis</label>
-    </div>
-    <div class="radio">
-        <label><input type="radio" name="wec">Wave Dragon</label>
-    </div>
-    <hr>
+    {% for converter in energy_converters %}
+        <div class="radio">
+            <label><input {% if forloop.counter == 1 %} checked {% endif %} type="radio" name="wec" value="{{ converter.id }}" data-id="{{ converter.id }}" data-title="{{ converter.title }}" >{{ converter.title }}</label>
+        </div>
+    {% endfor %}
 </div>
 
 <div class="run-service-button-container" hidden>
