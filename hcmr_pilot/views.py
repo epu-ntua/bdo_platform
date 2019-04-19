@@ -86,7 +86,7 @@ def scenario2_results(request, exec_instance):
     for i in range(1, alg_arguments['number_of_points']+1):
         list_of_points.append((round(float(alg_arguments['latitude' + str(i)]), 3), (round(float(alg_arguments['longitude' + str(i)]), 3))))
     start_date = service_exec.arguments['algorithm-arguments'][0]['start_date']
-    oil_volume = service_exec.arguments['algorithm-arguments'][0]['oil_volume']
+    oil_volume = str(int(alg_arguments['number_of_points'])*int(service_exec.arguments['algorithm-arguments'][0]['oil_volume']))
     wave_forecast_dataset = service_exec.arguments['algorithm-arguments'][0]['wave_model']
     hydrodynamic_model = service_exec.arguments['algorithm-arguments'][0]['ocean_model']
     sim_length = service_exec.arguments['algorithm-arguments'][0]['sim_length']
@@ -459,6 +459,7 @@ def parse_request_params(request):
         print(spill_infos)
     # if scenario == '3':
         # spill_infos[0]['depth'] = request.GET.get('depth')
+
     wave_model = request.GET.get('wave_model')
     ocean_model = request.GET.get('hd_model')
     natura_layer = request.GET.get('natura_layer')
