@@ -23,7 +23,7 @@ urlpatterns = [
     url(r'^energy_conversion/evaluate_location/execute/$', views.wec_single_location_evaluation_execute, name='wec_single_location_evaluation_execute'),
     url(r'^energy_conversion/evaluate_location/results/(?P<exec_instance>[0-9]+)/$', views.wec_single_location_evaluation_results, name='wec_single_location_evaluation_results'),
     url(r'^energy_conversion/evaluate_location/status/(?P<exec_instance>[0-9]+)/$', views.energy_conversion_status, name='energy_conversion_status'),
-    # SC2_TC4 - WAVE POWER GENERATION FORECAST
+    # SC2_TC3 - WAVE POWER GENERATION FORECAST
     url(r'^energy_conversion/generation_forecast/execute/$', views.wec_generation_forecast_execute, name='wec_generation_forecast_execute'),
     url(r'^energy_conversion/generation_forecast/results/(?P<exec_instance>[0-9]+)/$', views.wec_generation_forecast_results, name='wec_generation_forecast_results'),
     url(r'^energy_conversion/generation_forecast/status/(?P<exec_instance>[0-9]+)/$', views.energy_conversion_status, name='energy_conversion_status'),
