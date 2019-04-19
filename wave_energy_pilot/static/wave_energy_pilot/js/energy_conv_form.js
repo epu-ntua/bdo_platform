@@ -603,7 +603,7 @@ $(document).ready(function() {
         }
         else if($('.app-selector :selected').val() === "4"){
 
-            var url = "/wave-energy/energy_conversion/evaluate_area/";
+            var url = "/wave-energy/energy_conversion/load_matching/";
             return url;
         }
    }
@@ -650,21 +650,11 @@ $(document).ready(function() {
         }
         else if($('.app-selector :selected').val() === "4"){
 
-            var dataset_id = $("#select_dataset_data_visualisation :selected").val();
-
-            var selected_variables = [];
-            $("#"+dataset_id+"-variables :selected").each(function () {
-                selected_variables.push($(this).val());
-            });
-            var variables_str = "";
-            for(var i = 0; i < selected_variables.length; i++){
-                variables_str +="&variables[]="+selected_variables[i];
-            }
-
-
+            var dataset_id = $("#select_dataset_matching_analysis :selected").val();
+            var selected_converter = $('input[name=wec]:checked').val();
             var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+"&longitude_from="+lng_from+
-                "&longitude_to="+lng_to+""+variables_str;
+                "&longitude_to="+lng_to+"&converters[]="+selected_converter;
             return url;
        }
         else if($('.app-selector :selected').val() === "2"){
@@ -706,8 +696,8 @@ $(document).ready(function() {
        if (app_url === "/wave-energy/energy_conversion/evaluate_area/"){
            $("#execution_btn_WEC_AREA_EVALUATION_SERVICE").click();
        }
-       if (app_url === "/wave-energy/energy_conversion/data_visualisation/") {
-            $("#execution_btn_WEC_DATA_VISUALISATION_SERVICE").click();
+       if (app_url === "/wave-energy/energy_conversion/load_matching/") {
+            $("#execution_btn_WEC_LOAD_MATCHING_SERVICE").click();
        }
 
        $("#execution_status").val('starting service');

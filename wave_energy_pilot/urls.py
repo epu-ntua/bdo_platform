@@ -31,6 +31,10 @@ urlpatterns = [
     url(r'^energy_conversion/generation_forecast/execute/$', views.wec_generation_forecast_execute, name='wec_generation_forecast_execute'),
     url(r'^energy_conversion/generation_forecast/results/(?P<exec_instance>[0-9]+)/$', views.wec_generation_forecast_results, name='wec_generation_forecast_results'),
     url(r'^energy_conversion/generation_forecast/status/(?P<exec_instance>[0-9]+)/$', views.energy_conversion_status, name='energy_conversion_status'),
+    # SC2_TC4 - LOAD MATCHING ANALYSIS
+    url(r'^energy_conversion/load_matching/execute/$', views.wec_load_matching_execute, name='wec_load_matching_execute'),
+    url(r'^energy_conversion/load_matching/results/(?P<exec_instance>[0-9]+)/$', views.wec_load_matching_results, name='wec_load_matching_results'),
+    url(r'^energy_conversion/load_matching/status/(?P<exec_instance>[0-9]+)/$', views.energy_conversion_status, name='energy_conversion_status'),
 
     url(r'energy_conversion/new_wec/', views.wec_creation, name='wec_creation'),
 
