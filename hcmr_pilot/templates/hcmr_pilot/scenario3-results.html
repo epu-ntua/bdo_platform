@@ -68,6 +68,15 @@
             // create the data table.
             data = new vis.DataSet();
 
+            if (typeof graph === 'undefined' || graph === null)
+                cameraPosition = {
+                    horizontal: -0.35,
+                    vertical: 0.22,
+                    distance: 1.8
+                };
+            else
+                cameraPosition = graph.getCameraPosition();
+
             var options = {
                 width: '600px',
                 height: '600px',
@@ -83,11 +92,7 @@
                 yLabel: 'Longitude',
                 zLabel: 'Depth',
                 showLegend: false,
-                cameraPosition: {
-                    horizontal: -0.35,
-                    vertical: 0.22,
-                    distance: 1.8
-                }
+                cameraPosition: cameraPosition
             };
 
             for (var j = 0; j < depthDataTimeMap[curTime].length; j++) {
