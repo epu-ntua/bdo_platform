@@ -95,7 +95,9 @@
 
     <script type="text/javascript">
         $(".viz_container iframe").on( "load", function(){
-            $(this).siblings(".loadingFrame").css( "display", "none" )
+            $(this).siblings(".loadingFrame").css( "display", "none" );
+            var myframe = $('iframe').contents();
+            myframe.find('.leaflet-control-layers-base span').text('Mapbox');
         });
 
         $(document).ready(function(){

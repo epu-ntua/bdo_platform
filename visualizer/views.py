@@ -3277,7 +3277,7 @@ def hcmr_create_polygons_on_map(map, filepath, polygon_color):
         kml_data = json.load(f)
 
     shapely_polygons = []
-    pol_group_layer = folium.map.FeatureGroup(name='Protected Areas Layer:' + str(time.time()).replace(".", "_"),
+    pol_group_layer = folium.map.FeatureGroup(name='Protected Areas',
                                               overlay=True,
                                               control=True).add_to(map)
     count_polygons = 0
