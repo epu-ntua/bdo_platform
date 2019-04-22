@@ -17,7 +17,7 @@
 
         .right {
             float: left;
-            width: 40%;
+            width: 50%;
         }
 
         /* Clear floats after the columns */
@@ -35,6 +35,13 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <script>
 
+        var minLat = 400;
+        var maxLat = -400;
+        var minLon = 400;
+        var maxLon = -400;
+        var minDpth = 50000;
+        var maxDpth = 0;
+
         depthDataTimeMap = {};
         curTime = "{{ depth_data.0.time }}";
         firstTime = Date.parse(curTime);
@@ -50,6 +57,21 @@
             var y = {{ d.lon }};
             var z = -{{ d.depth }};
             var color = '{{ d.color }}';
+
+            if (x < minLat)
+                minLat = x;
+            if (x > maxLat)
+                maxLat = x;
+
+            if (y < minLon)
+                minLon = y;
+            if (y > maxLon)
+                maxLon = y;
+
+            if (z < minDpth)
+                minDpth = z;
+            if (z > maxDpth)
+                maxDpth = z;
 
             curTimeList.push([x, y, z, color]);
         {% endfor %}
@@ -67,6 +89,14 @@
         function drawVisualization(curTime) {
             // create the data table.
             data = new vis.DataSet();
+            if (typeof graph === 'undefined' || graph === null)
+                cameraPosition = {
+                    horizontal: -0.35,
+                    vertical: 0.22,
+                    distance: 1.8
+                };
+            else
+                cameraPosition = graph.getCameraPosition();
 
             data.add({x: {{ start_lat }}, y: {{ start_lon }}, z: -{{ start_depth }}, style: 'purple'});
 
@@ -81,15 +111,17 @@
                 legendLabel: 'distance',
                 onclick: onclick,
                 dotSizeRatio: 0.005,
-                xLabel: 'Latitude',
-                yLabel: 'Longitude',
-                zLabel: 'Depth',
+                xLabel: 'Latitude(deg)',
+                yLabel: 'Longitude(deg)',
+                zLabel: 'Depth(m)',
                 showLegend: false,
-                cameraPosition: {
-                    horizontal: -0.35,
-                    vertical: 0.22,
-                    distance: 1.8
-                }
+                cameraPosition: cameraPosition,
+                xMax: maxLat,
+                xMin: minLat,
+                yMax: maxLon,
+                yMin: minLon,
+                zMax: maxDpth,
+                zMin: minDpth
             };
 
             for (var j = 0; j < depthDataTimeMap[curTime].length; j++) {
@@ -155,6 +187,7 @@
                 </div>
                 <div class="depth-container right">
                     <h3>3D View</h3>
+                    <span>Click and drag on the 3D-Graph to change the view</span>
                     <div id="depth_graph"  style="position: relative; height: 100%;"></div>
                 </div>
             </div>
