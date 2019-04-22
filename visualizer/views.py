@@ -3367,7 +3367,7 @@ def map_routes(m):
     return m
 
 
-def add_oil_spill_ais_layer(m, start_date, latitude, longitude):
+def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude):
     pol_group_layer = folium.map.FeatureGroup(name='AIS data layer : ' + str(time.time()).replace(".", "_"),
                                               overlay=True,
                                               control=True).add_to(m)
@@ -3382,20 +3382,21 @@ def add_oil_spill_ais_layer(m, start_date, latitude, longitude):
     min_lon = float(longitude) - 1
     max_lon = float(longitude) + 1
 
-    # todo handle the start_date of the simulation
+    min_date, max_date = get_min_max_time_for_query(start_date_string)
+
     query = """
         SELECT latitude, longitude, platform_id FROM XMILE_AIS 
         WHERE LATITUDE>=%s AND LATITUDE<=%s 
-        AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '2011-03-01 16:00' 
-        AND TIME >= TIMESTAMP '2011-03-01 12:00' and platform_id in (
+        AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '%s'
+        AND TIME >= TIMESTAMP '%s' and platform_id in (
             SELECT platform_id FROM XMILE_AIS
             WHERE LATITUDE>=%s AND LATITUDE<=%s
-            AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '2011-03-01 16:00' 
-            AND TIME >= TIMESTAMP '2011-03-01 12:00' 
+            AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '%s'
+            AND TIME >= TIMESTAMP '%s' 
             group by platform_id  having count(*)> 5 )
         ORDER BY PLATFORM_ID, TIME"""
 
-    presto_cur.execute(query % (min_lat, max_lat, min_lon, max_lon, min_lat, max_lat, min_lon, max_lon))
+    presto_cur.execute(query % (min_lat, max_lat, min_lon, max_lon, max_date, min_date, min_lat, max_lat, min_lon, max_lon, max_date, min_date))
     data = presto_cur.fetchall()
 
     platform_points = {}
@@ -3418,6 +3419,16 @@ def add_oil_spill_ais_layer(m, start_date, latitude, longitude):
             popup=str(key), icon=icon).add_to(marker_group_layer)
 
     return m
+
+
+def get_min_max_time_for_query(start_date_string):
+    start_date = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M')
+    new_date = start_date.replace(year=2011)
+    if new_date.month > 5:
+        new_date = new_date.replace(month = 5)
+    min_date = new_date - timedelta(hours=1)
+    max_date = new_date + timedelta(hours=1)
+    return str(min_date), str(max_date)
 
 
 def map_markers_in_time_hcmr(request):
