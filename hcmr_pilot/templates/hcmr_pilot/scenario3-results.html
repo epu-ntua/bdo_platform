@@ -35,6 +35,13 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
     <script>
 
+        var minLat = 400;
+        var maxLat = -400;
+        var minLon = 400;
+        var maxLon = -400;
+        var minDpth = 50000;
+        var maxDpth = 0;
+
         depthDataTimeMap = {};
         curTime = "{{ depth_data.0.time }}";
         firstTime = Date.parse(curTime);
@@ -50,6 +57,21 @@
             var y = {{ d.lon }};
             var z = -{{ d.depth }};
             var color = '{{ d.color }}';
+
+            if (x < minLat)
+                minLat = x;
+            if (x > maxLat)
+                maxLat = x;
+
+            if (y < minLon)
+                minLon = y;
+            if (y > maxLon)
+                maxLon = y;
+
+            if (z < minDpth)
+                minDpth = z;
+            if (z > maxDpth)
+                maxDpth = z;
 
             curTimeList.push([x, y, z, color]);
         {% endfor %}
@@ -67,8 +89,6 @@
         function drawVisualization(curTime) {
             // create the data table.
             data = new vis.DataSet();
-
-            data.add({x: {{ start_lat }}, y: {{ start_lon }}, z: -{{ start_depth }}, style: 'crimson'});
 
             var options = {
                 width: '600px',
@@ -89,7 +109,14 @@
                     horizontal: -0.35,
                     vertical: 0.22,
                     distance: 1.8
-                }
+                },
+                xMax: maxLat,
+                xMin: minLat,
+                yMax: maxLon,
+                yMin: minLon,
+                zMax: maxDpth,
+                zMin: minDpth
+
             };
 
             for (var j = 0; j < depthDataTimeMap[curTime].length; j++) {

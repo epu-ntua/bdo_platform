@@ -134,9 +134,6 @@ def scenario3_results(request, exec_instance):
     output_json = filename_output.replace('_F.out', '.json')
     depth_data = extract_depth_data(str(output_json))
     context = {
-        'start_lat': round(location_lat, 3),
-        'start_lon': round(location_lon, 3),
-        'start_depth': round(location_dep, 3),
         'depth_data': depth_data,
         'url': visualization_url,
         'out_filepath': filename_output,
