@@ -647,17 +647,17 @@ def wec_load_matching_execution_process(request, exec_instance):
     new_notebook_id = clone_service_note(request, service, service_exec)
     # ADD THE VISUALISATIONS TO BE CREATED
     visualisations = dict()
-    power_cols_str = ''
+    cols_str = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&y_var[]=power for ' + str(converter.title)
+        cols_str += '&y_var[]=power for ' + str(converter.title)
+    cols_str += '&y_var[]=load_profile '
 
     visualisations['v1'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
                              'title': "Generated Power",
-                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(
-                                 new_notebook_id) + power_cols_str,
+                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(new_notebook_id) + cols_str,
                              'done': False})
     service_exec.dataframe_visualizations = visualisations
     service_exec.save()
@@ -1191,11 +1191,11 @@ def wave_forecast_status(request, exec_instance):
 
 def get_load_matching_file_data(request):
     import csv
-    result_dict = dict()
+    result_list = list()
     file_name = request.GET['file']
     file_path = 'wave_energy_pilot/static/wave_energy_pilot/files/load_matching/'+file_name
     # file_path = 'visualizer/static/visualizer/files/kml2.json'
     with open(file_path, mode="r") as infile:
         reader = csv.reader(infile)
-        result_dict = {rows[0]: rows[1] for rows in reader}
-    return JsonResponse(result_dict)
+        result_list = [{"time": rows[0], "value": rows[1]} for rows in reader]
+    return JsonResponse({"result": result_list[1:]})
