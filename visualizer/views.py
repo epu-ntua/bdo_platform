@@ -3569,12 +3569,16 @@ def map_markers_in_time_hcmr(request):
     # icon_url = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png'
     icon_url = str(static('/img/purple_circle.png'))
     for el in start_lat_lon_list:
-        icon = folium.features.CustomIcon(icon_url, icon_size=(12,12))  # follium bug see https://github.com/python-visualization/folium/issues/744
-        folium.Marker(
-            location=[el[0], el[1]],
+        # icon = folium.features.CustomIcon(icon_url, icon_size=(12,12))  # follium bug see https://github.com/python-visualization/folium/issues/744
+        # folium.Marker(
+        #     location=[el[0], el[1]],
+        #     popup="Oilspill Start " + str(v_count) + "<br>Latitude: " + str(
+        #         el[0]) + "<br>Longitude: " + str(el[1]),
+        #     icon=icon).add_to(marker_group_layer)
+        folium.CircleMarker( location=[el[0], el[1]],
             popup="Oilspill Start " + str(v_count) + "<br>Latitude: " + str(
                 el[0]) + "<br>Longitude: " + str(el[1]),
-            icon=icon).add_to(marker_group_layer)
+           color='purple', radius=6, fill_color='purple', fill_opacity=1).add_to(marker_group_layer)
 
         v_count = v_count + 1
     folium.LayerControl().add_to(m)

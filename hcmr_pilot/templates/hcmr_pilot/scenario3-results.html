@@ -176,24 +176,29 @@
                 </tbody>
             </table>
 
-            <div class="viz_container row">
+            <div class="viz_container row col-sm-12">
                 <div class="frame_container left" style="position: relative; height: 100%;">
+                    <h3>Map View</h3>
+                    <span>View the oil spill on map</span>
                     <div class="loadingFrame">
                         <img src="{% static 'img/loading_gif.gif' %}"/>
                     </div>
                     <iframe src="{{ url }}" class=""
-                        style="width: 100%; height: 100%; background-color: white;">
+                        style="width: 100%; height: 95%; background-color: white;">
                     </iframe>
                 </div>
-                <div class="depth-container right">
+                <div class="depth-container right" style="position: relative; height:100%">
                     <h3>3D View</h3>
                     <span>Click and drag on the 3D-Graph to change the view</span>
-                    <div id="depth_graph"  style="position: relative; height: 100%;"></div>
+                    <div class="loadingFrame">
+                        <img src="{% static 'img/loading_gif.gif' %}"/>
+                    </div>
+                    <div id="depth_graph"  style="position: relative; height: 95%; display: none"></div>
                 </div>
             </div>
 
 
-            <div>
+            <div class="row col-sm-12" style="margin-top: 20px">
                 <div class="button-container" style="width:100%">
                     <div id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
                          style="width:30%">
@@ -222,6 +227,8 @@
     <script type="text/javascript">
         $(".viz_container iframe").on("load", function () {
             $(this).siblings(".loadingFrame").css("display", "none");
+            $('#depth_graph').show();
+            $('#depth_graph').siblings(".loadingFrame").css("display", "none");
             var myframe = $('iframe').contents();
             myframe.find('.leaflet-control-layers-base span').text('Mapbox');
         });

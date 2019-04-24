@@ -518,7 +518,7 @@ function create_new_oilspill(user_marker, lat_selector, lon_selector, offset, na
     map.locate();
     lat_selector.val((bounds[0] + bounds[2]) / 2);
     lon_selector.val((bounds[1] + bounds[3]) / 2);
-    map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
+    map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 7);
     check_marker_position(((bounds[0] + bounds[2]) / 2),((bounds[1] + bounds[3]) / 2),user_marker,bounds, lat_selector, lon_selector,point, offset);
     return user_marker
 }
@@ -655,7 +655,7 @@ $(document).ready(function() {
             map.on('locationfound', onLocationfound1);
             interactive_multi_point_form(onLocationfound1,first_user_marker,$('#lat'), $('#lon'),'1',allow_form_submit1,[0,0]);
             tour_guide_senario2(false, second_scenario_tour);
-            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
+            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 7);
         });
 
         $('#unlock-area').on('click', function(e){
