@@ -41,4 +41,7 @@ urlpatterns = [
     # Cancel execution
     url(r'^cancel_execution/(?P<exec_instance>[0-9]+)/$', views.cancel_execution, name='cancel_execution'),
 
+    # get load matching file data
+    url(r'^energy_conversion/get_load_matching_file_data/', views.get_load_matching_file_data, name='get_load_matching_file_data'),
+
 ]

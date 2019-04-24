@@ -120,3 +120,4 @@ aggregator/datasets
 /wave_energy_pilot/datasets.py
 /wave_energy_pilot/lists.py
 /aggregator/static/aggregator/img/coverage/*
+/wave_energy_pilot/static/wave_energy_pilot/files/load_matching/*

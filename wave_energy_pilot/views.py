@@ -1187,3 +1187,15 @@ def wave_forecast_results(request, exec_instance):
 def wave_forecast_status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
+
+
+def get_load_matching_file_data(request):
+    import csv
+    result_dict = dict()
+    file_name = request.GET['file']
+    file_path = 'wave_energy_pilot/static/wave_energy_pilot/files/load_matching/'+file_name
+    # file_path = 'visualizer/static/visualizer/files/kml2.json'
+    with open(file_path, mode="r") as infile:
+        reader = csv.reader(infile)
+        result_dict = {rows[0]: rows[1] for rows in reader}
+    return JsonResponse(result_dict)
