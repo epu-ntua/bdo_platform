@@ -39,7 +39,8 @@
     <input hidden value="" id="current_time" />
     <div style="position: fixed; background:#00000063;  bottom:50px; right:50px; z-index:9999; font-size:14px; color: white">
         <div style="padding: 10px">
-            <i class="fa fa-circle " style="color: blue; margin-right: 5px"></i>Sea Bottom
+            <i class="fa fa-circle " style="color: #7B007E; margin-right: 5px"></i>Oilspill Start
+            <br><i class="fa fa-circle " style="color: blue; margin-right: 5px"></i>Sea Bottom
             <br><i class="fa fa-circle " style="color: cadetblue; margin-right: 5px"></i>Under Sea
             <br><i class="fa fa-circle " style="color: lightblue; margin-right: 5px"></i>On Surface
             <br><i class="fa fa-circle " style="color: orange; margin-right: 5px"></i>On Coast
@@ -113,7 +114,6 @@
                     {% endif %}
                 }
                 ).addTo(map);
-
 
          $("#snapshot_button").click(function () {
              $("#snapshot").empty();

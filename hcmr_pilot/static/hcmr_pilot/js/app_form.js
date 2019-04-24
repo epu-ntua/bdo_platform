@@ -65,7 +65,7 @@ function create_new_area_select(area_select_bounds){
     if (areaSelect!== undefined) {
         map.removeLayer(areaSelect);
     }
-    $(".leaflet-interactive").remove();
+    $(".leaflet-interactive").not('.leaflet-image-layer').remove();
     areaSelect = L.rectangle(area_select_bounds);
     map.addLayer(areaSelect);
     areaSelect.editing.enable();
@@ -151,47 +151,63 @@ function tour_guide_senario_1(scenario){
                 "</div>" +
                 "</div>",
     });
-
-    first_scenario_tour.addStep({
-        element: ".application-header",
-        placement: "left",
-        title: "Oil spill dispersion forecast",
-        // duration: 3500,
-        content: "Perform an oil spill dispersion simulation. Select a starting point on the map and provide all the necessary information.",
-    });
-    first_scenario_tour.addStep({
-        element: ".lat-container",
-        placement: "left",
-        title: "Click on the map",
-        // duration: 3500,
-        content: "Click on the map to select the point of an oil spill incident or add manually position latitude and longitude.",
-    });
-    if(scenario=== '3') {
+    if (String(scenario) === '1') {
         first_scenario_tour.addStep({
-            element: ".depth-container",
+            element: ".application-header",
             placement: "left",
-            title: "Fill the depth field",
+            title: "Oil spill dispersion forecast",
             // duration: 3500,
-            content: "Fill in the depth field, showing the depth that the oil spill occured.",
+            content: "Perform an oil spill dispersion simulation. Select a starting point on the map and provide all the necessary information.",
+        });
+    }
+    if (String(scenario) === '3'){
+        first_scenario_tour.addStep({
+            element: ".application-header",
+            placement: "left",
+            title: "Underwater Accident",
+            // duration: 3500,
+            content: "Perform an underwater oil spill dispersion simulation. Select a starting point on the map and provide all the necessary information.",
         });
     }
     first_scenario_tour.addStep({
+        element: ".lat-container",
+        placement: "left",
+        title: "Starting point",
+        // duration: 3500,
+        content: "Click on the map to select the point of an oil spill incident or add manually position latitude and longitude.",
+    });
+    // if(scenario=== '3') {
+    //     first_scenario_tour.addStep({
+    //         element: ".depth-container",
+    //         placement: "left",
+    //         title: "Fill the depth field",
+    //         // duration: 3500,
+    //         content: "Fill in the depth field, showing the depth that the oil spill occured.",
+    //     });
+    // }
+    first_scenario_tour.addStep({
         element: ".vis-startdate-container",
         placement: "left",
-        title: "Datetime Selection",
-        content: "Set the oil spill starting date and time. For historical simulations, you can choose date and time up to one year back.",
+        title: "Date and time",
+        content: "Set the oil spill starting date and time (UTC). For historical simulations, you can choose date and time up to one year back.",
     });
     first_scenario_tour.addStep({
         element: ".oil-volume-container",
         placement: "left",
-        title: "Oil volume input",
+        title: "Oil volume",
+        content: "Set the volume of the oil spilled in the sea.",
+    });
+    first_scenario_tour.addStep({
+        element: ".oil-density-container",
+        placement: "left",
+        title: "Oil volume",
         content: "Set the volume of the oil spilled in the sea.",
     });
 
     first_scenario_tour.addStep({
         element: ".vis-duration-container",
         placement: "left",
-        title: "Simulation duration",
+        title: "Evacuation time",
         content: "Set the duration of the oil volume release in the sea.",
     });
 
@@ -204,29 +220,23 @@ function tour_guide_senario_1(scenario){
     first_scenario_tour.addStep({
         element: ".time-interval-container",
         placement: "left",
-        title: "Time interval",
+        title: "Output time interval",
         content: "Set the time step of the output results.",
     });
 
     first_scenario_tour.addStep({
-        element: "#sel2",
+        element: "label[for='sel2']",
         placement: "left",
-        title: "Ocean Circulation Model",
-        duration: 3500,
-        content: "Choose ocean circulation model. The forecasting product will be used as the hydrodynamic input for the oil spill simulation.",
+        title: "Available Datasets",
+        // duration: 3500,
+        content: "Choose ocean circulation and wave model. The forecasting products will be used as an input for the oil spill simulation.",
     });
-    first_scenario_tour.addStep({
-        element: "#sel1",
-        placement: "left",
-        title: "Wave Model",
-        duration: 3500,
-        content: "Choose the wave model. The forecasting product will be used as wave input for the oil spill simulation.",
-    });
+
     first_scenario_tour.addStep({
         element: ".checkbox",
         placement: "left",
         title: "Additional layers",
-        duration: 3500,
+        // duration: 3500,
         content: "(Optional) Select additional layers to be added to the output of the simulation.",
     });
 
@@ -234,7 +244,7 @@ function tour_guide_senario_1(scenario){
         element: ".service-buttons",
         placement: "left",
         title: "Execution",
-        duration: 3500,
+        // duration: 3500,
         content: "All set. Ready to run the service!",
     });
 
@@ -306,6 +316,7 @@ function check_sim_len_options(){
 }
 
 function interactive_form(onLocationfound, user_marker){
+    $('#sel1').parent().find('div[data-value="203"]').addClass('disabled');
     var allow_form_submit = [true, true, true, true, true, true,true];
     check_sim_len_options();
     $('#lat').on('input',function () {
@@ -363,22 +374,34 @@ function interactive_form(onLocationfound, user_marker){
         }
     });
     $('#sel2').on('change',function () {
+        $('#sel1').parent().find('div').removeClass('disabled');
         if ($('#sel2').val()==='003'){
             $('#sel1').parent().dropdown('set selected','203');
+            $('#sel1').parent().find('div[data-value="202"]').addClass('disabled');
+            $('#sel1').parent().find('div[data-value="201"]').addClass('disabled');
+        }else if($('#sel2').val()==='001'){
+            $('#sel1').parent().dropdown('set selected','202');
+            $('#sel1').parent().find('div[data-value="203"]').addClass('disabled');
+        }else if($('#sel2').val()==='002'){
+            $('#sel1').parent().dropdown('set selected','201');
+            $('#sel1').parent().find('div[data-value="203"]').addClass('disabled');
         }
     });
     $('#sel1').on('change',function () {
+        // $('#sel2').parent().find('div').removeClass('disabled');
         if ($('#sel1').val()==='203'){
             $('#sel2').parent().dropdown('set selected','003');
+            // $('#sel2').parent().find('div[data-value="001"]').addClass('disabled');
+            // $('#sel2').parent().find('div[data-value="002"]').addClass('disabled');
         }
     });
-     $('#depth').on('input',function () {
-        allow_form_submit = missing_parameter($('#depth'), allow_form_submit, 'depth', 6, '#run-service-btn','depth' );
-        if($('#depth').val()<0) {
-            $('#depth').val((0).toFixed(4));
-        }
-
-    });
+    //  $('#depth').on('input',function () {
+    //     allow_form_submit = missing_parameter($('#depth'), allow_form_submit, 'depth', 6, '#run-service-btn','depth' );
+    //     if($('#depth').val()<0) {
+    //         $('#depth').val((0).toFixed(4));
+    //     }
+    //
+    // });
 }
 
 function interactive_multi_point_service_form(){
@@ -495,7 +518,7 @@ function create_new_oilspill(user_marker, lat_selector, lon_selector, offset, na
     map.locate();
     lat_selector.val((bounds[0] + bounds[2]) / 2);
     lon_selector.val((bounds[1] + bounds[3]) / 2);
-    // map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 8);
+    map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
     check_marker_position(((bounds[0] + bounds[2]) / 2),((bounds[1] + bounds[3]) / 2),user_marker,bounds, lat_selector, lon_selector,point, offset);
     return user_marker
 }
@@ -574,8 +597,8 @@ function check_area_position(area) {
 }
 
 $(document).ready(function() {
-    map_init();
     var scenario = $('.scenario').data('id');
+    map_init([34.6833, 19.1004, 41.3357, 28.6996], scenario);
     $('.ui.dropdown').dropdown();
     $('#time_interval').parent().css('min-width','13rem');
     $('#time_interval').parent().addClass("form-control");
@@ -693,7 +716,7 @@ $(document).ready(function() {
             var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
             var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
             bounds = [swlat,swlon,nelat,nelon];
-            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
+            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 5);
         });
 
         $(".new_point").click(function(){
@@ -980,7 +1003,7 @@ $(document).ready(function() {
             $("#execution_btn_OIL_SPILL_SCENARIO_2").click();
         else if(parseInt(scenario) === 3)
             $("#execution_btn_OIL_SPILL_SCENARIO_3").click();
-        $('#modal_dismiss_btn_cancel').hide()
+        $('body #modal_dismiss_btn_cancel').hide()
         var lat ;
         var lng ;
         var oil_volume ;
@@ -990,7 +1013,7 @@ $(document).ready(function() {
         var duration ;
         var wave_dataset;
         var hd_dataset;
-        var depth = 0;
+        // var depth = 0;
         if (scenario === 1 || scenario ===3) {
             lat = $('#lat').val();
             lng = $("#lon").val();
@@ -1001,9 +1024,9 @@ $(document).ready(function() {
             duration = $("#vis_duration").val();
             wave_dataset = $("#sel1").val();
             hd_dataset = $("#sel2").val();
-            if (scenario===3){
-                depth = $('#depth').val();
-            }
+            // if (scenario===3){
+            //     depth = $('#depth').val();
+            // }
         }else if(scenario ===2) {
             var wave_dataset_list = [];
             var hd_dataset_list = [];
@@ -1095,8 +1118,7 @@ $(document).ready(function() {
                 "&wave_model=" + wave_dataset +
                 "&hd_model=" + hd_dataset +
                 "&natura_layer=" + natura_layer +
-                "&ais_layer=" + ais_layer +
-                "&depth=" + depth;
+                "&ais_layer=" + ais_layer;
 
 
 
@@ -1109,7 +1131,7 @@ $(document).ready(function() {
                 "data": {},
                 "cache": false,
                 "success": function(result) {
-                        $('#modal_dismiss_btn_cancel').show();
+                        $('body #modal_dismiss_btn_cancel').show();
                         console.log(result);
                         exec_instance = result['exec_instance'];
                     },
@@ -1213,7 +1235,7 @@ $(document).ready(function() {
         $(".modal #modal_status_div").html('');
     });
 
-    $("#modal_dismiss_btn_cancel").click(function () {
+    $('body').on('click','#modal_dismiss_btn_cancel', function () {
         console.log("hit cancel");
         set_execution_failed();
         clearInterval(execution_status_interval);
@@ -1234,18 +1256,50 @@ $(document).ready(function() {
             // }
         });
     });
-    function map_init() {
+    function map_init(image_bounds, scenario) {
         var maplayer = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=';
         var token = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ';
         var attr = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors,' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
         'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
-        map = L.map('map').setView([38.41, 21.97], 4);
-        L.tileLayer(maplayer + token, {
+        // map = L.map('map').setView([38.41, 21.97], 4);
+        // L.tileLayer(maplayer + token, {
+        //     attribution: attr,
+        //     maxZoom: 18,
+        // }).addTo(map);
+        var base_map = L.tileLayer(maplayer + token, {
             attribution: attr,
             maxZoom: 18,
-        }).addTo(map);
-        init = true;
+            layers:[]
+        });
+        if ((scenario===1)||(scenario===3)) {
+            map = L.map('map', {
+                layers: [base_map]
+            }).setView([38.41, 21.97], 5);
+        }else {
+            var ais_layer = L.layerGroup();
+            map = L.map('map', {
+                layers: [base_map, ais_layer]
+            }).setView([38.41, 21.97], 5);
+            var ais_bounds = new L.LatLngBounds(
+                new L.LatLng(image_bounds[0], image_bounds[1]),
+                new L.LatLng(image_bounds[2], image_bounds[3]));
+            var overlay = new L.ImageOverlay('/static/visualizer/img/ais_density_maps/ais_data_photo.png', ais_bounds, {
+                opacity: 0.5,
+                interactive: true,
+            });
+            overlay.addTo(ais_layer);
+            var overlays = {
+                'AIS Density Map': ais_layer
+            };
+            var baseLayers = {
+                "Map": base_map
+            };
+            init = true;
+            L.control.layers(baseLayers, overlays).addTo(map);
+            $('.leaflet-control').css('position', 'relative');
+            $('.leaflet-control').css('right', '330px');
+        }
     }
 
     function delete_point(point_number){
