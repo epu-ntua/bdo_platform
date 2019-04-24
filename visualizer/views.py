@@ -3423,7 +3423,7 @@ def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude, sim_lengt
     return m
 
 
-def get_min_max_time_for_query(start_date_string, duration):
+def get_min_max_time_for_query(start_date_string, sim_length):
     start_date = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M')
     new_date = start_date.replace(year=2011)
     if new_date.month > 5:
@@ -3432,7 +3432,7 @@ def get_min_max_time_for_query(start_date_string, duration):
     max_filter_date = new_date + timedelta(hours=2)
 
     min_date = new_date
-    max_date = new_date + timedelta(hours=int(duration))
+    max_date = new_date + timedelta(hours=int(sim_length))
 
     return str(min_date), str(max_date), str(min_filter_date), str(max_filter_date)
 
