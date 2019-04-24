@@ -292,7 +292,7 @@ def process(request, exec_instance):
                                 + "&data_file=" + hcmr_data_filename + "&red_points_file=" \
                                 + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer \
                                 + "&time_interval=" + time_interval + "&start_date=" + start_date + \
-                                '&latitude=' + latitude + "&longitude=" + longitude
+                                '&latitude=' + latitude + "&longitude=" + longitude + "&length="+ sim_length
 
             service_exec.dataframe_visualizations = {"v1": visualization_url}
             service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output

@@ -3367,7 +3367,7 @@ def map_routes(m):
     return m
 
 
-def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude):
+def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude, sim_length):
     pol_group_layer = folium.map.FeatureGroup(name='AIS data layer : ' + str(time.time()).replace(".", "_"),
                                               overlay=True,
                                               control=True).add_to(m)
@@ -3377,12 +3377,12 @@ def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude):
                                               control=True).add_to(m)
     presto_cur = get_presto_cursor()
 
-    min_lat = float(latitude) - 1
-    max_lat = float(latitude) + 1
-    min_lon = float(longitude) - 1
-    max_lon = float(longitude) + 1
+    min_lat = float(latitude) - 0.2
+    max_lat = float(latitude) + 0.2
+    min_lon = float(longitude) - 0.2
+    max_lon = float(longitude) + 0.2
 
-    min_date, max_date = get_min_max_time_for_query(start_date_string)
+    min_date, max_date, min_filter_date, max_filter_date = get_min_max_time_for_query(start_date_string, sim_length)
 
     query = """
         SELECT latitude, longitude, platform_id FROM XMILE_AIS 
@@ -3393,10 +3393,12 @@ def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude):
             WHERE LATITUDE>=%s AND LATITUDE<=%s
             AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '%s'
             AND TIME >= TIMESTAMP '%s' 
-            group by platform_id  having count(*)> 5 )
+            group by platform_id   )
         ORDER BY PLATFORM_ID, TIME"""
 
-    presto_cur.execute(query % (min_lat, max_lat, min_lon, max_lon, max_date, min_date, min_lat, max_lat, min_lon, max_lon, max_date, min_date))
+    presto_cur.execute(query % (min_lat, max_lat, min_lon, max_lon,
+                                max_date, min_date, min_lat, max_lat, min_lon, max_lon,
+                                max_filter_date, min_filter_date))
     data = presto_cur.fetchall()
 
     platform_points = {}
@@ -3421,14 +3423,18 @@ def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude):
     return m
 
 
-def get_min_max_time_for_query(start_date_string):
+def get_min_max_time_for_query(start_date_string, duration):
     start_date = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M')
     new_date = start_date.replace(year=2011)
     if new_date.month > 5:
         new_date = new_date.replace(month = 5)
-    min_date = new_date - timedelta(hours=1)
-    max_date = new_date + timedelta(hours=1)
-    return str(min_date), str(max_date)
+    min_filter_date = new_date - timedelta(hours=2)
+    max_filter_date = new_date + timedelta(hours=2)
+
+    min_date = new_date
+    max_date = new_date + timedelta(hours=int(duration))
+
+    return str(min_date), str(max_date), str(min_filter_date), str(max_filter_date)
 
 
 def map_markers_in_time_hcmr(request):
@@ -3437,7 +3443,7 @@ def map_markers_in_time_hcmr(request):
     # m = map_routes(m)
     FMT, df, duration, lat_col, lon_col, markerType, marker_limit, \
     notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, \
-    ais_layer, time_interval, start_date, latitude, longitude= hcmr_service_parameters(request)
+    ais_layer, time_interval, start_date, latitude, longitude, sim_length= hcmr_service_parameters(request)
     if query_pk != 0:
         q = AbstractQuery.objects.get(pk=int(query_pk))
         q = Query(document=q.document)
@@ -3583,7 +3589,7 @@ def map_markers_in_time_hcmr(request):
 
     if has_data:
         if ais_layer == "true":
-            m = add_oil_spill_ais_layer(m, start_date, latitude, longitude)
+            m = add_oil_spill_ais_layer(m, start_date, latitude, longitude, sim_length)
 
         if natura_layer == "true":
             m, shapely_polygons = map_oil_spill_hcmr(m)
@@ -3639,8 +3645,9 @@ def hcmr_service_parameters(request):
     start_date = str(request.GET.get('start_date', ''))
     latitude = str(request.GET.get('latitude', ''))
     longitude = str(request.GET.get('longitude', ''))
-    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, \
-           query_pk, data_file, rp_file, natura_layer, ais_layer,time_interval, start_date, latitude, longitude
+    sim_length = str(request.GET.get('length', ''))
+    return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, \
+           data_file, rp_file, natura_layer, ais_layer,time_interval, start_date, latitude, longitude, sim_length
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
