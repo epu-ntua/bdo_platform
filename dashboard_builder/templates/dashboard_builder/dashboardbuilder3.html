@@ -21,7 +21,7 @@
         </style>
     {% endfor %}
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}"/>
-
+    <link rel="stylesheet" type="text/css" href = "{% static 'vendor/bootstrap-tour/src/bootstrap-tour.min.css' %}"/>
 
 {% endblock %}
 
@@ -43,7 +43,7 @@
     <div class="row text-center">
         <input class="form-control text-center" type="text" id="dashboard_title"
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
-        <span class="pull-left"><input type="checkbox" name="private" value="True" checked/> Private<br></span>
+        <span id="privacy_status" class="pull-left"><input type="checkbox" name="private" value="True" checked/> Private<br></span>
     </div>
 
     <div class="row text-left">
@@ -148,7 +148,7 @@
                         </div>
                         <div class="tab-pane fade in active" id="viz_widget">
                             <div class="row">
-                                <div class="text-left" id="model-button-row" style="display: inline">
+                                <div id="tour_input_select_data" class="text-left" id="model-button-row" style="display: inline">
                                     <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
                                             data-toggle="popover" title="Select your data" data-placement="right"
                                     >Select data
@@ -177,6 +177,7 @@
                                         <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
                                             <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
                                             <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+
                                         </li>
                                     {% endfor %}
 
@@ -286,6 +287,6 @@
     </script>
     <script type="text/javascript" src="{% static 'dashboard_builder/js/angular_dashboard_layout.js' %}"></script>
     <script type="text/javascript" src="{% static 'dashboard_builder/js/multilayer_viz_dashboard_ui.js' %}"></script>
-
+    <script type="text/javascript" src="{% static 'vendor/bootstrap-tour/src/bootstrap-tour.min.js' %}"></script>
 
 {% endblock %}

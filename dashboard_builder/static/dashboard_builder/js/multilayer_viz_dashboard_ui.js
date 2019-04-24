@@ -1,3 +1,4 @@
+var tour;
 $("#select_data_popover").click(function () {
             $('.viz_item').popover('hide');
         });
@@ -10,6 +11,7 @@ $("#select_data_popover").click(function () {
         var textEditor = CKEDITOR.appendTo('viz_note');
         // {#Function to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
+            var init = 0;
             var viz_success = null;
             var selected_val = null;
             var var_list = null;
@@ -40,6 +42,8 @@ $("#select_data_popover").click(function () {
 
             });
             $("#add_layer_btn").parent().click(function () {
+                init = 6;
+                tour = tour_guide_senario(tour,'');
                 $(this).hide();
                 if((new_query_id!=null)&&(selected_visualization!=null)) {
                     alert("Layer is now saved. Please add a new layer!");
@@ -115,6 +119,12 @@ $("#select_data_popover").click(function () {
                     return $('#query-container').html();
                 }
             }).click(function (e) {
+                if ($('#layers-list ul li').length===0) {
+                    init = 2;
+                }else{
+                    init = 7;
+                }
+                tour = tour_guide_senario(tour, "");
                 $(this).popover('toggle');
                 $('.popover-content .form-group #query-select').dropdown();
 
@@ -130,16 +140,27 @@ $("#select_data_popover").click(function () {
                     // $('#add_layer_btn').parent().hide();
                     // $('#layers-list').parent().hide();
                     $(".list-group").css('visibility','visible');
-                })
+                    if ($('#layers-list ul li').length===0) {
+                        init = 3;
+                    }else{
+                        init = 8;
+                    }
+                    tour = tour_guide_senario(tour, "");
+                });
                 $('.popover-content #select_data_cancel').click(function (e) {
                     $('#myModal #select_data_popover').popover("hide");
                 })
             });
 
             $(".viz_item").click(function (element) {
-                if($('.popover').length) {
+                if ($('#layers-list ul li').length===0) {
+                        init = 4;
+                    }else{
+                        init = 9;
+                    }
+                tour = tour_guide_senario(tour, "");
+                if($('.popover').not('.tour').length) {
                     $('.viz_item').popover('hide');
-
                 }
                 else {
                     var component_id = $(this).attr('data-viz-id');
@@ -784,7 +805,7 @@ $("#select_data_popover").click(function () {
                     viz_request += myData;
                     viz_request += '&query=' + $('#myModal #selected_query').val();
                     vis_created_flag = true;
-                    show_viz(viz_request, component_type);
+                    show_viz(viz_request, component_type,1);
                 }
                 else{
                     conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
@@ -836,7 +857,7 @@ $("#select_data_popover").click(function () {
                 }
                 url = url.replace("&","");
                 viz_request += url;
-                show_viz(viz_request, comp_type);
+                show_viz(viz_request, comp_type, String(my_layer_count));
             }
             function getFormData(form,count,query){
                 var unindexed_array = form.serializeArray();
@@ -857,7 +878,7 @@ $("#select_data_popover").click(function () {
                 indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000))+'layer'+String(count) ;
                 return indexed_array;
             }
-            function show_viz(viz_request, comp_type) {
+            function show_viz(viz_request, comp_type, layer_count) {
                 $("#viz_container").html('<div class="loadingFrame"><img src="' + img_source_path + '"/></div><iframe class="iframe-class" id="viz-iframe" ' +
                     'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
                     '></iframe>');
@@ -868,6 +889,7 @@ $("#select_data_popover").click(function () {
                 $("#myModal #viz_container iframe").on( "load", function(){
                     $(this).siblings(".loadingFrame").css( "display", "none" );
                     var execution_flag = $(this).contents().find('.visualisation_execution_input').val();
+
                     if ((execution_flag === 'success')&&(comp_type === 'map')&&(open_modal === true)){
                         $('#add_layer_btn').parent().show();
                         $('#layers-list').parent().show();
@@ -877,7 +899,18 @@ $("#select_data_popover").click(function () {
                         map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
                         map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
                         map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
-
+                        if(layer_count==='1') {
+                            init = 5;
+                        }else{
+                            init = 10;
+                        }
+                        tour = tour_guide_senario(tour,comp_type);
+                    }else if((execution_flag === 'success')&&(comp_type !== 'map')&&(open_modal === true)){
+                        $('#myModal #submit-modal-btn').show();
+                        $('#add_layer_btn').parent().hide();
+                        $('#layers-list').parent().hide();
+                        init = 5;
+                        tour = tour_guide_senario(tour,comp_type);
                     }
                     else{
                         $('#add_layer_btn').parent().hide();
@@ -897,6 +930,8 @@ $("#select_data_popover").click(function () {
             });
 
             $("#myModal #submit-modal-btn").click(function () {
+                init =11;
+                tour = tour_guide_senario(tour,'');
                 if (vis_created_flag!==false){
                     refresh_visualisation_modal();
                 }else{
@@ -976,6 +1011,141 @@ $("#select_data_popover").click(function () {
                     }
                 return allow_submit
             }
+            tour = tour_guide_senario('', '');
+            $('#myModal').on('shown.bs.modal', function (e) {
+                init = 1;
+                tour = tour_guide_senario(tour, "");
+            })
+
+            function tour_guide_senario(tour, viz_type){
+                // alert(init);
+                if (init=== 0) {
+                    var second_scenario_tour = new Tour({
+                        storage: false,
+                        template: "<div class='popover tour' style='max-width:400px; max-height: 160px; min-width: 250px; min-height: 100px; color: black;'>" +
+                        "<div class='arrow'></div>" +
+                        "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                        "<div class='popover-content'></div>" +
+                        "<div class='popover-navigation'>" +
+                        "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                        "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                        "</div>" +
+                        "</div>",
+                    });
+                    second_scenario_tour.addStep({
+                        element: "#new_widget_btn",
+                        placement: "right",
+                        title: "Widget Creation",
+                        content: "Click the button to create a new visualisation or note.",
+                    });
+
+                    second_scenario_tour.init();
+                    second_scenario_tour.start(true);
+                    return second_scenario_tour;
+                }else if(init===1){
+                    tour.addStep({
+                        element: "#tour_input_select_data",
+                        placement: "right",
+                        title: "Select Query",
+                        content: "Select a Query to use for the creation of a visualisation.",
+                        });
+                    tour.next();
+                    // init++;
+                    return tour;
+                }else if (init===2){
+                    $('.tour').hide();
+                    return tour;
+                }else if (init===3){
+                    tour.addStep({
+                        element: ".list-group",
+                        placement: "right",
+                        title: "Select Visualisation",
+                        content: "Select the proper Visualisation from the list, fill in the form and press OK.",
+                        });
+                    tour.next();
+                    return tour;
+                }else if (init===4){
+                    $('.tour').hide();
+                    return tour;
+                }else if (init===5){
+                    if(viz_type==='map'){
+                        tour.addStep({
+                            element: "#add_layer_btn",
+                            placement: "left",
+                            title: "Save Layer",
+                            content: "Save the created map visualisation to a new layer and create a new one.",
+                            });
+                        tour.next();
+                        return tour;
+                    }
+                    else{
+                        tour.addStep({
+                            element: "#submit-modal-btn",
+                            placement: "left",
+                            title: "Add visualisation to Dashboard.",
+                            content: "Add the created visualisation to the Dashboard.",
+                            });
+                        tour.next();
+                        return tour;
+                    }
+                }else if (init===6){
+                    tour.addStep({
+                        element: "#tour_input_select_data",
+                        placement: "right",
+                        title: "Select Query",
+                        content: "Select another Query to use for the creation of another layer of the visualisation.",
+                        });
+                    tour.next();
+                    return tour;
+                }else if (init===7){
+                    $('.tour').hide();
+                    return tour;
+                }else if (init===8){
+                    tour.addStep({
+                        element: ".list-group",
+                        placement: "right",
+                        title: "Select Visualisation",
+                        content: "Select another map Visualisation to put on top of the existing map.",
+                        });
+                    tour.next();
+                    return tour;
+                }else if (init===9) {
+                    $('.tour').hide();
+                    return tour;
+                }else if (init ===10){
+                    tour.addStep({
+                            element: "#submit-modal-btn",
+                            placement: "left",
+                            title: "Add visualisation to Dashboard.",
+                            content: "Add the created multilayer visualisation to the Dashboard.",
+                            });
+                        tour.next();
+                        return tour;
+                }
+                else if((init===11)){
+                    tour.addStep({
+                            element: "#dashboard_title",
+                            placement: "right",
+                            title: "Dashboard Title",
+                            content: "Fill in the title of the Dashboard.",
+                            });
+                    tour.addStep({
+                            element: "#privacy_status",
+                            placement: "right",
+                            title: "Permission Settings",
+                            content: "Choose whether the dashboard is going to be private or public.",
+                            });
+                    tour.addStep({
+                            element: "#save_dashboard_btn",
+                            placement: "right",
+                            title: "Save Dashboard",
+                            content: "Save the created Dashboard.",
+                            });
+                        tour.next();
+                        return tour;
+                }
+            }
+
 
 
         });
