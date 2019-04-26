@@ -44,12 +44,12 @@ $(document).ready(function() {
             "<div class='arrow'></div>" +
             "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
             "<div class='popover-content'></div>" +
-            // "<div class='popover-navigation'>" +
-            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            // "<span data-role='separator'>|</span>" +
-            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-            // "</div>" +
+            "<div class='popover-navigation'>" +
+            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            "<span data-role='separator'>|</span>" +
+            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            "</div>" +
             "</div>",
     });
 
@@ -86,12 +86,12 @@ $(document).ready(function() {
             "<div class='arrow'></div>" +
             "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
             "<div class='popover-content'></div>" +
-            // "<div class='popover-navigation'>" +
-            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            // "<span data-role='separator'>|</span>" +
-            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-            // "</div>" +
+            "<div class='popover-navigation'>" +
+            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            "<span data-role='separator'>|</span>" +
+            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            "</div>" +
             "</div>",
     });
     // wec_assessment_area_tour.init();
@@ -102,12 +102,12 @@ $(document).ready(function() {
             "<div class='arrow'></div>" +
             "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
             "<div class='popover-content'></div>" +
-            // "<div class='popover-navigation'>" +
-            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            // "<span data-role='separator'>|</span>" +
-            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-            // "</div>" +
+            "<div class='popover-navigation'>" +
+            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            "<span data-role='separator'>|</span>" +
+            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            "</div>" +
             "</div>",
     });
     // wec_energy_generation_forecast_tour.init();
@@ -118,12 +118,12 @@ $(document).ready(function() {
             "<div class='arrow'></div>" +
             "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
             "<div class='popover-content'></div>" +
-            // "<div class='popover-navigation'>" +
-            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            // "<span data-role='separator'>|</span>" +
-            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-            // "</div>" +
+            "<div class='popover-navigation'>" +
+            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            "<span data-role='separator'>|</span>" +
+            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+            "</div>" +
             "</div>",
     });
     // matching_analysis_tour.init();
@@ -221,14 +221,22 @@ $(document).ready(function() {
                     element: ".coverage-date-filters",
                     placement: "left",
                     title: "Service timeframe",
-                    duration: 3500,
-                    content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected",
+                    duration: 4000,
+                    content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected"
                 },
                 {
                     element: ".radio-container",
                     placement: "left",
                     title: "Wave energy converter selection",
-                    content: "Select at least one converter to execute your evaluation",
+                    content: "Select at least one converter to execute your evaluation"
+                },
+                {
+                    element: "#upload_csv_container",
+                    placement: "left",
+                    title: "Load profile",
+                    // duration: 4000,
+                    content: "Upload a CSV file containing the load profile time series. The CSV file should have two columns, separated by comma, " +
+                             "like the following example:\n2016-01-01 00:00:00, 4.778\n2016-01-01 01:00:00, 4.243"
                 },
                 {
                     element: "#run-service-btn",
@@ -238,6 +246,12 @@ $(document).ready(function() {
                     content: "Ready to execute!",
 
                 }]);
+               $("#upload_csv_container label").click(function (e) {
+                   e.stopPropagation();
+                   // alert(matching_analysis_tour.getCurrentStep());
+                   matching_analysis_tour.goTo(4);
+               });
+
                 matching_analysis_tour.next();
         })
     });
@@ -295,25 +309,31 @@ $(document).ready(function() {
                     wec_energy_generation_forecast_tour.end();
             }
             else if($('.app-selector :selected').val() === "4"){
-                if (matching_analysis_tour.getCurrentStep() === 3) {
-                    matching_analysis_tour.addSteps([
-                        {
-                            element: "#run-service-btn",
-                            placement: "left",
-                            duration: 3000,
-                            title: "Service Execution",
-                            content: "Ready to execute!",
-
-                        }]);
-                    matching_analysis_tour.next();
-                }
-                else
-                   matching_analysis_tour.end();
+                matching_analysis_tour.next();
+                // if (matching_analysis_tour.getCurrentStep() === 4) {
+                //     matching_analysis_tour.addSteps([
+                //         {
+                //             element: "#run-service-btn",
+                //             placement: "left",
+                //             duration: 3000,
+                //             title: "Service Execution",
+                //             content: "Ready to execute!",
+                //
+                //         }]);
+                //     matching_analysis_tour.next();
+                // }
+                // else
+                //    matching_analysis_tour.end();
             }
         })
     });
 
     $(function () {
+        // $('#select_app').change(function () {
+        //     // $('.dataset-selector').dropdown('clear');
+        //     $('.dataset-selector select').val("").trigger("change");
+        // });
+
         $('.app-selector').change(function () {
             if($('.app-selector :selected').val() === "1"){
                 $('.single-spatial-selection').show();
@@ -517,6 +537,7 @@ $(document).ready(function() {
                 $('.coverage-date-filters').show();
                 $('.run-service-button-container').show();
                 $('.radio-container').show();
+                $('#upload_csv_container').show();
 
                 map.on('click', function(e){
                     if (mode == "location") {
@@ -577,10 +598,14 @@ $(document).ready(function() {
                 $('#lat').val('');
                 $('#lon').val('');
                 $(".matching_analysis_dropdown").hide();
+                $('#upload_csv_container').hide();
             }
         })
     });
 
+    $(function () {
+
+    });
 
 
 
@@ -676,6 +701,65 @@ $(document).ready(function() {
 
    }
 
+
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+            }
+        }
+    });
+
+     $('#csv').submit(function (e) {
+        // PREVENT DEFAULT FORM BEHAVIOUR
+        e.preventDefault();
+
+        // SANITY CHECKS - MODIFY AS NEEDED
+        var fil = document.getElementById('load_profile_csv');
+        // if (fil.files[0].size > 2048) {
+        //   alert('File size cannot be bigger than 2K');
+        //   return false;
+        // }
+
+        // WE USE FormData INSTEAD OF SERIALIZE AS
+      // THIS WILL GET THE FILE DATA CORRECTLY
+        var data = new FormData(this);
+
+      // AJAX BACK TO THE SERVER - NOTE THE ADDITIONAL PROPERTIES
+      // IN THE AJAX OPTIONS AND THE USE OF done() INSTEAD OF
+      // success
+        $.ajax({
+          url: "/wave-energy/energy_conversion/load_matching/execute/",
+          type: "POST",
+          data:  data,
+          processData: false,
+          contentType: false,
+          dataType: "json"
+        }).done(function(resp) {
+          // CHECK WE HAVE DATA
+          alert("uploaded");
+        });
+     });
+
+
+
+
     var exec_instance = '';
     var execution_status_interval;
 
@@ -702,54 +786,82 @@ $(document).ready(function() {
 
        $("#execution_status").val('starting service');
 
-       if (app_url === "/wave-energy/data_visualisation/") {
-            $(location).attr("href", app_url+"execute/"+parameters);
+       if (app_url === "/wave-energy/energy_conversion/load_matching/") {
+           var file = document.getElementById('load_profile_csv');
+           var data = new FormData();
+           data.append('load_profile_csv', file.files[0]);
+
+           var lat = $("#lat").val();
+           var lng = $("#lon").val();
+           var data_radius = $("#data-radius").data('value');
+
+           data.append('dataset_id', $("#select_dataset_matching_analysis :selected").val());
+           data.append('converters[]', $('input[name=wec]:checked').val());
+           data.append('latitude_from', parseFloat(lat) -  parseFloat(data_radius));
+           data.append('latitude_to', parseFloat(lat) + parseFloat(data_radius));
+           data.append('longitude_from', parseFloat(lng) -  parseFloat(data_radius));
+           data.append('longitude_to', parseFloat(lng) + parseFloat(data_radius));
+           data.append('start_date', $( "#startdatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val());
+           data.append('end_date', $( "#enddatepicker input" ).datepicker({ dateFormat: "yy-mm-dd" }).val());
+
+           $.ajax({
+              url: app_url+"execute/",
+              type: "POST",
+              data:  data,
+              processData: false,
+              contentType: false,
+              dataType: "json",
+              success: function (result) {
+                   console.log(result);
+                   exec_instance = result['exec_instance'];
+               },
+               error: function () {
+                   alert('error');
+               }
+            });
        }
-       else{
-           console.log(app_url+"execute/"+parameters);
+       else {
+           console.log(app_url + "execute/" + parameters);
+           $.ajax({
+               "type": "GET",
+               "url": app_url + "execute/" + parameters,
+               "data": {},
+               "success": function (result) {
+                   console.log(result);
+                   exec_instance = result['exec_instance'];
+               },
+               error: function () {
+                   alert('error');
+               }
+           });
+       }
+        execution_status_interval = setInterval(check_execution_status, 3000);
+
+        function check_execution_status() {
             $.ajax({
-            "type": "GET",
-            "url": app_url+"execute/"+parameters,
-            "data": {},
-            "success": function(result) {
-                    console.log(result);
-                    exec_instance = result['exec_instance'];
+                "type": "GET",
+                "url": app_url+"status/"+exec_instance+"/",
+                "data": {},
+                "success": function(result) {
+                    console.log(result["status"]);
+                    $("#execution_status").val(result["status"]);
+                    if(result["status"] === "done"){
+                        setTimeout(function() {
+                            execution_status_stop();
+                            window.location.href = app_url+"results/"+exec_instance+"/";
+                        }, 1000);
+                    }
+                    else if (result["status"] === "failed") {
+                        execution_status_stop();
+                        // alert("execution failed");
+                    }
                 },
                 error: function () {
-                    alert('error');
+                    execution_status_stop();
+                    // alert('error');
                 }
             });
-
-            execution_status_interval = setInterval(check_execution_status, 3000);
-
-            function check_execution_status() {
-                $.ajax({
-                    "type": "GET",
-                    "url": app_url+"status/"+exec_instance+"/",
-                    "data": {},
-                    "success": function(result) {
-                        console.log(result["status"]);
-                        $("#execution_status").val(result["status"]);
-                        if(result["status"] === "done"){
-                            setTimeout(function() {
-                                execution_status_stop();
-                                window.location.href = app_url+"results/"+exec_instance+"/";
-                            }, 1000);
-                        }
-                        else if (result["status"] === "failed") {
-                            execution_status_stop();
-                            // alert("execution failed");
-                        }
-                    },
-                    error: function () {
-                        execution_status_stop();
-                        // alert('error');
-                    }
-                });
-            }
-
-       }
-
+        }
    });
 
 
@@ -821,5 +933,5 @@ $(document).ready(function() {
         });
     });
 
-    $("#add-wec-btn").click();
+    // $("#add-wec-btn").click();
 });

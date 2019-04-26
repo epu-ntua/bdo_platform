@@ -18,6 +18,11 @@
 
 .app-selector{
     padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.popover-content{
+    white-space: pre-line;
 }
 
 

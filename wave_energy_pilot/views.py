@@ -129,10 +129,13 @@ def convert_unicode_json(data):
         return data
 
 
-def gather_service_args(service_args, request, service_exec):
+def gather_service_args(service_args, request, service_exec, method='get'):
     args_to_note = dict()
     for arg in service_args:
-        args_to_note[arg] = request.GET[arg]
+        if method == 'get':
+            args_to_note[arg] = request.GET[arg]
+        else:
+            args_to_note[arg] = request.POST[arg]
     print 'user algorithm args:'
     print args_to_note
     service_exec.arguments = args_to_note
@@ -140,14 +143,20 @@ def gather_service_args(service_args, request, service_exec):
     return args_to_note
 
 
-def get_query_with_updated_filters(request, query_id):
+def get_query_with_updated_filters(request, query_id, method='get'):
     # dataset_id = request.GET["dataset_id"]
     # original_query_id = settings.LOCATION_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
 
     query_doc = Query.objects.get(pk=query_id).document
-    query_doc['filters'] = configure_spatial_filter(query_doc['filters'], request.GET["latitude_from"], request.GET["latitude_to"],
-                                                    request.GET["longitude_from"], request.GET["longitude_to"])
-    query_doc['filters'] = configure_temporal_filter(query_doc['filters'], request.GET["start_date"], request.GET["end_date"])
+    if method == 'get':
+        query_doc['filters'] = configure_spatial_filter(query_doc['filters'], request.GET["latitude_from"], request.GET["latitude_to"],
+                                                        request.GET["longitude_from"], request.GET["longitude_to"])
+        query_doc['filters'] = configure_temporal_filter(query_doc['filters'], request.GET["start_date"], request.GET["end_date"])
+    else:
+        query_doc['filters'] = configure_spatial_filter(query_doc['filters'], request.POST["latitude_from"], request.POST["latitude_to"],
+                                                        request.POST["longitude_from"], request.POST["longitude_to"])
+        query_doc['filters'] = configure_temporal_filter(query_doc['filters'], request.POST["start_date"], request.POST["end_date"])
+
     print "Updated Filters:"
     print query_doc['filters']
     new_query = TempQuery(document=query_doc, user=request.user)
@@ -612,6 +621,16 @@ def wec_load_matching_execute(request):
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
+    load_profile_csv = request.FILES['load_profile_csv']
+    if not load_profile_csv.name.endswith('.csv'):
+        return HttpResponse(status=500)
+
+    # Write the file to disk
+    fout = open('wave_energy_pilot/static/wave_energy_pilot/files/load_matching/' + load_profile_csv.name, 'wb')
+    for chunk in load_profile_csv.chunks():
+        fout.write(chunk)
+    fout.close()
+
     # Spawn thread to process the data
     t = Thread(target=wec_load_matching_execution_process, args=(request, service_exec.id))
     t.start()
@@ -621,54 +640,68 @@ def wec_load_matching_execute(request):
 def wec_load_matching_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
-    # GATHER THE SERVICE ARGUMENTS
-    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
-    args_to_note = gather_service_args(service_args, request, service_exec)
-    converters_selection = request.GET.getlist("converters[]")
-    wecs = list()
-    for converter_id in converters_selection:
-        aWec = dict()
-        converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        aWec['name'] = converter.title
-        aWec['min_H'] = str(int(round(converter.min_height, 0)))
-        aWec['max_H'] = str(int(round(converter.max_height)))
-        aWec['min_T'] = str(int(round(converter.min_energy_period)))
-        aWec['max_T'] = str(int(round(converter.max_energy_period)))
-        aWec['wec_matrix'] = converter.sample_rows
-        wecs.append(aWec)
-    args_to_note['wecs'] = wecs
-    service_exec.arguments = args_to_note
-    service_exec.save()
-    # CONFIGURE THE QUERY TO BE USED
-    dataset_id = request.GET['dataset_id']
-    query_id = settings.WEC_LOAD_MATCHING_SERVICE_DATASET_QUERY[dataset_id]
-    wave_height_query_id = get_query_with_updated_filters(request, query_id)
-    # CLONE THE SERVICE NOTE
-    new_notebook_id = clone_service_note(request, service, service_exec)
-    # ADD THE VISUALISATIONS TO BE CREATED
-    visualisations = dict()
-    cols_str = ''
-    for i, converter_id in enumerate(converters_selection):
-        converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        cols_str += '&y_var[]=power for ' + str(converter.title)
-    cols_str += '&y_var[]=load_profile '
+    try:
+        # GATHER THE SERVICE ARGUMENTS
+        service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
+        args_to_note = gather_service_args(service_args, request, service_exec, 'post')
+        load_profile_csv = request.FILES['load_profile_csv'].name
+        args_to_note['load_profile_csv'] = load_profile_csv
+        converters_selection = request.POST.getlist("converters[]")
+        wecs = list()
+        for converter_id in converters_selection:
+            aWec = dict()
+            converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
+            aWec['name'] = converter.title
+            aWec['min_H'] = str(int(round(converter.min_height, 0)))
+            aWec['max_H'] = str(int(round(converter.max_height)))
+            aWec['min_T'] = str(int(round(converter.min_energy_period)))
+            aWec['max_T'] = str(int(round(converter.max_energy_period)))
+            aWec['wec_matrix'] = converter.sample_rows
+            wecs.append(aWec)
+        args_to_note['wecs'] = wecs
+        service_exec.arguments = args_to_note
+        service_exec.save()
+        # CONFIGURE THE QUERY TO BE USED
+        dataset_id = request.POST['dataset_id']
+        query_id = settings.WEC_LOAD_MATCHING_SERVICE_DATASET_QUERY[dataset_id]
+        wave_height_query_id = get_query_with_updated_filters(request, query_id, 'post')
+        # CLONE THE SERVICE NOTE
+        new_notebook_id = clone_service_note(request, service, service_exec)
+        # ADD THE VISUALISATIONS TO BE CREATED
+        visualisations = dict()
+        cols_str = ''
+        for i, converter_id in enumerate(converters_selection):
+            converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
+            cols_str += '&y_var[]=power for ' + str(converter.title)
+        cols_str += '&y_var[]=load_profile '
 
-    visualisations['v1'] = ({'notebook_id': new_notebook_id,
-                             'df': 'power_df',
-                             'query': '',
-                             'title': "Generated Power",
-                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(new_notebook_id) + cols_str,
-                             'done': False})
-    service_exec.dataframe_visualizations = visualisations
-    service_exec.save()
-    # CREATE NEW ARGUMENTS PARAGRAPH
-    new_arguments_paragraph = create_args_paragraph(request, new_notebook_id, args_to_note, service)
-    # CREATE A LIVY SESSION
-    if service.through_livy:
-        service_exec.status = "Initializing Spark Session"
+        visualisations['v1'] = ({'notebook_id': new_notebook_id,
+                                 'df': 'power_df',
+                                 'query': '',
+                                 'title': "Generated Power",
+                                 'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(new_notebook_id) + cols_str,
+                                 'done': False})
+        service_exec.dataframe_visualizations = visualisations
         service_exec.save()
-        service_exec.livy_session = create_service_livy_session(request, service_exec)
+        # CREATE NEW ARGUMENTS PARAGRAPH
+        new_arguments_paragraph = create_args_paragraph(request, new_notebook_id, args_to_note, service)
+        # CREATE A LIVY SESSION
+        if service.through_livy:
+            service_exec.status = "Initializing Spark Session"
+            service_exec.save()
+            service_exec.livy_session = create_service_livy_session(request, service_exec)
+            service_exec.save()
+    except Exception as e:
+        print 'exception in preparing execution'
+        print '%s (%s)' % (e.message, type(e))
+        service_exec.status = "failed"
         service_exec.save()
+        # clean_up_new_note(service_exec.notebook_id)
+        # if 'livy_session' in request.GET.keys():
+        #     pass
+        # else:
+        #     if service_exec.service.through_livy:
+        #         close_livy_session(service_exec.livy_session)
     try:
         # RUN THE SERVICE CODE
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.WEC_LOAD_MATCHING_SERVICE_PARAGRAPHS)

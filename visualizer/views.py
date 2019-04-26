@@ -3070,12 +3070,11 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, orderi
 
     for x in y_var_list:
         # TODO: use proper names
-        y_title_list.insert(0, str(x))
-        y_m_unit.insert(0, str('unknown unit'))
+        y_title_list.append(str(x))
+        y_m_unit.append(str('unknown unit'))
     x_var_title = x_var
 
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
-
 
 
 def get_line_chart_am(request):
