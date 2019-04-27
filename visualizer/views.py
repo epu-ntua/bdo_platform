@@ -640,6 +640,7 @@ def map_visualizer(request):
     js_list = []
     old_map_id_list = []
     extra_js = ""
+    legend_id = ""
     try:
         try:
             layer_count = int(request.GET.get("layer_count", 0))
@@ -705,8 +706,9 @@ def map_visualizer(request):
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
                     cached_file, n_contours, step, variable, agg_function = get_contour_parameters(request, count)
-                    m, extra_js, old_map_id = get_map_contour(n_contours, step, variable, query_pk, agg_function, m,
+                    m, extra_js, old_map_id, legend = get_map_contour(n_contours, step, variable, query_pk, agg_function, m,
                                                                      cached_file)
+                    legend_id = legend.split("static/", 1)[1]
                     old_map_id_list.append(old_map_id)
             except ObjectDoesNotExist:
                 pass
@@ -744,6 +746,7 @@ def map_visualizer(request):
     map_id = soup.find("div", {"class": "folium-map"}).get('id')
     js_all = soup.findAll('script')
 
+
     # changes the wrong map_id's for all the extra scripts used
     for mid in old_map_id_list:
         for js in js_list:
@@ -760,7 +763,7 @@ def map_visualizer(request):
         css_all = [css.prettify() for css in css_all[3:]]
     # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
     html1 = render_to_string('visualizer/final_map_folium_template.html',
-                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id})
     # print(html1)
     return HttpResponse(html1)
 
@@ -1098,8 +1101,10 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
             mappath = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
             print 'mappath'
             print mappath
-            # legpath = get_contour_legend(max_val, min_val)
-            legpath = ''
+            legpath = get_contour_legend(max_val, min_val)
+            # legpath = ''
+            print 'legpath'
+            print legpath
 
             dict['min_lat'] = min_lat
             dict['max_lat'] = max_lat
@@ -1136,7 +1141,7 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
         print 'mapname ok'
         map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
                                                   step, mapname)
-        return m, ret_html, map_id
+        return m, ret_html, map_id, legpath
 
     except Exception, e:
         print e
@@ -1186,9 +1191,9 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
     contour_layer.layer_name = 'Contours On Map - Layer:' + str(time.time()).replace(".","_")
     m.add_child(contour_layer)
-    # legend_img = Image.open(legpath)
-    # legend = trim(legend_img)
-    # legend_img.close()
+    legend_img = Image.open(legpath)
+    legend = trim(legend_img)
+    legend_img.close()
     # contour_legend_layer = plugins.ImageOverlay(legend, zindex=2, opacity=1,bounds=[[-60, -173], [-55, -90]])
     # contour_legend_layer.layer_name = 'Contours Legend - Layer:' + str(time.time()).replace(".", "_")
     # m.add_child(contour_legend_layer)
@@ -1208,7 +1213,7 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
 def get_contour_legend(max_val, min_val):
     a = np.array([[min_val, max_val]])
     pl.figure(figsize=(2.8, 0.4))
-    img = pl.imshow(a, cmap=plt.cm.coolwarm)
+    img = pl.imshow(a, cmap="rainbow")
     pl.gca().set_visible(False)
     cax = pl.axes([0.1, 0.2, 0.8, 0.6])
     cbar = pl.colorbar(orientation="horizontal", cax=cax)
@@ -1223,8 +1228,6 @@ def get_contour_legend(max_val, min_val):
 
 
 def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_index, lon_index, var_index):
-    levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
-    print 'levels ok'
     import matplotlib.tri as tri
     from mpl_toolkits.basemap import Basemap
     bm = Basemap()
@@ -1247,13 +1250,60 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     # print len(yi)
     # print len(zi[0])  # columns
     # print len(xi)
+    len_xi = len(xi)
+    len_yi = len(yi)
+    land = None
     for x_index, x in enumerate(xi):
         for y_index, y in enumerate(yi):
+            land = False
             if bm.is_land(x, y):
-                zi[y_index][x_index] = None
+                land = True
+            if bm.is_land(x+0.1, y):
+                land = True
+            if bm.is_land(x, y+0.1):
+                land = True
+            if bm.is_land(x+0.1, y+0.1):
+                land = True
+            if land:
+                # try:
+                #     zi[y_index-1][x_index-1] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index][x_index-1] = None
+                # except:
+                #     pass
+                try:
+                    zi[y_index-1][x_index] = None
+                except:
+                    pass
+                try:
+                    zi[y_index][x_index] = None
+                except:
+                    pass
+
     # fig, ax1 = plt.subplots(nrows=1)
-    min_val = min(z)
-    max_val = max(z)
+    min_val = None
+    max_val = None
+    for r in zi:
+        for c in r:
+            if c is not None:
+                min_val = c
+                max_val = c
+                break
+        if min_val is not None:
+            break
+    for r in zi:
+        for c in r:
+            if c is not None:
+                if c < min_val:
+                    min_val = c
+                if c > max_val:
+                    max_val = c
+    levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+    # print levels
+    print min_val, max_val
+    print 'levels ok'
     # levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
     # ax1.contour(xi, yi, zi, levels=levels, linewidths=0.5, colors='k')
     # cntr1 = ax1.contourf(xi, yi, zi, levels=levels, cmap="RdBu_r")
@@ -1264,7 +1314,8 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     ax = fig.add_subplot(111)
     # plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
     # ax1.contour(xi, yi, zi, levels=levels, linewidths=0.5, colors='k')
-    plt.contourf(xi, yi, zi, levels=levels, cmap="RdBu_r")
+    cs = plt.contourf(xi, yi, zi, levels=levels, cmap="rainbow")
+    # ax.clabel(cs, fmt='%2.1f', colors='w', fontsize=5)
     # plt.tricontourf(x, y, z, levels=levels, cmap="RdBu_r")
     plt.axis('off')
     extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
