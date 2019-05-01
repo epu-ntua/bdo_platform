@@ -318,9 +318,20 @@ def execute_code_on_livy(code, session_id, kind):
         from time import sleep
         sleep(3)  # Time in seconds.
         while state != 'available':
-            state = requests.get(host + '/sessions/' + str(session_id) + '/statements/' + str(statement_id), headers=headers).json()['state']
+            r = requests.get(host + '/sessions/' + str(session_id) + '/statements/' + str(statement_id), headers=headers).json()
+            # print json.dumps(r)
+            state = r['state']
             if state == 'error' or state == 'cancelling' or state == 'cancelled':
                 raise Exception('Failed')
+            # print state
+            if type(r) == dict and 'output' in r.keys():
+                # print 'output in keys ' + str(r.keys())
+                if type(r['output']) == dict and 'status' in r['output'].keys():
+                    # print 'status in keys ' + str(r['output'].keys())
+                    exec_status = r['output']['status']
+                    if exec_status == 'error':
+                        print 'Livy Execution Failed'
+                        raise Exception('Livy Execution Failed')
     except Exception:
         raise Exception('Failed')
     return statement_id
@@ -870,7 +881,7 @@ def create_livy_session(notebook_id):
              'numExecutors': 1,
              'executorMemory': '2g',
              'executorCores': 2,
-             'heartbeatTimeoutInSecond': 120,
+             # 'heartbeatTimeoutInSecond': 120,
              'conf': {'spark.driver.maxResultSize': '2g'}}
     response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
     # print response

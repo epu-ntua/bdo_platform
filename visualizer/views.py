@@ -93,12 +93,14 @@ def get_contour_parameters(request, count):
     variable = str(request.GET.get('contour_var' + str(count), ''))
     if variable == '':
         raise ValueError('A variable has to be selected for the contours to be created on the map.')
+    lat_col = str(request.GET.get('lat_col' + str(count), ''))
+    lon_col = str(request.GET.get('lon_col' + str(count), ''))
 
     agg_function = str(request.GET.get('agg_func', 'avg'))
     if not agg_function.lower() in AGGREGATE_VIZ:
         raise ValueError('The given aggregate function is not valid.')
 
-    return cached_file, n_contours, step, variable, agg_function
+    return cached_file, n_contours, step, variable, lat_col, lon_col, agg_function
 
 
 def get_markers_parameters(request, count):
@@ -705,9 +707,9 @@ def map_visualizer(request):
             # Contours
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
-                    cached_file, n_contours, step, variable, agg_function = get_contour_parameters(request, count)
-                    m, extra_js, old_map_id, legend = get_map_contour(n_contours, step, variable, query_pk, agg_function, m,
-                                                                     cached_file)
+                    cached_file, n_contours, step, variable, lat_col, lon_col, agg_function = get_contour_parameters(request, count)
+                    m, extra_js, old_map_id, legend = get_map_contour(n_contours, step, variable, query_pk, df, notebook_id, variable, lat_col, lon_col, agg_function, m,
+                                                                     cached_file, request)
                     legend_id = legend.split("static/", 1)[1]
                     old_map_id_list.append(old_map_id)
             except ObjectDoesNotExist:
@@ -1084,13 +1086,22 @@ def get_heatmap_query_data(query, heat_variable):
     return data, lat_index, lon_index, heat_var_index
 
 
-def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cached_file, tries=0):
+def get_map_contour(n_contours, step, variable, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=0):
     try:
         round_num = get_contour_step_rounded(step)
         dict = {}
         if not os.path.isfile('visualizer/static/visualizer/temp/'+cached_file):
-            query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
-            data, lat_index, lon_index, var_index = get_contours_query_data(query, variable)
+            if query_pk != 0:
+                query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
+                data, lat_index, lon_index, var_index = get_contours_query_data(query, variable)
+            else:
+                df_data, headers = load_execute_dataframe_data(request, df, notebook_id)
+                data = []
+                for s in df_data:
+                    data.append([float(s[lat_col]), float(s[lon_col]), float(s[contour_col])])
+                lat_index = 0
+                lon_index = 1
+                var_index = 2
             Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val = get_contour_grid(data, lat_index, lon_index, step, var_index)
             # final_data, data_grid = get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index)
             data_grid = []
@@ -1147,7 +1158,7 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
         print e
         traceback.print_exc()
         if tries == 0:
-            return get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cached_file, tries=1)
+            return get_map_contour(n_contours, step, variable, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=1)
         else:
             raise Exception('An error occurred while creating the contours on map.')
 
@@ -1230,7 +1241,6 @@ def get_contour_legend(max_val, min_val):
 def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_index, lon_index, var_index):
     import matplotlib.tri as tri
     from mpl_toolkits.basemap import Basemap
-    bm = Basemap()
     x = np.array([i[lon_index] for i in final_data])
     y = np.array([i[lat_index] for i in final_data])
     z = np.array([i[var_index] for i in final_data])
@@ -1238,6 +1248,9 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     min_y = min(y)
     max_x = max(x)
     max_y = max(y)
+    bm = Basemap(llcrnrlon = min_x, llcrnrlat = min_y,
+               urcrnrlon = max_x, urcrnrlat =
+                 max_y,projection='cyl', resolution='i')
 
     triang = tri.Triangulation(x, y)
     interpolator = tri.LinearTriInterpolator(triang, z)
@@ -1256,14 +1269,21 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     for x_index, x in enumerate(xi):
         for y_index, y in enumerate(yi):
             land = False
-            if bm.is_land(x, y):
+            xcord, ycord = bm(x, y)
+            if bm.is_land(xcord, ycord):
                 land = True
-            if bm.is_land(x+0.1, y):
+            xcord, ycord = bm(x+0.1, y)
+            if bm.is_land(xcord, ycord):
                 land = True
-            if bm.is_land(x, y+0.1):
+            xcord, ycord = bm(x, y+0.1)
+            if bm.is_land(xcord, ycord):
                 land = True
-            if bm.is_land(x+0.1, y+0.1):
-                land = True
+            # xcord, ycord = bm(x+0.1, y+0.1)
+            # if bm.is_land(xcord, ycord):
+            #     land = True
+
+            # print 'examining ' + str(x) + ', ' + str(y)
+            # print str(land)
             if land:
                 # try:
                 #     zi[y_index-1][x_index-1] = None
@@ -1273,10 +1293,22 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
                 #     zi[y_index][x_index-1] = None
                 # except:
                 #     pass
-                try:
-                    zi[y_index-1][x_index] = None
-                except:
-                    pass
+                # try:
+                #     zi[y_index-1][x_index] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index+1][x_index+1] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index][x_index+1] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index+1][x_index] = None
+                # except:
+                #     pass
                 try:
                     zi[y_index][x_index] = None
                 except:
@@ -1300,7 +1332,11 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
                     min_val = c
                 if c > max_val:
                     max_val = c
-    levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+    if min_val == max_val:
+        max_val += 10
+        levels = np.linspace(start=min_val, stop=max_val, num=5)
+    else:
+        levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
     # print levels
     print min_val, max_val
     print 'levels ok'
@@ -3265,6 +3301,8 @@ def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_
 
 
 def load_execute_dataframe_data(request, df, notebook_id):
+    # import pdb
+    # pdb.set_trace()
     livy = False
     service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
     if len(service_exec) > 0:

@@ -216,6 +216,7 @@ def execute_service_code(request, service_exec, new_arguments_paragraph, paragra
                 run_zep_paragraph(service_exec.notebook_id, paragraph, service_exec.livy_session, 'zeppelin')
 
 
+
 def clean_up_new_note(notebook_id, wait_time_seconds=0):
     print "waiting to clean up note " + str(notebook_id)
     sleep(wait_time_seconds)
@@ -266,6 +267,7 @@ def energy_conversion_init(request):
                    'execution_steps': execution_steps})
 
 
+@never_cache
 def wec_single_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.WEC_LOCATION_EVALUATION_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
@@ -389,6 +391,7 @@ def wec_single_location_evaluation_results(request, exec_instance):
                    'visualisations': service_exec.dataframe_visualizations})
 
 
+@never_cache
 def wec_area_evaluation_execute(request):
     service = Service.objects.get(pk=settings.WEC_AREA_EVALUATION_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
@@ -404,7 +407,7 @@ def wec_area_evaluation_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
     # GATHER THE SERVICE ARGUMENTS
-    service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to"]
+    service_args = ["latitude_from", "latitude_to", "longitude_from", "longitude_to"]
     args_to_note = gather_service_args(service_args, request, service_exec)
     converters_selection = request.GET.getlist("converters[]")
     wecs = list()
@@ -420,6 +423,8 @@ def wec_area_evaluation_execution_process(request, exec_instance):
         wecs.append(aWec)
     args_to_note['wecs'] = wecs
     args_to_note['dataset_id'] = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY.keys()[0]
+    args_to_note['start_date'] = str(Dataset.objects.get(pk=int(args_to_note['dataset_id'])).temporalCoverageBegin)
+    args_to_note['end_date'] = str(Dataset.objects.get(pk=int(args_to_note['dataset_id'])).temporalCoverageEnd)
     service_exec.arguments = args_to_note
     service_exec.save()
     # CONFIGURE THE QUERY TO BE USED
@@ -432,19 +437,31 @@ def wec_area_evaluation_execution_process(request, exec_instance):
     visualisations = dict()
     power_cols_str = ''
     cap_factors_cols_str = ''
+    shut_down_cols_str = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&y_var[]=power for ' + str(converter.title)
-        cap_factors_cols_str += '&y_var[]=capacity factor for ' + str(converter.title)
+        power_cols_str += '&contour_var0=power for ' + str(converter.title)
+        cap_factors_cols_str += '&contour_var0=capacity factor for ' + str(converter.title)
+        shut_down_cols_str += '&contour_var0=danger times for ' + str(converter.title)
 
-    # visualisations['v1'] = ({'notebook_id': new_notebook_id,
-    #                          'df': 'power_df',
-    #                          'query': '',
-    #                          'title': "Generated Power",
-    #                          'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(
-    #                              new_notebook_id) + power_cols_str,
-    #                          'done': False})
-
+    visualisations['v1'] = ({'notebook_id': new_notebook_id,
+                             'df': 'power_df',
+                             'query': '',
+                             'title': "WEC Average Power Output",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id) + power_cols_str,
+                             'done': False})
+    visualisations['v2'] = ({'notebook_id': new_notebook_id,
+                             'df': 'wec_cap_factors_df',
+                             'query': '',
+                             'title': "WEC Capacity Factor",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=wec_cap_factors_df&notebook_id0=" + str(new_notebook_id) + cap_factors_cols_str,
+                             'done': False})
+    visualisations['v3'] = ({'notebook_id': new_notebook_id,
+                             'df': 'danger_times_df',
+                             'query': '',
+                             'title': "Number of Shut Down Hours",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=danger_times_df&notebook_id0=" + str(new_notebook_id) + shut_down_cols_str,
+                             'done': False})
     service_exec.dataframe_visualizations = visualisations
     service_exec.save()
     # CREATE NEW ARGUMENTS PARAGRAPH
@@ -467,7 +484,7 @@ def wec_area_evaluation_execution_process(request, exec_instance):
         print '%s (%s)' % (e.message, type(e))
         service_exec.status = "failed"
         service_exec.save()
-        clean_up_new_note(service_exec.notebook_id)
+        # clean_up_new_note(service_exec.notebook_id)
         if 'livy_session' in request.GET.keys():
             pass
         else:
