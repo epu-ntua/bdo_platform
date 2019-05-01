@@ -2993,7 +2993,7 @@ def get_histogram_2d_am(request):
 
 
 
-def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_type, ordering = True):
+def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_type, ordering = True, limit=True):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
@@ -3019,7 +3019,8 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
     try:
         with open('visualizer/static/visualizer/visualisations_settings.json') as f:
             json_data = json.load(f)
-        doc['limit'] = json_data['visualiser'][chart_type]['limit']
+        if limit:
+            doc['limit'] = json_data['visualiser'][chart_type]['limit']
     except:
         pass
     query.document = doc
@@ -3170,10 +3171,14 @@ def get_line_chart_am(request):
         x_var = str(request.GET.get('x_var', ''))
         y_var_list = request.GET.getlist('y_var[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
+        limit = str(request.GET.get('limit', 'True'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am')
+            if limit == 'True':
+                query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, True)
+            else:
+                query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)

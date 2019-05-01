@@ -851,7 +851,7 @@ def data_visualization_results(request):
                              'df': '',
                              'query': visualization_query_id,
                              'title': "Time Series Graph",
-                             'url': "/visualizations/get_line_chart_am/?"+y_var+"x_var=i0_time&agg_func=AVG&query="+str(visualization_query_id),
+                             'url': "/visualizations/get_line_chart_am/?"+y_var+"x_var=i0_time&limit=False&agg_func=AVG&query="+str(visualization_query_id),
                              'done': False})
     service_exec.dataframe_visualizations = visualizations
     service_exec.save()
@@ -918,7 +918,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Sea surface wave significant height",
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_height_query_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&limit=False&query="+str(wave_height_query_id),
                              'done': False})
     visualisations['v2'] = ({'notebook_id': '',
                              'df': '',
@@ -1164,13 +1164,13 @@ def wave_forecast_execution_process(request, exec_instance):
     visualisations['v1'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_forecast_query_id,
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&query="+str(wave_forecast_query_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&limit=False&query="+str(wave_forecast_query_id),
                              'done': False,
                              'title': 'Wave significant height'})
     visualisations['v2'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_forecast_query_id,
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_zero_upcrossing_period&x_var=i0_time&query=" + str(
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_zero_upcrossing_period&x_var=i0_time&limit=False&query=" + str(
                                  wave_forecast_query_id),
                              'done': False,
                              'title': 'Wave mean period'})
