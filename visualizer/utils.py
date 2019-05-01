@@ -881,7 +881,7 @@ def create_livy_session(notebook_id):
              'numExecutors': 1,
              'executorMemory': '2g',
              'executorCores': 2,
-             # 'heartbeatTimeoutInSecond': 120,
+             'heartbeatTimeoutInSecond': 120,
              'conf': {'spark.driver.maxResultSize': '2g'}}
     response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
     # print response
