@@ -2666,7 +2666,7 @@ def get_histogram_2d_matplotlib(request):
     for el in freq:
         hor_table = []
         for i in el:
-            new_el = i/total
+            new_el = i/total * 100
             hor_table.append(new_el)
         new_table.append(hor_table)
     new_table = np.array(new_table)
