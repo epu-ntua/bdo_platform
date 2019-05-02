@@ -918,12 +918,12 @@ def single_location_evaluation_execution_process(request, exec_instance):
     new_notebook_id = clone_service_note(request, service, service_exec)
     # ADD THE VISUALISATIONS TO BE CREATED
     visualisations = dict()
-    visualisations['v1'] = ({'notebook_id': '',
-                             'df': '',
-                             'query': wave_height_query_id,
-                             'title': "Sea surface wave significant height",
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&limit=False&query="+str(wave_height_query_id),
-                             'done': False})
+    # visualisations['v1'] = ({'notebook_id': '',
+    #                          'df': '',
+    #                          'query': wave_height_query_id,
+    #                          'title': "Sea surface wave significant height",
+    #                          'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&limit=False&query="+str(wave_height_query_id),
+    #                          'done': False})
     visualisations['v2'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
