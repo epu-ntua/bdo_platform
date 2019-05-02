@@ -2981,7 +2981,12 @@ def get_histogram_2d_am(request):
     cbar.ax.tick_params(labelsize=10, colors="#000000")
     pl.xlabel("'Percentage %'", labelpad=10)
     ts = str(time.time()).replace(".", "")
-    legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
+    import sys
+    if sys.argv[1] == 'runserver':
+        legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
+    else:
+        legpath = (settings.STATIC_ROOT + '/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
+    # legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
     pl.savefig(legpath, transparent=True, bbox_inches='tight')
     legpath = legpath.split("static/", 1)[1]
     pl.clf()
