@@ -317,6 +317,7 @@ def wec_single_location_evaluation_execution_process(request, exec_instance):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
         power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW/m'
         cap_factors_cols_str += '&y_var[]=capacity factor for ' + str(converter.title) + '&y_var_unit[]=%'
+        cap_factors_cols_str += '&y_var[]=avg(capacity factor for ' + str(converter.title) + ')&y_var_unit[]=%'
 
     visualisations['v1'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
@@ -329,8 +330,7 @@ def wec_single_location_evaluation_execution_process(request, exec_instance):
                              'df': 'wec_cap_factors_df',
                              'query': '',
                              'title': "Capacity Factor",
-                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=wec_cap_factors_df&notebook_id=" + str(
-                                 new_notebook_id) + cap_factors_cols_str,
+                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=wec_cap_factors_df&notebook_id=" + str(new_notebook_id) + cap_factors_cols_str,
                              'done': False})
     service_exec.dataframe_visualizations = visualisations
     service_exec.save()
