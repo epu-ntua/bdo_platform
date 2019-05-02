@@ -3208,13 +3208,14 @@ def get_line_chart_am(request):
                   {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
-
 def get_time_series_am(request):
     try:
         query_pk, df, notebook_id = get_data_parameters(request, '')
         existing_temp_res = request.GET.get('use_existing_temp_res', '') == 'on'
         temporal_resolution = str(request.GET.get('temporal_resolution', ''))
         y_var_list = request.GET.getlist('y_var[]')
+        x_var_unit = str(request.GET.get('x_var_unit', ''))
+        y_var_unit_list = request.GET.getlist('y_var_unit[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
         chart_type = str(request.GET.get('chart_type', 'line'))
         if not agg_function.lower() in AGGREGATE_VIZ:
@@ -3224,7 +3225,7 @@ def get_time_series_am(request):
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
             min_chart_period = chart_min_period_finder(min_period)
         elif df != '':
-            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, x_var_unit, y_var_unit_list, True)
             order_var = 'time'.encode('ascii')
             min_chart_period = 'ss'
         else:
@@ -3246,6 +3247,8 @@ def get_column_chart_am(request):
 
         x_var = str(request.GET.get('x_var', ''))
         y_var_list = request.GET.getlist('y_var[]')
+        x_var_unit = str(request.GET.get('x_var_unit', ''))
+        y_var_unit_list = request.GET.getlist('y_var_unit[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
@@ -3253,7 +3256,7 @@ def get_column_chart_am(request):
             query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
-            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit, y_var_unit_list, False)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
@@ -3265,7 +3268,7 @@ def get_column_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_pie_chart_am(request):
@@ -3273,6 +3276,8 @@ def get_pie_chart_am(request):
         query_pk, df, notebook_id = get_data_parameters(request, '')
         key_var = str(request.GET.get('key_var', ''))
         value_var = str(request.GET.get('value_var', ''))
+        x_var_unit = str(request.GET.get('x_var_unit', ''))
+        y_var_unit_list = request.GET.getlist('y_var_unit[]')
         agg_function = str(request.GET.get('agg_func', 'sum'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
@@ -3280,7 +3285,8 @@ def get_pie_chart_am(request):
             query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
         elif df !='':
-            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], x_var_unit, y_var_unit_list, True)
+
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:

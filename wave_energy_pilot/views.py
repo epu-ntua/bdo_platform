@@ -943,17 +943,24 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'title': "Power histogram",
                              'url': "/visualizations/get_histogram_chart_am/?bins=5&x_var=avg(power)&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
+
+    start_year = int(args_to_note['start_date'].split('-')[0])
+    end_year = int(args_to_note['end_date'].split('-')[0])
+    print start_year, end_year
+    power_availability_vars = ''
+    for year in range(start_year, end_year+1):
+        power_availability_vars += '&y_var[]=avg(power)_'+str(year)+'&y_var_unit[]=kW/m'
     visualisations['v5'] = ({'notebook_id': '',
-                             'df': '',
-                             'query': wave_height_query_id,
+                             'df': 'power_df_year_month',
+                             'query': '',
                              'title': "Monthly availability of waves",
-                             'url': "/visualizations/get_time_series_am?viz_id=22&action=get_time_series_am&y_var[]=i0_sea_surface_wave_significant_height&temporal_resolution=date_trunc_month&agg_func=AVG&query="+str(wave_height_query_id),
+                             'url': "/visualizations/get_column_chart_am/?x_var=month_name&df=power_df_year_month&notebook_id="+str(new_notebook_id) + str(power_availability_vars),
                              'done': False})
-    # visualisations['v4'] = ({'notebook_id': '',
+    # visualisations['v5'] = ({'notebook_id': '',
     #                          'df': '',
     #                          'query': wave_height_query_id,
-    #                          'title': "Wave period",
-    #                          'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_zero_upcrossing_period&x_var=i1_time&query=" + str(
+    #                          'title': "Monthly availability of waves",
+    #                          'url': "/visualizations/get_time_series_am?viz_id=22&action=get_time_series_am&y_var[]=i0_sea_surface_wave_significant_height&temporal_resolution=date_trunc_month&agg_func=AVG&query=" + str(
     #                              wave_height_query_id),
     #                          'done': False})
     service_exec.dataframe_visualizations = visualisations
@@ -979,9 +986,9 @@ def single_location_evaluation_execution_process(request, exec_instance):
         clean_up_new_note(service_exec.notebook_id)
         if 'livy_session' in request.GET.keys():
             pass
-        else:
-            if service_exec.service.through_livy:
-                close_livy_session(service_exec.livy_session)
+        # else:
+        #     if service_exec.service.through_livy:
+        #         close_livy_session(service_exec.livy_session)
 
 
 @never_cache

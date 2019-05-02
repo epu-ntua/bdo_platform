@@ -975,7 +975,9 @@ def create_livy_toJSON_paragraph(session_id, df_name, order_by='', order_type='A
                 raise Exception('Failed')
     except Exception:
         raise Exception('Failed')
-
+    # return_val = ast.literal_eval(response['output']['data']['text/plain'])
+    # print return_val
+    # return return_val
     return json.loads(response['output']['data']['text/plain'].replace("\'","'").replace("u'{", "{").replace("}',", "},").replace("}']", "}]").replace("'", '"'))
 
 
