@@ -440,9 +440,9 @@ def wec_area_evaluation_execution_process(request, exec_instance):
     shut_down_cols_str = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&contour_var0=power for ' + str(converter.title)
-        cap_factors_cols_str += '&contour_var0=capacity factor for ' + str(converter.title)
-        shut_down_cols_str += '&contour_var0=danger times for ' + str(converter.title)
+        power_cols_str += '&contour_var0=power for ' + str(converter.title) + '&contour_var_unit0=kW/m'
+        cap_factors_cols_str += '&contour_var0=capacity factor for ' + str(converter.title) + '&contour_var_unit0=%'
+        shut_down_cols_str += '&contour_var0=danger times for ' + str(converter.title) + '&contour_var_unit0=hours'
 
     visualisations['v1'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
@@ -1065,27 +1065,32 @@ def area_location_evaluation_execution_process(request, exec_instance):
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Mean significant wave height",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=80&step0=0.1&agg_func=AVG&query0="+str(wave_height_query_id),
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=500&step0=0.1&agg_func=AVG&query0="+str(wave_height_query_id),
                              'done': False})
     visualisations['v2'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Mean wave period",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=80&step0=0.1&agg_func=AVG&query0=" + str(wave_height_query_id),
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=500&step0=0.1&agg_func=AVG&query0=" + str(wave_height_query_id),
                              'done': False})
-    visualisations['v3'] = ({'notebook_id': '',
+    visualisations['v3'] = ({'notebook_id': new_notebook_id,
+                             'df': 'power_df',
+                             'query': '',
+                             'title': "Mean wave power",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=avg_power&contour_var_unit0=kW/m&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id),
+                             'done': False})
+    visualisations['v4'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Maximum significant wave height",
                              'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=80&step0=0.1&agg_func=MAX&query0=" + str(
                                  wave_height_query_id),
                              'done': False})
-    visualisations['v4'] = ({'notebook_id': '',
-                             'df': '',
-                             'query': wave_height_query_id,
-                             'title': "Maximum wave period",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=80&step0=0.1&agg_func=MAX&query0=" + str(
-                                 wave_height_query_id),
+    visualisations['v5'] = ({'notebook_id': new_notebook_id,
+                             'df': 'power_df',
+                             'query': '',
+                             'title': "Maximum wave power",
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=max_power&contour_var_unit0=kW/m&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id),
                              'done': False})
     service_exec.dataframe_visualizations = visualisations
     service_exec.save()

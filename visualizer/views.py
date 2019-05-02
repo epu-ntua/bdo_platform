@@ -93,6 +93,8 @@ def get_contour_parameters(request, count):
     variable = str(request.GET.get('contour_var' + str(count), ''))
     if variable == '':
         raise ValueError('A variable has to be selected for the contours to be created on the map.')
+    unit = str(request.GET.get('contour_var_unit' + str(count), ''))
+    print("THE UNIT IS "+ unit)
     lat_col = str(request.GET.get('lat_col' + str(count), ''))
     lon_col = str(request.GET.get('lon_col' + str(count), ''))
 
@@ -100,7 +102,7 @@ def get_contour_parameters(request, count):
     if not agg_function.lower() in AGGREGATE_VIZ:
         raise ValueError('The given aggregate function is not valid.')
 
-    return cached_file, n_contours, step, variable, lat_col, lon_col, agg_function
+    return cached_file, n_contours, step, variable, unit, lat_col, lon_col, agg_function
 
 
 def get_markers_parameters(request, count):
@@ -643,6 +645,7 @@ def map_visualizer(request):
     old_map_id_list = []
     extra_js = ""
     legend_id = ""
+    unit = ''
     try:
         try:
             layer_count = int(request.GET.get("layer_count", 0))
@@ -707,9 +710,10 @@ def map_visualizer(request):
             # Contours
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
-                    cached_file, n_contours, step, variable, lat_col, lon_col, agg_function = get_contour_parameters(request, count)
-                    m, extra_js, old_map_id, legend = get_map_contour(n_contours, step, variable, query_pk, df, notebook_id, variable, lat_col, lon_col, agg_function, m,
+                    cached_file, n_contours, step, variable, unit, lat_col, lon_col, agg_function = get_contour_parameters(request, count)
+                    m, extra_js, old_map_id, legend, unit = get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, variable, lat_col, lon_col, agg_function, m,
                                                                      cached_file, request)
+                    unit = unit
                     legend_id = legend.split("static/", 1)[1]
                     old_map_id_list.append(old_map_id)
             except ObjectDoesNotExist:
@@ -765,7 +769,7 @@ def map_visualizer(request):
         css_all = [css.prettify() for css in css_all[3:]]
     # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
     html1 = render_to_string('visualizer/final_map_folium_template.html',
-                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id})
+                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id, 'unit': unit})
     # print(html1)
     return HttpResponse(html1)
 
@@ -1086,14 +1090,14 @@ def get_heatmap_query_data(query, heat_variable):
     return data, lat_index, lon_index, heat_var_index
 
 
-def get_map_contour(n_contours, step, variable, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=0):
+def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=0):
     try:
         round_num = get_contour_step_rounded(step)
         dict = {}
         if not os.path.isfile('visualizer/static/visualizer/temp/'+cached_file):
             if query_pk != 0:
                 query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
-                data, lat_index, lon_index, var_index = get_contours_query_data(query, variable)
+                data, lat_index, lon_index, var_index, unit = get_contours_query_data(query, variable)
             else:
                 df_data, headers = load_execute_dataframe_data(request, df, notebook_id)
                 data = []
@@ -1152,13 +1156,13 @@ def get_map_contour(n_contours, step, variable, query_pk, df, notebook_id, conto
         print 'mapname ok'
         map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
                                                   step, mapname)
-        return m, ret_html, map_id, legpath
+        return m, ret_html, map_id, legpath, unit
 
     except Exception, e:
         print e
         traceback.print_exc()
         if tries == 0:
-            return get_map_contour(n_contours, step, variable, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=1)
+            return get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=1)
         else:
             raise Exception('An error occurred while creating the contours on map.')
 
@@ -1444,15 +1448,18 @@ def get_contours_query_data(query, variable):
 
     var_index = lat_index = lon_index = -1
     # print result_headers
+    unit = ''
     for idx, c in enumerate(result_headers['columns']):
         if c['name'] == variable:
             var_index = idx
+            unit = c['unit']
         elif c['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
         elif c['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
     data = [row for row in result_data if row[var_index] is not None]
-    return data, lat_index, lon_index, var_index
+    # print("THE UNIT IS " + unit)
+    return data, lat_index, lon_index, var_index, unit
 
 
 
