@@ -216,7 +216,6 @@ def execute_service_code(request, service_exec, new_arguments_paragraph, paragra
                 run_zep_paragraph(service_exec.notebook_id, paragraph, service_exec.livy_session, 'zeppelin')
 
 
-
 def clean_up_new_note(notebook_id, wait_time_seconds=0):
     print "waiting to clean up note " + str(notebook_id)
     sleep(wait_time_seconds)
@@ -316,8 +315,8 @@ def wec_single_location_evaluation_execution_process(request, exec_instance):
     cap_factors_cols_str = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&y_var[]=power for ' + str(converter.title)
-        cap_factors_cols_str += '&y_var[]=capacity factor for ' + str(converter.title)
+        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW/m'
+        cap_factors_cols_str += '&y_var[]=capacity factor for ' + str(converter.title) + '&y_var_unit[]=%'
 
     visualisations['v1'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
@@ -565,7 +564,7 @@ def wec_generation_forecast_execution_process(request, exec_instance):
     power_cols_str = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&y_var[]=power for ' + str(converter.title)
+        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW/m'
 
     visualisations['v1'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
@@ -689,8 +688,8 @@ def wec_load_matching_execution_process(request, exec_instance):
         cols_str = ''
         for i, converter_id in enumerate(converters_selection):
             converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-            cols_str += '&y_var[]=power for ' + str(converter.title)
-        cols_str += '&y_var[]=load_profile '
+            cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW/m'
+        cols_str += '&y_var[]=load_profile ' + '&y_var_unit[]=load_profile_unit'
 
         visualisations['v1'] = ({'notebook_id': new_notebook_id,
                                  'df': 'power_df',
@@ -713,12 +712,12 @@ def wec_load_matching_execution_process(request, exec_instance):
         print '%s (%s)' % (e.message, type(e))
         service_exec.status = "failed"
         service_exec.save()
-        # clean_up_new_note(service_exec.notebook_id)
-        # if 'livy_session' in request.GET.keys():
-        #     pass
-        # else:
-        #     if service_exec.service.through_livy:
-        #         close_livy_session(service_exec.livy_session)
+        clean_up_new_note(service_exec.notebook_id)
+        if 'livy_session' in request.GET.keys():
+            pass
+        else:
+            if service_exec.service.through_livy:
+                close_livy_session(service_exec.livy_session)
     try:
         # RUN THE SERVICE CODE
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.WEC_LOAD_MATCHING_SERVICE_PARAGRAPHS)
@@ -731,12 +730,12 @@ def wec_load_matching_execution_process(request, exec_instance):
         print '%s (%s)' % (e.message, type(e))
         service_exec.status = "failed"
         service_exec.save()
-        # clean_up_new_note(service_exec.notebook_id)
-        # if 'livy_session' in request.GET.keys():
-        #     pass
-        # else:
-        #     if service_exec.service.through_livy:
-        #         close_livy_session(service_exec.livy_session)
+        clean_up_new_note(service_exec.notebook_id)
+        if 'livy_session' in request.GET.keys():
+            pass
+        else:
+            if service_exec.service.through_livy:
+                close_livy_session(service_exec.livy_session)
 
 
 @never_cache
@@ -931,7 +930,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'df': 'power_df',
                              'query': '',
                              'title': "Power line chart",
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&y_var_unit[]=kW/m&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
     visualisations['v4'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
@@ -1177,7 +1176,7 @@ def wave_forecast_execution_process(request, exec_instance):
     visualisations['v3'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&y_var_unit[]=kW/m&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False,
                              'title': 'Wave Energy'})
     service_exec.dataframe_visualizations = visualisations

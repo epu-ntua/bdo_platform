@@ -3129,7 +3129,7 @@ def get_chart_query_data(query, x_var, y_var_list):
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
 
-def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, ordering = True):
+def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit='', y_var_unit_list=[], ordering = True):
     y_m_unit = []
     x_m_unit = ''
     y_title_list = []
@@ -3156,11 +3156,16 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, orderi
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
-    for x in y_var_list:
-        # TODO: use proper names
-        y_title_list.append(str(x))
-        y_m_unit.append(str('unknown unit'))
+    x_m_unit = x_var_unit
     x_var_title = x_var
+
+    for i, x in enumerate(y_var_list):
+        y_title_list.append(str(x))
+        try:
+            y_m_unit.append(str(y_var_unit_list[i]))
+        except IndexError:
+            y_m_unit.append(str('unknown unit'))
+            pass
 
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
@@ -3171,6 +3176,8 @@ def get_line_chart_am(request):
         x_var = str(request.GET.get('x_var', ''))
         y_var_list = request.GET.getlist('y_var[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
+        x_var_unit = str(request.GET.get('x_var_unit', ''))
+        y_var_unit_list = request.GET.getlist('y_var_unit[]')
         limit = str(request.GET.get('limit', 'True'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
@@ -3181,7 +3188,7 @@ def get_line_chart_am(request):
                 query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
-            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit, y_var_unit_list, True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
