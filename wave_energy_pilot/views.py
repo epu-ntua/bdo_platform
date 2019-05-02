@@ -259,6 +259,38 @@ def energy_conversion_init(request):
                                                    [x['status'] for x in settings.WEC_LOAD_MATCHING_SERVICE_PARAGRAPHS] + \
                                                    ['done']
     energy_converters = Wave_Energy_Converters.objects.filter(Q(owner_id=User.objects.get(username='BigDataOcean')) | Q(owner_id=request.user))
+
+    for dataset in DATASETS:
+        try:
+            service_dataset = Dataset.objects.get(pk=dataset["id"])
+            print "----------------brhkame dataset"
+            try:
+                dataset["min_lat"] = float(service_dataset.spatialSouth)
+            except:
+                dataset["min_lat"] = -90
+            try:
+                dataset["max_lat"] = float(service_dataset.spatialNorth)
+            except:
+                dataset["max_lat"] = 90
+            try:
+                dataset["min_lng"] = float(service_dataset.spatialWest)
+            except:
+                dataset["min_lng"] = -180
+            try:
+                dataset["max_lng"] = float(service_dataset.spatialEast)
+            except:
+                dataset["max_lng"] = 180
+
+            dataset["min_date"] = service_dataset.temporalCoverageBegin
+            dataset["max_date"] = service_dataset.temporalCoverageEnd
+            # print dataset["min_lat"]
+            # print dataset["max_lat"]
+            # print dataset["min_lng"]
+            # print dataset["max_lng"]
+            # print dataset["min_date"]
+            # print dataset["max_date"]
+        except:
+            print "dataset not found"
     return render(request, 'wave_energy_pilot/energy_conversion_service.html',
                   {'datasets_list': DATASETS,
                    'energy_converters': energy_converters,
@@ -788,30 +820,30 @@ def init(request):
             service_dataset = Dataset.objects.get(pk=dataset["id"])
             print "----------------brhkame dataset"
             try:
-                dataset["min_lat"] = int(service_dataset.spatialSouth)
+                dataset["min_lat"] = float(service_dataset.spatialSouth)
             except:
                 dataset["min_lat"] = -90
             try:
-                dataset["max_lat"] = int(service_dataset.spatialNorth)
+                dataset["max_lat"] = float(service_dataset.spatialNorth)
             except:
                 dataset["max_lat"] = 90
             try:
-                dataset["min_lng"] = int(service_dataset.spatialWest)
+                dataset["min_lng"] = float(service_dataset.spatialWest)
             except:
                 dataset["min_lng"] = -180
             try:
-                dataset["max_lng"] = int(service_dataset.spatialEast)
+                dataset["max_lng"] = float(service_dataset.spatialEast)
             except:
                 dataset["max_lng"] = 180
             
             dataset["min_date"] = service_dataset.temporalCoverageBegin
             dataset["max_date"] = service_dataset.temporalCoverageEnd
-            print dataset["min_lat"]
-            print dataset["max_lat"]
-            print dataset["min_lng"]
-            print dataset["max_lng"]
-            print dataset["min_date"]
-            print dataset["max_date"]
+            # print dataset["min_lat"]
+            # print dataset["max_lat"]
+            # print dataset["min_lng"]
+            # print dataset["max_lng"]
+            # print dataset["min_date"]
+            # print dataset["max_date"]
         except:
             print "dataset not found"
     return render(request, 'wave_energy_pilot/load_service.html',
