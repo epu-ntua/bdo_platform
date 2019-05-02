@@ -381,6 +381,7 @@ def wec_single_location_evaluation_results(request, exec_instance):
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wec_location_assessment result.html',
                   {'result': result,
+                   'back_url': '/wave-energy/energy_conversion/',
                    'service_title': 'Wave Energy - Assessment of Wave Energy Converters in a Single Location',
                    'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
@@ -510,6 +511,7 @@ def wec_area_evaluation_results(request, exec_instance):
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wec_area_assessment result.html',
                   {'result': result,
+                   'back_url': '/wave-energy/energy_conversion/',
                    'service_title': 'Wave Energy - Performance of Wave Energy Converter in a Wide Area',
                    'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
@@ -622,6 +624,7 @@ def wec_generation_forecast_results(request, exec_instance):
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wec_generation_forecast result.html',
                   {'result': result,
+                   'back_url': '/wave-energy/energy_conversion/',
                    'service_title': 'Wave Energy - Wave Power Generation Forecast',
                    'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
@@ -757,6 +760,7 @@ def wec_load_matching_results(request, exec_instance):
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wec_load_matching result.html',
                   {'result': result,
+                   'back_url': '/wave-energy/energy_conversion/',
                    'service_title': 'Wave Energy - Assessment of Wave Energy Generation and Load Matching',
                    'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
@@ -876,6 +880,7 @@ def data_visualization_results(request):
 
     return render(request, 'wave_energy_pilot/data_visualisation result.html',
                   {'result': result,
+                   'back_url': '/wave-energy/',
                    'service_title': 'Visualisation of a single data source',
                    'study_conditions': [
                        {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '('+location_lat+', '+location_lon+') +/- 1 degree'},
@@ -997,6 +1002,7 @@ def single_location_evaluation_results(request, exec_instance):
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/location_assessment result.html',
                   {'result': result,
+                   'back_url': '/wave-energy/',
                    'service_title': 'Wave Energy - Evaluation of a single location',
                    'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
@@ -1120,6 +1126,7 @@ def area_location_evaluation_results(request, exec_instance):
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/area_assessment result.html',
                   {'result': result,
+                   'back_url': '/wave-energy/',
                    'service_title': 'Wave Energy - Wave atlas of a region',
                    'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': 'from (' + latitude_from + ', ' + longitude_from + ') to (' + latitude_to + ', ' + longitude_to + ')'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
@@ -1224,6 +1231,7 @@ def wave_forecast_results(request, exec_instance):
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wave_forecast result.html',
                   {'result': result,
+                   'back_url': '/wave-energy/',
                    'service_title': 'Wave Energy - Wave forecast in a location',
                    'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- 1 degree'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
