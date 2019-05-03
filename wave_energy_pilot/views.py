@@ -300,7 +300,7 @@ def energy_conversion_init(request):
     return render(request, 'wave_energy_pilot/energy_conversion_service.html',
                   {'datasets_list': DATASETS,
                    'energy_converters': energy_converters,
-                   'str(DATA_RADIUS)': str(DATA_RADIUS),
+                   'data_radius': DATA_RADIUS,
                    'execution_steps': execution_steps})
 
 
@@ -863,7 +863,7 @@ def init(request):
     return render(request, 'wave_energy_pilot/load_service.html',
                   {'buoys_list': BUOYS,
                    'datasets_list': DATASETS,
-                   'str(DATA_RADIUS)': str(DATA_RADIUS),
+                   'data_radius': DATA_RADIUS,
                    'execution_steps': execution_steps})
 
 

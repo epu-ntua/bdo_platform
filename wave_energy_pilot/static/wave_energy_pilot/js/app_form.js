@@ -798,7 +798,6 @@ $(document).ready(function() {
                 variables_str +="&variables[]="+selected_variables[i];
             }
 
-
             var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+"&longitude_from="+lng_from+
                 "&longitude_to="+lng_to+""+variables_str;
