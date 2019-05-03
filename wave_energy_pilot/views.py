@@ -300,7 +300,7 @@ def energy_conversion_init(request):
     return render(request, 'wave_energy_pilot/energy_conversion_service.html',
                   {'datasets_list': DATASETS,
                    'energy_converters': energy_converters,
-                   'data_radius': DATA_RADIUS,
+                   'str(DATA_RADIUS)': str(DATA_RADIUS),
                    'execution_steps': execution_steps})
 
 
@@ -421,7 +421,7 @@ def wec_single_location_evaluation_results(request, exec_instance):
                   {'result': result,
                    'back_url': '/wave-energy/energy_conversion/',
                    'service_title': 'Wave Energy - Assessment of Wave Energy Converters in a Single Location',
-                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + DATA_RADIUS + '  degrees'},
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + str(DATA_RADIUS) + '  degrees'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
                                         {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
                                         {'icon': 'fas fa-water', 'text': 'WEC technologies:', 'value': str(converters)}],
@@ -666,7 +666,7 @@ def wec_generation_forecast_results(request, exec_instance):
                   {'result': result,
                    'back_url': '/wave-energy/energy_conversion/',
                    'service_title': 'Wave Energy - Wave Power Generation Forecast',
-                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + DATA_RADIUS + '  degrees'},
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + str(DATA_RADIUS) + '  degrees'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
                                         {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
                                         {'icon': 'fas fa-water', 'text': 'WEC technology used:', 'value': str(converter)}],
@@ -802,7 +802,7 @@ def wec_load_matching_results(request, exec_instance):
                   {'result': result,
                    'back_url': '/wave-energy/energy_conversion/',
                    'service_title': 'Wave Energy - Assessment of Wave Energy Generation and Load Matching',
-                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + DATA_RADIUS + '  degrees'},
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + str(DATA_RADIUS) + '  degrees'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
                                         {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
                                         {'icon': 'fas fa-water', 'text': 'WEC technology used:', 'value': str(converter)}],
@@ -863,7 +863,7 @@ def init(request):
     return render(request, 'wave_energy_pilot/load_service.html',
                   {'buoys_list': BUOYS,
                    'datasets_list': DATASETS,
-                   'data_radius': DATA_RADIUS,
+                   'str(DATA_RADIUS)': str(DATA_RADIUS),
                    'execution_steps': execution_steps})
 
 
@@ -929,7 +929,7 @@ def data_visualization_results(request):
                    'back_url': '/wave-energy/',
                    'service_title': 'Visualisation of a single data source',
                    'study_conditions': [
-                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '('+location_lat+', '+location_lon+') +/- ' + DATA_RADIUS + '  degrees'},
+                       {'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):', 'value': '('+location_lat+', '+location_lon+') +/- ' + str(DATA_RADIUS) + '  degrees'},
                        {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:', 'value': 'from '+ str(start_date) + ' to ' + str(end_date)},
                        {'icon': 'fas fa-database', 'text': 'Dataset used:',
                         'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/'+str(dataset_id)+'/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
@@ -1057,7 +1057,7 @@ def single_location_evaluation_results(request, exec_instance):
                   {'result': result,
                    'back_url': '/wave-energy/',
                    'service_title': 'Wave Energy - Evaluation of a single location',
-                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + DATA_RADIUS + '  degrees'},
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + str(DATA_RADIUS) + '  degrees'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
                                         {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
                    'no_viz': 'no_viz' in request.GET.keys(),
@@ -1291,7 +1291,7 @@ def wave_forecast_results(request, exec_instance):
                   {'result': result,
                    'back_url': '/wave-energy/',
                    'service_title': 'Wave Energy - Wave forecast in a location',
-                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + DATA_RADIUS + '  degrees'},
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + str(DATA_RADIUS) + '  degrees'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
                                         {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'}],
                    'no_viz': 'no_viz' in request.GET.keys(),
