@@ -8,8 +8,6 @@ var dataset_id;
 var buoys_dict;
 
 $(document).ready(function() {
-    $('.app-selector').val('');
-
     var wave_forecast_tour;
     function init_wave_forecast_tour() {
         wave_forecast_tour = new Tour({
@@ -304,9 +302,9 @@ $(document).ready(function() {
     }
 
 
-    $('#select_app').dropdown();
-    $('#select_dataset').dropdown();
-    $('.ui.dropdown').dropdown();
+    $('#select_app').val('').trigger("change").dropdown('clear');
+    $('#select_dataset').dropdown('clear');
+    $('.ui.dropdown').dropdown('clear');
 
 
     var dataset_selection = $('#select_dataset_data_visualisation :selected').val();
