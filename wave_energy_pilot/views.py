@@ -540,8 +540,10 @@ def wec_area_evaluation_results(request, exec_instance):
 
     dataset_id = str(result['dataset_id'])
     dataset_title = str(Dataset.objects.get(pk=dataset_id))
-    location_lat = str(result['location_lat'])
-    location_lon = str(result['location_lon'])
+    latitude_from = str(result['latitude_from'])
+    latitude_to = str(result['latitude_to'])
+    longitude_from = str(result['longitude_from'])
+    longitude_to = str(result['longitude_to'])
     start_date = str(result['start_date'])
     end_date = str(result['end_date'])
     converters = [str(name) for name in result['name']]
@@ -551,7 +553,7 @@ def wec_area_evaluation_results(request, exec_instance):
                   {'result': result,
                    'back_url': '/wave-energy/energy_conversion/',
                    'service_title': 'Wave Energy - Performance of Wave Energy Converter in a Wide Area',
-                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': '(' + location_lat + ', ' + location_lon + ') +/- ' + DATA_RADIUS + '  degrees'},
+                   'study_conditions': [{'icon': 'fas fa-map-marker-alt', 'text': 'Location (latitude, longitude):','value': 'from (' + latitude_from + ', ' + longitude_from + ') to (' + latitude_to + ', ' + longitude_to + ')'},
                                         {'icon': 'far fa-calendar-alt', 'text': 'Timeframe:','value': 'from ' + str(start_date) + ' to ' + str(end_date)},
                                         {'icon': 'fas fa-database', 'text': 'Dataset used:', 'value': str(dataset_title) + ' <a target="_blank" rel="noopener noreferrer"  href="/datasets/' + str(dataset_id) + '/" style="color: #1d567e;text-decoration: underline">(more info)</a>'},
                                         {'icon': 'fas fa-water', 'text': 'WEC technologies:', 'value': str(converters)}],
