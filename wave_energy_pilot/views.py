@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import collections, json
 from threading import Thread, Timer
 from background_task import background
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -289,6 +289,12 @@ def energy_conversion_init(request):
             # print dataset["max_lng"]
             # print dataset["min_date"]
             # print dataset["max_date"]
+            if service_dataset.id == 111:
+                dataset["max_date"] = datetime.now() + timedelta(days=7)
+                dataset["min_lat"] = 35
+                dataset["max_lat"] = 45
+                dataset["min_lng"] = -14
+                dataset["max_lng"] = -7
         except:
             print "dataset not found"
     return render(request, 'wave_energy_pilot/energy_conversion_service.html',
@@ -844,6 +850,12 @@ def init(request):
             # print dataset["max_lng"]
             # print dataset["min_date"]
             # print dataset["max_date"]
+            if service_dataset.id == 111:
+                dataset["max_date"] = datetime.now() + timedelta(days=7)
+                dataset["min_lat"] = 35
+                dataset["max_lat"] = 45
+                dataset["min_lng"] = -14
+                dataset["max_lng"] = -7
         except:
             print "dataset not found"
     return render(request, 'wave_energy_pilot/load_service.html',
