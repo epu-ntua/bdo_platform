@@ -732,7 +732,7 @@ def wec_load_matching_execution_process(request, exec_instance):
         for i, converter_id in enumerate(converters_selection):
             converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
             cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW/m'
-        cols_str += '&y_var[]=load_profile ' + '&y_var_unit[]=load_profile_unit'
+        cols_str += '&y_var[]=load_profile' + '&y_var_unit[]=load_profile_unit'
 
         visualisations['v1'] = ({'notebook_id': new_notebook_id,
                                  'df': 'power_df',
