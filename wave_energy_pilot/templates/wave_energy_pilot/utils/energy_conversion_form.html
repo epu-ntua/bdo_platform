@@ -85,6 +85,34 @@
             {% endfor %}
         </select>
     </div>
+    <div class="wecs_assessment_area_dropdown" hidden>
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wecs_assessment_area">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {% for application in dataset.applications %}
+                    {%  if application == "wecs_assessment_area" %}
+                        <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}"
+                                    data-minlat="{{ dataset.min_lat }}" data-maxlat="{{ dataset.max_lat }}" data-minlng="{{ dataset.min_lng }}"
+                                    data-maxlng="{{ dataset.max_lat }}">{{ dataset.title }}</option>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="wecs_forecast_dropdown" hidden>
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wecs_forecast">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {% for application in dataset.applications %}
+                    {%  if application == "wecs_forecast" %}
+                        <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}"
+                                    data-minlat="{{ dataset.min_lat }}" data-maxlat="{{ dataset.max_lat }}" data-minlng="{{ dataset.min_lng }}"
+                                    data-maxlng="{{ dataset.max_lat }}">{{ dataset.title }}</option>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </select>
+    </div>
     <div class="matching_analysis_dropdown" hidden>
          <select name="dataset-selector" class="ui dropdown" id="select_dataset_matching_analysis">
                 <option value="">Available Datasets</option>

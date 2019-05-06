@@ -4,39 +4,203 @@ var user_marker = {};
 var mode='location';
 
 $(document).ready(function() {
+    var wecs_location_assessment_tour;
+    function init_wecs_location_assessment_tour() {
+        wecs_location_assessment_tour = new Tour({
+            storage: false,
+            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+                "<div class='arrow'></div>" +
+                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                "<div class='popover-content'></div>" +
+                "<div class='popover-navigation'>" +
+                // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+                // "<span data-role='separator'>|</span>" +
+                // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                "</div>" +
+                "</div>"
+        });
+        wecs_location_assessment_tour.addStep({
+            element: ".single-spatial-selection",
+            placement: "left",
+            title: "Geographic selection",
+            content: "Click on the map to place your marker or manually set your coordinates",
+        });
+        wecs_location_assessment_tour.addStep({
+            element: ".dataset-selector",
+            placement: "left",
+            title: "Dataset selection",
+            content: "Dataset selection for application's execution",
+        });
+        wecs_location_assessment_tour.addSteps([{
+            element: ".coverage-date-filters",
+            placement: "left",
+            title: "Service timeframe",
+            duration: 2500,
+            content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected"
+        },{
+            element: ".converters-container",
+            placement: "left",
+            title: "Wave energy converter selection",
+            content: "Select at least one converter to execute your evaluation, or import a new converter's data by clicking the 'Add WEC' button"
+        },{
+            element: "#run-service-btn",
+            placement: "left",
+            title: "Service Execution",
+            content: "Ready to execute!"
+        }]);
 
-    $('#select_app').dropdown();
-    $('#select_dataset').dropdown();
-    $('.ui.dropdown').dropdown();
-
-
-    function set_forecast_timeframe(){
-         var startDate = new  Date();
-         startDate.setDate(startDate.getDate() + 1);
-         startDate.setHours(0,0,0,0);
-         var startpick = $('#startdatepicker').datetimepicker({
-             autoclose: true,
-             pickerPosition: 'top-left',
-             startDate: startDate,
-             endDate: startDate,
-         });
-         $('#startdatepicker').datetimepicker("update", startDate);
-         $('#startdatepicker').datetimepicker('setStartDate', startDate);
-         $('#startdatepicker').datetimepicker('setEndDate', startDate);
-
-         var endDate = new  Date();
-         endDate.setDate(endDate.getDate() + 7);
-         endDate.setHours(23,59,59,999);
-         var endpick = $('#enddatepicker').datetimepicker({
-             autoclose: true,
-             pickerPosition: 'top-left',
-             startDate: endDate,
-             endDate: endDate,
-         });
-         $('#enddatepicker').datetimepicker("update", endDate);
-         $('#enddatepicker').datetimepicker('setStartDate', endDate);
-         $('#enddatepicker').datetimepicker('setEndDate', endDate);
+        wecs_location_assessment_tour.init();
+        wecs_location_assessment_tour.start(true);
     }
+
+    var wec_assessment_area_tour;
+    function init_wec_assessment_area_tour() {
+        wec_assessment_area_tour = new Tour({
+            storage: false,
+            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+                "<div class='arrow'></div>" +
+                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                "<div class='popover-content'></div>" +
+                "<div class='popover-navigation'>" +
+                // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+                // "<span data-role='separator'>|</span>" +
+                // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                "</div>" +
+                "</div>"
+        });
+        wec_assessment_area_tour.addSteps([{
+            element: ".spatial-selection",
+            placement: "left",
+            title: "Geographic selection",
+            duration: 3000,
+            content: "Move the area select to the area you wish to execute your service"
+        },{
+            element: ".dataset-selector",
+            placement: "left",
+            title: "Dataset selection",
+            content: "Dataset selection for application's execution"
+        },{
+            element: ".coverage-date-filters",
+            placement: "left",
+            title: "Service timeframe",
+            duration: 2500,
+            content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected"
+        },{
+            element: ".radio-container",
+            placement: "left",
+            title: "Wave energy converter selection",
+            content: "Select the converter for your simulation. You can select only one"
+        }]);
+        wec_assessment_area_tour.addSteps([{
+            element: "#run-service-btn",
+            placement: "left",
+            title: "Service Execution",
+            content: "Ready to execute!"
+        }]);
+    }
+
+    var wec_energy_generation_forecast_tour;
+    function init_wec_energy_generation_forecast_tour(){
+        wec_energy_generation_forecast_tour = new Tour({
+            storage: false,
+            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+                "<div class='arrow'></div>" +
+                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                "<div class='popover-content'></div>" +
+                "<div class='popover-navigation'>" +
+                // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+                // "<span data-role='separator'>|</span>" +
+                // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                "</div>" +
+                "</div>"
+        });
+        wec_energy_generation_forecast_tour.addSteps([{
+            element: ".single-spatial-selection",
+            placement: "left",
+            title: "Geographic selection",
+            content: "Move the blue area to select the area you wish to execute your service"
+        }]);
+        wec_energy_generation_forecast_tour.addStep({
+            element: ".dataset-selector",
+            placement: "left",
+            title: "Dataset selection",
+            content: "Dataset selection for application's execution"
+        });
+        wec_energy_generation_forecast_tour.addSteps([{
+            element: ".radio-container",
+            placement: "left",
+            title: "Wave energy converter selection",
+            content: "Select the converter for your simulation. You can select only one"
+        }]);
+        wec_energy_generation_forecast_tour.addSteps([{
+            element: "#run-service-btn",
+            placement: "left",
+            title: "Service Execution",
+            content: "Ready to execute!"
+        }]);
+
+        wec_energy_generation_forecast_tour.init();
+        wec_energy_generation_forecast_tour.start(true);
+    }
+
+
+    var matching_analysis_tour;
+    function init_matching_analysis_tour(){
+        matching_analysis_tour = new Tour({
+            storage: false,
+            template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
+                "<div class='arrow'></div>" +
+                "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
+                "<div class='popover-content'></div>" +
+                "<div class='popover-navigation'>" +
+                // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+                // "<span data-role='separator'>|</span>" +
+                // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+                "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
+                "</div>" +
+                "</div>"
+        });
+        matching_analysis_tour.addStep({
+            element: ".single-spatial-selection",
+            placement: "left",
+            title: "Geographic selection",
+            content: "Click on the map to place your marker or manually set your coordinates",
+        });
+        matching_analysis_tour.addStep({
+            element: ".dataset-selector",
+            placement: "left",
+            title: "Dataset selection",
+            content: "Dataset selection for application's execution",
+        });
+        matching_analysis_tour.addSteps([{
+            element: ".coverage-date-filters",
+            placement: "left",
+            title: "Service timeframe",
+            duration: 2500,
+            content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected"
+        },{
+            element: ".radio-container",
+            placement: "left",
+            title: "Wave energy converter selection",
+            content: "Select at least one converter to execute your evaluation"
+        },{
+            element: "#upload_csv_container",
+            placement: "left",
+            title: "Load profile",
+            duration: 4000,
+            content: "Upload a CSV file containing the load profile time series. The CSV file should have two columns, separated by comma, " +
+                     "like the following example:\n2016-01-01 00:00:00, 4.778\n2016-01-01 01:00:00, 4.243"
+        },{
+            element: "#run-service-btn",
+            placement: "left",
+            title: "Service Execution",
+            content: "Ready to execute!"
+        }]);
+    }
+
 
     var tour = new Tour({
         storage: false,
@@ -45,9 +209,9 @@ $(document).ready(function() {
             "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
             "<div class='popover-content'></div>" +
             "<div class='popover-navigation'>" +
-            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            "<span data-role='separator'>|</span>" +
-            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
+            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
+            // "<span data-role='separator'>|</span>" +
+            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
             "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
             "</div>" +
             "</div>",
@@ -57,93 +221,72 @@ $(document).ready(function() {
         element: ".app-selector",
         placement: "left",
         title: "Application selection",
-        content: "Please select the application for use",
+        content: "Please select the application for use"
     });
+    tour.init();
+    tour.start(true);
 
-    // tour.init();
-    //
-    // tour.start(true);
+    $('#select_app').dropdown();
+    $('#select_dataset').dropdown();
+    $('.ui.dropdown').dropdown();
 
-    var wecs_location_assessment_tour = new Tour({
-        storage: false,
-        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
-            "<div class='arrow'></div>" +
-            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
-            "<div class='popover-content'></div>" +
-            // "<div class='popover-navigation'>" +
-            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            // "<span data-role='separator'>|</span>" +
-            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            // "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-            // "</div>" +
-            "</div>",
-    });
-    // wecs_location_assessment_tour.init();
 
-    var wec_assessment_area_tour = new Tour({
-        storage: false,
-        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
-            "<div class='arrow'></div>" +
-            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
-            "<div class='popover-content'></div>" +
-            "<div class='popover-navigation'>" +
-            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            "<span data-role='separator'>|</span>" +
-            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-            "</div>" +
-            "</div>",
-    });
-    // wec_assessment_area_tour.init();
+    function set_forecast_timeframe(dataset_selected){
+        if(dataset_selected) {
+            var startDate = new Date();
+            startDate.setDate(startDate.getDate() + 1);
+            startDate.setHours(0, 0, 0, 0);
+            var startpick = $('#startdatepicker').datetimepicker({
+                autoclose: true,
+                pickerPosition: 'top-left',
+                startDate: startDate,
+                endDate: startDate,
+            });
+            $('#startdatepicker').datetimepicker("update", startDate);
+            $('#startdatepicker').datetimepicker('setStartDate', startDate);
+            $('#startdatepicker').datetimepicker('setEndDate', startDate);
 
-    var wec_energy_generation_forecast_tour = new Tour({
-        storage: false,
-        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
-            "<div class='arrow'></div>" +
-            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
-            "<div class='popover-content'></div>" +
-            "<div class='popover-navigation'>" +
-            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            "<span data-role='separator'>|</span>" +
-            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-            "</div>" +
-            "</div>",
-    });
-    // wec_energy_generation_forecast_tour.init();
-
-    var matching_analysis_tour = new Tour({
-        storage: false,
-        template: "<div class='popover tour' style='min-width: 350px; min-height: 120px; color: black;'>" +
-            "<div class='arrow'></div>" +
-            "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
-            "<div class='popover-content'></div>" +
-            "<div class='popover-navigation'>" +
-            "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            "<span data-role='separator'>|</span>" +
-            "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
-            "</div>" +
-            "</div>",
-    });
-    // matching_analysis_tour.init();
+            var endDate = new Date();
+            endDate.setDate(endDate.getDate() + 7);
+            endDate.setHours(23, 59, 59, 999);
+            var endpick = $('#enddatepicker').datetimepicker({
+                autoclose: true,
+                pickerPosition: 'top-left',
+                startDate: endDate,
+                endDate: endDate,
+            });
+            $('#enddatepicker').datetimepicker("update", endDate);
+            $('#enddatepicker').datetimepicker('setStartDate', endDate);
+            $('#enddatepicker').datetimepicker('setEndDate', endDate);
+        }
+        else{
+            $('#startdatepicker').find("input[type=text], textarea").val("").val('');
+            $('#enddatepicker').find("input[type=text], textarea").val("").val('');
+        }
+    }
 
     function create_new_area_select(area_select_bounds){
         $(".leaflet-interactive").remove();
-        areaSelect = L.rectangle(area_select_bounds);
+        var areaSelect = L.rectangle(area_select_bounds);
         map.addLayer(areaSelect);
         areaSelect.editing.enable();
         area_bounds = areaSelect.getBounds();
         areaSelect.on("edit", function() {
-                area_bounds = this.getBounds();
-            });
-        map.fitBounds(area_select_bounds);
+            area_bounds = this.getBounds();
+            $('#lat_min').val((area_bounds._southWest.lat).toFixed(4));
+            $('#lat_max').val((area_bounds._northEast.lat).toFixed(4));
+            $('#lon_min').val((area_bounds._southWest.lng).toFixed(4));
+            $('#lon_max').val((area_bounds._northEast.lng).toFixed(4));
+            update_dataset_list_area();
+            if(wec_assessment_area_tour.getCurrentStep() !== 1)
+                wec_assessment_area_tour.goTo(1);
+        });
+        // map.fitBounds(area_select_bounds);
         bounds = [area_select_bounds[0][0],area_select_bounds[0][1],area_select_bounds[1][0],area_select_bounds[1][1]];
         $('#lat_min').val(bounds[0]);
         $('#lat_max').val(bounds[2]);
         $('#lon_min').val(bounds[1]);
         $('#lon_max').val(bounds[3]);
-
     }
 
     function removeAreaSelect() {
@@ -153,10 +296,12 @@ $(document).ready(function() {
     }
 
     function set_app_dataset_date_pickers(app_selector) {
-       $('#'+app_selector).change(function () {
+       // $('#'+app_selector).change(function () {
 
-           var dataset_id = $('#'+app_selector+" :selected").val();
-
+            var dataset_id = $('#'+app_selector+" :selected").val();
+            console.log("in set_app_dataset_date_pickers");
+            console.log(app_selector);
+            console.log(dataset_id);
             if(dataset_id === ""){
                 $('#startdatepicker').find("input[type=text], textarea").val("").val('');
                 $('#enddatepicker').find("input[type=text], textarea").val("").val('');
@@ -181,160 +326,67 @@ $(document).ready(function() {
                 });
                 $('#enddatepicker').datetimepicker("update", enddate);
             }
-       });
-        if($('.app-selector :selected').val() === "3")
-            set_forecast_timeframe();
+       // });
+       //  if($('.app-selector :selected').val() === "3")
+       //      set_forecast_timeframe();
    }
 
-    $(function () {
-        $(".wecs_assessment_location_dropdown").change(function () {
-               wecs_location_assessment_tour.addSteps([
-                {
-                    element: ".coverage-date-filters",
-                    placement: "left",
-                    title: "Service timeframe",
-                    duration: 3500,
-                    content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected",
-                },
-                {
-                    element: ".converters-container",
-                    placement: "left",
-                    title: "Wave energy converter selection",
-                    content: "Select at least one converter to execute your evaluation",
-                },
-                {
-                    element: "#run-service-btn",
-                    placement: "left",
-                    duration: 3000,
-                    title: "Service Execution",
-                    content: "Ready to execute!",
+    function reset_dropdowns(){
+        console.log("lat/lon change");
+        $(".item").removeClass("disabled");
+        $('.dataset-selector select option').attr('selected', false);
 
-                }]);
-                wecs_location_assessment_tour.next();
-        })
-    });
+        $('#select_dataset_wecs_assessment_location').dropdown('clear');
+        $('#select_dataset_wecs_assessment_area').dropdown('clear');
+        $('#select_dataset_wecs_forecast').dropdown('clear');
+        $('#select_dataset_matching_analysis').dropdown('clear');
+    }
 
-     $(function () {
-        $(".matching_analysis_dropdown").change(function () {
-               matching_analysis_tour.addSteps([
-                {
-                    element: ".coverage-date-filters",
-                    placement: "left",
-                    title: "Service timeframe",
-                    duration: 4000,
-                    content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected"
-                },
-                {
-                    element: ".radio-container",
-                    placement: "left",
-                    title: "Wave energy converter selection",
-                    content: "Select at least one converter to execute your evaluation"
-                },
-                {
-                    element: "#upload_csv_container",
-                    placement: "left",
-                    title: "Load profile",
-                    // duration: 4000,
-                    content: "Upload a CSV file containing the load profile time series. The CSV file should have two columns, separated by comma, " +
-                             "like the following example:\n2016-01-01 00:00:00, 4.778\n2016-01-01 01:00:00, 4.243"
-                },
-                {
-                    element: "#run-service-btn",
-                    placement: "left",
-                    duration: 3000,
-                    title: "Service Execution",
-                    content: "Ready to execute!",
-
-                }]);
-               $("#upload_csv_container label").click(function (e) {
-                   e.stopPropagation();
-                   // alert(matching_analysis_tour.getCurrentStep());
-                   matching_analysis_tour.goTo(4);
-               });
-
-                matching_analysis_tour.next();
-        })
-    });
-    
-    $(function () {
-        $(".converters-container").change(function () {
-            if(wecs_location_assessment_tour.getCurrentStep() === 3 ){
-                wecs_location_assessment_tour.addSteps([
-                {
-                    element: "#run-service-btn",
-                    placement: "left",
-                    duration: 3000,
-                    title: "Service Execution",
-                    content: "Ready to execute!",
-
-                }]);
-                wecs_location_assessment_tour.next();
+    function update_dataset_list_location(){
+        reset_dropdowns();
+        $('.dataset-selector select option').each(function (idx, elem) {
+            if( parseFloat($(elem).data("maxlat")) < parseFloat($('#lat').val()) ||
+                parseFloat($(elem).data("minlat")) > parseFloat($('#lat').val()) ||
+                parseFloat($(elem).data("minlng")) > parseFloat($('#lon').val()) ||
+                parseFloat($(elem).data("maxlng")) < parseFloat($('#lon').val())
+            ){
+                var dropdown_id = $(elem).val();
+                $('.item[data-value="'+dropdown_id+'"]').addClass("disabled");
             }
-        })
-    });
+        });
+    }
+
+    function update_dataset_list_area(){
+        reset_dropdowns();
+        $('.dataset-selector select option').each(function (idx, elem) {
+            if( parseFloat($(elem).data("maxlat")) < parseFloat($('#lat_min').val()) ||
+                parseFloat($(elem).data("minlat")) > parseFloat($('#lat_max').val()) ||
+                parseFloat($(elem).data("minlng")) > parseFloat($('#lon_max').val()) ||
+                parseFloat($(elem).data("maxlng")) < parseFloat($('#lon_min').val())
+            ){
+                var dropdown_id = $(elem).val();
+                $('.item[data-value="'+dropdown_id+'"]').addClass("disabled");
+            }
+        });
+    }
 
     $(function () {
-        $(".radio-container").change(function () {
-
-            if($('.app-selector :selected').val() === "2") {
-                if(wec_assessment_area_tour.getCurrentStep() === 1) {
-                    wec_assessment_area_tour.addSteps([
-                        {
-                            element: "#run-service-btn",
-                            placement: "left",
-                            duration: 3000,
-                            title: "Service Execution",
-                            content: "Ready to execute!",
-
-                        }]);
-                    wec_assessment_area_tour.next();
-                }
-                else
-                    wec_assessment_area_tour.end();
-            }
-            else if($('.app-selector :selected').val() === "3") {
-                if(wec_energy_generation_forecast_tour.getCurrentStep() === 1) {
-                    wec_energy_generation_forecast_tour.addSteps([
-                        {
-                            element: "#run-service-btn",
-                            placement: "left",
-                            duration: 3000,
-                            title: "Service Execution",
-                            content: "Ready to execute!",
-
-                        }]);
-                    wec_energy_generation_forecast_tour.next();
-                }
-                else
-                    wec_energy_generation_forecast_tour.end();
-            }
-            else if($('.app-selector :selected').val() === "4"){
-                matching_analysis_tour.next();
-                // if (matching_analysis_tour.getCurrentStep() === 4) {
-                //     matching_analysis_tour.addSteps([
-                //         {
-                //             element: "#run-service-btn",
-                //             placement: "left",
-                //             duration: 3000,
-                //             title: "Service Execution",
-                //             content: "Ready to execute!",
-                //
-                //         }]);
-                //     matching_analysis_tour.next();
-                // }
-                // else
-                //    matching_analysis_tour.end();
-            }
-        })
-    });
-
-    $(function () {
-        // $('#select_app').change(function () {
-        //     // $('.dataset-selector').dropdown('clear');
-        //     $('.dataset-selector select').val("").trigger("change");
-        // });
+        $('#lat, #lon').change(function () {
+            update_dataset_list_location();
+        });
 
         $('.app-selector').change(function () {
+            $('#lat').val('');
+            $('#lon').val('');
+            $('#lat_min').val('');
+            $('#lat_max').val('');
+            $('#lon_min').val('');
+            $('#lon_max').val('');
+            wecs_location_assessment_tour = null;
+            wec_assessment_area_tour = null;
+            wec_energy_generation_forecast_tour = null;
+            matching_analysis_tour = null;
+
             if($('.app-selector :selected').val() === "1"){
                 $('.single-spatial-selection').show();
                 $('.dataset-selector').show();
@@ -344,34 +396,29 @@ $(document).ready(function() {
                 $('.converters-container').show();
 
 
+                init_wecs_location_assessment_tour();
+                wecs_location_assessment_tour.goTo(0);
 
-                wecs_location_assessment_tour.addStep(
-                {
-                    element: ".single-spatial-selection",
-                    placement: "left",
-                    title: "Geographic selection",
-                    content: "Click on the map to place your marker or manually set your coordinates",
-                });
-                wecs_location_assessment_tour.start(true);
-                wecs_location_assessment_tour.next();
-
+                map.off('click');
                 map.on('click', function(e){
                     if (mode == "location") {
                         $('#lat').val(e.latlng.lat);
-                        $('#lon').val(e.latlng.lng);
+                        $('#lon').val(e.latlng.lng).trigger("change");
 
                         $('.dataset-selector').show();
-
-                        $(".item").each(function() {
-                            if($(this).hasClass("disabled")) {
-                                $(this).removeClass("disabled");
+                        $("#select_dataset_wecs_assessment_location").off('change');
+                        $("#select_dataset_wecs_assessment_location").change(function () {
+                            set_app_dataset_date_pickers("select_dataset_wecs_assessment_location");
+                            if(parseInt($(this).val()) > 0){
+                                wecs_location_assessment_tour.goTo(2);
                             }
                         });
 
-                        $('#wecs_assessment_location_dropdown  option').each(function () {
-                            if($(this).data("maxlat") < e.latlng.lat || $(this).data("minlat") > e.latlng.lat || $(this).data("minlng") > e.latlng.lng || $(this).data("maxlng") < e.latlng.lng){
-                                var dropdown_id = $(this).val();
-                                $(`.item[data-value="${dropdown_id}"]`).addClass("disabled");
+                        $(".converters-container").change(function () {
+                            if(wecs_location_assessment_tour.getCurrentStep() == 3) {
+                                if ($(this).find("select").val().length > 0) {
+                                    wecs_location_assessment_tour.goTo(4);
+                                }
                             }
                         });
 
@@ -383,20 +430,11 @@ $(document).ready(function() {
                         single_marker_layer = L.layerGroup(user_marker);
                         map.addLayer(single_marker_layer);
                         user_marker.on('dragend', function (e) {
-                            // alert(e.target._latlng);
                              $('#lat').val(e.target._latlng.lat);
-                             $('#lon').val(e.target._latlng.lng);
+                             $('#lon').val(e.target._latlng.lng).trigger('change');
+                             wecs_location_assessment_tour.goTo(1);
                         });
-                        if(wecs_location_assessment_tour.getCurrentStep()	 == 0){
-                            wecs_location_assessment_tour.addStep({
-                                element: ".dataset-selector",
-                                placement: "left",
-                                title: "Dataset selection",
-                                content: "Dataset selection for application's execution",
-                            });
-                            wecs_location_assessment_tour.next();
-                        }
-
+                        wecs_location_assessment_tour.goTo(1);
                     }
                 });
                 set_app_dataset_date_pickers("select_dataset_wecs_assessment_location");
@@ -416,53 +454,29 @@ $(document).ready(function() {
             if($('.app-selector :selected').val() === "2"){
                 mode = "area";
                 $("#map").css("cursor", "grab");
+                $('.dataset-selector').show();
                 $('.spatial-selection').show();
+                $('.coverage-date-filters').show();
                 $(".run-service-button-container").show();
                 $('.radio-container').show();
-                create_new_area_select([[29.2575,-24.2578],[49.479,37.0898]]);
-                $('.leaflet-edit-move').mouseup(function(){
-                    area_bounds = areaSelect.getBounds();
-                    var swlat = Math.round(area_bounds.getSouthWest().lat * 10000) / 10000;
-                    var swlon = Math.round(area_bounds.getSouthWest().lng * 10000) / 10000;
-                    var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
-                    var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
-                    bounds = [swlat,swlon,nelat,nelon];
-                    $('#lat_min').val(bounds[0]);
-                    $('#lat_max').val(bounds[2]);
-                    $('#lon_min').val(bounds[1]);
-                    $('#lon_max').val(bounds[3]);
-                });
+                $('.wecs_assessment_area_dropdown').show();
 
-                $('.leaflet-edit-resize').mouseup(function(){
-                    area_bounds = areaSelect.getBounds();
-                    var swlat = Math.round(area_bounds.getSouthWest().lat * 10000) / 10000;
-                    var swlon = Math.round(area_bounds.getSouthWest().lng * 10000) / 10000;
-                    var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
-                    var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
-                    bounds = [swlat,swlon,nelat,nelon];
-                    $('#lat_min').val(bounds[0]);
-                    $('#lat_max').val(bounds[2]);
-                    $('#lon_min').val(bounds[1]);
-                    $('#lon_max').val(bounds[3]);
-                });
-                wec_assessment_area_tour.start(true);
-                wec_assessment_area_tour.addSteps([
-                    {
-                        element: ".spatial-selection",
-                        placement: "left",
-                        title: "Geographic selection",
-                        duration: 3000,
-                        content: "Move the blue area to select the area you wish to execute your service",
-                    },
-                    {
-                        element: ".radio-container",
-                        placement: "left",
-                        title: "Wave energy converter selection",
-                        content: "Select the converter for your simulation. You can select only one",
+                create_new_area_select([[35,-16],[45,5]]);
+                init_wec_assessment_area_tour();
+                wec_assessment_area_tour.goTo(0);
+                $('.dataset-selector').show();
+                $("#select_dataset_wecs_assessment_area").off('change');
+                $("#select_dataset_wecs_assessment_area").change(function () {
+                    set_app_dataset_date_pickers("select_dataset_wecs_assessment_area");
+                    if(parseInt($(this).val()) > 0){
+                        wec_assessment_area_tour.goTo(2);
                     }
-                ]);
-                wec_assessment_area_tour.start(true);
+                });
 
+                $(".radio-container").off('change');
+                $(".radio-container").change(function () {
+                    wec_assessment_area_tour.goTo(4);
+                });
             }
             else{
                 mode = "location";
@@ -480,10 +494,29 @@ $(document).ready(function() {
                 $(".run-service-button-container").show();
                 $('.coverage-date-filters').show();
                 $('.radio-container').show();
+                $('.dataset-selector').show();
+                $(".wecs_forecast_dropdown").show();
+
+                init_wec_energy_generation_forecast_tour();
+                wec_energy_generation_forecast_tour.goTo(0);
+
+                map.off('click');
                 map.on('click', function(e){
                     if (mode == "location") {
                         $('#lat').val(e.latlng.lat);
-                        $('#lon').val(e.latlng.lng);
+                        $('#lon').val(e.latlng.lng).trigger("change");
+
+                        $("#select_dataset_wecs_forecast").off('change');
+                        $("#select_dataset_wecs_forecast").change(function () {
+                            if(parseInt($(this).val()) > 0){
+                                wec_energy_generation_forecast_tour.goTo(2);
+                                /* Set Up Time Pickers For Start/End Date  */
+                                set_forecast_timeframe(true);
+                            }
+                            else{
+                                set_forecast_timeframe(false);
+                            }
+                        });
 
                         if (user_marker != undefined) {
                             map.removeLayer(user_marker);
@@ -493,39 +526,27 @@ $(document).ready(function() {
                         single_marker_layer = L.layerGroup(user_marker);
                         map.addLayer(single_marker_layer);
                         user_marker.on('dragend', function (e) {
-                            // alert(e.target._latlng);
                              $('#lat').val(e.target._latlng.lat);
-                             $('#lon').val(e.target._latlng.lng);
-                        })
+                             $('#lon').val(e.target._latlng.lng).trigger("change");
+                             wec_energy_generation_forecast_tour.goTo(1);
+                        });
+                        wec_energy_generation_forecast_tour.goTo(1);
                     }
-                    wec_energy_generation_forecast_tour.addSteps([
-                        {
-                            element: ".radio-container",
-                            placement: "left",
-                            title: "Wave energy converter selection",
-                            content: "Select the converter for your simulation. You can select only one",
-                        }
-                    ]);
-                     wec_energy_generation_forecast_tour.next();
-                 });
-                wec_energy_generation_forecast_tour.start(true);
-                wec_energy_generation_forecast_tour.addSteps([
-                    {
-                        element: ".single-spatial-selection",
-                        placement: "left",
-                        title: "Geographic selection",
-                        content: "Move the blue area to select the area you wish to execute your service",
-                    },
+                });
 
-                ]);
-                wec_energy_generation_forecast_tour.start(true);
-                // wec_energy_generation_forecast_tour.next();
-                set_app_dataset_date_pickers("select_dataset_wecs_generation_forecast");
+                // set_forecast_timeframe(true);
+
+                $(".radio-container").off('change');
+                $(".radio-container").change(function () {
+                    wec_energy_generation_forecast_tour.goTo(3);
+                });
+
             }
             else{
                 // $('#startdatepicker input').val('');
                 // $('#enddatepicker input').val('');
-
+                $(".wecs_forecast_dropdown").hide();
+                // $('.dataset-selector').hide();
                 $('#lat').val('');
                 $('#lon').val('');
 
@@ -539,23 +560,21 @@ $(document).ready(function() {
                 $('.radio-container').show();
                 $('#upload_csv_container').show();
 
+                init_matching_analysis_tour();
+                matching_analysis_tour.goTo(0);
+
+                map.off('click');
                 map.on('click', function(e){
                     if (mode == "location") {
                         $('#lat').val(e.latlng.lat);
-                        $('#lon').val(e.latlng.lng);
+                        $('#lon').val(e.latlng.lng).trigger("change");
 
                         $('.dataset-selector').show();
-
-                        $(".item").each(function() {
-                            if($(this).hasClass("disabled")) {
-                                $(this).removeClass("disabled");
-                            }
-                        });
-
-                        $('#matching_analysis_dropdown  option').each(function () {
-                            if($(this).data("maxlat") < e.latlng.lat || $(this).data("minlat") > e.latlng.lat || $(this).data("minlng") > e.latlng.lng || $(this).data("maxlng") < e.latlng.lng){
-                                var dropdown_id = $(this).val();
-                                $(`.item[data-value="${dropdown_id}"]`).addClass("disabled");
+                        $("#select_dataset_matching_analysis").off('change');
+                        $("#select_dataset_matching_analysis").change(function () {
+                            set_app_dataset_date_pickers("select_dataset_matching_analysis");
+                            if(parseInt($(this).val()) > 0){
+                                matching_analysis_tour.goTo(2);
                             }
                         });
 
@@ -567,31 +586,26 @@ $(document).ready(function() {
                         single_marker_layer = L.layerGroup(user_marker);
                         map.addLayer(single_marker_layer);
                         user_marker.on('dragend', function (e) {
-                            // alert(e.target._latlng);
                              $('#lat').val(e.target._latlng.lat);
-                             $('#lon').val(e.target._latlng.lng);
-                        })
-
-                        if(matching_analysis_tour.getCurrentStep()	 == 0){
-                            matching_analysis_tour.addStep({
-                                element: ".dataset-selector",
-                                placement: "left",
-                                title: "Dataset selection",
-                                content: "Dataset selection for application's execution",
-                            });
-                            matching_analysis_tour.next();
-                        }
+                             $('#lon').val(e.target._latlng.lng).trigger("change");
+                             matching_analysis_tour.goTo(1);
+                        });
+                        matching_analysis_tour.goTo(1);
                     }
+
+                    $(".radio-container").off('change');
+                    $(".radio-container").change(function () {
+                        matching_analysis_tour.goTo(4);
+                    });
+
                 });
-                 matching_analysis_tour.addStep(
-                {
-                    element: ".single-spatial-selection",
-                    placement: "left",
-                    title: "Geographic selection",
-                    content: "Click on the map to place your marker or manually set your coordinates",
-                });
-                matching_analysis_tour.start(true);
-                matching_analysis_tour.next();
+
+                $("#upload_csv_container label").click(function (e) {
+                   e.stopPropagation();
+                   // alert(matching_analysis_tour.getCurrentStep());
+                   matching_analysis_tour.goTo(5);
+               });
+
                 set_app_dataset_date_pickers("select_dataset_matching_analysis");
             }
             else{
@@ -602,14 +616,6 @@ $(document).ready(function() {
             }
         })
     });
-
-    $(function () {
-
-    });
-
-
-
-
 
 
     function get_app_url() {
