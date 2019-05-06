@@ -1235,7 +1235,12 @@ def get_contour_legend(max_val, min_val):
     cbar = pl.colorbar(orientation="horizontal", cax=cax)
     cbar.ax.tick_params(labelsize=9, colors="#ffffff")
     ts = str(time.time()).replace(".", "")
-    legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
+    # legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
+    import sys
+    if sys.argv[1] == 'runserver':
+        legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png').encode('ascii')
+    else:
+        legpath = (settings.STATIC_ROOT + '/visualizer/img/temp/' + ts + 'colorbar.png').encode('ascii')
     pl.savefig(legpath, transparent=True, bbox_inches='tight')
     # legpath = legpath.split("static/", 1)[1]
     pl.clf()
