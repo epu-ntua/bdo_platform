@@ -222,6 +222,15 @@ def clean_up_new_note(notebook_id, wait_time_seconds=0):
     print "cleaning up note: " + str(notebook_id)
     delete_zep_notebook(notebook_id)
 
+def wec_creation(request):
+    new_wec = request.GET['wec_data'];
+    print new_wec
+
+@never_cache
+def energy_conversion_init(request):
+    return render(request, 'wave_energy_pilot/energy_conversion_service.html',
+    {'datasets_list': DATASETS,
+     'energy_converters': CONVERTERS})
 
 def wec_creation(request):
     # import pdb
