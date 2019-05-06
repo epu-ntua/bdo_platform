@@ -27,6 +27,9 @@ DATASETS = (
     #      applications=["data_visualisation"]),
     dict(id="111", title="Maretec Wave Forecast", variables=(dict(id=1, title="sea_surface_wave_zero_upcrossing_period"),
                                                                dict(id=2, title="sea_surface_wave_significant_height")),
-                     min_lat=-90.00, max_lat=90.00, min_lng=-180.00, max_lng=180.00, min_date="12/01/2018", max_date="31/03/2019",
-             applications=["data_visualisation", "wave_forecast", "wave_resource_assessment_single", "wave_resource_assessment_area"])
+                     min_lat=-12.00, max_lat=12.00, min_lng=-14.00, max_lng=14.00, min_date="12/01/2018", max_date="03/31/2019",
+             applications=["data_visualisation", "wave_forecast", "wave_resource_assessment_single",
+                           "wave_resource_assessment_area", "matching_analysis", "wecs_assessment_location", "wecs_forecast", "wecs_assessment_area"])
 )
+
+# Date format: mm//dd/yyyy

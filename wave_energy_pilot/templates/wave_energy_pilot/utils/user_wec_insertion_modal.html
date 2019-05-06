@@ -1,0 +1,218 @@
+{% load static %}
+<div id="new_wec" class="modal" role="dialog" >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header row">
+        <h5 class="modal-title">New Wave Energy Converter</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body row">
+          <div class="col-sm-12" id="wrap">
+              <div class="col-sm-3" id="side">
+                  <table>
+                      <tbody>
+                        <tr>
+                            <td>WEC's name</td><td><input type="text" name="wec_name" id="wec_name"></td>
+                        </tr>
+                        <tr>
+                            <td>Rows</td><td><button id="add_row_btn" class="btn btn-sm btn-primary">+</button><button id="remove_row_btn" class="btn btn-sm btn-danger">-</button></td>
+                        </tr>
+                        <tr>
+                            <td>Columns</td><td><button id="add_col_btn" class="btn btn-sm btn-primary">+</button><button id="remove_col_btn" class="btn btn-sm btn-danger">-</button></td>
+                        </tr>
+                        <tr>
+                            <td>Wave height limits</td>
+                            <td>
+                                <input type="number" name="wec_height_min" id="wec_height_min" value="0">
+                                <span class="divider_span">-</span>
+                                <input type="number" name="wec_height_max" id="wec_height_max" value="5">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Wave period limits</td>
+                            <td>
+                                <input type="number" name="wec_period_min" id="wec_period_min" value="0">
+                                <span class="divider_span">-</span>
+                                <input type="number" name="wec_period_max" id="wec_period_max" value="10">
+                            </td>
+                        </tr>
+                      </tbody>
+                  </table>
+              </div>
+
+              <div class="col-sm-9" id="main" style="overflow: auto;position: relative;height: 50vh;">
+                  <div style="font-weight: bold; padding-left: 2%;">Energy Period (s)</div>
+                  <div style="    display: inline;">
+                      <table id="wec_values_table">
+                          <tbody>
+                          </tbody>
+                      </table>
+                  </div>
+                  <div style="left: 10px; position: absolute; width: 20px; padding-left: 1%; writing-mode: vertical-lr; font-weight: bold; transform: rotate(-180deg);">Significant Wave Height (m)</div>
+              </div>
+          </div>
+      </div>
+      <div class="modal-footer row">
+        <button type="button" class="btn btn-sm btn-success" id="save_converter">Save WEC</button>
+        <button type="button" class="btn btn-sm btn-danger" id="cancel_converter" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    var init_num_rows = 5;
+    var init_num_cols = 5;
+    function construct_new_wec_init_table() {
+        var $row = $('<tr></tr>');
+        var $td = $('<td></td>');
+        $row.append($td);
+        for(var j=0; j < init_num_cols; j++){
+            $td = $('<td></td>');
+            $row.append($td);
+        }
+        $("#new_wec #wec_values_table tbody").append($row);
+
+        for(var i=0; i < init_num_rows; i++){
+            $row = $('<tr></tr>');
+            $td = $('<td></td>');
+            $row.append($td);
+            for(var j=0; j < init_num_cols; j++){
+                var $col = $('<td><input type="text" value="0"></td>');
+                $row.append($col);
+            }
+            $("#new_wec #wec_values_table tbody").append($row);
+        }
+    }
+
+    function update_new_wec_values_intervals() {
+        var min_height = parseFloat($("#wec_height_min").val());
+        var max_height = parseFloat($("#wec_height_max").val());
+        var min_period = parseFloat($("#wec_period_min").val());
+        var max_period = parseFloat($("#wec_period_max").val());
+
+        var number_of_heights = parseFloat($("#new_wec #wec_values_table tbody tr").length - 1);
+        var number_of_periods = parseFloat($("#new_wec #wec_values_table tbody tr:first td").length -1);
+
+        var height_step = (max_height - min_height) / number_of_heights;
+        height_step = Math.round(height_step*100)/100;
+        var period_step = (max_period - min_period) / number_of_periods;
+        period_step = Math.round(period_step*100)/100;
+
+        var current_height = min_height;
+        $.each($("#new_wec #wec_values_table tbody tr").not(":first"), function (idx, elem) {
+            if(idx !== $("#new_wec #wec_values_table tbody tr").not(":first").length-1)
+                current_height += height_step;
+            else
+                current_height = max_height;
+            $(elem).find("td:first-child").html(Math.round(current_height*100)/100);
+        });
+        var current_period = min_period;
+        $.each($("#new_wec #wec_values_table tbody tr:first td").not(":first"), function (idx, elem) {
+            if(idx !== $("#new_wec #wec_values_table tbody tr:first td").not(":first").length-1)
+                current_period += period_step;
+            else
+                current_period = max_period;
+            $(elem).html(Math.round(current_period*100)/100);
+        })
+
+    }
+
+
+    function collect_wec_input() {
+        var new_wec = {};
+        new_wec.title = $("#wec_name").val();
+        new_wec.min_height = $("#wec_height_min").val();
+        new_wec.max_height = $("#wec_height_max").val();
+        new_wec.min_energy_period = $("#wec_period_min").val();
+        new_wec.max_energy_period = $("#wec_period_max").val();
+        new_wec.data = [];
+
+        $.each($("#new_wec #wec_values_table tbody tr").not(":first"), function (idx, elem) {
+            var row = [];
+            $.each($(elem).find("td").not(":first"), function (idx2, elem2) {
+                var val = $(elem2).find('input').val();
+                if(parseFloat(val))
+                    row.push(parseFloat(val));
+                else
+                    row.push(0);
+            });
+            new_wec.data.push(row);
+        });
+
+        return new_wec;
+    }
+
+    $(document).ready(function() {
+        construct_new_wec_init_table();
+        update_new_wec_values_intervals();
+
+        $("#add_row_btn").click(function () {
+            var $row = $('<tr></tr>');
+            var $td = $('<td></td>');
+            $row.append($td);
+            for(var i=1; i < $("#wec_values_table tr").eq(0).find('td').length; i++){
+                var $col = $('<td><input type="text" value="0"></td>');
+                $row.append($col);
+            }
+            $("#new_wec #wec_values_table tbody").append($row);
+            update_new_wec_values_intervals();
+        });
+
+        $("#remove_row_btn").click(function () {
+            if($("#new_wec #wec_values_table tbody tr").length > 2)
+                $("#new_wec #wec_values_table tbody tr:last-child").remove();
+            update_new_wec_values_intervals();
+        });
+
+        $("#add_col_btn").click(function () {
+            var $td = $('<td></td>');
+            $("#wec_values_table tr:first-child").append($td);
+            $.each($("#wec_values_table tr").not(':first'), function (idx, row) {
+                var $col = $('<td><input type="text" value="0"></td>');
+                $(row).append($col);
+            });
+            update_new_wec_values_intervals();
+        });
+
+        $("#remove_col_btn").click(function () {
+            if($("#new_wec #wec_values_table tbody tr:first-child td").length > 2) {
+                $.each($("#wec_values_table tr"), function (idx, row) {
+                    $(row).find("td:last-child").remove();
+                });
+            }
+            update_new_wec_values_intervals();
+        });
+
+        $("#wec_height_min, #wec_height_max, #wec_period_min, #wec_period_max").on('propertychange input', function () {
+            update_new_wec_values_intervals();
+        });
+
+
+        $("#save_converter").click(function () {
+            $("#save_converter").attr({'disabled': 'disabled'});
+            var new_wec = collect_wec_input();
+            var id;
+            $.ajax({
+                "type": "GET",
+                "url": "/wave-energy/energy_conversion/new_wec/",
+                "data": {'wec_data': JSON.stringify(new_wec)},
+                "success": function(result) {
+                    id = result.id;
+                    var $opt = $('<option selected value="'+id+'" data-id="'+id+'" data-title="'+new_wec.title+'" data-min_height="'+new_wec.min_height+'" data-max_height="'+new_wec.max_height+'" data-min_period="'+new_wec.min_energy_period+'" data-power="0">'+new_wec.title+'</option>');
+                    $("#converters-selector").append($opt);
+                    console.log('wec created');
+                    $("#save_converter").attr({'disabled': false});
+                    $('#new_wec #cancel_converter').click();
+                },
+                "error": function () {
+                    alert('New WEC creation failed.');
+                    $("#save_converter").attr({'disabled': false});
+                }
+            });
+        });
+
+    });
+</script>

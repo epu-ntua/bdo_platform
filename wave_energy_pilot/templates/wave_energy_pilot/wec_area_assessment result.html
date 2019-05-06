@@ -1,0 +1,69 @@
+{% extends "wave_energy_pilot/service_output.html" %}
+{% load static %}
+{% block css %}
+    <style>
+        #location_assessment_statistics{ text-align: center;}
+        #location_assessment_statistics th{text-align: center; font-weight: 600 !important;}
+        #location_assessment_statistics td{text-align: center; }
+        #location_assessment_statistics .panel-primary .panel-heading{background-color: #30526a; color: white;}
+        #location_assessment_statistics .panel-warning .panel-heading{background-color: #8a6d3b; color: white;}
+        #location_assessment_statistics .panel-success .panel-heading{background-color: #3c763d; color: white;}
+        #location_assessment_statistics .panel-default .panel-heading{background-color: #707070; color: white;}
+
+        #service_visualisations_container .viz_container{width: 49%; display: inline-block;}
+    </style>
+
+    <link rel="stylesheet" href="{% static 'wave_energy_pilot/css/service_output.css' %}">
+{% endblock %}
+
+{% block service_output_results %}
+    <div id="location_assessment_statistics" class="text-center">
+        <div class="col-sm-12" style="text-align: center;">
+            <h3> Operational Data </h3>
+        </div>
+    </div>
+
+    <div id="service_visualisations_container" class="text-center">
+        {% for key, viz in visualisations.items %}
+            <div class="viz_container" id="{{ key }}">
+                <h3>{{ viz.title }}</h3>
+                {% if no_viz %}
+                    <iframe src=""
+                            style="width: 100%; height: 100%; background-color: white;">
+                    </iframe>
+                {% else %}
+                    <div class="frame_container" style="position: relative; height: 100%;">
+                        <div class="loadingFrame">
+                            <img src="{% static 'img/loading_gif.gif' %}"/>
+                        </div>
+                        <iframe src=""
+                                style="width: 100%; height: 100%; background-color: white;">
+                        </iframe>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
+
+{% block  js %}
+    <script type="text/javascript">
+        $("#v1").find('iframe').attr({'src': '{{ visualisations.v1.url| safe }}'});
+
+        $("#v1").find('iframe').on( "load", function(){
+            if($("#v2").find('iframe').attr('src') === "")
+                $("#v2").find('iframe').attr({'src': '{{ visualisations.v2.url| safe }}'});
+        });
+        $("#v2").find('iframe').on( "load", function(){
+            if($("#v3").find('iframe').attr('src') === "")
+                $("#v3").find('iframe').attr({'src': '{{ visualisations.v3.url| safe }}'});
+        });
+    </script>
+
+    <script type="text/javascript">
+        $(".viz_container iframe").on( "load", function(){
+            $(this).siblings(".loadingFrame").css( "display", "none" )
+        });
+    </script>
+{% endblock %}

@@ -18,6 +18,11 @@
 
 .app-selector{
     padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.popover-content{
+    white-space: pre-line;
 }
 
 
@@ -27,6 +32,7 @@
 #run-query-btn{
     padding: 10px;
 }
+
 
 .form-check-label{
     font-size: 14px;
@@ -60,4 +66,12 @@
 
 .dropdown.selection{
     width: 100%;
+}
+
+.checkbox label{
+    color: #0b0b0b;
+}
+
+.radio label{
+    color: #0b0b0b;
 }

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+{% load leaflet_tags %}
+{% block css %}
+    <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
+    <link href="{% static "wave_energy_pilot/css/app_form.css" %}" rel="stylesheet">
+    <link href="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.css"%}" rel="stylesheet">
+{#    <link href="{% static "vendor/handsontable/dist/handsontable.css" %}" rel="stylesheet">#}
+
+    <style>
+        #new_wec #side input{
+            width: 40px;
+        }
+        #new_wec #side .divider_span{
+            margin: 0 3px;
+        }
+        #new_wec #side #wec_name{
+            width: 100%;
+        }
+        #new_wec #side td{
+            padding: 0 10px;
+        }
+        #new_wec #side{
+            padding: 0;
+        }
+        #new_wec #side .col-sm-4{
+            padding: 0;
+        }
+        #new_wec #wrap{
+            padding: 0;
+        }
+        #new_wec .modal-content {
+            height: 70vh;
+        }
+        #new_wec .modal-body {
+            height: 56vh;
+        }
+        #new_wec .modal-header {
+            text-align: center;
+            height: 6vh;
+            padding: 1vh;
+        }
+        #new_wec .modal-footer {
+            text-align: center;
+            height: 6vh;
+            padding: 1vh;
+        }
+        #new_wec #wec_values_table td, #new_wec #wec_values_table input{
+            width: 50px;
+        }
+        #new_wec #wec_values_table tr td:first-child{
+            padding-left: 10px;
+            text-align: right;
+            padding-right: 5px;
+            font-weight: bold;
+        }
+        #new_wec #wec_values_table tr:first-child{
+            text-align: right;
+            font-weight: bold;
+        }
+    </style>
+
+{% endblock %}
+
+{% block content %}
+    <div class="app-container">
+        <div id="map" style="min-height: 800px; width: 100%; margin-top: 10px; z-index: 1; ">
+        </div>
+        <div id="converters">
+                {% for converter in energy_converters %}
+                    <div class="converter" data-id="{{ converter.id }}" data-title="{{ buoy.title }}" data-min_height="{{ buoy.min_height }}" data-max_height="{{ buoy.max_height }}"
+                                            data-max_period="{{ converter.max_energy_period }}" data-power="{{ converter.power }}" data-values="{{ converter.data }}">
+                    </div>
+                {% endfor %}
+        </div>
+
+        <div id="data-radius" data-value="{{ data_radius }}"></div>
+        <form enctype="multipart/form-data" id="app_form" class="form container">
+            {% include "wave_energy_pilot/utils/energy_conversion_form.html" %}
+        </form>
+{#        <form enctype="multipart/form-data" action="" method="post" name="csv" id="csv">#}
+{#          <div class="row">#}
+{#            <label for="image" class="col-md-4">Upload CSV file :</label>#}
+{#            <div class="col-md-4">#}
+{#              <input type="file" name="load_profile_csv" id="load_profile_csv" value="" class=""/>#}
+{#              <input type="hidden" name="MAX_FILE_SIZE" value="10000000" />#}
+{#              <input type="submit" name="uploadCSV" id="upload" value="Upload" class="btn btn-primary pull-right"/>#}
+{#            </div>#}
+{#          </div>#}
+{#        </form>#}
+
+        {% for app_name, data in execution_steps.items %}
+            <btn id="execution_btn_{{ app_name }}" class="btn btn-success hidden" data-toggle="modal" data-target="#{{ app_name }}_modal">Execute_{{ forloop.counter }}</btn>
+        {% endfor %}
+        <input hidden id="execution_status" type="text" value=""/>
+    </div>
+{% endblock %}
+
+{% block  js %}
+    {% include 'wave_energy_pilot/utils/status_modal.html' %}
+    {% include 'wave_energy_pilot/utils/user_wec_insertion_modal.html' %}
+    {% leaflet_js %}
+
+    <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+    <script src="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.js"%}"></script>
+    <script src="{% static "wave_energy_pilot/js/area-select/simple-shape.js" %}"></script>
+    <script src="{% static "wave_energy_pilot/js/area-select/rectangle.js" %}"></script>
+    <script src="{% static 'wave_energy_pilot/js/spatio_temporal_filter.js'%}" ></script>
+    <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
+    <script src="{% static 'wave_energy_pilot/js/energy_conv_form.js' %}"></script>
+{#    <script src="{% static "vendor/handsontable/dist/handsontable.js" %}"></script>#}
+
+
+
+{% endblock %}

@@ -114,7 +114,8 @@ LOGIN_EXEMPT_URLS = (
     r'^register$',
     r'^accounts/',
     r'^service_builder/api/createInputFileForHCMRSpillSimulator/',
-    r'^service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/'
+    r'^service_builder/api/checkIfOutputExistsforHCMRSpillSimulator/',
+    r'^wave-energy/energy_conversion/get_load_matching_file_data/'
 )
 
 CACHES = {
