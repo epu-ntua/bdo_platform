@@ -226,7 +226,7 @@ $(document).ready(function() {
     tour.init();
     tour.start(true);
 
-    $('#select_app').dropdown();
+    $('#select_app').val('').trigger("change").dropdown('clear');
     $('#select_dataset').dropdown();
     $('.ui.dropdown').dropdown();
 
