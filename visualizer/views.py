@@ -715,7 +715,8 @@ def map_visualizer(request):
                     m, extra_js, old_map_id, legend, unit = get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, variable, lat_col, lon_col, agg_function, m,
                                                                      cached_file, request)
                     unit = unit
-                    legend_id = legend.split("static/", 1)[1]
+                    legend_id = legend.split("staticfiles/", 1)[1]
+                    #legend_id=legend
                     old_map_id_list.append(old_map_id)
             except ObjectDoesNotExist:
                 pass
