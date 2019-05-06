@@ -94,12 +94,16 @@ def get_contour_parameters(request, count):
     variable = str(request.GET.get('contour_var' + str(count), ''))
     if variable == '':
         raise ValueError('A variable has to be selected for the contours to be created on the map.')
+    unit = str(request.GET.get('contour_var_unit' + str(count), ''))
+    print("THE UNIT IS "+ unit)
+    lat_col = str(request.GET.get('lat_col' + str(count), ''))
+    lon_col = str(request.GET.get('lon_col' + str(count), ''))
 
     agg_function = str(request.GET.get('agg_func', 'avg'))
     if not agg_function.lower() in AGGREGATE_VIZ:
         raise ValueError('The given aggregate function is not valid.')
 
-    return cached_file, n_contours, step, variable, agg_function
+    return cached_file, n_contours, step, variable, unit, lat_col, lon_col, agg_function
 
 
 def get_markers_parameters(request, count):
@@ -641,6 +645,8 @@ def map_visualizer(request):
     js_list = []
     old_map_id_list = []
     extra_js = ""
+    legend_id = ""
+    unit = ''
     try:
         try:
             layer_count = int(request.GET.get("layer_count", 0))
@@ -705,9 +711,11 @@ def map_visualizer(request):
             # Contours
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
-                    cached_file, n_contours, step, variable, agg_function = get_contour_parameters(request, count)
-                    m, extra_js, old_map_id = get_map_contour(n_contours, step, variable, query_pk, agg_function, m,
-                                                                     cached_file)
+                    cached_file, n_contours, step, variable, unit, lat_col, lon_col, agg_function = get_contour_parameters(request, count)
+                    m, extra_js, old_map_id, legend, unit = get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, variable, lat_col, lon_col, agg_function, m,
+                                                                     cached_file, request)
+                    unit = unit
+                    legend_id = legend.split("static/", 1)[1]
                     old_map_id_list.append(old_map_id)
             except ObjectDoesNotExist:
                 pass
@@ -745,6 +753,7 @@ def map_visualizer(request):
     map_id = soup.find("div", {"class": "folium-map"}).get('id')
     js_all = soup.findAll('script')
 
+
     # changes the wrong map_id's for all the extra scripts used
     for mid in old_map_id_list:
         for js in js_list:
@@ -761,7 +770,7 @@ def map_visualizer(request):
         css_all = [css.prettify() for css in css_all[3:]]
     # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
     html1 = render_to_string('visualizer/final_map_folium_template.html',
-                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
+                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id, 'unit': unit})
     # print(html1)
     return HttpResponse(html1)
 
@@ -1082,13 +1091,22 @@ def get_heatmap_query_data(query, heat_variable):
     return data, lat_index, lon_index, heat_var_index
 
 
-def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cached_file, tries=0):
+def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=0):
     try:
         round_num = get_contour_step_rounded(step)
         dict = {}
         if not os.path.isfile('visualizer/static/visualizer/temp/'+cached_file):
-            query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
-            data, lat_index, lon_index, var_index = get_contours_query_data(query, variable)
+            if query_pk != 0:
+                query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
+                data, lat_index, lon_index, var_index, unit = get_contours_query_data(query, variable)
+            else:
+                df_data, headers = load_execute_dataframe_data(request, df, notebook_id)
+                data = []
+                for s in df_data:
+                    data.append([float(s[lat_col]), float(s[lon_col]), float(s[contour_col])])
+                lat_index = 0
+                lon_index = 1
+                var_index = 2
             Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val = get_contour_grid(data, lat_index, lon_index, step, var_index)
             # final_data, data_grid = get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index)
             data_grid = []
@@ -1099,8 +1117,10 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
             mappath = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
             print 'mappath'
             print mappath
-            # legpath = get_contour_legend(max_val, min_val)
-            legpath = ''
+            legpath = get_contour_legend(max_val, min_val)
+            # legpath = ''
+            print 'legpath'
+            print legpath
 
             dict['min_lat'] = min_lat
             dict['max_lat'] = max_lat
@@ -1137,13 +1157,13 @@ def get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cache
         print 'mapname ok'
         map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
                                                   step, mapname)
-        return m, ret_html, map_id
+        return m, ret_html, map_id, legpath, unit
 
     except Exception, e:
         print e
         traceback.print_exc()
         if tries == 0:
-            return get_map_contour(n_contours, step, variable, query_pk, agg_function, m, cached_file, tries=1)
+            return get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=1)
         else:
             raise Exception('An error occurred while creating the contours on map.')
 
@@ -1187,9 +1207,9 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
     contour_layer.layer_name = 'Contours On Map - Layer:' + str(time.time()).replace(".","_")
     m.add_child(contour_layer)
-    # legend_img = Image.open(legpath)
-    # legend = trim(legend_img)
-    # legend_img.close()
+    legend_img = Image.open(legpath)
+    legend = trim(legend_img)
+    legend_img.close()
     # contour_legend_layer = plugins.ImageOverlay(legend, zindex=2, opacity=1,bounds=[[-60, -173], [-55, -90]])
     # contour_legend_layer.layer_name = 'Contours Legend - Layer:' + str(time.time()).replace(".", "_")
     # m.add_child(contour_legend_layer)
@@ -1209,7 +1229,7 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
 def get_contour_legend(max_val, min_val):
     a = np.array([[min_val, max_val]])
     pl.figure(figsize=(2.8, 0.4))
-    img = pl.imshow(a, cmap=plt.cm.coolwarm)
+    img = pl.imshow(a, cmap="rainbow")
     pl.gca().set_visible(False)
     cax = pl.axes([0.1, 0.2, 0.8, 0.6])
     cbar = pl.colorbar(orientation="horizontal", cax=cax)
@@ -1224,11 +1244,8 @@ def get_contour_legend(max_val, min_val):
 
 
 def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_index, lon_index, var_index):
-    levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
-    print 'levels ok'
     import matplotlib.tri as tri
     from mpl_toolkits.basemap import Basemap
-    bm = Basemap()
     x = np.array([i[lon_index] for i in final_data])
     y = np.array([i[lat_index] for i in final_data])
     z = np.array([i[var_index] for i in final_data])
@@ -1236,6 +1253,9 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     min_y = min(y)
     max_x = max(x)
     max_y = max(y)
+    bm = Basemap(llcrnrlon = min_x, llcrnrlat = min_y,
+               urcrnrlon = max_x, urcrnrlat =
+                 max_y,projection='cyl', resolution='i')
 
     triang = tri.Triangulation(x, y)
     interpolator = tri.LinearTriInterpolator(triang, z)
@@ -1248,13 +1268,83 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     # print len(yi)
     # print len(zi[0])  # columns
     # print len(xi)
+    len_xi = len(xi)
+    len_yi = len(yi)
+    land = None
     for x_index, x in enumerate(xi):
         for y_index, y in enumerate(yi):
-            if bm.is_land(x, y):
-                zi[y_index][x_index] = None
+            land = False
+            xcord, ycord = bm(x, y)
+            if bm.is_land(xcord, ycord):
+                land = True
+            xcord, ycord = bm(x+0.1, y)
+            if bm.is_land(xcord, ycord):
+                land = True
+            xcord, ycord = bm(x, y+0.1)
+            if bm.is_land(xcord, ycord):
+                land = True
+            # xcord, ycord = bm(x+0.1, y+0.1)
+            # if bm.is_land(xcord, ycord):
+            #     land = True
+
+            # print 'examining ' + str(x) + ', ' + str(y)
+            # print str(land)
+            if land:
+                # try:
+                #     zi[y_index-1][x_index-1] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index][x_index-1] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index-1][x_index] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index+1][x_index+1] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index][x_index+1] = None
+                # except:
+                #     pass
+                # try:
+                #     zi[y_index+1][x_index] = None
+                # except:
+                #     pass
+                try:
+                    zi[y_index][x_index] = None
+                except:
+                    pass
+
     # fig, ax1 = plt.subplots(nrows=1)
-    min_val = min(z)
-    max_val = max(z)
+    min_val = None
+    max_val = None
+    for r in zi:
+        for c in r:
+            if c is not None:
+                min_val = c
+                max_val = c
+                break
+        if min_val is not None:
+            break
+    for r in zi:
+        for c in r:
+            if c is not None:
+                if c < min_val:
+                    min_val = c
+                if c > max_val:
+                    max_val = c
+    if min_val == max_val:
+        max_val += 10
+        levels = np.linspace(start=min_val, stop=max_val, num=5)
+    else:
+        levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
+    # print levels
+    print min_val, max_val
+    print 'levels ok'
     # levels = np.linspace(start=min_val, stop=max_val, num=n_contours)
     # ax1.contour(xi, yi, zi, levels=levels, linewidths=0.5, colors='k')
     # cntr1 = ax1.contourf(xi, yi, zi, levels=levels, cmap="RdBu_r")
@@ -1265,7 +1355,8 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     ax = fig.add_subplot(111)
     # plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
     # ax1.contour(xi, yi, zi, levels=levels, linewidths=0.5, colors='k')
-    plt.contourf(xi, yi, zi, levels=levels, cmap="RdBu_r")
+    cs = plt.contourf(xi, yi, zi, levels=levels, cmap="rainbow")
+    # ax.clabel(cs, fmt='%2.1f', colors='w', fontsize=5)
     # plt.tricontourf(x, y, z, levels=levels, cmap="RdBu_r")
     plt.axis('off')
     extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
@@ -1358,15 +1449,18 @@ def get_contours_query_data(query, variable):
 
     var_index = lat_index = lon_index = -1
     # print result_headers
+    unit = ''
     for idx, c in enumerate(result_headers['columns']):
         if c['name'] == variable:
             var_index = idx
+            unit = c['unit']
         elif c['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
         elif c['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
     data = [row for row in result_data if row[var_index] is not None]
-    return data, lat_index, lon_index, var_index
+    # print("THE UNIT IS " + unit)
+    return data, lat_index, lon_index, var_index, unit
 
 
 
@@ -2580,7 +2674,7 @@ def get_histogram_2d_matplotlib(request):
     for el in freq:
         hor_table = []
         for i in el:
-            new_el = i/total
+            new_el = i/total * 100
             hor_table.append(new_el)
         new_table.append(hor_table)
     new_table = np.array(new_table)
@@ -2895,7 +2989,12 @@ def get_histogram_2d_am(request):
     cbar.ax.tick_params(labelsize=10, colors="#000000")
     pl.xlabel("'Percentage %'", labelpad=10)
     ts = str(time.time()).replace(".", "")
-    legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
+    import sys
+    if sys.argv[1] == 'runserver':
+        legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
+    else:
+        legpath = (settings.STATIC_ROOT + '/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
+    # legpath = ('visualizer/static/visualizer/img/temp/' + ts + 'h2dcolorbar.png').encode('ascii')
     pl.savefig(legpath, transparent=True, bbox_inches='tight')
     legpath = legpath.split("static/", 1)[1]
     pl.clf()
@@ -2907,7 +3006,7 @@ def get_histogram_2d_am(request):
 
 
 
-def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_type, ordering = True):
+def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_type, ordering = True, limit=True):
     query = AbstractQuery.objects.get(pk=query_pk)
     query = TempQuery(document=query.document)
     doc = query.document
@@ -2933,7 +3032,8 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
     try:
         with open('visualizer/static/visualizer/visualisations_settings.json') as f:
             json_data = json.load(f)
-        doc['limit'] = json_data['visualiser'][chart_type]['limit']
+        if limit:
+            doc['limit'] = json_data['visualiser'][chart_type]['limit']
     except:
         pass
     query.document = doc
@@ -3042,7 +3142,7 @@ def get_chart_query_data(query, x_var, y_var_list):
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
 
-def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, ordering = True):
+def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit='', y_var_unit_list=[], ordering = True):
     y_m_unit = []
     x_m_unit = ''
     y_title_list = []
@@ -3069,14 +3169,18 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, orderi
         json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
         delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
-    for x in y_var_list:
-        # TODO: use proper names
-        y_title_list.insert(0, str(x))
-        y_m_unit.insert(0, str('unknown unit'))
+    x_m_unit = x_var_unit
     x_var_title = x_var
 
-    return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
+    for i, x in enumerate(y_var_list):
+        y_title_list.append(str(x))
+        try:
+            y_m_unit.append(str(y_var_unit_list[i]))
+        except IndexError:
+            y_m_unit.append(str('unknown unit'))
+            pass
 
+    return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
 
 def get_line_chart_am(request):
@@ -3085,13 +3189,19 @@ def get_line_chart_am(request):
         x_var = str(request.GET.get('x_var', ''))
         y_var_list = request.GET.getlist('y_var[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
+        x_var_unit = str(request.GET.get('x_var_unit', ''))
+        y_var_unit_list = request.GET.getlist('y_var_unit[]')
+        limit = str(request.GET.get('limit', 'True'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am')
+            if limit == 'True':
+                query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, True)
+            else:
+                query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
-            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit, y_var_unit_list, True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
@@ -3106,13 +3216,14 @@ def get_line_chart_am(request):
                   {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
-
 def get_time_series_am(request):
     try:
         query_pk, df, notebook_id = get_data_parameters(request, '')
         existing_temp_res = request.GET.get('use_existing_temp_res', '') == 'on'
         temporal_resolution = str(request.GET.get('temporal_resolution', ''))
         y_var_list = request.GET.getlist('y_var[]')
+        x_var_unit = str(request.GET.get('x_var_unit', ''))
+        y_var_unit_list = request.GET.getlist('y_var_unit[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
         chart_type = str(request.GET.get('chart_type', 'line'))
         if not agg_function.lower() in AGGREGATE_VIZ:
@@ -3122,7 +3233,7 @@ def get_time_series_am(request):
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
             min_chart_period = chart_min_period_finder(min_period)
         elif df != '':
-            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, x_var_unit, y_var_unit_list, True)
             order_var = 'time'.encode('ascii')
             min_chart_period = 'ss'
         else:
@@ -3144,6 +3255,8 @@ def get_column_chart_am(request):
 
         x_var = str(request.GET.get('x_var', ''))
         y_var_list = request.GET.getlist('y_var[]')
+        x_var_unit = str(request.GET.get('x_var_unit', ''))
+        y_var_unit_list = request.GET.getlist('y_var_unit[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
@@ -3151,7 +3264,7 @@ def get_column_chart_am(request):
             query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
         elif df != '':
-            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit, y_var_unit_list, False)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
@@ -3163,7 +3276,7 @@ def get_column_chart_am(request):
         isDate = 'false'
 
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json_data, 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_pie_chart_am(request):
@@ -3171,6 +3284,8 @@ def get_pie_chart_am(request):
         query_pk, df, notebook_id = get_data_parameters(request, '')
         key_var = str(request.GET.get('key_var', ''))
         value_var = str(request.GET.get('value_var', ''))
+        x_var_unit = str(request.GET.get('x_var_unit', ''))
+        y_var_unit_list = request.GET.getlist('y_var_unit[]')
         agg_function = str(request.GET.get('agg_func', 'sum'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
@@ -3178,7 +3293,8 @@ def get_pie_chart_am(request):
             query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
         elif df !='':
-            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], x_var_unit, y_var_unit_list, True)
+
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
@@ -3216,6 +3332,8 @@ def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_
 
 
 def load_execute_dataframe_data(request, df, notebook_id):
+    # import pdb
+    # pdb.set_trace()
     livy = False
     service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
     if len(service_exec) > 0:

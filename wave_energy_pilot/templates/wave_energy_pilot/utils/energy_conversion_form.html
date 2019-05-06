@@ -1,0 +1,220 @@
+<div class="app-selector">
+    <h4>Application</h4>
+     <select name="app_selector" class="ui-dropdown" id="select_app">
+        <option value="">Select Application</option>
+        <option value="1">Multiple WEC's Assessment (Single Location)</option>
+        <option value="2">WEC's Assessment (Area)</option>
+        <option value="3">WEC Energy Generation Forecast</option>
+        <option value="4">Load Matching Analysis</option>
+    </select>
+</div>
+
+<div class="single-spatial-selection" hidden>
+    <h4>Geographic Coverage</h4>
+    <div class="row" style="margin: 25px; height: 6.7vh;">
+        <div class="lat-container">
+             <div class='col-sm-6' >
+                <p>Latitude: </p>
+            </div>
+            <div class='col-sm-6' style="bottom: 16px;">
+                <input class="form-control" id="lat" type='number' step="0.01" min="-90" max="90"/>
+            </div>
+        </div>
+        <div class="lon-container">
+            <div class='col-sm-6'>
+                <p>Longitude:</p>
+            </div>
+            <div class='col-sm-6' style="bottom: 16px;" >
+                <input class="form-control" id="lon" type='number'  step="0.01" min="-180" max="180" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="spatial-selection" hidden>
+     <h4>Geographic Coverage</h4>
+    <div class="row" style="margin: 25px;">
+        <div class="lat-container">
+             <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
+                <p>Latitude, from:</p>
+            </div>
+            <div class='col-sm-4' style="padding: 0px;">
+                <input class="form-control" id="lat_min" type='number' step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+            </div>
+            <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
+                <p>to:</p>
+            </div>
+            <div class='col-sm-3' style="padding: 0px;">
+                <input class="form-control" id="lat_max" type='number'  step="0.01" min="-90" max="90" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+            </div>
+        </div>
+        <div class="lon-container">
+            <div class='col-sm-4' style="padding: 0px; font-size: 10pt;">
+                <p>Longitude, from:</p>
+            </div>
+            <div class='col-sm-4' style="padding: 0px;">
+                <input class="form-control" id="lon_min" type='number'  step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+            </div>
+            <div class='col-sm-1' style="padding: 0px; font-size: 10pt;">
+                <p>to:</p>
+            </div>
+            <div class='col-sm-3' style="padding: 0px;">
+                <input class="form-control" id="lon_max" type='number' step="0.01" min="-180" max="180" style="width: 100%; margin: 0; padding: 3px; height: 100%;" />
+            </div>
+        </div>
+    <input hidden type="number" id="areaSelectWidth" value="" >
+    <input hidden type="number" id="areaSelectHeight" value="">
+
+    <p id="mapbounds" style="display: inline-block; margin: 5px; line-height: 1; text-align: left;"></p>
+    </div>
+</div>
+
+<div class="dataset-selector" hidden>
+    <h4>Available Datasets</h4>
+    <div class="wecs_assessment_location_dropdown" hidden>
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wecs_assessment_location">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {% for application in dataset.applications %}
+                    {%  if application == "wecs_assessment_location" %}
+                        <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}"
+                                    data-minlat="{{ dataset.min_lat }}" data-maxlat="{{ dataset.max_lat }}" data-minlng="{{ dataset.min_lng }}"
+                                    data-maxlng="{{ dataset.max_lat }}">{{ dataset.title }}</option>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="wecs_assessment_area_dropdown" hidden>
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wecs_assessment_area">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {% for application in dataset.applications %}
+                    {%  if application == "wecs_assessment_area" %}
+                        <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}"
+                                    data-minlat="{{ dataset.min_lat }}" data-maxlat="{{ dataset.max_lat }}" data-minlng="{{ dataset.min_lng }}"
+                                    data-maxlng="{{ dataset.max_lat }}">{{ dataset.title }}</option>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="wecs_forecast_dropdown" hidden>
+        <select name="dataset-selector" class="ui dropdown" id="select_dataset_wecs_forecast">
+            <option value="">Available Datasets</option>
+            {% for dataset in datasets_list %}
+                {% for application in dataset.applications %}
+                    {%  if application == "wecs_forecast" %}
+                        <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}"
+                                    data-minlat="{{ dataset.min_lat }}" data-maxlat="{{ dataset.max_lat }}" data-minlng="{{ dataset.min_lng }}"
+                                    data-maxlng="{{ dataset.max_lat }}">{{ dataset.title }}</option>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </select>
+    </div>
+    <div class="matching_analysis_dropdown" hidden>
+         <select name="dataset-selector" class="ui dropdown" id="select_dataset_matching_analysis">
+                <option value="">Available Datasets</option>
+                {% for dataset in datasets_list %}
+                    {% for application in dataset.applications %}
+                        {%  if application == "matching_analysis" %}
+                            <option value="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}" data-enddate="{{ dataset.max_date }}"
+                                    data-minlat="{{ dataset.min_lat }}" data-maxlat="{{ dataset.max_lat }}" data-minlng="{{ dataset.min_lng }}"
+                                    data-maxlng="{{ dataset.max_lng }}">{{ dataset.title }}</option>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+         </select>
+    </div>
+</div>
+
+<div class="coverage-date-filters" hidden>
+    <h4>Timeframe</h4>
+    {% for dataset in datasets_list %}
+        <div class="dataset" data-id="{{ dataset.id }}" data-title="{{ dataset.title }}" data-startdate="{{ dataset.min_date }}"
+             data-enddate="{{ dataset.max_date }}" data-app="{{ dataset.application }}"></div>
+    {% endfor %}
+    <div class="row" style="margin-top:15px">
+        <div class="coverage-date-filters-icon">
+        </div>
+        <div class='col-sm-6'>
+            <div class="form-group">
+                <div class='input-group date' id='startdatepicker'>
+                    <label>Start Date:</label>
+                    <input type='text' class="form-control" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class='col-sm-6'>
+            <div class="form-group">
+                <div class='input-group date' id='enddatepicker'>
+                    <label>End Date:</label>
+                    <input type='text' class="form-control" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="converters-container" hidden>
+    <h4>Wave Energy Converter</h4>
+    <select name="converters-selector" multiple="" class="ui dropdown" id="converters-selector" >
+    <option value="">Available Converters</option>
+    {% for converter in energy_converters %}
+        <option value="{{ converter.id }}" data-id="{{ converter.id }}" data-title="{{ converter.title }}" data-min_height="{{ converter.min_height }}" data-max_height="{{ converter.max_height }}"
+                                data-max_period="{{ converter.max_energy_period }}" data-power="{{ converter.power }}">{{ converter.title }}
+        </option>
+     {% endfor %}
+    </select>
+    <div class="converters-values-selection"hidden>
+        <select name="converters-values" class="ui dropdown" >
+        <option value="">Select to show values</option>
+        {% for converter in energy_converters %}
+            <option value="{{ converter.id }}" data-id="{{ converter.id }}" data-title="{{ converter.title }}" data-min_height="{{ converter.min_height }}" data-max_height="{{ converter.max_height }}"
+                                    data-max_period="{{ converter.max_energy_period }}" data-power="{{ converter.power }}">{{ converter.title }}
+            </option>
+         {% endfor %}
+    </select>
+    </div>
+
+
+    <div class="wec-button-container">
+        <div class="btn btn-success btn-sm" id="add-wec-btn" data-toggle="modal" data-target="#new_wec">
+            <i class="fa fa-plus-circle"></i> Add Wec
+        </div>
+    </div>
+</div>
+
+<div class="radio-container" hidden>
+    <h4>Wave Energy Converter</h4>
+    {% for converter in energy_converters %}
+        <div class="radio">
+            <label><input {% if forloop.counter == 1 %}  {% endif %} type="radio" name="wec" value="{{ converter.id }}" data-id="{{ converter.id }}" data-title="{{ converter.title }}" >{{ converter.title }}</label>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="row" id="upload_csv_container" hidden>
+    <label for="image">Upload Electric Grid Load Profile (CSV):
+        <span title="Upload a CSV file containing the load profile time series. The CSV file should have two columns, separated by comma, like the following example: 2016-01-01 00:00:00, 4.778">
+            <i class="fas fa-question"></i>
+        </span>
+    </label>
+    <input type="file" name="load_profile_csv" id="load_profile_csv" value="" class=""/>
+    <input type="hidden" name="MAX_FILE_SIZE" value="10000000" />
+</div>
+
+<div class="run-service-button-container" hidden>
+    <div class="btn btn-primary btn-sm btn-default" id="run-service-btn">
+        <i class="fa fa-play-circle"></i> Run Service
+    </div>
+</div>

@@ -13,7 +13,7 @@ import collections
 from django.db import connections
 from django.conf import settings
 from service_builder.models import ServiceInstance
-
+import ast
 
 def convert_unicode_json(data):
     if isinstance(data, basestring):
@@ -318,9 +318,20 @@ def execute_code_on_livy(code, session_id, kind):
         from time import sleep
         sleep(3)  # Time in seconds.
         while state != 'available':
-            state = requests.get(host + '/sessions/' + str(session_id) + '/statements/' + str(statement_id), headers=headers).json()['state']
+            r = requests.get(host + '/sessions/' + str(session_id) + '/statements/' + str(statement_id), headers=headers).json()
+            # print json.dumps(r)
+            state = r['state']
             if state == 'error' or state == 'cancelling' or state == 'cancelled':
                 raise Exception('Failed')
+            # print state
+            if type(r) == dict and 'output' in r.keys():
+                # print 'output in keys ' + str(r.keys())
+                if type(r['output']) == dict and 'status' in r['output'].keys():
+                    # print 'status in keys ' + str(r['output'].keys())
+                    exec_status = r['output']['status']
+                    if exec_status == 'error':
+                        print 'Livy Execution Failed'
+                        raise Exception('Livy Execution Failed')
     except Exception:
         raise Exception('Failed')
     return statement_id
@@ -964,7 +975,9 @@ def create_livy_toJSON_paragraph(session_id, df_name, order_by='', order_type='A
                 raise Exception('Failed')
     except Exception:
         raise Exception('Failed')
-
+    # return_val = ast.literal_eval(response['output']['data']['text/plain'])
+    # print return_val
+    # return return_val
     return json.loads(response['output']['data']['text/plain'].replace("\'","'").replace("u'{", "{").replace("}',", "},").replace("}']", "}]").replace("'", '"'))
 
 
@@ -1017,7 +1030,8 @@ def get_result_dict_from_livy(session_id, dict_name):
         raise Exception('Failed')
     print 'result'
     print str(response['output']['data'])
-    return_val = json.loads(str(convert_unicode_json(response['output']['data']['text/plain'])).replace("'", '"'))
+    # return_val = json.loads(str(convert_unicode_json(response['output']['data']['text/plain'])).replace("'", '"'))
+    return_val = ast.literal_eval(response['output']['data']['text/plain'])
     print return_val
     return return_val
 
