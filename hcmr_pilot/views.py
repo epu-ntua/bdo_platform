@@ -86,8 +86,8 @@ def init(request):
         data = trim(data_img)
         data_img.close()
         # Overlay the image
-        density_map_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.4, mercator_project=True,
-                                             bounds=[[30.13, -5.935], [45.86, 36.42]])
+        density_map_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.5, mercator_project=True,
+                                             bounds=[[30.13, -5.941], [45.86, 36.42]])
         density_map_layer.layer_name = 'AIS Density Map'
         m.add_child(density_map_layer)
     folium.LayerControl().add_to(m)
