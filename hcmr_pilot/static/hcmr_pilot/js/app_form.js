@@ -200,8 +200,8 @@ function tour_guide_senario_1(scenario){
     first_scenario_tour.addStep({
         element: ".oil-density-container",
         placement: "left",
-        title: "Oil volume",
-        content: "Set the volume of the oil spilled in the sea.",
+        title: "Oil density",
+        content: "Set the density of oil spilled in the sea in kg/ m3.",
     });
 
     first_scenario_tour.addStep({
@@ -395,13 +395,7 @@ function interactive_form(onLocationfound, user_marker){
             // $('#sel2').parent().find('div[data-value="002"]').addClass('disabled');
         }
     });
-    //  $('#depth').on('input',function () {
-    //     allow_form_submit = missing_parameter($('#depth'), allow_form_submit, 'depth', 6, '#run-service-btn','depth' );
-    //     if($('#depth').val()<0) {
-    //         $('#depth').val((0).toFixed(4));
-    //     }
-    //
-    // });
+
 }
 
 function interactive_multi_point_service_form(){
@@ -906,6 +900,8 @@ $(document).ready(function() {
             initialDate: endDate
         });
         startpick.datetimepicker('update',endDate);
+        $("#sel2 option[value='003']").remove();
+        $("#sel1 option[value='203']").remove();
         $('#lat').val((38.2810).toFixed(4));
         $('#lon').val((25.0598).toFixed(4));
         first_user_marker = L.marker([38.2810, 25.0598], {draggable: true}).bindPopup("First Marker").addTo(map);
