@@ -80,8 +80,15 @@ INSTALLED_APPS = [
     'data_parser',
     'feedback_form',
     'access_controller',
-    'wave_energy_pilot'
+    'wave_energy_pilot',
+
+#     GOOGLE ANALYTICS
+    'google_analytics'
 ]
+
+GOOGLE_ANALYTICS = {
+    'google_analytics_id': 'UA-139868802-3',
+}
 
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`

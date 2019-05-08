@@ -66,4 +66,7 @@ urlpatterns = [
 
     # wave energy pilot urls
     url(r'^wave-energy/', include('wave_energy_pilot.urls')),
+    # website_analytics
+    # url(r'^website_analytics/', include('website_analytics.urls')),
+    url(r'^djga/', include('google_analytics.urls'))
 ]

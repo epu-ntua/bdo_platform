@@ -1,9 +1,12 @@
 {% load static %}
 {% load leaflet_tags %}
+{% load google_analytics_tags %}
+
 
 <!doctype html>
 <html lang="en">
 <head>
+
 	<meta charset="utf-8" />
 	<link rel="apple-touch-icon" sizes="76x76" href="{% static 'img/apple-icon.png' %}" />
 	<link rel="icon" type="image/png" href="{% static 'img/favicon.ico' %}" />
@@ -148,6 +151,9 @@
 </head>
 
 <body>
+<div style="display:none">
+    <img src="{% google_analytics %}" width="0" height="0" />
+</div>
 
 	<div class="wrapper">
 
