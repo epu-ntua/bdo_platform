@@ -2,9 +2,16 @@
 {% load static %}
 {% load leaflet_tags %}
 {% block css %}
+    {% leaflet_css %}
+    {% for css in css_all %}
+        {% autoescape off %}
+            {{ css }}
+        {% endautoescape %}
+    {% endfor %}
+    <link rel="stylesheet" type="text/css" href="{% static 'visualizer/css/map.css' %}" />
     <link href="{% static "css/leaflet-areaselect.css" %}" rel="stylesheet">
     <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+{#    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>#}
     <link href="{% static "css/bootstrap-datetimepicker.css" %}" rel="stylesheet">
     <link href="{% static "hcmr_pilot/css/app_form.css" %}" rel="stylesheet">
     <link href="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.css"%}" rel="stylesheet">
@@ -13,7 +20,9 @@
 
 {% block content %}
     <div class="app-container">
-        <div id="map" style="min-height: 800px; width: 100%; margin-top: 10px; z-index: 1; ">
+        <div id="map" style="min-height: 800px; width: 100%; margin-top: 75px; z-index: 1">
+{#            <input id="map_id"value="{{ map_id|safe }}" hidden>#}
+            {% leaflet_map map_id callback="window.map_init_basic"%}
         </div>
 
         <div id="app_form" class="form container " >
@@ -31,6 +40,16 @@
     {% include 'hcmr_pilot/utils/status_modal.html' %}
 
     {% leaflet_js %}
+    <script src="{% static 'js/leaflet-image.js' %}"></script>
+
+    {% for js in js_all %}
+        {% autoescape off %}
+            {{ js }}
+        {% endautoescape %}
+    {% endfor %}
+    <script>
+        var map = {{ map_id|safe }};
+    </script>
     <script src="{% static "vendor/bootstrap-tour/src/bootstrap-tour.min.js"%}"></script>
     <script src="{% static "query_designer/js/simplified/area-select/simple-shape.js" %}"></script>
     <script src="{% static "query_designer/js/simplified/area-select/rectangle.js" %}"></script>
@@ -38,4 +57,7 @@
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}"></script>
 {#    <script src="{% static 'hcmr_pilot/js/spatio_temporal_filter.js'%}" ></script>#}
     <script src="{% static 'hcmr_pilot/js/app_form.js' %}"></script>
+    <script>
+        $('#map .leaflet-control-layers-base span').text('Mapbox')
+    </script>
 {% endblock %}

@@ -1,6 +1,11 @@
 import csv
 import json
-
+from django.template.loader import render_to_string
+import folium
+from folium import plugins
+import numpy as np
+from PIL import Image, ImageChops
+from bs4 import BeautifulSoup
 import requests
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -18,6 +23,40 @@ import psycopg2
 import requests
 import time
 from datetime import datetime
+
+def trim(img):
+    border = Image.new(img.mode, img.size, img.getpixel((0, 0)))
+    diff = ImageChops.difference(img, border)
+    diff = ImageChops.add(diff, diff, 2.0, -100)
+    bbox = diff.getbbox()
+    if bbox:
+        img = img.crop(bbox)
+    return np.array(img)
+
+
+def create_map():
+    tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
+    token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
+    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' + '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' + 'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+    location = [38.41, 21.97]
+    zoom_start = 5
+    max_zoom = 30
+    min_zoom = 2
+
+    m = folium.Map(location=location,
+                   zoom_start=zoom_start,
+                   max_zoom=max_zoom,
+                   min_zoom=min_zoom,
+                   max_bounds=True,
+                   tiles=tiles_str + token_str,
+                   attr=attr_str)
+
+    plugins.Fullscreen(
+        position='topright',
+        title='Expand me',
+        title_cancel='Exit me',
+        force_separate_button=True).add_to(m)
+    return m
 
 def init(request):
     form = HCMRForm()
@@ -40,7 +79,34 @@ def init(request):
     list = []
     for i in range(0, 61):
         list.append(i*12)
-    return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps, 'sim_len_list': list})
+
+    m = create_map()
+    if int(scenario) == 2:
+        data_img = Image.open('visualizer/static/visualizer/img/ais_density_maps/ais_data_photo_med.png')
+        data = trim(data_img)
+        data_img.close()
+        # Overlay the image
+        density_map_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.5, mercator_project=True,
+                                             bounds=[[30.13, -5.941], [45.86, 36.42]])
+        density_map_layer.layer_name = 'AIS Density Map'
+        m.add_child(density_map_layer)
+    folium.LayerControl().add_to(m)
+    temp_map = 'templates/map1' + str(int(time.time())) + '.html'
+    m.save(temp_map)
+    map_html = open(temp_map, 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+
+    # print(js_all)
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    print map_id
+    return render(request, 'hcmr_pilot/load_service.html', {'form': form, 'scenario': scenario, 'execution_steps': execution_steps, 'sim_len_list': list, 'map_id': map_id, 'js_all': js_all, 'css_all': css_all})
 
 
 def scenario1_results(request, exec_instance):
