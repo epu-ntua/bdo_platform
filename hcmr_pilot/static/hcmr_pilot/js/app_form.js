@@ -200,8 +200,8 @@ function tour_guide_senario_1(scenario){
     first_scenario_tour.addStep({
         element: ".oil-density-container",
         placement: "left",
-        title: "Oil volume",
-        content: "Set the volume of the oil spilled in the sea.",
+        title: "Oil density",
+        content: "Set the density of oil spilled in the sea in kg/ m3.",
     });
 
     first_scenario_tour.addStep({
@@ -395,13 +395,7 @@ function interactive_form(onLocationfound, user_marker){
             // $('#sel2').parent().find('div[data-value="002"]').addClass('disabled');
         }
     });
-    //  $('#depth').on('input',function () {
-    //     allow_form_submit = missing_parameter($('#depth'), allow_form_submit, 'depth', 6, '#run-service-btn','depth' );
-    //     if($('#depth').val()<0) {
-    //         $('#depth').val((0).toFixed(4));
-    //     }
-    //
-    // });
+
 }
 
 function interactive_multi_point_service_form(){
@@ -598,7 +592,10 @@ function check_area_position(area) {
 
 $(document).ready(function() {
     var scenario = $('.scenario').data('id');
-    map_init([34.6833, 19.1004, 41.3357, 28.6996], scenario);
+    // map_init(scenario);
+    init = true;
+    $('.leaflet-control').css('position', 'relative');
+    $('.leaflet-control').css('right', '380px');
     $('.ui.dropdown').dropdown();
     $('#time_interval').parent().css('min-width','13rem');
     $('#time_interval').parent().addClass("form-control");
@@ -903,6 +900,8 @@ $(document).ready(function() {
             initialDate: endDate
         });
         startpick.datetimepicker('update',endDate);
+        $("#sel2 option[value='003']").remove();
+        $("#sel1 option[value='203']").remove();
         $('#lat').val((38.2810).toFixed(4));
         $('#lon').val((25.0598).toFixed(4));
         first_user_marker = L.marker([38.2810, 25.0598], {draggable: true}).bindPopup("First Marker").addTo(map);
@@ -1256,17 +1255,13 @@ $(document).ready(function() {
             // }
         });
     });
-    function map_init(image_bounds, scenario) {
+    function map_init(scenario) {
         var maplayer = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=';
         var token = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ';
         var attr = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors,' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>' +
         'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>';
-        // map = L.map('map').setView([38.41, 21.97], 4);
-        // L.tileLayer(maplayer + token, {
-        //     attribution: attr,
-        //     maxZoom: 18,
-        // }).addTo(map);
+
         var base_map = L.tileLayer(maplayer + token, {
             attribution: attr,
             maxZoom: 18,
@@ -1277,28 +1272,28 @@ $(document).ready(function() {
                 layers: [base_map]
             }).setView([38.41, 21.97], 5);
         }else {
-            var ais_layer = L.layerGroup();
-            map = L.map('map', {
-                layers: [base_map, ais_layer]
-            }).setView([38.41, 21.97], 5);
-            var ais_bounds = new L.LatLngBounds(
-                new L.LatLng(image_bounds[0], image_bounds[1]),
-                new L.LatLng(image_bounds[2], image_bounds[3]));
-            var overlay = new L.ImageOverlay('/static/visualizer/img/ais_density_maps/ais_data_photo.png', ais_bounds, {
-                opacity: 0.5,
-                interactive: true,
-            });
-            overlay.addTo(ais_layer);
-            var overlays = {
-                'AIS Density Map': ais_layer
-            };
-            var baseLayers = {
-                "Map": base_map
-            };
+            // var ais_layer = L.layerGroup();
+            // map = L.map('map', {
+            //     layers: [base_map, ais_layer]
+            // }).setView([38.41, 21.97], 5);
+            // var ais_bounds = new L.LatLngBounds(
+            //     new L.LatLng(image_bounds[0], image_bounds[1]),
+            //     new L.LatLng(image_bounds[2], image_bounds[3]));
+            // var overlay = new L.ImageOverlay('/static/visualizer/img/ais_density_maps/ais_data_photo_med.png', ais_bounds, {
+            //     opacity: 0.5,
+            //     interactive: true,
+            // });
+            // overlay.addTo(ais_layer);
+            // var overlays = {
+            //     'AIS Density Map': ais_layer
+            // };
+            // var baseLayers = {
+            //     "Map": base_map
+            // };
             init = true;
-            L.control.layers(baseLayers, overlays).addTo(map);
+            // L.control.layers(baseLayers, overlays).addTo(map);
             $('.leaflet-control').css('position', 'relative');
-            $('.leaflet-control').css('right', '330px');
+            $('.leaflet-control').css('right', '380px');
         }
     }
 
