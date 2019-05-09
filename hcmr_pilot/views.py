@@ -181,7 +181,7 @@ def process(request, exec_instance):
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
 
-        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count, scenario= parse_request_params(request)
+        spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count, scenario, start_date, latitude, longitude = parse_request_params(request)
         depth = 0
         if (scenario == '1') or (scenario == '3'):
             service_exec.arguments["algorithm-arguments"][0]["latitude"] = spill_infos[0]['latitude']
@@ -314,6 +314,12 @@ def process(request, exec_instance):
                 v_count = v_count +1
             visualization_url = "http://" + request.META[
                 'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?"+oil_spill_start+"markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer + "&time_interval=" + time_interval + "&valid_points="+ str(len(valid_points))
+            visualization_url = "http://" + request.META['HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?"+oil_spill_start \
+                                + "&markerType=circle&lat_col=Lat&lon_col=Lon" \
+                                + "&data_file=" + hcmr_data_filename + "&red_points_file=" \
+                                + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer \
+                                + "&time_interval=" + time_interval + "&start_date=" + start_date + \
+                                '&latitude=' + latitude + "&longitude=" + longitude + "&length="+ sim_length + "&valid_points="+ str(len(valid_points))
 
             service_exec.dataframe_visualizations = {"v1": visualization_url}
             service_exec.arguments["algorithm-arguments"][0]["out_filepath"] = filename_output
@@ -400,7 +406,7 @@ def wait_until_output_ready(params, request):
 
 
 def create_inp_file_from_request_and_upload(request,depth):
-    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario = parse_request_params(request)
+    spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario, _, _, _ = parse_request_params(request)
     url_params = build_request_params_for_file_creation(spill_infos, wave_model, ocean_model, oil_density, sim_length, time_interval,depth)
     response = requests.get("http://" + request.META['HTTP_HOST'] + "/service_builder/api/createInputFileForHCMRSpillSimulator/?" + url_params)
     print "<status>" + str(response.status_code) + "</status>"
@@ -445,6 +451,9 @@ def parse_request_params(request):
     spill_infos = []
     valid_points_count = 0
     valid_points = []
+    first_start_date = request.GET.get('start_date1')
+    first_latitude = request.GET.get('latitude1')
+    first_longitude = request.GET.get('longitude1')
     scenario = str(request.GET.get('scenario'))
     for i in range(1,6):
         spill_info = {}
@@ -471,7 +480,8 @@ def parse_request_params(request):
     sim_length = request.GET.get('simulation_length')
     oil_density = request.GET.get('oil_density')
     # depth = request.GET.get('depth')
-    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density, valid_points, valid_points_count,scenario
+    return spill_infos, wave_model, ocean_model, natura_layer, ais_layer, time_interval, sim_length, oil_density,\
+           valid_points, valid_points_count,scenario, first_start_date, first_latitude, first_longitude
 
 
 def is_integer_string(s):
