@@ -904,9 +904,10 @@ def create_livy_session(notebook_id):
                 break
     print 'found session?'
     print session_id
-    response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
+
     if session_id == -1:
         try:
+            response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
             session_id = response['id']
         except Exception:
             raise Exception('Failed')
