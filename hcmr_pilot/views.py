@@ -269,7 +269,27 @@ def process(request, exec_instance):
                 try:
                     depth = float(result[0][0])
                 except:
-                    depth = 0
+                    resolution = 0
+                    print 'exception: trying with less precise resolution'
+                    if wave_model == '202':
+                        query = "SELECT * FROM (SELECT min(depth) FROM hcmr_poseidon_aeg_bathymetry WHERE round(latitude," + str(
+                            resolution) + " )=" + str(round(
+                            float(spill_infos[0]['latitude']), resolution)) + " AND round(longitude," + str(
+                            resolution) + ")=" + str(round(
+                            float(spill_infos[0]['longitude']), resolution)) + ")"
+                        cursor_presto.execute(query)
+                    else:
+                        query = "SELECT * FROM (SELECT min(depth) FROM hcmr_poseidon_med_bathymetry WHERE round(latitude," + str(
+                            resolution) + " )=" + str(round(
+                            float(spill_infos[0]['latitude']), resolution)) + " AND round(longitude," + str(
+                            resolution) + ")=" + str(round(
+                            float(spill_infos[0]['longitude']), resolution)) + ")"
+                    cursor_presto.execute(query)
+                    result = cursor_presto.fetchall()
+                    try:
+                        depth = float(result[0][0])
+                    except:
+                        depth = 0
                 service_exec.arguments["algorithm-arguments"][0]["depth"] = depth
                 print query
                 print 'Oilspill depth:'+str(depth)
