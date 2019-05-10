@@ -29,3 +29,9 @@ class Visualization(Model):
 
     def __unicode__(self):
         return self.title
+
+
+class PyplotVisualisation(Model):
+    user = ForeignKey(User)
+    time = DateTimeField()
+    status = CharField(null=True, default='', max_length=100)

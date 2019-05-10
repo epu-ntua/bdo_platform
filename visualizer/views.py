@@ -22,7 +22,7 @@ from django.template.loader import render_to_string
 from service_builder.models import ServiceInstance
 from service_builder.views import updateServiceInstanceVisualizations
 import numpy as np
-
+from datetime import datetime
 import matplotlib
 from matplotlib import use
 # import matplotlib.pyplot as plt
@@ -36,7 +36,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import time
 import traceback
 from query_designer.models import TempQuery
-from visualizer.models import Visualization
+from visualizer.models import Visualization, PyplotVisualisation
 from aggregator.models import *
 
 from utils import *
@@ -715,7 +715,12 @@ def map_visualizer(request):
                     m, extra_js, old_map_id, legend, unit = get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, variable, lat_col, lon_col, agg_function, m,
                                                                      cached_file, request)
                     unit = unit
-                    legend_id = legend.split("staticfiles/", 1)[1]
+                    import sys
+                    if sys.argv[1] == 'runserver':
+                        legend_id = legend.split("static/", 1)[1]
+                    else:
+                        legend_id = legend.split("staticfiles/", 1)[1]
+
                     #legend_id=legend
                     old_map_id_list.append(old_map_id)
             except ObjectDoesNotExist:
@@ -1093,6 +1098,8 @@ def get_heatmap_query_data(query, heat_variable):
 
 
 def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=0):
+    viz = PyplotVisualisation(user=request.user, time=datetime.now(), status='waiting')
+    viz.save()
     try:
         round_num = get_contour_step_rounded(step)
         dict = {}
@@ -1115,6 +1122,14 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
 
             xi = np.arange(min_lon, max_lon + 0.00001, step)
             yi = np.arange(min_lat, max_lat + 0.00001, step)
+
+            time_threshold = datetime.now() - timedelta(hours=1)
+            oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
+            while len(PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='running')) > 0 or int(oldest_viz.id) != viz.id:
+                time.sleep(5)
+                oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
+            viz.status = 'running'
+            viz.save()
             mappath = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
             print 'mappath'
             print mappath
@@ -1153,20 +1168,26 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
             data_grid = cached_data['data_grid']
             data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
 
+        print viz.id + lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, max_lat, max_lon, min_lat, min_lon
         mapname = create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
                                 max_lon, min_lat, min_lon, legpath)
+
         print 'mapname ok'
         map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
                                                   step, mapname)
+        viz.status = 'done'
+        viz.save()
         return m, ret_html, map_id, legpath, unit
 
     except Exception, e:
+        viz.status = 'failed'
+        viz.save()
         print e
         traceback.print_exc()
-        if tries == 0:
-            return get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=1)
-        else:
-            raise Exception('An error occurred while creating the contours on map.')
+        # if tries == 0:
+        #     return get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=1)
+        # else:
+        raise Exception('An error occurred while creating the contours on map.')
 
 
 def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname):
@@ -2727,6 +2748,10 @@ def get_histogram_2d_matplotlib(request):
     else:
         histpath = settings.STATIC_ROOT + '/visualizer/img/temp/' + img_name
     plt.savefig(histpath,  transparent=True, frameon=False, pad_inches=0)
+    plt.clf()
+    plt.close()
+    fig = None
+    ax = None
     return render(request, 'visualizer/histogram_2d_matplotlib.html',
                   {'img_name': img_name})
 
