@@ -76,6 +76,8 @@
         $('.refresh_btn').click(function () {
             $(this).siblings(".frame_container").find('.loadingFrame').css( "display", "block" );
             var src = $(this).siblings(".frame_container").find('iframe').attr('src');
+            var timestamp = Date.now().toString();
+            src += '&new_timestamp=' + String(timestamp);
             $(this).siblings(".frame_container").find('iframe').attr({'src': src});
         });
 
