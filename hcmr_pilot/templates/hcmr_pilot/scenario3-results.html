@@ -200,13 +200,13 @@
 
             <div class="row col-sm-12" style="margin-top: 20px">
                 <div class="button-container" style="width:100%">
-                    <div id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
+                    <button id="download-out" type="submit" class="btn btn-primary btn-sm btn-default"
                          style="width:30%">
                         <i class="fa fa-download"></i> <a href="/oilspill/download?file={{ out_filepath }}" download style="color:#ffffff">Download Output File</a>
-                    </div>
-                    <div id="download-report" class="btn btn-primary btn-sm btn-default" style="width:30%">
+                    </button>
+                    <button id="download-report" class="btn btn-primary btn-sm btn-default" disabled style="width:30%">
                         <i class="fa fa-download"></i> Create & Download Report
-                    </div>
+                    </button>
                     <button id="download-report-loading" class="btn btn-primary btn-sm btn-default" style="width:30%; display: none;">
                       <i class="fa fa-refresh fa-spin" style="margin-right: 3px;"></i>Generating Report
                     </button>
@@ -227,6 +227,7 @@
     <script type="text/javascript">
         $(".viz_container iframe").on("load", function () {
             $(this).siblings(".loadingFrame").css("display", "none");
+            $("#download-report").prop('disabled', false);
             $('#depth_graph').show();
             $('#depth_graph').siblings(".loadingFrame").css("display", "none");
             var myframe = $('iframe').contents();
@@ -321,7 +322,15 @@
             $("#conditions_div tr").each(function (i, elem) {
                 docDefinition.content.push($(elem).find("td").eq(1).html() + " " + $(elem).find("td").eq(2).html());
             });
-
+            docDefinition.content.push(" ");
+            docDefinition.content.push({text: "Results", bold: true});
+            docDefinition.content.push({color:'black', markerColor: '#7B007E', ul: ['Oil Spill Start']});
+            docDefinition.content.push({color: 'black', markerColor: 'blue', ul: ['Sea Bottom']});
+            docDefinition.content.push({color: 'black', markerColor: 'cadetblue', ul: ['Under Sea']});
+            docDefinition.content.push({color: 'black', markerColor: 'lightblue', ul: ['On Surface']});
+            docDefinition.content.push({color: 'black', markerColor: 'orange', ul: ['On Coast']});
+            docDefinition.content.push({color: 'black', markerColor: 'red', ul: ['In Protected Areas']});
+            docDefinition.content.push("\n");
             docDefinition.content.push(" ");
             docDefinition.content.push({text: "Results", bold: true});
             $("iframe").contents().find("#snapshot div").each(function (i, elem) {
@@ -337,13 +346,20 @@
 
                 var new_content = {
                     image: $('#3d_im_'+id).find("img").attr('src'),
-                    width: 450
+                    width: 450,
+{#                    pageBreak: 'after'#}
                 };
                 docDefinition.content.push(new_content);
-                docDefinition.content.push(" ");
+{#                docDefinition.content.push(" ");#}
+                docDefinition.content.push({
+                    text: ' ',
+                    pageBreak: 'after'
+                });
 
             });
-            pdfMake.createPdf(docDefinition).open();
+            docDefinition.content.pop();
+{#            pdfMake.createPdf(docDefinition).open();#}
+            pdfMake.createPdf(docDefinition).download();
         }
 
         function check() {

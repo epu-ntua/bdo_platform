@@ -3517,25 +3517,40 @@ def map_routes(m):
     return m
 
 
-def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude, sim_length):
-    pol_group_layer = folium.map.FeatureGroup(name='AIS data layer : ' + str(time.time()).replace(".", "_"),
+def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list):
+    pol_group_layer = folium.map.FeatureGroup(name='Vessel Routes',
                                               overlay=True,
                                               control=True).add_to(m)
 
-    marker_group_layer = folium.map.FeatureGroup(name='Platform marker : ' + str(time.time()).replace(".", "_"),
+    vessel_marker_group_layer = folium.map.FeatureGroup(name='Vessel Info',
                                               overlay=True,
                                               control=True).add_to(m)
     presto_cur = get_presto_cursor()
+    latitude = start_lat_lon_list[0][0]
+    longitude = start_lat_lon_list[0][1]
+    min_lat = latitude
+    max_lat = latitude
+    min_lon = longitude
+    max_lon = longitude
+    for el in start_lat_lon_list:
+        if el[0] > max_lat:
+            max_lat = el[0]
+        if el[0] < min_lat:
+            min_lat = el[0]
+        if el[1] > max_lon:
+            max_lon = el[1]
+        if el[1] < min_lon:
+            min_lon = el[1]
 
-    min_lat = float(latitude) - 0.2
-    max_lat = float(latitude) + 0.2
-    min_lon = float(longitude) - 0.2
-    max_lon = float(longitude) + 0.2
+    min_lat = float(min_lat) - 0.1
+    max_lat = float(max_lat) + 0.1
+    min_lon = float(min_lon) - 0.1
+    max_lon = float(max_lon) + 0.1
 
     min_date, max_date, min_filter_date, max_filter_date = get_min_max_time_for_query(start_date_string, sim_length)
 
     query = """
-        SELECT latitude, longitude, platform_id FROM XMILE_AIS 
+        SELECT latitude, longitude, platform_id, time FROM XMILE_AIS 
         WHERE LATITUDE>=%s AND LATITUDE<=%s 
         AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '%s'
         AND TIME >= TIMESTAMP '%s' and platform_id in (
@@ -3551,24 +3566,39 @@ def add_oil_spill_ais_layer(m, start_date_string, latitude, longitude, sim_lengt
                                 max_filter_date, min_filter_date))
     data = presto_cur.fetchall()
 
-    platform_points = {}
-    points = []
-    previous_platform = data[0][2]
-    for d in data:
-        if previous_platform != d[2]:
-            platform_points[previous_platform] = points
-            previous_platform = d[2]
-            points = []
+    try:
+        platform_points = {}
+        platform_time_points = {}
+        points = []
+        time_points = []
+        previous_platform = data[0][2]
+        for d in data:
+            if previous_platform != d[2]:
+                platform_points[previous_platform] = points
+                platform_time_points[previous_platform] = [time_points[0], time_points[-1]]
+                previous_platform = d[2]
+                points = []
+                time_points = []
 
-        points.append((d[0], d[1]))
-    platform_points[previous_platform] = points
-    icon_url = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png'
+            points.append((d[0], d[1]))
+            time_points.append(d[3])
+        platform_points[previous_platform] = points
+        platform_time_points[previous_platform] = [time_points[0], time_points[-1]]
+        # icon_url = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png'
 
-    for key in platform_points:
-        folium.PolyLine(platform_points[key], color="red", weight=2.5, opacity=1).add_to(pol_group_layer)
-        icon = folium.features.CustomIcon(icon_url, icon_size=(15, 20)) #follium bug see https://github.com/python-visualization/folium/issues/744
-        folium.Marker(location=[platform_points[key][0][0], platform_points[key][0][1]],
-            popup=str(key), icon=icon).add_to(marker_group_layer)
+        for key in platform_points:
+            folium.PolyLine(platform_points[key], color="lightblue", weight=2.0, opacity=0.5).add_to(pol_group_layer)
+            # icon = folium.features.CustomIcon(icon_url, icon_size=(15, 20)) #follium bug see https://github.com/python-visualization/folium/issues/744
+            folium.Marker(
+                location=[platform_points[key][0][0], platform_points[key][0][1]],
+                popup='Vessel ID: '+str(key) + '<br>Start Time: ' + str(platform_time_points[key][0])).add_to(vessel_marker_group_layer)
+            folium.CircleMarker(
+                location=[platform_points[key][-1][0], platform_points[key][-1][1]],
+                popup='Vessel ID: ' + str(key)+ '<br>End Time: ' + str(platform_time_points[key][1]),
+                color='white',  radius=3, fill_color='gray', fill_opacity=1).add_to(vessel_marker_group_layer)
+
+    except IndexError:
+        pass
 
     return m
 
@@ -3732,14 +3762,16 @@ def map_markers_in_time_hcmr(request):
         # print data
 
         # tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
-
-        available_times = set([d[order_var] for d in data])
+        list_of_times = [d[order_var] for d in data]
+        list_of_times = list(dict.fromkeys(list_of_times))
+        list_of_times.sort()
+        available_times = set(list_of_times)
         period = 'PT'+ str(time_interval) +'H'
 
 
     if has_data:
         if ais_layer == "true":
-            m = add_oil_spill_ais_layer(m, start_date, latitude, longitude, sim_length)
+            m = add_oil_spill_ais_layer(m, start_date, sim_length, start_lat_lon_list)
 
         if natura_layer == "true":
             m, shapely_polygons = map_oil_spill_hcmr(m)

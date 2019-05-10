@@ -7,10 +7,15 @@
 {% block css %}
     {% leaflet_css %}
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" rel="stylesheet"/>
-    <link href="https://rawgit.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css" rel="stylesheet"/>
+{#    <link href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" rel="stylesheet"/>#}
+{#    <link href="https://rawgit.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css" rel="stylesheet"/>#}
+{#    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.css" rel="stylesheet"/>#}
+{#    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css" rel="stylesheet"/>#}
+    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
+    <link rel="stylesheet" href="{% static 'css/leaflet.awesome-markers.css' %}?bdo_version={{ settings.BDO_VERSION }}">
+    <link rel="stylesheet" href="{% static 'css/MarkerCluster.css' %}?bdo_version={{ settings.BDO_VERSION }}">
+
+
     <link href="http://apps.socib.es/Leaflet.TimeDimension/dist/leaflet.timedimension.control.min.css" rel="stylesheet"/>
 
 
@@ -62,9 +67,12 @@
 {#    <script src="{% static 'js/leaflet.markercluster.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>#}
 
     <script src="{% static 'js/bootstrap.min.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/1.4.2/Control.FullScreen.min.js"></script>#}
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>#}
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>#}
+    <script src="{% static 'js/leaflet.awesome-markers.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+{#    <script src="{% static 'js/leaflet.markercluster.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>#}
+
     <script src="https://rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
     <script src="https://rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.min.js"></script>
 
@@ -79,6 +87,7 @@
     {% endfor %}
 
     <script>
+
          var map = {{ map_id|safe }};
           map.timeDimension = L.timeDimension({period:'{{time_interval}}'});
             map.timeDimensionControl = L.control.timeDimension({
