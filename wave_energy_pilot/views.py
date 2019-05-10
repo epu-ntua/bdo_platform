@@ -1041,9 +1041,9 @@ def single_location_evaluation_execution_process(request, exec_instance):
         clean_up_new_note(service_exec.notebook_id)
         if 'livy_session' in request.GET.keys():
             pass
-        # else:
-        #     if service_exec.service.through_livy:
-        #         close_livy_session(service_exec.livy_session)
+        else:
+            if service_exec.service.through_livy:
+                close_livy_session(service_exec.livy_session)
 
 
 @never_cache
