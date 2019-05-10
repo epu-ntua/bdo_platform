@@ -299,11 +299,12 @@
                 {
                     alignment: 'center',
                     columns: [
-                        {image: getBase64Image(document.getElementById("bdo_logo")), fit: [150, 150]},
-                        {image: getBase64Image(document.getElementById("hcmr_logo")), fit: [120, 90]}
+                        {image: getBase64Image(document.getElementById("bdo_logo")), fit: [130, 130]},
+                        {image: getBase64Image(document.getElementById("hcmr_logo")), fit: [100, 70]}
                     ]
                 }
             );
+            docDefinition.content.push(" ");
             docDefinition.content.push({
                 text: "Exploiting Oceans of Data for Maritime Apps",
                 bold: true,
@@ -314,16 +315,16 @@
                 text: service_title,
                 bold: true,
                 alignment: 'center',
-                fontSize: 20
+                fontSize: 18
             });
-            docDefinition.content.push(" ");
+{#            docDefinition.content.push(" ");#}
 
-            docDefinition.content.push({text: "Study Conditions", bold: true});
+            docDefinition.content.push({text: "Study Conditions", bold: true,  fontSize: 15});
             $("#conditions_div tr").each(function (i, elem) {
                 docDefinition.content.push($(elem).find("td").eq(1).html() + " " + $(elem).find("td").eq(2).html());
             });
-            docDefinition.content.push(" ");
-            docDefinition.content.push({text: "Results", bold: true});
+{#            docDefinition.content.push(" ");#}
+            docDefinition.content.push({text: "Results", bold: true, fontSize: 15});
             docDefinition.content.push({color:'black', markerColor: '#7B007E', ul: ['Oil Spill Start']});
             docDefinition.content.push({color: 'black', markerColor: 'blue', ul: ['Sea Bottom']});
             docDefinition.content.push({color: 'black', markerColor: 'cadetblue', ul: ['Under Sea']});
@@ -331,8 +332,7 @@
             docDefinition.content.push({color: 'black', markerColor: 'orange', ul: ['On Coast']});
             docDefinition.content.push({color: 'black', markerColor: 'red', ul: ['In Protected Areas']});
             docDefinition.content.push("\n");
-            docDefinition.content.push(" ");
-            docDefinition.content.push({text: "Results", bold: true});
+
             $("iframe").contents().find("#snapshot div").each(function (i, elem) {
                 var new_content = {
                     image: $(elem).find("img").attr('src'),
@@ -341,7 +341,8 @@
                 var id = $(elem).attr('id');
                 docDefinition.content.push(get_legend_values(id));
                 docDefinition.content.push(new_content);
-                docDefinition.content.push(" ");
+                docDefinition.content.push("\n");
+                docDefinition.content.push("\n");
 
 
                 var new_content = {
