@@ -161,9 +161,13 @@ def scenario2_results(request, exec_instance):
     sim_length = service_exec.arguments['algorithm-arguments'][0]['sim_length']
     spill_data = service_exec.arguments['algorithm-arguments'][1]['spill_data']
     headers_spill = service_exec.arguments['algorithm-arguments'][1]['headers_spill']
-    legend_data = [{"timestamp": long(time.mktime(datetime.strptime(d[0], "%Y-%m-%d %H:%M:%S").timetuple()) * 1000),
+    legend_data = [{"timestamp": d[0],
                     "time": d[0], "init_vol": oil_volume, "evap_vol": d[2], "emul_vol": d[4],
                     "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
+
+    for d in legend_data:
+        d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
+        d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
 
     context = {
         'url': visualization_url,
@@ -197,9 +201,14 @@ def scenario3_results(request, exec_instance):
     sim_length = service_exec.arguments['algorithm-arguments'][0]['sim_length']
     spill_data = service_exec.arguments['algorithm-arguments'][1]['spill_data']
     headers_spill = service_exec.arguments['algorithm-arguments'][1]['headers_spill']
-    legend_data = [{"timestamp": long(time.mktime(datetime.strptime(d[0], "%Y-%m-%d %H:%M:%S").timetuple()) * 1000),
+    legend_data = [{"timestamp": d[0],
                     "time": d[0], "init_vol": oil_volume, "evap_vol": d[2], "emul_vol": d[4],
                     "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
+
+    for d in legend_data:
+        d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
+        d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
+
     output_json = filename_output.replace('_F.out', '.json')
     depth_data = extract_depth_data(str(output_json))
     context = {
