@@ -129,6 +129,7 @@ def scenario1_results(request, exec_instance):
     for d in legend_data:
         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
+        d['time'] = str(d_mod)
     context = {
         'url': visualization_url,
         'out_filepath': filename_output,
@@ -168,7 +169,7 @@ def scenario2_results(request, exec_instance):
     for d in legend_data:
         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
-
+        d['time'] = str(d_mod)
     context = {
         'url': visualization_url,
         'out_filepath': filename_output,
@@ -208,7 +209,7 @@ def scenario3_results(request, exec_instance):
     for d in legend_data:
         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
-
+        d['time'] = str(d_mod)
     output_json = filename_output.replace('_F.out', '.json')
     depth_data = extract_depth_data(str(output_json))
     context = {
