@@ -2654,106 +2654,124 @@ def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
 
 
 def get_histogram_2d_matplotlib(request):
-    query_pk = int(str(request.GET.get('query', '0')))
-    x_var = str(request.GET.get('x_var', ''))
-    y_var = str(request.GET.get('y_var', ''))
-    bins = int(str(request.GET.get('bins', '3')))
-    if query_pk != 0:
-        print('Loading/Modifying Query')
-        query, y_var_title, x_var_title, y_var_unit, x_var_unit = histogram2d_load_modify_query(query_pk, x_var, y_var)
-        print('Executing Query')
-        # x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_execute_query(query, x_var, y_var)
-        # raw_query = ("SELECT * FROM (SELECT count(*), round({0}, 0),round({1}, 0) FROM {2} WHERE {0} IS NOT NULL AND {1} IS NOT  NULL group by round({0}, 0), round({1}, 0) order by  round({0}, 0), round({1},0)) AS SQ1 ").format(x_table_col, y_table_col, x_from_table)
-        # print raw_query
-        raw_query = str(query.raw_query).replace("(SELECT", "(SELECT count(*), ")
-        print raw_query
-        cursor = get_presto_cursor()
-        cursor.execute(raw_query)
-        result_data = cursor.fetchall()
-        count_index = 0
-        x_var_index = 1
-        y_var_index = 2
-    else:
-        x_var_index, y_var_index, result_data, y_var_title, x_var_title, y_var_unit, x_var_unit = histogram2d_dataframe(x_var, y_var)
-
-    print('Creating lists of data for histogram-2d')
-    list_x = []
-    list_y = []
-    list_counts = []
-    total = 0
-    for el in result_data:
-        if el[x_var_index] is not None:
-            list_x.append(el[x_var_index])
+    viz = PyplotVisualisation(user=request.user, time=datetime.now(), status='waiting')
+    viz.save()
+    try:
+        time_threshold = datetime.now() - timedelta(hours=1)
+        oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
+        while len(PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='running')) > 0 or int(oldest_viz.id) != viz.id:
+            time.sleep(5)
+            oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
+        viz.status = 'running'
+        viz.save()
+        query_pk = int(str(request.GET.get('query', '0')))
+        x_var = str(request.GET.get('x_var', ''))
+        y_var = str(request.GET.get('y_var', ''))
+        bins = int(str(request.GET.get('bins', '3')))
+        if query_pk != 0:
+            print('Loading/Modifying Query')
+            query, y_var_title, x_var_title, y_var_unit, x_var_unit = histogram2d_load_modify_query(query_pk, x_var, y_var)
+            print('Executing Query')
+            # x_var_index, y_var_index, result_data, x_var_title, y_var_title = histogram2d_execute_query(query, x_var, y_var)
+            # raw_query = ("SELECT * FROM (SELECT count(*), round({0}, 0),round({1}, 0) FROM {2} WHERE {0} IS NOT NULL AND {1} IS NOT  NULL group by round({0}, 0), round({1}, 0) order by  round({0}, 0), round({1},0)) AS SQ1 ").format(x_table_col, y_table_col, x_from_table)
+            # print raw_query
+            raw_query = str(query.raw_query).replace("(SELECT", "(SELECT count(*), ")
+            print raw_query
+            cursor = get_presto_cursor()
+            cursor.execute(raw_query)
+            result_data = cursor.fetchall()
+            count_index = 0
+            x_var_index = 1
+            y_var_index = 2
         else:
-            list_x.append(0)
-        if el[y_var_index] is not None:
-            list_y.append(el[y_var_index])
+            x_var_index, y_var_index, result_data, y_var_title, x_var_title, y_var_unit, x_var_unit = histogram2d_dataframe(x_var, y_var)
+
+        print('Creating lists of data for histogram-2d')
+        list_x = []
+        list_y = []
+        list_counts = []
+        total = 0
+        for el in result_data:
+            if el[x_var_index] is not None:
+                list_x.append(el[x_var_index])
+            else:
+                list_x.append(0)
+            if el[y_var_index] is not None:
+                list_y.append(el[y_var_index])
+            else:
+                list_y.append(0)
+            list_counts.append(el[count_index])
+            total = total + el[count_index]
+        # total = result_data.__len__()
+
+        print('Creating Histogram-2d')
+        freq, xedges, yedges = np.histogram2d(list_x, list_y, bins, weights=list_counts)
+        new_table = []
+
+        for el in freq:
+            hor_table = []
+            for i in el:
+                new_el = i/total * 100
+                hor_table.append(new_el)
+            new_table.append(hor_table)
+        new_table = np.array(new_table)
+
+        xedges = [round(x, 2) for x in xedges]
+        yedges = [round(y, 2) for y in yedges]
+
+
+        # print('Creating X-Axis and Y-Axis different bins')
+        # bin_x_cont = []
+        # iter1 = iter(xedges)
+        # iter1.next()
+        # for el in xedges:
+        #     try:
+        #         temp = [round(el, 2), round(iter1.next(), 3)]
+        #     except:
+        #         break
+        #     bin_x_cont.append(temp)
+        #
+        # bin_y_cont = []
+        # iter1 = iter(yedges)
+        # iter1.next()
+        # for el in yedges:
+        #     try:
+        #         temp = [round(el, 2), round(iter1.next(),3)]
+        #     except:
+        #         break
+        #     bin_y_cont.append(temp)
+
+        fig, ax = plt.subplots()
+
+        im, cbar = heatmap(new_table, xedges, yedges, ax=ax,
+                           cmap="YlGn", cbarlabel="Percentage %")
+
+        plt.xlabel(x_var_title + " (" + str(x_var_unit) + ")", labelpad=10)
+        plt.ylabel(y_var_title + " (" + str(y_var_unit) + ")",  labelpad=10)
+        fig.tight_layout()
+        plt.draw()
+        ts = str(time.time()).replace(".", "")
+        img_name = ts + 'histogram2d.png'
+        import sys
+        if sys.argv[1] == 'runserver':
+            histpath = 'visualizer/static/visualizer/img/temp/' + img_name
         else:
-            list_y.append(0)
-        list_counts.append(el[count_index])
-        total = total + el[count_index]
-    # total = result_data.__len__()
-
-    print('Creating Histogram-2d')
-    freq, xedges, yedges = np.histogram2d(list_x, list_y, bins, weights=list_counts)
-    new_table = []
-
-    for el in freq:
-        hor_table = []
-        for i in el:
-            new_el = i/total * 100
-            hor_table.append(new_el)
-        new_table.append(hor_table)
-    new_table = np.array(new_table)
-
-    xedges = [round(x, 2) for x in xedges]
-    yedges = [round(y, 2) for y in yedges]
-
-
-    # print('Creating X-Axis and Y-Axis different bins')
-    # bin_x_cont = []
-    # iter1 = iter(xedges)
-    # iter1.next()
-    # for el in xedges:
-    #     try:
-    #         temp = [round(el, 2), round(iter1.next(), 3)]
-    #     except:
-    #         break
-    #     bin_x_cont.append(temp)
-    #
-    # bin_y_cont = []
-    # iter1 = iter(yedges)
-    # iter1.next()
-    # for el in yedges:
-    #     try:
-    #         temp = [round(el, 2), round(iter1.next(),3)]
-    #     except:
-    #         break
-    #     bin_y_cont.append(temp)
-
-    fig, ax = plt.subplots()
-
-    im, cbar = heatmap(new_table, xedges, yedges, ax=ax,
-                       cmap="YlGn", cbarlabel="Percentage %")
-
-    plt.xlabel(x_var_title + " (" + str(x_var_unit) + ")", labelpad=10)
-    plt.ylabel(y_var_title + " (" + str(y_var_unit) + ")",  labelpad=10)
-    fig.tight_layout()
-    plt.draw()
-    ts = str(time.time()).replace(".", "")
-    img_name = ts + 'histogram2d.png'
-    import sys
-    if sys.argv[1] == 'runserver':
-        histpath = 'visualizer/static/visualizer/img/temp/' + img_name
-    else:
-        histpath = settings.STATIC_ROOT + '/visualizer/img/temp/' + img_name
-    plt.savefig(histpath,  transparent=True, frameon=False, pad_inches=0)
-    plt.clf()
-    plt.close()
-    fig = None
-    ax = None
-    return render(request, 'visualizer/histogram_2d_matplotlib.html',
-                  {'img_name': img_name})
+            histpath = settings.STATIC_ROOT + '/visualizer/img/temp/' + img_name
+        plt.savefig(histpath,  transparent=True, frameon=False, pad_inches=0)
+        plt.clf()
+        plt.close()
+        fig = None
+        ax = None
+        viz.status = 'done'
+        viz.save()
+        return render(request, 'visualizer/histogram_2d_matplotlib.html',
+                      {'img_name': img_name})
+    except Exception, e:
+        viz.status = 'failed'
+        viz.save()
+        print e
+        traceback.print_exc()
+        raise Exception('An error occurred while creating the chart.')
 
 
 def histogram2d_dataframe(x_var, y_var):
