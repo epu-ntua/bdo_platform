@@ -39,6 +39,9 @@ class Service(Model):
 
     access_list = ManyToManyField(User, through='ServiceAccess')
 
+    def __unicode__(self):
+        return str(self.id)
+
 
 class ServiceAccess(Model):
     user = ForeignKey(User, on_delete=CASCADE)

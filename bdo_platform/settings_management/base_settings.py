@@ -83,7 +83,8 @@ INSTALLED_APPS = [
     'wave_energy_pilot',
 
 #     GOOGLE ANALYTICS
-    'google_analytics'
+    'google_analytics',
+    'website_analytics'
 ]
 
 GOOGLE_ANALYTICS = {

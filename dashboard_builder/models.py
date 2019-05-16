@@ -32,6 +32,9 @@ class Dashboard(Model):
 
     access_list = ManyToManyField(User, through='DashboardAccess')
 
+    def __unicode__(self):
+        return str(self.id)
+
 
 class DashboardAccess(Model):
     user = ForeignKey(User, on_delete=CASCADE)
