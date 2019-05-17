@@ -253,6 +253,7 @@ def scenario3_results(request, exec_instance):
 
     output_json = filename_output.replace('_F.out', '.json')
     depth_data = extract_depth_data(str(output_json))
+
     context = {
         'start_lat': round(location_lat, 3),
         'start_lon': round(location_lon, 3),
@@ -752,6 +753,9 @@ def cancel_execution(request, exec_instance):
 
 
 def extract_depth_data(json_data_file):
+    import pytz
+    import datetime
+    timezone = pytz.utc
     with open('visualizer/static/visualizer/files/' + json_data_file) as json_file:
         data = json.load(json_file)
         points = []
@@ -762,7 +766,7 @@ def extract_depth_data(json_data_file):
             point = {"depth": p['Dpth'],
                      "lat": lat,
                      "lon": lon,
-                     "time": p["time"],
+                     "time": str(timezone.localize(datetime.datetime.strptime(p["time"],'%Y-%m-%d %H:%M:%S'))),
                      "color": get_color(natura_table, lat, lon, status, resolution, min_lat, min_lon)}
             points.append(point)
         return points
