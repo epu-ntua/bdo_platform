@@ -88,7 +88,7 @@ INSTALLED_APPS = [
 ]
 
 GOOGLE_ANALYTICS = {
-    'google_analytics_id': 'UA-139868802-3',
+    'google_analytics_id': 'UA-140386973-1',
 }
 
 AUTHENTICATION_BACKENDS = (

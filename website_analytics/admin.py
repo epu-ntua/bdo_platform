@@ -13,11 +13,17 @@ class DatasetPageViewsAdmin(admin.ModelAdmin):
 admin.site.register(DatasetPageViews, DatasetPageViewsAdmin)
 
 
-class DatasetUniqueViewsAdmin(admin.ModelAdmin):
-    list_display = [field.name for field in DatasetUniqueViews._meta.get_fields()]
+# class DatasetUniqueViewsAdmin(admin.ModelAdmin):
+#     list_display = [field.name for field in DatasetUniqueViews._meta.get_fields()]
+#
+#
+# admin.site.register(DatasetUniqueViews, DatasetUniqueViewsAdmin)
 
 
-admin.site.register(DatasetUniqueViews, DatasetUniqueViewsAdmin)
+class UniqueDatasetPreviewAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in UniqueDatasetPreview._meta.get_fields()]
+
+admin.site.register(UniqueDatasetPreview, UniqueDatasetPreviewAdmin)
 
 
 class DatasetExploredAdmin(admin.ModelAdmin):
@@ -53,11 +59,17 @@ class ServiceUseAdmin(admin.ModelAdmin):
 admin.site.register(ServiceUse, ServiceUseAdmin)
 
 
-class ServiceUsersAdmin(admin.ModelAdmin):
-    list_display = [field.name for field in ServiceUsers._meta.get_fields()]
+# class ServiceUsersAdmin(admin.ModelAdmin):
+#     list_display = [field.name for field in ServiceUsers._meta.get_fields()]
+#
+#
+# admin.site.register(ServiceUsers, ServiceUsersAdmin)
 
 
-admin.site.register(ServiceUsers, ServiceUsersAdmin)
+class UniqueServiceUsesViewAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in UniqueServiceUsesView._meta.get_fields()]
+
+admin.site.register(UniqueServiceUsesView, UniqueServiceUsesViewAdmin)
 
 
 class VisualisationTypeUsesAdmin(admin.ModelAdmin):
@@ -73,12 +85,18 @@ class DashboardDisplaysAdmin(admin.ModelAdmin):
 
 admin.site.register(DashboardDisplays, DashboardDisplaysAdmin)
 
+#
+# class DashboardUniqueViewsAdmin(admin.ModelAdmin):
+#     list_display = [field.name for field in DashboardUniqueViews._meta.get_fields()]
+#
+#
+# admin.site.register(DashboardUniqueViews, DashboardUniqueViewsAdmin)
 
-class DashboardUniqueViewsAdmin(admin.ModelAdmin):
-    list_display = [field.name for field in DashboardUniqueViews._meta.get_fields()]
 
+class UniqueDashboardViewsViewAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in UniqueDashboardViewsView._meta.get_fields()]
 
-admin.site.register(DashboardUniqueViews, DashboardUniqueViewsAdmin)
+admin.site.register(UniqueDashboardViewsView, UniqueDashboardViewsViewAdmin)
 
 
 class MareProtectionServiceAdmin(admin.ModelAdmin):
