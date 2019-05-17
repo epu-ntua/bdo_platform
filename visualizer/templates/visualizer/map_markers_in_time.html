@@ -40,6 +40,9 @@
     {% if not has_data %}
         <h4 style="text-align: center; background-color: white;">No simulation data for the selected parameters, please try again with different values</h4>
     {% endif %}
+    {% if not has_ais and ais_asked %}
+        <h4 style="text-align: center; background-color: white;">No vessels were near the oil spill start at the given time frame</h4>
+    {% endif %}
     {% leaflet_map map_id %}
     <input hidden value="" id="current_time" />
     <div style="position: fixed; background:#00000063;  bottom:50px; right:50px; z-index:9999; font-size:14px; color: white">

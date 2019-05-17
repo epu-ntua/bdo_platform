@@ -24,7 +24,15 @@ var allow_form_submit2 = [true, true];
 var allow_form_submit3 = [true, true];
 var allow_form_submit4 = [true, true];
 var allow_form_submit5 = [true, true];
-var allow_form_submit_service = [true,true,true]
+var allow_form_submit_service = [true,true,true];
+
+
+var DATES_WITH_NO_DATA = []
+var sd = new Date('2019-03-20 00:00');
+for (var i=0;i<48;i++){
+    sd.setDate(sd.getDate()+1);
+	DATES_WITH_NO_DATA.push(new Date(sd));
+}
 
 let MAX_LON_MEDITERRANEAN = 36;
 let MIN_LON_MEDITERRANEAN = -7;
@@ -254,6 +262,8 @@ function tour_guide_senario_1(scenario){
 
 function check_marker_position(lat, lon, user_marker, bounds, lat_selector, lon_selector,point, offset){
     if (isInsideAegeanIonian(lat,lon)) {
+        $('#sel1'+point).parent().find('div[data-value="202"]').removeClass('disabled');
+        $('#sel2'+point).parent().find('div[data-value="001"]').removeClass('disabled');
         $("#sel1"+point).dropdown("set selected", "202");
         $("#sel2"+point).dropdown("set selected", "001");
         lat_selector.val(lat.toFixed(4));
@@ -261,6 +271,8 @@ function check_marker_position(lat, lon, user_marker, bounds, lat_selector, lon_
     } else if (isInsideMediteranean(lat,lon)) {
         $("#sel1"+point).dropdown("set selected", "201");
         $("#sel2"+point).dropdown("set selected", "002");
+        $('#sel1'+point).parent().find('div[data-value="202"]').addClass('disabled');
+        $('#sel2'+point).parent().find('div[data-value="001"]').addClass('disabled');
         lat_selector.val(lat.toFixed(4));
         lon_selector.val(lon.toFixed(4));
     } else {
@@ -591,6 +603,7 @@ function check_area_position(area) {
 }
 
 $(document).ready(function() {
+    $('[data-toggle="tooltip"]').tooltip()
     var scenario = $('.scenario').data('id');
     // map_init(scenario);
     init = true;
@@ -609,16 +622,19 @@ $(document).ready(function() {
     $('#sel1').parent().css('min-width','100%');
     $('.glyphicon-calendar').css('top','-15px');
     var startDate = new Date();
-    var endDate = new Date(2019,1,28); // month starts at 0
+    var endDate = new Date(); // month starts at 0
+    // var endDate = new Date(2019,1,28); // month starts at 0
     startDate.setFullYear(startDate.getFullYear() - 1);
     startDate.setHours(0,0,0,0);
+
     if(scenario === 2){
          var startpick = $('#startdatepicker').datetimepicker({
-            autoclose: true,
-            pickerPosition: 'bottom-left',
-            startDate: startDate,
-            endDate: endDate,
-            initialDate: endDate
+             autoclose: true,
+             pickerPosition: 'bottom-left',
+             startDate: startDate,
+             endDate: endDate,
+             initialDate: endDate,
+             datesDisabled: DATES_WITH_NO_DATA
         });
         startpick.datetimepicker('update',endDate);
         $('#run-service-btn').hide();
@@ -863,7 +879,8 @@ $(document).ready(function() {
             pickerPosition: 'bottom-left',
             startDate: startDate,
             endDate: endDate,
-            initialDate: endDate
+            initialDate: endDate,
+            datesDisabled: DATES_WITH_NO_DATA
         });
         startpick.datetimepicker('update',endDate);
         $('#lat').val((38.2810).toFixed(4));
@@ -897,7 +914,8 @@ $(document).ready(function() {
             pickerPosition: 'bottom-left',
             startDate: startDate,
             endDate: endDate,
-            initialDate: endDate
+            initialDate: endDate,
+            datesDisabled: DATES_WITH_NO_DATA
         });
         startpick.datetimepicker('update',endDate);
         $("#sel2 option[value='003']").remove();
@@ -1080,6 +1098,7 @@ $(document).ready(function() {
             ((lat4 === "" || lng4 === "") || isInsideMediteranean(lat4, lng4)) &&
             ((lat5 === "" || lng5 === "") || isInsideMediteranean(lat5, lng5))) {
             var start_date = $("#startdatepicker input").datepicker({dateFormat: "yy-mm-dd"}).val();
+            console.log(start_date);
             var natura_layer = $('input[name="natura_checkbox"]:checked').length > 0;
             var ais_layer = $('input[name="ais_checkbox"]:checked').length > 0;
             var url = "/oilspill/" +

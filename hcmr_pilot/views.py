@@ -127,16 +127,22 @@ def scenario1_results(request, exec_instance):
     legend_data = [{"timestamp": d[0],"time": d[0], "init_vol": oil_volume,  "evap_vol": d[2],  "emul_vol": d[4],
                     "vol_on_surface": d[3],  "vol_on_coasts": d[6], } for d in spill_data]
 
-    import sys
+    # import sys
+    # for d in legend_data:
+    #     if sys.argv[1] != 'runserver':
+    #         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
+    #         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
+    #         d['time'] = str(d_mod)
+    #     else:
+    #         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
+    #         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
+    #         d['time'] = str(d_mod - timedelta(hours=2))
+    import pytz
     for d in legend_data:
-        if sys.argv[1] != 'runserver':
-            d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
-            d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
-            d['time'] = str(d_mod)
-        else:
-            d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
-            d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
-            d['time'] = str(d_mod - timedelta(hours=2))
+        d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
+        d['timestamp'] = long(
+            (d_mod.replace(tzinfo=pytz.utc) - datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds() * 1000)
+        d['time'] = str(d_mod)
 
     context = {
         'url': visualization_url,
@@ -174,16 +180,23 @@ def scenario2_results(request, exec_instance):
                     "time": d[0], "init_vol": oil_volume, "evap_vol": d[2], "emul_vol": d[4],
                     "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
 
-    import sys
+    # import sys
+    # for d in legend_data:
+    #     if sys.argv[1] != 'runserver':
+    #         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
+    #         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
+    #         d['time'] = str(d_mod)
+    #     else:
+    #         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
+    #         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
+    #         d['time'] = str(d_mod - timedelta(hours=2))
+    import pytz
     for d in legend_data:
-        if sys.argv[1] != 'runserver':
-            d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
-            d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
-            d['time'] = str(d_mod)
-        else:
-            d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
-            d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
-            d['time'] = str(d_mod - timedelta(hours=2))
+        d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
+        d['timestamp'] = long(
+            (d_mod.replace(tzinfo=pytz.utc) - datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds() * 1000)
+        d['time'] = str(d_mod)
+
     context = {
         'url': visualization_url,
         'out_filepath': filename_output,
@@ -220,16 +233,24 @@ def scenario3_results(request, exec_instance):
                     "time": d[0], "init_vol": oil_volume, "evap_vol": d[2], "emul_vol": d[4],
                     "vol_on_surface": d[3], "vol_on_coasts": d[6], } for d in spill_data]
 
-    import sys
+    # import sys
+    # for d in legend_data:
+    #     if sys.argv[1] != 'runserver':
+    #         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
+    #         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
+    #         d['time'] = str(d_mod)
+    #     else:
+    #         d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
+    #         d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
+    #         d['time'] = str(d_mod - timedelta(hours=2))
+
+    import pytz
     for d in legend_data:
-        if sys.argv[1] != 'runserver':
-            d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)
-            d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
-            d['time'] = str(d_mod)
-        else:
-            d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
-            d['timestamp'] = long(time.mktime(d_mod.timetuple()) * 1000)
-            d['time'] = str(d_mod - timedelta(hours=2))
+        d_mod = datetime.strptime(d['timestamp'], "%Y-%m-%d %H:%M:%S")
+        d['timestamp'] = long(
+            (d_mod.replace(tzinfo=pytz.utc) - datetime(1970, 1, 1, tzinfo=pytz.utc)).total_seconds() * 1000)
+        d['time'] = str(d_mod)
+
     output_json = filename_output.replace('_F.out', '.json')
     depth_data = extract_depth_data(str(output_json))
     context = {

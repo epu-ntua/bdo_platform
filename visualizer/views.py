@@ -3583,7 +3583,9 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
                                 max_date, min_date, min_lat, max_lat, min_lon, max_lon,
                                 max_filter_date, min_filter_date))
     data = presto_cur.fetchall()
-
+    has_ais = False
+    if len(data)>0:
+        has_ais = True
     try:
         platform_points = {}
         platform_time_points = {}
@@ -3618,7 +3620,7 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
     except IndexError:
         pass
 
-    return m
+    return m, has_ais
 
 
 def get_min_max_time_for_query(start_date_string, sim_length):
@@ -3759,6 +3761,9 @@ def map_markers_in_time_hcmr(request):
             min_grid_lon = natura_info['min_lon']
             resolution = natura_info['resolution']
 
+        import pytz
+        timezone = pytz.utc
+        import datetime
         features = [
             {
                 "type": "Feature",
@@ -3767,7 +3772,8 @@ def map_markers_in_time_hcmr(request):
                     "coordinates": [float(d[lon_col]), float(d[lat_col])],
                 },
                 "properties": {
-                    "times": [str(d[order_var])],
+                    "times": [str(timezone.localize(datetime.datetime.strptime(d[order_var],'%Y-%m-%d %H:%M:%S')))],
+                    # "times": [str(d[order_var])],
                     "style": {
                         # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
                         "color": color_point_oil_spill2(natura_table, (d[lat_col], d[lon_col], d['Status']), resolution, min_grid_lat, min_grid_lon),
@@ -3786,10 +3792,12 @@ def map_markers_in_time_hcmr(request):
         available_times = set(list_of_times)
         period = 'PT'+ str(time_interval) +'H'
 
-
+    has_ais = False
+    ais_asked = False
     if has_data:
         if ais_layer == "true":
-            m = add_oil_spill_ais_layer(m, start_date, sim_length, start_lat_lon_list)
+            m, has_ais = add_oil_spill_ais_layer(m, start_date, sim_length, start_lat_lon_list)
+            ais_asked = True
 
         if natura_layer == "true":
             m, shapely_polygons = map_oil_spill_hcmr(m)
@@ -3843,7 +3851,7 @@ def map_markers_in_time_hcmr(request):
     os.remove('templates/map.html')
 
     return render(request, 'visualizer/map_markers_in_time.html',
-                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType, 'has_data': has_data, 'ignore_every': ignore_every, 'available_times': available_times})
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType, 'has_data': has_data, 'ignore_every': ignore_every, 'available_times': available_times, 'has_ais': has_ais, 'ais_asked': ais_asked})
 
 
 def hcmr_service_parameters(request):
