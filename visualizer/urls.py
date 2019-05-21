@@ -36,6 +36,7 @@ urlpatterns = [
     url('^get_histogram_chart_am/$', views.get_histogram_chart_am, name='get_histogram_chart_am'),
     # url('^get_histogram_2d_am/$', views.get_histogram_2d_am, name='get_histogram_2d_am'),
     url('^get_histogram_2d_am/$', views.get_histogram_2d_matplotlib, name='get_histogram_2d_am'),
+    url('^get_live_ais/$', views.get_live_ais, name='get_live_ais'),
 
 
     url('^get_data_table/$', views.get_data_table, name='get_data_table'),

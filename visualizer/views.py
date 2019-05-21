@@ -4005,6 +4005,93 @@ def get_aggregate_value(request):
 
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit, 'agg_func':agg_function, 'var_title': var_title})
 
+def get_live_ais(request):
+    m = create_map()
+    js_list = []
+    old_map_id_list = []
+    extra_js = ""
+    legend_id = ""
+    unit = ''
+    query_pk, df, notebook_id = get_data_parameters(request, '')
+    cached_file, marker_limit, vessel_column, vessel_id, color, lat_col, lon_col = get_plotline_parameters(request, 0)
+    query = load_modify_query_live_ais(query_pk, marker_limit, vessel_column, vessel_id)
+    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+    points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
+
+    folium.LayerControl().add_to(m)
+    temp_map = 'templates/map1' + str(int(time.time())) + '.html'
+    m.save(temp_map)
+    map_html = open(temp_map, 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    if js_list:
+        js_all.extend(js_list)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
+    html1 = render_to_string('visualizer/final_map_folium_template.html',
+                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id, 'unit': unit})
+    # print(html1)
+    return HttpResponse(html1)
+
+
+def load_modify_query_live_ais(query_pk, marker_limit, vessel_column, vessel_id):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    time_flag = platform_flag = lat_flag = lon_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
+                order_var = s['name']
+                time_flag = True
+            elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
+                platform_id_filtername = str(s['name'])
+                s['exclude'] = False
+                s['groupBy'] = True
+                if str(s['type']) == "VALUE":
+                    platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                else:
+                    platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
+                platform_flag = True
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['groupBy'] = True
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['groupBy'] = True
+                lon_flag = True
+            else:
+                s['exclude'] = True
+    if not time_flag:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        # doc['orderings'] = doc['orderings'].append({'name': order_var, 'type': 'ASC'})
+        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+    if not platform_flag:
+        raise ValueError('Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        if vessel_id == '':
+            vessel_id = []
+        else:
+            vessel_id = [vessel_id]
+        doc['filters'] = filtering_vessels(doc, vessel_id, platform_id_filtername, platform_id_datatype)
+
+    if not lat_flag or not lon_flag:
+        raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
+
+
 def myconverter(o):
     if isinstance(o, datetime):
         return o.__str__()
