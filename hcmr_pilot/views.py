@@ -155,8 +155,8 @@ def scenario1_results(request, exec_instance):
                              {'icon': 'far fa-calendar-alt', 'text': 'Date and Time:', 'value': str(start_date)},
                              # {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
                              {'icon': 'far fa-clock', 'text': 'Simulation Length', 'value': str(sim_length) + ' hours'},
-                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(wave_forecast_dataset)},
-                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(hydrodynamic_model)}],
+                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(hydrodynamic_model)},
+                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(wave_forecast_dataset)}],
     }
     return render(request, 'hcmr_pilot/scenario1-results.html', context)
 
@@ -209,8 +209,8 @@ def scenario2_results(request, exec_instance):
                              {'icon': 'far fa-calendar-alt', 'text': 'Date and Time:', 'value': str(start_date)},
                              # {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
                              {'icon': 'far fa-clock', 'text': 'Simulation Length', 'value': str(sim_length) + ' hours'},
-                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(wave_forecast_dataset)},
-                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(hydrodynamic_model)}],
+                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(hydrodynamic_model)},
+                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(wave_forecast_dataset)}],
     }
     return render(request, 'hcmr_pilot/scenario1-results.html', context)
 
@@ -270,8 +270,8 @@ def scenario3_results(request, exec_instance):
                              {'icon': 'far fa-calendar-alt', 'text': 'Date and Time:', 'value': str(start_date)},
                              # {'icon': 'fas fa-flask', 'text': 'Oil Volume:', 'value': str(oil_volume) + ' m3'},
                              {'icon': 'far fa-clock', 'text': 'Simulation Length', 'value': str(sim_length) + ' hours'},
-                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(wave_forecast_dataset)},
-                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(hydrodynamic_model)}],
+                             {'icon': 'fas fa-database', 'text': 'Ocean Circulation Model:', 'value': str(hydrodynamic_model)},
+                             {'icon': 'fas fa-box', 'text': 'Wave Model:', 'value': str(wave_forecast_dataset)}],
     }
     return render(request, 'hcmr_pilot/scenario3-results.html', context)
 
@@ -362,11 +362,11 @@ def process(request, exec_instance):
         service_exec.arguments["algorithm-arguments"][0]["oil_volume"] = spill_infos[0]['oil_volume']
         service_exec.arguments["algorithm-arguments"][0]["sim_length"] = str(sim_length)
         if wave_model == '202':
-            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Aegean'
+            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon WAM Cycle 4 for the Aegean'
         elif wave_model == '201':
-            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon Wave Dataset for the Mediterranean'
+            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Poseidon WAM Cycle 4 for the Mediterranean'
         elif wave_model == '203':
-            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Copernicus Wave Dataset'
+            service_exec.arguments["algorithm-arguments"][0]["wave_model"] = 'Copernicus Wave Model for the Mediterranean'
         else:
             service_exec.arguments["algorithm-arguments"][0]["wave_model"] = ''
 
@@ -375,7 +375,7 @@ def process(request, exec_instance):
         elif ocean_model == '002':
             service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Poseidon Mediterranean Model'
         elif ocean_model == '003':
-            service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Copernicus Model'
+            service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = 'Copernicus Mediterranean Model'
         else:
             service_exec.arguments["algorithm-arguments"][0]["ocean_model"] = ''
 
