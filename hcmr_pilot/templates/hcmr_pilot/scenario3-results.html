@@ -98,7 +98,7 @@
             else
                 cameraPosition = graph.getCameraPosition();
 
-            data.add({x: {{ start_lat }}, y: {{ start_lon }}, z: -{{ start_depth }}, style: 'purple'});
+            data.add({x: {{ start_lon }}, y: {{ start_lat }}, z: -{{ start_depth }}, style: 'purple'});
 
             var options = {
                 width: '600px',
@@ -111,23 +111,23 @@
                 legendLabel: 'distance',
                 onclick: onclick,
                 dotSizeRatio: 0.005,
-                xLabel: 'Latitude(deg)',
-                yLabel: 'Longitude(deg)',
+                xLabel: 'Longitude(deg)',
+                yLabel: 'Latitude(deg)',
                 zLabel: 'Depth(m)',
                 showLegend: false,
                 cameraPosition: cameraPosition,
-                xMax: maxLat,
-                xMin: minLat,
-                yMax: maxLon,
-                yMin: minLon,
+                xMax: maxLon,
+                xMin: minLon,
+                yMax: maxLat,
+                yMin: minLat,
                 zMax: maxDpth,
                 zMin: minDpth
             };
 
             for (var j = 0; j < depthDataTimeMap[curTime].length; j++) {
 
-                x = depthDataTimeMap[curTime][j][0];
-                y = depthDataTimeMap[curTime][j][1];
+                x = depthDataTimeMap[curTime][j][1];
+                y = depthDataTimeMap[curTime][j][0];
                 z = depthDataTimeMap[curTime][j][2];
                 color = depthDataTimeMap[curTime][j][3];
 
