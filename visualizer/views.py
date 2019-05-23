@@ -3729,7 +3729,10 @@ def map_markers_in_time_hcmr(request):
         max_lon = -180
         for d in data:
             min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
-        m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
+        zoom_offset = 0.5
+        m.fit_bounds([(min_lat - zoom_offset , min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
+        # HCMR asked to remove the zoom according to the simulated oilspill. They need the output zoomed out.
+
         # filtered_polygons = []
         # simulation_frame = Polygon([(min_lat, min_lon), (max_lat,min_lon), (max_lat,max_lon),(min_lat,max_lon)])
         # count_inters = 0

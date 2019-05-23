@@ -27,11 +27,18 @@ var allow_form_submit5 = [true, true];
 var allow_form_submit_service = [true,true,true];
 
 
-var DATES_WITH_NO_DATA = []
+var DATES_WITH_NO_DATA = [];
 var sd = new Date('2019-03-20 00:00');
 for (var i=0;i<48;i++){
     sd.setDate(sd.getDate()+1);
 	DATES_WITH_NO_DATA.push(new Date(sd));
+}
+
+var COPERNICUS_NO_DATA_PERIOD1 = [];
+sd = new Date('2019-04-22 00:00');
+for (i=0;i<20;i++){
+    sd.setDate(sd.getDate()+1);
+	COPERNICUS_NO_DATA_PERIOD1.push(new Date(sd));
 }
 
 let MAX_LON_MEDITERRANEAN = 36;
@@ -115,7 +122,7 @@ function tour_guide_senario2(init, tour){
             element: ".spatial-selection",
             placement: "left",
             title: "Area selection",
-            content: "Adjust the blue rectangle to the area you wih to investigate. When you finish press the lock area button to lock the coordinates",
+            content: "Adjust the blue rectangle to the area you wish to investigate. When you finish press the lock area button to lock the coordinates",
         });
 
         second_scenario_tour.init();
@@ -126,10 +133,7 @@ function tour_guide_senario2(init, tour){
                 element: ".points-container",
                 placement: "left",
                 title: "Simulations Points",
-                content: "Once you selected the area, select more specifically the points within the selected area. " +
-                    "The simulation supports up to five points. Feel free to select whatever number of points. " +
-                    "All the simulation points must be placed inside the selected area otherwise the simulation can not be executed. " +
-                    "You can go back to edit the location of the selected area",
+                content: "Once you have selected the area, choose up to five point sources within this rectangle. More intense ship lines are clearly visible in order to choose oil sources along them. All the simulation points must be placed inside the selected area, otherwise the simulation cannot be executed. You can add an oil spill using the green button or go back to edit the limits of the geographical area you have selected.",
             });
             tour.addStep({
                 element: ".service-parameters",
@@ -287,6 +291,13 @@ function check_marker_position(lat, lon, user_marker, bounds, lat_selector, lon_
         $("#sel2"+point).dropdown("set selected", "001");
     }
 };
+
+function fix_disabled_dates(startpick,start_date, end_date, list_of_disabled_dates){
+    startpick.datetimepicker('setDatesDisabled','');
+    startpick.datetimepicker('setStartDate', start_date);
+    startpick.datetimepicker('setEndDate', end_date);
+    startpick.datetimepicker('setDatesDisabled', list_of_disabled_dates)
+}
 
 function check_marker_inside_area_select(lat, lon, user_marker,bounds, lat_selector, lon_selector, point, offset){
     if ((lat< bounds[0]) || (lon<bounds[1]) || (lat>bounds[2])|| (lon>bounds[3])){
@@ -524,7 +535,12 @@ function create_new_oilspill(user_marker, lat_selector, lon_selector, offset, na
     map.locate();
     lat_selector.val((bounds[0] + bounds[2]) / 2);
     lon_selector.val((bounds[1] + bounds[3]) / 2);
-    map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 7);
+    // map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
+
+    var zoom_bounds = new L.LatLngBounds(
+                new L.LatLng(bounds[0], bounds[1]),
+                new L.LatLng(bounds[2], bounds[3]));
+    map.fitBounds(zoom_bounds);
     check_marker_position(((bounds[0] + bounds[2]) / 2),((bounds[1] + bounds[3]) / 2),user_marker,bounds, lat_selector, lon_selector,point, offset);
     return user_marker
 }
@@ -668,7 +684,11 @@ $(document).ready(function() {
             map.on('locationfound', onLocationfound1);
             interactive_multi_point_form(onLocationfound1,first_user_marker,$('#lat'), $('#lon'),'1',allow_form_submit1,[0,0]);
             tour_guide_senario2(false, second_scenario_tour);
-            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 7);
+            // map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], (bounds[3] - bounds[1])*0.1428);
+            var zoom_bounds = new L.LatLngBounds(
+                new L.LatLng(bounds[0], bounds[1]),
+                new L.LatLng(bounds[2], bounds[3]));
+            map.fitBounds(zoom_bounds);
         });
 
         $('#unlock-area').on('click', function(e){
@@ -729,7 +749,11 @@ $(document).ready(function() {
             var nelat = Math.round(area_bounds.getNorthEast().lat * 10000) / 10000;
             var nelon = Math.round(area_bounds.getNorthEast().lng * 10000) / 10000;
             bounds = [swlat,swlon,nelat,nelon];
-            map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 5);
+            // map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], (bounds[3] - bounds[1])*0.1428);
+            var zoom_bounds = new L.LatLngBounds(
+                new L.LatLng(bounds[0], bounds[1]),
+                new L.LatLng(bounds[2], bounds[3]));
+            map.fitBounds(zoom_bounds);
         });
 
         $(".new_point").click(function(){
@@ -881,6 +905,27 @@ $(document).ready(function() {
             endDate: endDate,
             initialDate: endDate,
             datesDisabled: DATES_WITH_NO_DATA
+        });
+         $('#sel2').on('change',function () {
+             var newStartDate = new Date();
+             var newEndDate = new Date(); // month starts at 0
+             if ($('#sel2').val()==='003') {
+                // newStartDate = new Date();
+                // newEndDate = new Date(); // month starts at 0
+                 newStartDate.setMonth(newStartDate.getMonth()-1);
+                 if(startpick.datetimepicker('getDate')<newStartDate){
+                     startpick.datetimepicker('update',newEndDate);
+                 }
+                 fix_disabled_dates(startpick, newStartDate, newEndDate, COPERNICUS_NO_DATA_PERIOD1)
+             }
+             else{
+                // newStartDate = new Date();
+                // newEndDate = new Date(); // month starts at 0
+                newStartDate.setFullYear(newStartDate.getFullYear() - 1);
+                newStartDate.setHours(0,0,0,0);
+                fix_disabled_dates(startpick, newStartDate, newEndDate, DATES_WITH_NO_DATA);
+            }
+
         });
         startpick.datetimepicker('update',endDate);
         $('#lat').val((38.2810).toFixed(4));

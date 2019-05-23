@@ -92,7 +92,7 @@
     <script>
 
          var map = {{ map_id|safe }};
-          map.timeDimension = L.timeDimension({period:'{{time_interval}}'});
+         map.timeDimension = L.timeDimension({period:'{{time_interval}}'});
             map.timeDimensionControl = L.control.timeDimension({
                 position: 'bottomleft',
                 autoPlay: true,
@@ -100,9 +100,9 @@
                     transitionTime: 600,
                     loop: true}
             });
-           map.addControl(map.timeDimensionControl);
+         map.addControl(map.timeDimensionControl);
 
-            var timestamped_geo_json = L.timeDimension.layer.geoJson(
+         var timestamped_geo_json = L.timeDimension.layer.geoJson(
                 L.geoJson({'type':'FeatureCollection','features':{{ data|safe }}}, {'pointToLayer': function (feature,latlng) {
                     var geojsonMarkerOptions = {
                     radius: 4,
@@ -125,7 +125,8 @@
                         duration:'{{ duration }}'
                     {% endif %}
                 }
-                ).addTo(map);
+         ).addTo(map);
+
 
          $("#snapshot_button").click(function () {
              $("#snapshot").empty();
