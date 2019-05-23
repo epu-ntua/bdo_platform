@@ -518,7 +518,34 @@ $("#select_data_popover").click(function () {
 
 
 
+        //LIVE AIS
+                var allow_live_ais_submit = [true, true];
+                var live_ais_id = $('#viz_config ul li[data-viz-name="get_live_ais"]').attr('data-viz-id');
+                var live_ais_vessel_col_id_select = $('.popover-content #viz_'+live_ais_id+' #vessel-id-columns-select');
+                // var live_ais_vessel_col_select = $('.popover-content #viz_'+live_ais_id+' #variable');
+                var live_ais_vessel_id_select = $('.popover-content #viz_'+live_ais_id+' #vessel-id');
 
+                live_ais_vessel_col_id_select.on('change', function(){
+                    allow_live_ais_submit = missing_parameter(live_ais_vessel_col_id_select, allow_live_ais_submit, 'Vessel-ID-Column',0 )
+                    if ((live_ais_vessel_col_id_select.val()!== '')&&(live_ais_vessel_col_id_select.val()!==null)){
+                        live_ais_vessel_id_select.parent().removeClass('disabled');
+                        live_ais_vessel_id_select.find('option').remove();
+                        $('.vessel-id-select option[data-type="'+ String(live_ais_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+
+                    }else{
+                        $('.popover-content #vessel-id').append('<option value=1>test</option>');
+                        setTimeout(function() {
+                            live_ais_vessel_id_select.dropdown('set selected',live_ais_vessel_id_select.find('option').val());
+                            live_ais_vessel_id_select.parent().dropdown('clear');
+                            live_ais_vessel_id_select.find('option').remove();
+                            live_ais_vessel_id_select.parent().addClass('disabled');
+                        }, 20);
+                    }
+                });
+                live_ais_vessel_col_id_select.parent().dropdown('clear');
+                live_ais_vessel_id_select.on('change', function(){
+                    allow_live_ais_submit = missing_parameter(live_ais_vessel_id_select, allow_live_ais_submit, 'Vessel-ID', 1 )
+                });
                  //MAP MARKERS GRID
                 var allow_markers_grid_submit = [true,true];
                 var markers_grid_id = $('#viz_config ul li[data-viz-name="get_map_markers_grid"]').attr('data-viz-id');
@@ -624,7 +651,7 @@ $("#select_data_popover").click(function () {
                 $('#myModal .column-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
                 $('#myModal .columns-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
                 // $("#myModal .dataset-argument-select").html(dataset_arguments_content);
-                if((chosen_viz ==='get_map_plotline_vessel_course')||(chosen_viz==='get_map_markers_vessel_course')) {
+                if((chosen_viz ==='get_map_plotline_vessel_course')||(chosen_viz==='get_map_markers_vessel_course')|| (chosen_viz==='get_live_ais')) {
                     $(".viz_item").addClass('waiting-disable');
                     $.ajax({
                         "type": "GET",
