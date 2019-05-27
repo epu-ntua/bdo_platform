@@ -58,6 +58,8 @@ def create_map():
         force_separate_button=True).add_to(m)
     return m
 
+from website_analytics.views import *
+
 def init(request):
     form = HCMRForm()
     scenario = request.GET['scenario']
@@ -298,6 +300,7 @@ def execute(request):
 
 
 def process(request, exec_instance):
+    dataset_list = []
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     try:
         service_exec.arguments = {"filter-arguments": [], "algorithm-arguments": [{}, {}]}
@@ -315,11 +318,19 @@ def process(request, exec_instance):
                             float(spill_infos[0]['latitude']), resolution)) + " AND round(longitude," + str(resolution) + ")=" + str(round(
                             float(spill_infos[0]['longitude']),resolution)) + ")"
                     cursor_presto.execute(query)
+                    try:
+                        dataset_list.append((Dataset.objects.get(table_name='hcmr_poseidon_aeg_bathymetry')).id)
+                    except:
+                        print 'Dataset does not exist in database'
                 else:
                     query = "SELECT * FROM (SELECT min(depth) FROM hcmr_poseidon_med_bathymetry WHERE round(latitude," + str(resolution) + " )=" + str(round(
                             float(spill_infos[0]['latitude']),resolution)) + " AND round(longitude," + str(resolution) + ")=" + str(round(
                             float(spill_infos[0]['longitude']), resolution)) + ")"
                 cursor_presto.execute(query)
+                try:
+                    dataset_list.append((Dataset.objects.get(table_name='hcmr_poseidon_med_bathymetry')).id)
+                except:
+                    print 'Dataset does not exist in database'
                 result = cursor_presto.fetchall()
                 try:
                     depth = float(result[0][0])
@@ -349,6 +360,7 @@ def process(request, exec_instance):
                 print query
                 print 'Oilspill depth:'+str(depth)
                 # service_exec.arguments["algorithm-arguments"][0]["depth"] = spill_infos[0]['depth']
+
 
         elif scenario == '2':
             count = 1
@@ -443,7 +455,11 @@ def process(request, exec_instance):
             if natura_layer == "true":
                 # red_points_calc.calculate(hcmr_data_filename, red_points_filename)
                 pass
-
+            if ais_layer == "true":
+                try:
+                    dataset_list.append((Dataset.objects.get(table_name='xmile_ais', stored_at='UBITECH_PRESTO')).id)
+                except:
+                    print 'Dataset does not exist in database'
             print 'red points calculated'
             # 5)Create Visualization
 
@@ -468,7 +484,16 @@ def process(request, exec_instance):
                 raise Exception
             service_exec.status = "done"
             service_exec.save()
-
+            service_obj = service_exec.service
+            for dataset_list_el_id in dataset_list:
+                try:
+                    dataset_obj = Dataset.objects.get(id=dataset_list_el_id)
+                    dataset_service_execution(dataset_obj, service_obj)
+                except:
+                    pass
+            service_use(service_obj)
+            unique_service_use(service_obj, request.user)
+            hcmr_statistics(scenario, sim_length, time_interval,ocean_model, wave_model, str_to_bool(natura_layer), str_to_bool(ais_layer))
             # context = {
             #     'url': visualization_url,
             #     'out_filepath': filename_output,
@@ -488,6 +513,11 @@ def status(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     return JsonResponse({'status': service_exec.status})
 
+def str_to_bool(s):
+    if s == 'True' or s == 'true':
+         return True
+    elif s == 'False' or s =='false':
+         return False
 
 def create_json_from_out_file(filename_output):
     from datetime import datetime, timedelta

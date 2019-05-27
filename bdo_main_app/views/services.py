@@ -13,6 +13,7 @@ from django.core.exceptions import PermissionDenied
 from access_controller.policy_enforcement_point import PEP
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ObjectDoesNotExist
+from website_analytics.views import *
 
 @never_cache
 def services(request):
@@ -110,6 +111,8 @@ def view_dashboard(request, pk):
             can_edit = True
     dashboard.viz_components = convert_unicode_json(dashboard.viz_components)
     print dashboard.viz_components
+    dashboard_display(dashboard)
+    unique_dashboard_display(dashboard, user)
     return render(request, 'services/services/view_dashboard.html', {
         'dashboard': dashboard,
         'dashboard_json': json.dumps(dashboard.viz_components),

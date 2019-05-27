@@ -47,6 +47,7 @@ from folium.plugins import HeatMap, MarkerCluster
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 import csv
+from website_analytics.views import *
 
 FOLIUM_COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'darkblue',
                  'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray']
@@ -775,6 +776,7 @@ def map_visualizer(request):
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
     # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
+
     html1 = render_to_string('visualizer/final_map_folium_template.html',
                              {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id, 'unit': unit})
     # print(html1)
@@ -825,6 +827,7 @@ def get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color
         # create cached file with necessary data and info
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dict, f)
+        visualisation_type_analytics('get_map_plotline_vessel_course')
     else:
         print('Plotline Data is Cached!')
         with open('visualizer/static/visualizer/temp/' + cached_file) as f:
@@ -870,6 +873,7 @@ def get_map_polygon(marker_limit, color, query_pk, df, notebook_id, lat_col, lon
         # create cached file with necessary data and info
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dict, f)
+        visualisation_type_analytics('get_map_polygon')
     else:
         print('Plotline Data is Cached!')
         with open('visualizer/static/visualizer/temp/' + cached_file) as f:
@@ -1060,6 +1064,7 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, ca
 
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dict, f)
+        visualisation_type_analytics('get_map_heatmap')
     else:
         print ('Heatmap Data is Cached!')
         with open('visualizer/static/visualizer/temp/' + cached_file) as f:
@@ -1177,6 +1182,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                                                   step, mapname)
         viz.status = 'done'
         viz.save()
+        visualisation_type_analytics('get_map_contour')
         return m, ret_html, map_id, legpath, unit
 
     except Exception, e:
@@ -1555,6 +1561,7 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
         dic['var_unit'] = var_unit
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dic, f, default=myconverter)
+        visualisation_type_analytics('get_map_markers_grid')
     else:
         print "Markers Grid data is cached!"
         with open('visualizer/static/visualizer/temp/' + cached_file) as f:
@@ -1592,6 +1599,7 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vesse
         dic['var_unit'] = var_unit
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dic, f, default=myconverter)
+        visualisation_type_analytics('get_map_markers_vessel_course')
     else:
         print "Markers Course data is cached!"
         with open('visualizer/static/visualizer/temp/' + cached_file) as f:
@@ -2498,6 +2506,8 @@ def get_histogram_chart_am(request):
         x_var = 'startValues'
         # print data
         json_data = convert_unicode_json(json_data)
+        dataset_list = get_dataset_list(query)
+        analytics_dataset_visualisation(dataset_list)
     else:
         bins += 1
         var_title = x_var
@@ -2536,7 +2546,7 @@ def get_histogram_chart_am(request):
         json_data = json_data[:-1]
         y_var = 'counts'
         x_var = 'startValues'
-
+    visualisation_type_analytics('get_histogram_chart_am')
     return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var, 'category_title': var_title + " (" +str(var_unit) + ")"})
 
 
@@ -2683,6 +2693,8 @@ def get_histogram_2d_matplotlib(request):
             count_index = 0
             x_var_index = 1
             y_var_index = 2
+            dataset_list = get_dataset_list(query)
+            analytics_dataset_visualisation(dataset_list)
         else:
             x_var_index, y_var_index, result_data, y_var_title, x_var_title, y_var_unit, x_var_unit = histogram2d_dataframe(x_var, y_var)
 
@@ -2764,6 +2776,7 @@ def get_histogram_2d_matplotlib(request):
         ax = None
         viz.status = 'done'
         viz.save()
+        visualisation_type_analytics('get_histogram_2d_am')
         return render(request, 'visualizer/histogram_2d_matplotlib.html',
                       {'img_name': img_name})
     except Exception, e:
@@ -3260,7 +3273,7 @@ def get_line_chart_am(request):
         isDate = 'true'
     else:
         isDate = 'false'
-
+    visualisation_type_analytics('get_line_chart_am')
     return render(request, 'visualizer/line_chart_am.html',
                   {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
@@ -3290,6 +3303,7 @@ def get_time_series_am(request):
     except ValueError as e:
         traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
+    visualisation_type_analytics('get_time_series_am')
     if chart_type == 'line':
         return render(request, 'visualizer/line_chart_am.html',
                       {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
@@ -3323,7 +3337,7 @@ def get_column_chart_am(request):
         isDate = 'true'
     else:
         isDate = 'false'
-
+    visualisation_type_analytics('get_column_chart_am')
     return render(request, 'visualizer/column_chart_am.html',
                   {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
@@ -3348,7 +3362,7 @@ def get_pie_chart_am(request):
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
-
+    visualisation_type_analytics('get_pie_chart_am')
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title).replace("\n", " ") + " (" + str(x_m_unit) + ")", 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
 
 
@@ -3430,7 +3444,7 @@ def get_data_table(request):
         has_next = False
     else:
         has_next = True
-
+    visualisation_type_analytics('get_data_table')
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
 def map_oil_spill_hcmr(map):
@@ -3909,6 +3923,11 @@ def create_plotline_arrows(points, m, pol_group_layer, color):
             arrow.add_to(pol_group_layer)
 
 
+def visualisation_type_analytics(viz_view_name):
+    viz_obj = Visualization.objects.get(view_name=viz_view_name)
+    visualisation_type_count(viz_obj)
+
+
 
 
 def get_arrows(m, n_arrows, first_arrow, locations, color='#68A7EE', size=5):
@@ -4005,7 +4024,7 @@ def get_aggregate_value(request):
             value, unit, var_list, var_title, _ = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
-
+    visualisation_type_analytics('get_aggregate_value')
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit, 'agg_func':agg_function, 'var_title': var_title})
 
 def myconverter(o):
@@ -4335,7 +4354,30 @@ def createjson(lonlat,time,status,color):
 
 def execute_query_method(q):
     result = q.execute()
+    print q.document
+    dataset_list = get_dataset_list(q)
+    analytics_dataset_visualisation(dataset_list)
     return result
+
+
+def get_dataset_list(q):
+    dataset_list = []
+    doc = q.document
+    for el in doc['from']:
+        dataset = Variable.objects.get(id=int(el['type'])).dataset
+        if dataset.id not in dataset_list:
+            dataset_list.append(dataset.id)
+    print dataset_list
+    return dataset_list
+
+def analytics_dataset_visualisation(dataset_list):
+    for dataset_list_el_id in dataset_list:
+        try:
+            dataset_obj = Dataset.objects.get(id=dataset_list_el_id)
+            dataset_visualisation(dataset_obj)
+        except:
+            pass
+
 
 def chart_min_period_finder(min_period):
     if min_period == 'date_trunc_minute':

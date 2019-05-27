@@ -26,6 +26,7 @@ from time import sleep
 
 from wave_energy_pilot.models import Wave_Energy_Converters
 
+from website_analytics.views import *
 
 def configure_spatial_filter(filters, lat_from, lat_to, lon_from, lon_to):
     if type(filters) == dict:
@@ -394,6 +395,15 @@ def wec_single_location_evaluation_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.WEC_LOCATION_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
+        try:
+            dataset_obj = Dataset.objects.get(id=int(dataset_id))
+            service_obj = service_exec.service
+            dataset_service_execution(dataset_obj, service_obj)
+            service_use(service_obj)
+            unique_service_use(service_obj, request.user)
+            nester_statistics(service_obj, dataset_obj)
+        except:
+            print 'Dataset or service does not exist'
         t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 180))
         t.start()
     except Exception as e:
@@ -524,6 +534,15 @@ def wec_area_evaluation_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.WEC_AREA_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
+        try:
+            dataset_obj = Dataset.objects.get(id=int(dataset_id))
+            service_obj = service_exec.service
+            dataset_service_execution(dataset_obj, service_obj)
+            service_use(service_obj)
+            unique_service_use(service_obj, request.user)
+            nester_statistics(service_obj, dataset_obj)
+        except:
+            print 'Dataset or service does not exist'
         t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 180))
         t.start()
     except Exception as e:
@@ -639,6 +658,15 @@ def wec_generation_forecast_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.WEC_LOCATION_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
+        try:
+            dataset_obj = Dataset.objects.get(id=int(dataset_id))
+            service_obj = service_exec.service
+            dataset_service_execution(dataset_obj, service_obj)
+            service_use(service_obj)
+            unique_service_use(service_obj, request.user)
+            nester_statistics(service_obj, dataset_obj)
+        except:
+            print 'Dataset or service does not exist'
         t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 180))
         t.start()
     except Exception as e:
@@ -775,6 +803,15 @@ def wec_load_matching_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.WEC_LOAD_MATCHING_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
+        try:
+            dataset_obj = Dataset.objects.get(id=int(dataset_id))
+            service_obj = service_exec.service
+            dataset_service_execution(dataset_obj, service_obj)
+            service_use(service_obj)
+            unique_service_use(service_obj, request.user)
+            nester_statistics(service_obj, dataset_obj)
+        except:
+            print 'Dataset or service does not exist'
         t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 180))
         t.start()
     except Exception as e:
@@ -878,6 +915,8 @@ def init(request):
 
 @never_cache
 def data_visualization_results(request):
+    import pdb
+    pdb.set_trace()
     service = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
@@ -932,7 +971,15 @@ def data_visualization_results(request):
     dataset_title = Dataset.objects.get(pk=dataset_id).title
     location_lat = str(latitude_from + abs(latitude_to-latitude_from)/2)
     location_lon = str(longitude_from + abs(longitude_to - longitude_from) / 2)
-
+    try:
+        dataset_obj = Dataset.objects.get(id=int(dataset_id))
+        service_obj = service_exec.service
+        dataset_service_execution(dataset_obj, service_obj)
+        service_use(service_obj)
+        unique_service_use(service_obj, request.user)
+        nester_statistics(service_obj, dataset_obj)
+    except:
+        print 'Dataset or service does not exist'
     return render(request, 'wave_energy_pilot/data_visualisation result.html',
                   {'result': result,
                    'back_url': '/wave-energy/',
@@ -1031,6 +1078,15 @@ def single_location_evaluation_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.LOCATION_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
+        try:
+            dataset_obj = Dataset.objects.get(id=int(dataset_id))
+            service_obj = service_exec.service
+            dataset_service_execution(dataset_obj, service_obj)
+            service_use(service_obj)
+            unique_service_use(service_obj, request.user)
+            nester_statistics(service_obj, dataset_obj)
+        except:
+            print 'Dataset or service does not exist'
         t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 180))
         t.start()
     except Exception as e:
@@ -1160,6 +1216,15 @@ def area_location_evaluation_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.AREA_EVALUATION_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
+        try:
+            dataset_obj = Dataset.objects.get(id=int(dataset_id))
+            service_obj = service_exec.service
+            dataset_service_execution(dataset_obj, service_obj)
+            service_use(service_obj)
+            unique_service_use(service_obj, request.user)
+            nester_statistics(service_obj, dataset_obj)
+        except:
+            print 'Dataset or service does not exist'
         clean_up_new_note(service_exec.notebook_id)
     except Exception as e:
         print 'exception in livy execution'
@@ -1266,6 +1331,15 @@ def wave_forecast_execution_process(request, exec_instance):
         execute_service_code(request, service_exec, new_arguments_paragraph, settings.WAVE_FORECAST_SERVICE_PARAGRAPHS)
         service_exec.status = "done"
         service_exec.save()
+        try:
+            dataset_obj = Dataset.objects.get(id=int(dataset_id))
+            service_obj = service_exec.service
+            dataset_service_execution(dataset_obj, service_obj)
+            service_use(service_obj)
+            unique_service_use(service_obj, request.user)
+            nester_statistics(service_obj, dataset_obj)
+        except:
+            print 'Dataset or service does not exist'
         clean_up_new_note(service_exec.notebook_id)
     except Exception as e:
         print 'exception in livy execution'
@@ -1323,3 +1397,4 @@ def get_load_matching_file_data(request):
         reader = csv.reader(infile)
         result_list = [{"time": rows[0], "value": rows[1]} for rows in reader]
     return JsonResponse({"result": result_list[1:]})
+

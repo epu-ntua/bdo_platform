@@ -12,6 +12,7 @@ from query_designer.query_processors.utils import ResultEncoder
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from access_controller.policy_enforcement_point import PEP
+from website_analytics.views import *
 
 
 def execute_query(request, pk=None):
@@ -64,6 +65,15 @@ def execute_query(request, pk=None):
         # import pdb
         # pdb.set_trace()
         # send results
+        for dataset_list_el_id in dataset_list:
+            try:
+                dataset_obj = Dataset.objects.get(id=dataset_list_el_id)
+                dataset_exploration(dataset_obj)
+                if len(dataset_list) > 1:
+                    dataset_join(dataset_obj)
+            except:
+                pass
+
         return JsonResponse(response, encoder=encoder)
     else:
         return HttpResponseForbidden()

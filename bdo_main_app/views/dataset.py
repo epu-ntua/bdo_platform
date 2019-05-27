@@ -5,9 +5,11 @@ from django.shortcuts import render
 from aggregator.models import *
 import prestodb
 from django.conf import settings
+from website_analytics.views import *
 
 
 def dataset(request, dataset_id):
+    user = request.user
     dataset = Dataset.objects.get(pk=dataset_id)
     rows_to_render = []
     variable_list_canonical = [v.safe_name for v in Variable.objects.filter(dataset=dataset)]
@@ -43,7 +45,8 @@ def dataset(request, dataset_id):
         except Exception, e:
             print 'error'
             print str(e)
-
+    dataset_display(dataset)
+    unique_dataset_display(dataset, user)
     return render(request, 'services/datasets/index.html', {
         'sidebar_active': 'products',
         'dataset': dataset,
