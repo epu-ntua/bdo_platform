@@ -50,3 +50,4 @@ scipy
 unidecode
 django-background-tasks
 django-settings-export
+django-google-analytics-app
