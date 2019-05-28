@@ -27,7 +27,7 @@ SECRET_KEY = 'i-lcdaw&=80_zgbc&^1(0p&)a2(joi^@*!4(8-%zk^u4s+g@4r'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['bdo-dev.epu.ntua.gr', 'localhost']
+ALLOWED_HOSTS = ['platform.bigdataocean.eu', 'bdo-dev.epu.ntua.gr', 'localhost']
 
 
 # Application definition
@@ -158,7 +158,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bdo_platform.wsgi.application'
 
-BDO_VERSION = '0.1.0'
+BDO_VERSION = '0.1.2'
 SETTINGS_EXPORT = [
     'BDO_VERSION',
 ]
