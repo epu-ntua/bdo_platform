@@ -52,7 +52,7 @@
     {% endfor %}
 
     <script>
-        var interval_time = 10000;
+        var interval_time = 20000;
         var map = {{ map_id|safe }};
         var vessel_id_list = {{ vessel_id |safe}};
         var vessel_column = '{{ vessel_column|safe }}';
@@ -88,7 +88,7 @@
         start_time_refresh();
 
         function start_time_refresh() {
-            var myVar = setInterval(myTimer, 10000);
+            var myVar = setInterval(myTimer, interval_time);
         }
 
         function myTimer() {
