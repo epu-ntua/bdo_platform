@@ -52,6 +52,7 @@
     {% endfor %}
 
     <script>
+        var interval_time = 10000;
         var map = {{ map_id|safe }};
         var vessel_id_list = {{ vessel_id |safe}};
         var vessel_column = '{{ vessel_column|safe }}';
@@ -61,23 +62,69 @@
         console.log(JSON.stringify(lov_json));
         var color_list = ['blue','red','green','orange','yellow','violet','grey','black'];
         console.log(vessel_id_list);
-
-        for (var i = 0; i < vessel_id_list.length; i++) {
+        var vessel_id_simple_list = [];
+        var markers_list = [];
+        for (var i = 0; i < vessel_id_list['vessels'].length; i++) {
+            vessel_id_simple_list.push(parseInt(vessel_id_list['vessels'][i]));
+            var lat = lov_json[String(vessel_id_list['vessels'][i])]['latitude'];
+            var lon = lov_json[String(vessel_id_list['vessels'][i])]['longitude'];
+            var time = lov_json[String(vessel_id_list['vessels'][i])]['time'];
+            var var_title = lov_json[String(vessel_id_list['vessels'][i])]['variable_title'];
+            var var_value = lov_json[String(vessel_id_list['vessels'][i])]['variable'];
+            var var_unit = lov_json[String(vessel_id_list['vessels'][i])]['unit'];
+            var vessel_id = String(vessel_id_list['vessels'][i]);
             var icon = new L.Icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-' + color_list[i] + '.png'
             });
-            var user_marker = L.marker([lov_json[vessel_id_list[i]]['latitude'], lov_json[vessel_id_list[i]]['longitude']], {draggable: false}).bindPopup('text').addTo(map);
+            var user_marker = L.marker([lat, lon], {draggable: false}).bindPopup('Vessel ID: '+ vessel_id +'<br>'+'Latitude: '+lat+'<br>'+'Longitude: '+lon+'<br>'+'Time: '+time+'<br>'+var_title+': '+var_value+' '+ var_unit+'<br>').addTo(map);
+            markers_list.push(user_marker);
             var marker_layer = L.layerGroup(user_marker);
             user_marker.setIcon(icon);
             map.addLayer(marker_layer);
-        }
+        };
 
         map.setView([20,30], 3);
 
+        start_time_refresh();
 
+        function start_time_refresh() {
+            var myVar = setInterval(myTimer, 10000);
+        }
 
-
-
+        function myTimer() {
+            $.ajax({
+                "type": "GET",
+                "url": "/visualizations/live_ais_new_vessels_positions/",
+                "dataType": 'json',
+                "data":{
+                    vessel_column: vessel_column,
+                    vessel_id: vessel_id_simple_list,
+                    variable: variable,
+                    query_pk: query_pk
+                },
+                "success": function(result){
+                    console.log(JSON.stringify(result));
+                    for (var i = 0; i < vessel_id_list['vessels'].length; i++) {
+                        var cur_marker = markers_list[i];
+                        var lov_new_json = result;
+                        var new_lat = lov_new_json[String(vessel_id_list['vessels'][i])]['latitude'];
+                        var new_lon = lov_new_json[String(vessel_id_list['vessels'][i])]['longitude'];
+                        var new_time = lov_new_json[String(vessel_id_list['vessels'][i])]['time'];
+                        var new_var_val = lov_new_json[String(vessel_id_list['vessels'][i])]['variable'];
+                        console.log('new_lat:'+ new_lat+ ' new_lon:'+new_lon+ ' new_time:'+ new_time+ ' new_var_val:'+ new_var_val);
+                        var newLatLng = new L.LatLng(new_lat, new_lon);
+                        cur_marker.setLatLng(newLatLng);
+                        var new_text = 'Vessel ID: '+ vessel_id +'<br>'+'Latitude: '+new_lat+'<br>'+'Longitude: '+new_lon+'<br>'+'Time: '+new_time+'<br>'+var_title+': '+new_var_val+' '+ var_unit+'<br>';
+                        console.log('New popover_text: '+new_text);
+                        cur_marker._popup.setContent(new_text);
+                    }
+                },
+                "error": function () {
+                    console.log('error getting vessel new positions');
+                }
+            });
+        };
     </script>
+    
 
 {% endblock %}

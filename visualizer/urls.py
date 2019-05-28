@@ -56,4 +56,5 @@ urlpatterns = [
     url('^map_folium_heat/$', views.map_viz_folium_heatmap, name='map-viz-folium-heat'),
 
     url('^get_vessel_ids_info/(?P<query_id>\d+)/$', views.get_vessel_ids_info, name='get_vessel_ids_info'),
+    url('^live_ais_new_vessels_positions/$', views.ajax_get_live_ais_new_position, name='ajax_get_live_ais_new_position'),
 ]

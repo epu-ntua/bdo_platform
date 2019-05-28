@@ -4034,29 +4034,9 @@ def get_live_ais(request):
     legend_id = ""
     query_pk, df, notebook_id = get_data_parameters(request, '')
     cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, '')
-    list_of_vessels = return_new_vessels_positions(request, vessel_column, vessel_id, variable, query_pk)
+    list_of_vessels = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk)
     dict_vessels = {}
     dict_vessels['vessels'] = vessel_id
-    # av_colors = FOLIUM_COLORS
-    # it = iter(av_colors)
-    # if len(vessel_id) <= 17:
-    #     for vessel in vessel_id:
-    #         query = load_modify_query_live_ais(query_pk, 1, vessel_column, vessel, variable)
-    #         data, lat_index, lon_index, time_index, var_index, var_title, var_unit = get_live_ais_query_data(query, variable)
-            # pol_group_layer = folium.map.FeatureGroup(
-            #     name='Vessel: ' + str(vessel), overlay=True, control=True).add_to(m)
-            # if variable != '':
-            #     folium.Marker(
-            #         location=[data[0][lat_index], data[0][lon_index]],
-            #         popup=str(var_title) + ": " + str(data[0][var_index])+' '+str(var_unit) + "<br>Time: " + str(data[0][time_index]) + "<br>Latitude: " + str(
-            #             data[0][lat_index]) + "<br>Longitude: " + str(data[0][lon_index]),
-            #         icon=folium.Icon(color=it.next(), prefix='fa', icon='ship'),
-            #         # radius=2,
-            #
-            # ).add_to(pol_group_layer)
-    # else:
-    #     raise ValueError('The visualisation is not available for more than seventeen vessels')
-
     folium.LayerControl().add_to(m)
     temp_map = 'templates/map1' + str(int(time.time())) + '.html'
     m.save(temp_map)
@@ -4079,7 +4059,7 @@ def get_live_ais(request):
     return HttpResponse(html1)
 
 
-def return_new_vessels_positions(request, vessel_column, vessel_id, variable, query_pk):
+def live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk):
     if len(vessel_id) <= 17:
         list_of_vessels = {}
         for vessel in vessel_id:
@@ -4096,6 +4076,17 @@ def return_new_vessels_positions(request, vessel_column, vessel_id, variable, qu
     else:
         raise ValueError('The visualisation is not available for more than seventeen vessels')
     return list_of_vessels
+
+
+def ajax_get_live_ais_new_position(request):
+    query_pk = str(request.GET.get('query_pk','0'))
+    vessel_column = str(request.GET.get("vessel_column", ''))
+    variable = str(request.GET.get('variable', ''))
+    vessel_id = [int(x) for x in request.GET.getlist('vessel_id[]')]
+    result = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk)
+    return JsonResponse(result)
+
+
 
 def load_modify_query_live_ais(query_pk, marker_limit, vessel_column, vessel_id, variable):
     query = AbstractQuery.objects.get(pk=query_pk)
