@@ -81,7 +81,7 @@ def init(request):
     list = []
     for i in range(0, 61):
         list.append(i*12)
-
+    list.pop(0)
     m = create_map()
     if int(scenario) == 2:
         data_img = Image.open('visualizer/static/visualizer/img/ais_density_maps/ais_data_photo_med.png')
@@ -626,7 +626,7 @@ def parse_request_params(request):
     first_latitude = request.GET.get('latitude1')
     first_longitude = request.GET.get('longitude1')
     scenario = str(request.GET.get('scenario'))
-    for i in range(1,6):
+    for i in range(1,5):
         spill_info = {}
         spill_info['latitude'] = latitude = request.GET.get('latitude'+str(i))
         spill_info['longitude'] = longitude = request.GET.get('longitude'+str(i))

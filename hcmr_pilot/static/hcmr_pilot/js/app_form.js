@@ -23,7 +23,7 @@ var allow_form_submit1 = [true, true];
 var allow_form_submit2 = [true, true];
 var allow_form_submit3 = [true, true];
 var allow_form_submit4 = [true, true];
-var allow_form_submit5 = [true, true];
+// var allow_form_submit5 = [true, true];
 var allow_form_submit_service = [true,true,true];
 
 
@@ -418,6 +418,29 @@ function interactive_form(onLocationfound, user_marker){
             // $('#sel2').parent().find('div[data-value="002"]').addClass('disabled');
         }
     });
+    $('#simulation_length_hist').on('change',function () {
+        var sim_len_val = parseInt($('#simulation_length_hist').val())
+        if ((sim_len_val>240) &&(sim_len_val<=480)){;
+            $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="4"]').addClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','6');
+        }else if(sim_len_val>480){
+            $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="4"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="6"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="8"]').addClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','12');
+        }
+        else{
+            $('#time_interval').parent().find('div').removeClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','2');
+        }
+    });
+
 
 }
 
@@ -507,7 +530,7 @@ function missing_parameter(col_select, allow_submit, parameter_name, parameter_i
     else {
         allow_submit[parameter_id] = true;
         $('.' + parameter_name + '_missing_error').remove();
-        if (check_list(allow_submit)&&check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit5)&&check_list(allow_form_submit_service)) {
+        if (check_list(allow_submit)&&check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit_service)) {
             $(disable_button).removeClass('disabled');
         }
     }
@@ -711,18 +734,18 @@ $(document).ready(function() {
                 map.removeLayer(fourth_user_marker);
                 delete_point('4');
             }
-            if (fifth_user_marker != undefined) {
-                map.removeLayer(fifth_user_marker);
-                delete_point('5');
-            }
+            // if (fifth_user_marker != undefined) {
+            //     map.removeLayer(fifth_user_marker);
+            //     delete_point('5');
+            // }
             $("#point2_form").removeClass("in");
             $("#point2_form").removeClass("active");
             $("#point3_form").removeClass("in");
             $("#point3_form").removeClass("active");
             $("#point4_form").removeClass("in");
             $("#point4_form").removeClass("active");
-            $("#point5_form").removeClass("in");
-            $("#point5_form").removeClass("active");
+            // $("#point5_form").removeClass("in");
+            // $("#point5_form").removeClass("active");
             $('.nav-item').children('a[href="#point2_form"]').removeAttr('data-toggle');
             $('.nav-item').children('a[href="#point2_form"]').parent().removeClass('active');
             $('.nav-item').children('a[href="#point2_form"]').parent().addClass('disabled');
@@ -732,9 +755,9 @@ $(document).ready(function() {
             $('.nav-item').children('a[href="#point4_form"]').removeAttr('data-toggle');
             $('.nav-item').children('a[href="#point4_form"]').parent().removeClass('active');
             $('.nav-item').children('a[href="#point4_form"]').parent().addClass('disabled');
-            $('.nav-item').children('a[href="#point5_form"]').removeAttr('data-toggle');
-            $('.nav-item').children('a[href="#point5_form"]').parent().removeClass('active');
-            $('.nav-item').children('a[href="#point5_form"]').parent().addClass('disabled');
+            // $('.nav-item').children('a[href="#point5_form"]').removeAttr('data-toggle');
+            // $('.nav-item').children('a[href="#point5_form"]').parent().removeClass('active');
+            // $('.nav-item').children('a[href="#point5_form"]').parent().addClass('disabled');
 
             $("#point1_form").addClass("in");
             $("#point1_form").addClass("active");
@@ -816,21 +839,21 @@ $(document).ready(function() {
                 interactive_multi_point_form(onLocationfound4,fourth_user_marker,$('#lat4'), $('#lon4'),'4',allow_form_submit4,[-(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
 
             }
-            else if (tabid2 === "#point5_form"){
-
-                if (fifth_user_marker != undefined) {
-                    map.removeLayer(fifth_user_marker);
-                }
-                var blackIcon = new L.Icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png'
-                });
-                fifth_user_marker = create_new_oilspill(fifth_user_marker,$('#lat5'), $('#lon5'), [(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ],'Oil-Spill-5',map,blackIcon,'-point5');
-                onLocationfound5 = function(e){
-                    fifth_user_marker.setLatLng(e.latlng).update();
-                };
-                map.on('locationfound', onLocationfound5);
-                interactive_multi_point_form(onLocationfound5,fifth_user_marker,$('#lat5'), $('#lon5'),'5',allow_form_submit5, [(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
-            }
+            // else if (tabid2 === "#point5_form"){
+            //
+            //     if (fifth_user_marker != undefined) {
+            //         map.removeLayer(fifth_user_marker);
+            //     }
+            //     var blackIcon = new L.Icon({
+            //         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png'
+            //     });
+            //     fifth_user_marker = create_new_oilspill(fifth_user_marker,$('#lat5'), $('#lon5'), [(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ],'Oil-Spill-5',map,blackIcon,'-point5');
+            //     onLocationfound5 = function(e){
+            //         fifth_user_marker.setLatLng(e.latlng).update();
+            //     };
+            //     map.on('locationfound', onLocationfound5);
+            //     interactive_multi_point_form(onLocationfound5,fifth_user_marker,$('#lat5'), $('#lon5'),'5',allow_form_submit5, [(bounds[2]-bounds[0])/4, -(bounds[3]-bounds[1])/4 ]);
+            // }
 
         });
 
@@ -879,20 +902,20 @@ $(document).ready(function() {
             $('.nav-item').children('a[href="#point3_form"]').parent().addClass('active');
         });
 
-        $('#remove_point5').click(function () {
-            delete_point('5');
-            if (fifth_user_marker != undefined) {
-                map.removeLayer(fifth_user_marker);
-            }
-            $("#point5_form").removeClass("in");
-            $("#point5_form").removeClass("active");
-            $("#point4_form").addClass("in");
-            $("#point4_form").addClass("active");
-            $('.nav-item').children('a[href="#point5_form"]').removeAttr('data-toggle');
-            $('.nav-item').children('a[href="#point5_form"]').parent().removeClass('active');
-            $('.nav-item').children('a[href="#point5_form"]').parent().addClass('disabled');
-            $('.nav-item').children('a[href="#point4_form"]').parent().addClass('active');
-        });
+        // $('#remove_point5').click(function () {
+        //     delete_point('5');
+        //     if (fifth_user_marker != undefined) {
+        //         map.removeLayer(fifth_user_marker);
+        //     }
+        //     $("#point5_form").removeClass("in");
+        //     $("#point5_form").removeClass("active");
+        //     $("#point4_form").addClass("in");
+        //     $("#point4_form").addClass("active");
+        //     $('.nav-item').children('a[href="#point5_form"]').removeAttr('data-toggle');
+        //     $('.nav-item').children('a[href="#point5_form"]').parent().removeClass('active');
+        //     $('.nav-item').children('a[href="#point5_form"]').parent().addClass('disabled');
+        //     $('.nav-item').children('a[href="#point4_form"]').parent().addClass('active');
+        // });
     }
 
 
@@ -1110,9 +1133,9 @@ $(document).ready(function() {
             var lng3 = $('#lon3').val();
             var lat4 = $('#lat4').val();
             var lng4 = $('#lon4').val();
-            var lat5 = $('#lat5').val();
-            var lng5 = $('#lon5').val();
-            for (var i=2;i<=5;i++){
+            // var lat5 = $('#lat5').val();
+            // var lng5 = $('#lon5').val();
+            for (var i=2;i<=4;i++){
                 if(($('#lat'+String(i)).val() !=='')&&($('#lon'+String(i)).val() !=='')){
                     count_points++;
                     valid_points.push(i);
@@ -1140,8 +1163,7 @@ $(document).ready(function() {
         if (isInsideMediteranean(lat, lng)  &&
             ((lat2 === "" || lng2 === "") || isInsideMediteranean(lat2, lng2)) &&
             ((lat3 === "" || lng3 === "") || isInsideMediteranean(lat3, lng3)) &&
-            ((lat4 === "" || lng4 === "") || isInsideMediteranean(lat4, lng4)) &&
-            ((lat5 === "" || lng5 === "") || isInsideMediteranean(lat5, lng5))) {
+            ((lat4 === "" || lng4 === "") || isInsideMediteranean(lat4, lng4))) {
             var start_date = $("#startdatepicker input").datepicker({dateFormat: "yy-mm-dd"}).val();
             console.log(start_date);
             var natura_layer = $('input[name="natura_checkbox"]:checked').length > 0;
@@ -1166,15 +1188,15 @@ $(document).ready(function() {
                 "&longitude4=" + lng4 +
                 "&start_date4=" + start_date +
                 "&duration4=" + duration +
-                "&latitude5=" + lat5 +
-                "&longitude5=" + lng5 +
-                "&start_date5=" + start_date +
-                "&duration5=" + duration +
+                // "&latitude5=" + lat5 +
+                // "&longitude5=" + lng5 +
+                // "&start_date5=" + start_date +
+                // "&duration5=" + duration +
                 "&oil_volume1=" + oil_volume +
                 "&oil_volume2=" + oil_volume +
                 "&oil_volume3=" + oil_volume +
                 "&oil_volume4=" + oil_volume +
-                "&oil_volume5=" + oil_volume +
+                // "&oil_volume5=" + oil_volume +
                 "&oil_density=" + oil_density +
                 "&simulation_length=" + simulation_length +
                 "&time_interval=" + time_interval +
@@ -1368,18 +1390,19 @@ $(document).ready(function() {
                 allow_form_submit2 = [true,true];
             }else if(point_number === '3'){
                 allow_form_submit3 = [true,true];
-            }else if (point_number === '4'){
-                allow_form_submit4 = [true,true];
-            }else if (point_number === '5'){
-                allow_form_submit5 = [true,true];
+            }else if (point_number === '4') {
+                allow_form_submit4 = [true, true];
             }
+            // }else if (point_number === '5'){
+            //     allow_form_submit5 = [true,true];
+            // }
             $('#lat'+point_number).val("");
             $('#lon'+point_number).val("");
             $('#lat'+point_number).off();
             $('#lon'+point_number).off();
             $('.latitude'+ point_number +'_missing_error').remove();
             $('.longitude'+ point_number +'_missing_error').remove();
-            if (check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit5)&&check_list(allow_form_submit_service)) {
+            if (check_list(allow_form_submit1)&&check_list(allow_form_submit2)&&check_list(allow_form_submit3)&&check_list(allow_form_submit4)&&check_list(allow_form_submit_service)) {
                 $("#run-service-btn").removeClass('disabled');
             }
     }

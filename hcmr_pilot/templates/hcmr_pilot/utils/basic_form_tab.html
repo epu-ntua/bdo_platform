@@ -144,14 +144,17 @@
         </div>
 
         <hr style="margin: 11px 0;">
-        <div class="row" style="float: right;">
-            <a class="btn-sm btn-danger" href="/pilot/oil-spill-simulation/">Back</a>
+
+        <div class="row">
+            <div  class="row" style="float: right;position: relative;top:2px">
+                <a class="btn-sm btn-danger" href="/pilot/oil-spill-simulation/">Back</a>
+            </div>
+            <div class="row" id="unlock-area" class="col-sm-2" style="padding-left: 0px; padding-right: 0px;margin-bottom: 0px; margin-top:0px" hidden>
+                    <div  class="btn btn-xs btn-primary" style="margin-top: 0px">
+                        <i class="fa fa-unlock" aria-hidden="true"></i> Change Area
+                    </div>
+            </div>
         </div>
-        <div id="unlock-area" class="col-sm-2" style="padding-left: 0px; padding-right: 0px;margin-bottom: 0px" hidden>
-                <div  class="btn btn-xs btn-primary" >
-                    <i class="fa fa-unlock" aria-hidden="true"></i> Change Area
-                </div>
-             </div>
         <div class="spatial-selection" >
             <h4 style="margin: 0;">Spatial Coverage</h4>
             <div class="row" style="margin: 25px;">
@@ -211,9 +214,9 @@
                 <li class="nav-item disabled">
                     <a class="nav-link" href="#point4_form">Point 4</a>
                 </li>
-                <li class="nav-item disabled">
-                    <a class="nav-link" href="#point5_form">Point 5</a>
-                </li>
+{#                <li class="nav-item disabled">#}
+{#                    <a class="nav-link" href="#point5_form">Point 5</a>#}
+{#                </li>#}
             </ul>
 
             <div class="tab-content">
@@ -412,55 +415,55 @@
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="point5_form">
-                    <h4>Fifth point parameters (Black marker)</h4>
-                    <div class="row" style="height: 6.7vh;">
-                        <div class="lat-container">
-                            <div class='col-sm-6'>
-                                <p>Latitude: </p>
-                            </div>
-                            <div class='col-sm-6' style="bottom: 8px;">
-                                <input class="form-control" id="lat5" type='number' step="0.01" min="-90" max="90"/>
-                            </div>
-                        </div>
-                        <div class="lon-container">
-                            <div class='col-sm-6'>
-                                <p>Longitude:</p>
-                            </div>
-                            <div class='col-sm-6' style="bottom: 8px;">
-                                <input class="form-control" id="lon5" type='number' step="0.01" min="-180" max="180"/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="dataset-selector" hidden>
-                        <h4 style="margin: 0;">Available Datasets</h4>
-                        <label for="sel2-point5">Ocean Circulation Model</label>
-                        <select class=" dropdown ui" id="sel2-point5">
-                            <option value="001">Poseidon High Resolution Aegean Model</option>
-                            <option value="002">Poseidon Mediterranean Model</option>
-                            <option value="003">Copernicus Mediterranean Model</option>
-                        </select>
-                        <label for="sel1-point5">Wave Model </label>
-                        <select class=" dropdown ui" id="sel1-point5">
-                            <option value="202">Poseidon WAM Cycle 4 for the Aegean</option>
-                            <option value="201">Poseidon WAM Cycle 4 for the Mediterranean</option>
-                            <option value="203">Copernicus Wave Model for the Mediterranean</option>
-                        </select>
-                    </div>
-                    <div class="row points-control">
-                        <div class="col-sm-6">
-                             <div class="btn btn-xs btn-success new_point">
-                                <i class="fa fa-plus-circle"></i> Add Oil Spill
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                             <div id="remove_point5" class="btn btn-xs btn-danger">
-                                <i class="fa fa-minus-circle"></i> Remove point
-                            </div>
-                        </div>
-                    </div>
-                </div>
+{#                <div class="tab-pane fade" id="point5_form">#}
+{#                    <h4>Fifth point parameters (Black marker)</h4>#}
+{#                    <div class="row" style="height: 6.7vh;">#}
+{#                        <div class="lat-container">#}
+{#                            <div class='col-sm-6'>#}
+{#                                <p>Latitude: </p>#}
+{#                            </div>#}
+{#                            <div class='col-sm-6' style="bottom: 8px;">#}
+{#                                <input class="form-control" id="lat5" type='number' step="0.01" min="-90" max="90"/>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="lon-container">#}
+{#                            <div class='col-sm-6'>#}
+{#                                <p>Longitude:</p>#}
+{#                            </div>#}
+{#                            <div class='col-sm-6' style="bottom: 8px;">#}
+{#                                <input class="form-control" id="lon5" type='number' step="0.01" min="-180" max="180"/>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{##}
+{#                    <div class="dataset-selector" hidden>#}
+{#                        <h4 style="margin: 0;">Available Datasets</h4>#}
+{#                        <label for="sel2-point5">Ocean Circulation Model</label>#}
+{#                        <select class=" dropdown ui" id="sel2-point5">#}
+{#                            <option value="001">Poseidon High Resolution Aegean Model</option>#}
+{#                            <option value="002">Poseidon Mediterranean Model</option>#}
+{#                            <option value="003">Copernicus Mediterranean Model</option>#}
+{#                        </select>#}
+{#                        <label for="sel1-point5">Wave Model </label>#}
+{#                        <select class=" dropdown ui" id="sel1-point5">#}
+{#                            <option value="202">Poseidon WAM Cycle 4 for the Aegean</option>#}
+{#                            <option value="201">Poseidon WAM Cycle 4 for the Mediterranean</option>#}
+{#                            <option value="203">Copernicus Wave Model for the Mediterranean</option>#}
+{#                        </select>#}
+{#                    </div>#}
+{#                    <div class="row points-control">#}
+{#                        <div class="col-sm-6">#}
+{#                             <div class="btn btn-xs btn-success new_point">#}
+{#                                <i class="fa fa-plus-circle"></i> Add Oil Spill#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="col-sm-6">#}
+{#                             <div id="remove_point5" class="btn btn-xs btn-danger">#}
+{#                                <i class="fa fa-minus-circle"></i> Remove point#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
             </div>
 
             <hr style="margin: 11px 0;">
