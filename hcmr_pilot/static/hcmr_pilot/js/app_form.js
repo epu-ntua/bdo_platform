@@ -132,8 +132,8 @@ function tour_guide_senario2(init, tour){
         tour.addStep({
                 element: ".points-container",
                 placement: "left",
-                title: "Simulations Points",
-                content: "Once you have selected the area, choose up to five point sources within this rectangle. More intense ship lines are clearly visible in order to choose oil sources along them. All the simulation points must be placed inside the selected area, otherwise the simulation cannot be executed. You can add an oil spill using the green button or go back to edit the limits of the geographical area you have selected.",
+                title: "Add oil spill sources",
+                content: "Once you have selected the area, choose up to four point sources within this rectangle. More intense ship lines are clearly visible in order to choose oil sources along them. All the simulation points must be placed inside the selected area, otherwise the simulation cannot be executed. You can add an oil spill using the green button or go back to edit the limits of the geographical area you have selected.",
             });
             tour.addStep({
                 element: ".service-parameters",
@@ -419,13 +419,28 @@ function interactive_form(onLocationfound, user_marker){
         }
     });
     $('#simulation_length_hist').on('change',function () {
-        var sim_len_val = parseInt($('#simulation_length_hist').val())
-        if ((sim_len_val>240) &&(sim_len_val<=480)){;
+        var sim_len_val = parseInt($('#simulation_length_hist').val());
+        $('#time_interval').parent().find('div').removeClass('disabled');
+        if ((sim_len_val>120) &&(sim_len_val<=192)){
+            $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','4');
+        }
+        else if ((sim_len_val>192) &&(sim_len_val<=360)){
             $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
             $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
             $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
             $('#time_interval').parent().find('div[data-value="4"]').addClass('disabled');
             $('#time_interval').parent().dropdown('set selected','6');
+        }
+        else if ((sim_len_val>360) &&(sim_len_val<=480)){;
+            $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="4"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="6"]').addClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','8');
         }else if(sim_len_val>480){
             $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
             $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
@@ -465,6 +480,43 @@ function interactive_multi_point_service_form(){
     $('#startdatepicker input').on('input',function () {
         allow_form_submit_service = missing_parameter($('#startdatepicker input'), allow_form_submit_service, 'date', 2, '#run-service-btn','date');
         check_sim_len_options();
+    });
+    $('#simulation_length_hist').on('change',function () {
+        var sim_len_val = parseInt($('#simulation_length_hist').val());
+        $('#time_interval').parent().find('div').removeClass('disabled');
+        if ((sim_len_val>120) &&(sim_len_val<=192)){
+            $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','4');
+        }
+        else if ((sim_len_val>192) &&(sim_len_val<=360)){
+            $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="4"]').addClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','6');
+        }
+        else if ((sim_len_val>360) &&(sim_len_val<=480)){;
+            $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="4"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="6"]').addClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','8');
+        }else if(sim_len_val>480){
+            $('#time_interval').parent().find('div[data-value="1"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="2"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="3"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="4"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="6"]').addClass('disabled');
+            $('#time_interval').parent().find('div[data-value="8"]').addClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','12');
+        }
+        else{
+            $('#time_interval').parent().find('div').removeClass('disabled');
+            $('#time_interval').parent().dropdown('set selected','2');
+        }
     });
 
 }
