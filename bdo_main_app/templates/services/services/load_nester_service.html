@@ -22,54 +22,85 @@
         </div>
     </div>
 
-    <h3 class="col-sm-8" style="text-decoration: underline;">Pilot Service Scenario 1</h3>
+    <h3 class="col-sm-8" style="text-decoration: underline;">Pilot Service 1 – Primary energy resource assessment</h3>
     <div class="col-sm-4"><a class="btn btn-success pull-right" href="/wave-energy/">Go to service 1</a></div>
     <div class="col-sm-7">
         <div class="" style="margin-bottom: 2vh;">
-            <h4>App1: Wave Resource Assessment</h4>
+            <h4>App1: Wave resource assessment in a single location</h4>
             <p style="text-align: justify;">
-                This application allows you to assess wave conditions in a chosen location or alternatively to obtain a wave atlas of a chosen region. The service allows you to choose between several datasets including the numerical models most used worldwide, in-situ measurements and satellite data. Obtained results include multiple wave characteristics, which correspond to the first and very important step in order to develop wave energy related studies.
-                The wave resource assessment (one location) allows you to have a first idea of the quality of the resource for energy applications. Multiple visualization options will allow checking, in a very straightforward way, how waves behave at the selected location in terms of: available power or energy; temporal resource availability (yearly, monthly, etc) and variability.
-                The wave atlas allows you to visualize how waves behave in the selected area, displaying different important results such as average and maximum wave characteristics for the selected time frame.
+                This application allows you to assess wave conditions in a chosen location. The final version of the service will allow you
+                to choose between several datasets including the numerical models most used worldwide, in-situ measurements and satellite data.
+                Obtained results include multiple wave characteristics, which correspond to the first and very important step in order to develop
+                wave energy related studies. The wave resource assessment allows you to have a first idea of the quality of the resource for
+                energy applications in a chosen location. Multiple visualization options will allow checking, in a very straightforward way, how
+                waves behave at the selected location in terms of: available power or energy; temporal resource availability (yearly, monthly, etc)
+                and variability.
             </p>
         </div>
         <div class="" style="margin-bottom: 2vh;">
-            <h4>App2: Wave Forecast</h4>
+            <h4>App2: Wave resource assessment in a large area – wave atlas</h4>
             <p style="text-align: justify;">
-                By using this service you will be able to quickly verify the wave forecast for the next seven days at one selected location. This is of utmost
-                importance for different application such as: forecast wave energy generation; plan maintenance operations; avoid dangerous operating conditions, etc.
+                This service allows you to perform a straightforward wave atlas of a chosen area, by selecting a dataset and a timeframe for
+                analysis. The wave atlas allows you to visualize how waves behave in the selected area, displaying different important results
+                such as average and maximum wave
             </p>
         </div>
         <div class="" style="margin-bottom: 2vh;">
-            <h4>App3: Data Visualisation</h4>
+            <h4>App3: Wave forecast</h4>
             <p style="text-align: justify;">
-                This service allows you to quickly obtain a time domain visualization of any variable in the existing datasets in the BDO Platform. You just need
-                to select a dataset and then a variable of the chosen dataset in order to obtain a time series graphical output of that variable.
-                Using this service you can quickly verify data continuity problems such as those related to absence of measurements from buoys, or
-                compare wave characteristics (e.g. wave significant height) from multiple sources. This allows you to quickly verify the accuracy
-                of numerical models, when compared to in-situ measurements or to check how accurate satellite data can characterize wave conditions.
+                By using this service you will be able to quickly verify the wave conditions forecast for the next seven days at one selected
+                location. This is of utmost importance for different application such as forecast wave energy generation; plan maintenance
+                operations; avoid dangerous operating conditions, etc.
+            </p>
+        </div>
+        <div class="" style="margin-bottom: 2vh;">
+            <h4>App4: Data visualisation</h4>
+            <p style="text-align: justify;">
+                This service allows you to quickly obtain a time domain visualization of any variable in the existing datasets in the BDO
+                Platform. You just need to select a dataset and then a variable of the chosen dataset in order to obtain a time series graphical
+                output of that variable. Using this service you can quickly verify data continuity problems such as those related to absence of
+                measurements from buoys, or compare wave characteristics (e.g. wave significant height) from multiple sources. This allows you to
+                verify the accuracy of numerical models, when compared to in-situ measurements or to check how accurate satellite data can
+                characterize wave conditions.
             </p>
         </div>
     </div>
     <div class="col-sm-5"><img src="{% static '/img/pilot_screenshots/nester.PNG' %}" style="width: 100%;"></div>
     
 
-    <h3 class="col-sm-8" style="text-decoration: underline; margin-top: 50px;">Pilot Service Scenario 2</h3>
+    <h3 class="col-sm-8" style="text-decoration: underline; margin-top: 50px;">Pilot Service 2 – Energy conversion assessment</h3>
     <div class="col-sm-4" style="margin-top: 50px;"><a class="btn btn-success pull-right" href="/wave-energy/energy_conversion/">Go to service 2</a></div>
     <div class="col-sm-7">
         <div class="" style="margin-bottom: 2vh;">
-            <h4>App1: To Be Defined</h4>
+            <h4>App1: Assessment of Wave Energy Converters in a single location</h4>
             <p style="text-align: justify;">
+                This application allows you to compare power generation from multiple Wave Energy Converters (WEC) in a chosen location. This
+                allows you to evaluate WEC suitability to the chosen location. You can select multiple WEC, from a list of devices already
+                available in the platform or upload your own WEC power matrix to evaluate it.
             </p>
         </div>
         <div class="" style="margin-bottom: 2vh;">
-            <h4>App2: To Be Defined</h4>
+            <h4>App2: Assessment of a Wave Energy Converter in a large area</h4>
             <p style="text-align: justify;">
+                This application allows you to verify what could be the most suitable location to install a WEC, starting from a large area.
+                Results provide graphical visualisations related to the WEC performance over the area selected such as: power generated and
+                capacity factor.
             </p>
         </div>
         <div class="" style="margin-bottom: 2vh;">
-            <h4>App3: To Be Defined</h4>
+            <h4>App3: Wave Energy Converter energy generation forecast</h4>
             <p style="text-align: justify;">
+                With this service, is possible to obtain a forecast of generated power using a selected WEC in a defined location. This forecast
+                uses a numerical model for wave resource assessment and provides results for the next seven days.
+            </p>
+        </div>
+        <div class="" style="margin-bottom: 2vh;">
+            <h4>App4: Load Matching Analysis</h4>
+            <p style="text-align: justify;">
+                This service can be used to quickly obtain a comparison of a load profile (needs to be uploaded) and the power generation from
+                a user selected WEC in a specified location. Results contain different load matching related indicators such as self-sufficiency
+                and self-consumption. With this service, it is possible to check if the deployment of WEC can contribute to solving some local
+                issues related to the load profile of the location under study.
             </p>
         </div>
     </div>
