@@ -915,9 +915,7 @@ def init(request):
 
 @never_cache
 def data_visualization_results(request):
-    import pdb
-    pdb.set_trace()
-    service = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
+    service = Service.objects.get(pk=settings.DATA_VISUALISATION_SERVICE_ID)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     # service_exec.save()
@@ -929,7 +927,6 @@ def data_visualization_results(request):
     latitude_to = float(request.GET["latitude_to"])
     longitude_from = float(request.GET["longitude_from"])
     longitude_to = float(request.GET["longitude_to"])
-
 
     dataset_id = request.GET["dataset_id"]
     query_id = settings.DATA_VISUALISATION_SERVICE_DATASET_QUERY[dataset_id]
@@ -1043,7 +1040,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'df': 'power_df',
                              'query': '',
                              'title': "Power histogram",
-                             'url': "/visualizations/get_histogram_chart_am/?bins=5&x_var=avg(power)&df=power_df&notebook_id="+str(new_notebook_id),
+                             'url': "/visualizations/get_histogram_chart_am/?bins=5&x_var=avg(power)&x_var_unit=kW/m&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
 
     start_year = int(args_to_note['start_date'].split('-')[0])
