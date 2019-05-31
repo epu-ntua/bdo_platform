@@ -69,10 +69,17 @@ var chart = AmCharts.makeChart("chartdiv", {
     "mouseWheelZoomEnabled": true,
     "dataDateFormat": "YYYY-MM-DD HH:NN",
     "valueAxes": [
-        {% for item in value_col %}
+        {% for item, min, max in value_col %}
             {
                 "id": "v{{ forloop.counter0 }}",
-                "axisAlpha": 0,
+                {% if min != 'None' %}
+{#                    "min": {{ min }},#}
+                    "minimum": {{ min }},
+{#                    "max": {{ max }},#}
+                    "maximum": {{ max }},
+                    "strictMinMax": false,
+                {% endif %}
+{#                "axisAlpha": 0,#}
                 {% if forloop.counter0 == 0 %}"position": "left",
                     {% elif forloop.counter0 == 1 %}"position": "right",
                     {% elif forloop.counter0 == 2 %}"position":"left","offset":60,
@@ -98,7 +105,7 @@ var chart = AmCharts.makeChart("chartdiv", {
         "size": 15
     }],
     "graphs": [
-        {% for item in value_col %}
+        {% for item,x,x in value_col %}
             {
                 "id": "g{{ forloop.counter0 }}",
                 "valueAxis": "v{{ forloop.counter0 }}",
@@ -193,13 +200,13 @@ var chart = AmCharts.makeChart("chartdiv", {
     "dataProvider": {{ data|safe }}
 });
 
-chart.addListener("rendered", zoomChart);
-
-zoomChart();
-
-function zoomChart() {
-  chart.zoomToIndexes(chart.dataProvider.length - 40, chart.dataProvider.length - 1);
-}
+{#chart.addListener("rendered", zoomChart);#}
+{##}
+{#zoomChart();#}
+{##}
+{#function zoomChart() {#}
+{#  chart.zoomToIndexes(chart.dataProvider.length - 40, chart.dataProvider.length - 1);#}
+{#}#}
 
 </script>
 

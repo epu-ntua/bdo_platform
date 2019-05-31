@@ -3253,6 +3253,13 @@ def get_line_chart_am(request):
         agg_function = str(request.GET.get('agg_func', 'avg'))
         x_var_unit = str(request.GET.get('x_var_unit', ''))
         y_var_unit_list = request.GET.getlist('y_var_unit[]')
+        y_var_min_list = request.GET.getlist('y_var_min[]')
+        if len(y_var_min_list) == 0:
+            y_var_min_list = ['None'] * len(y_var_list)
+        y_var_max_list = request.GET.getlist('y_var_max[]')
+        if len(y_var_max_list) == 0:
+            y_var_max_list = ['None'] * len(y_var_list)
+
         limit = str(request.GET.get('limit', 'True'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
@@ -3283,7 +3290,7 @@ def get_line_chart_am(request):
         isDate = 'false'
     visualisation_type_analytics('get_line_chart_am')
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': zip(y_var_list, y_var_min_list, y_var_max_list), 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_time_series_am(request):
