@@ -3239,7 +3239,7 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_
         try:
             y_m_unit.append(str(y_var_unit_list[i]))
         except IndexError:
-            y_m_unit.append(str('unknown unit'))
+            y_m_unit.append(str(''))
             pass
 
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
