@@ -108,7 +108,11 @@ var chart = AmCharts.makeChart("chartdiv", {
         {% for item,x,x in value_col %}
             {
                 "id": "g{{ forloop.counter0 }}",
+                {% if same_axis == '0' %}
                 "valueAxis": "v{{ forloop.counter0 }}",
+                {% else %}
+                "valueAxis": "v0",
+                {% endif %}
                 "balloon": {
                     "drop": false,
                     "adjustBorderColor": false,
