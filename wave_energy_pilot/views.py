@@ -464,7 +464,7 @@ def wec_area_evaluation_execution_process(request, exec_instance):
     service_exec = ServiceInstance.objects.get(pk=int(exec_instance))
     service = Service.objects.get(pk=service_exec.service_id)
     # GATHER THE SERVICE ARGUMENTS
-    service_args = ["latitude_from", "latitude_to", "longitude_from", "longitude_to"]
+    service_args = ["latitude_from", "latitude_to", "longitude_from", "longitude_to", "start_date", "end_date"]
     args_to_note = gather_service_args(service_args, request, service_exec)
     converters_selection = request.GET.getlist("converters[]")
     wecs = list()
@@ -480,8 +480,8 @@ def wec_area_evaluation_execution_process(request, exec_instance):
         wecs.append(aWec)
     args_to_note['wecs'] = wecs
     args_to_note['dataset_id'] = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY.keys()[0]
-    args_to_note['start_date'] = str(Dataset.objects.get(pk=int(args_to_note['dataset_id'])).temporalCoverageBegin)
-    args_to_note['end_date'] = str(Dataset.objects.get(pk=int(args_to_note['dataset_id'])).temporalCoverageEnd)
+    # args_to_note['start_date'] = str(Dataset.objects.get(pk=int(args_to_note['dataset_id'])).temporalCoverageBegin)
+    # args_to_note['end_date'] = str(Dataset.objects.get(pk=int(args_to_note['dataset_id'])).temporalCoverageEnd)
     service_exec.arguments = args_to_note
     service_exec.save()
     # CONFIGURE THE QUERY TO BE USED
