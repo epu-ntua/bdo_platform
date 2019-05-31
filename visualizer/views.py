@@ -2397,6 +2397,7 @@ def get_histogram_chart_am(request):
     notebook_id = str(request.GET.get('notebook_id', ''))
 
     x_var = str(request.GET.get('x_var', ''))
+    var_unit = str(request.GET.get('x_var_unit', ''))
     bins = int(str(request.GET.get('bins', '5')))
 
     if query_pk != 0:
@@ -2407,7 +2408,6 @@ def get_histogram_chart_am(request):
         from_table = ''
         table_col = ''
         cursor = None
-        var_unit = ''
         for f in doc['from']:
             for s in f['select']:
                 if s['name'] == x_var:
@@ -2542,7 +2542,6 @@ def get_histogram_chart_am(request):
 
         for i in range(0, len(json_data) - 1):
             json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
-        var_unit = ''
         json_data = json_data[:-1]
         y_var = 'counts'
         x_var = 'startValues'
@@ -3173,18 +3172,19 @@ def get_chart_query_data(query, x_var, y_var_list):
     result_headers = query_data[0]['headers']
 
     x_var_index = 0
-    y_var_index = []
-    y_var_indlist = []
-    y_m_unit = []
+    y_var_index = [None] * len(y_var_list)
+    y_var_indlist = [None] * len(y_var_list)
+    y_m_unit = [None] * len(y_var_list)
     x_m_unit = ''
-    y_title_list = []
+    y_title_list = [None] * len(y_var_list)
 
     for idx, c in enumerate(result_headers['columns']):
         if c['name'] in y_var_list:
-            y_var_index.insert(len(y_var_index), idx)
-            y_var_indlist.insert(len(y_var_indlist), c['name'])
-            y_m_unit.insert(len(y_m_unit), c['unit'].encode('ascii'))
-            y_title_list.insert(len(y_title_list), c['title'].encode('ascii'))
+            idx_in_y_var_list = y_var_list.index(c['name'])
+            y_var_index[idx_in_y_var_list] = idx
+            y_var_indlist[idx_in_y_var_list] = c['name']
+            y_m_unit[idx_in_y_var_list] =  c['unit'].encode('ascii')
+            y_title_list[idx_in_y_var_list] = c['title'].encode('ascii')
         elif c['name'] == x_var:
             x_var_index = idx
             x_m_unit = c['unit'].encode('ascii')
