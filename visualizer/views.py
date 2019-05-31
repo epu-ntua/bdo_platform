@@ -3262,6 +3262,14 @@ def get_line_chart_am(request):
             else:
                 query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
+            x_var_title = x_var_title.replace("\n", " ")
+            for idx, y_var_title in enumerate(y_var_title_list):
+                try:
+                    start = y_var_title.index("(")
+                    end = y_var_title.rfind(")")
+                    y_var_title_list[idx] = y_var_title[start+1:end]
+                except ValueError as e:
+                    pass
         elif df != '':
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit, y_var_unit_list, True)
         else:
@@ -3275,7 +3283,7 @@ def get_line_chart_am(request):
         isDate = 'false'
     visualisation_type_analytics('get_line_chart_am')
     return render(request, 'visualizer/line_chart_am.html',
-                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col': y_var_title_list, 'category_title': x_var_title + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_time_series_am(request):
@@ -3294,6 +3302,14 @@ def get_time_series_am(request):
             query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
             min_chart_period = chart_min_period_finder(min_period)
+            x_var_title = x_var_title.replace("\n", " ")
+            for idx, y_var_title in enumerate(y_var_title_list):
+                try:
+                    start = y_var_title.index("(")
+                    end = y_var_title.index(")")
+                    y_var_title_list[idx] = y_var_title[start + 1:end]
+                except ValueError as e:
+                    pass
         elif df != '':
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, 'time', y_var_list, x_var_unit, y_var_unit_list, True)
             order_var = 'time'.encode('ascii')
@@ -3326,6 +3342,14 @@ def get_column_chart_am(request):
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
+            x_var_title = x_var_title.replace("\n", " ")
+            for idx, y_var_title in enumerate(y_var_title_list):
+                try:
+                    start = y_var_title.index("(")
+                    end = y_var_title.rfind(")")
+                    y_var_title_list[idx] = y_var_title[start + 1:end]
+                except ValueError as e:
+                    pass
         elif df != '':
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit, y_var_unit_list, False)
         else:
@@ -3339,7 +3363,7 @@ def get_column_chart_am(request):
         isDate = 'false'
     visualisation_type_analytics('get_column_chart_am')
     return render(request, 'visualizer/column_chart_am.html',
-                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title.replace("\n", " ") + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
+                  {'data': json.dumps(json_data), 'value_col': y_var_list, 'm_units':y_m_unit, 'title_col':y_var_title_list, 'category_title': x_var_title + " (" + str(x_m_unit) + ")", 'category_col': x_var, 'isDate': isDate, 'min_period': 'ss'})
 
 
 def get_pie_chart_am(request):
@@ -3355,6 +3379,14 @@ def get_pie_chart_am(request):
         if query_pk != 0:
             query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
+            key_var_title = key_var_title.replace("\n", " ")
+            for idx, y_var_title in enumerate(y_var_title_list):
+                try:
+                    start = y_var_title.index("(")
+                    end = y_var_title.rfind(")")
+                    y_var_title_list[idx] = y_var_title[start + 1:end]
+                except ValueError as e:
+                    pass
         elif df !='':
             json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], x_var_unit, y_var_unit_list, True)
 
@@ -3363,7 +3395,7 @@ def get_pie_chart_am(request):
     except ValueError as e:
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_pie_chart_am')
-    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title).replace("\n", " ") + " (" + str(x_m_unit) + ")", 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
+    return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title) + " (" + str(x_m_unit) + ")", 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
 
 
 
