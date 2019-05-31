@@ -363,7 +363,7 @@ def wec_single_location_evaluation_execution_process(request, exec_instance):
     cap_factors_cols_str = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW/m'
+        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW'
         cap_factors_cols_str += '&y_var[]=capacity factor for ' + str(converter.title) + '&y_var_unit[]=%'
         cap_factors_cols_str += '&y_var[]=avg(capacity factor for ' + str(converter.title) + ')&y_var_unit[]=%'
 

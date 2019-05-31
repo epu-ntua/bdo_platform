@@ -32,10 +32,10 @@
                             <td>Wave Significant Height (m)</td><td>{{ result.max_height }}</td><td>{{ result.av_height }}</td><td>{{ result.min_height }}</td>
                         </tr>
                         <tr>
-                            <td>Wave Mean Period (m)</td><td>{{ result.max_period }}</td><td>{{ result.av_period }}</td><td>{{ result.min_period }}</td>
+                            <td>Wave Mean Period (s)</td><td>{{ result.max_period }}</td><td>{{ result.av_period }}</td><td>{{ result.min_period }}</td>
                         </tr>
                         <tr>
-                            <td>Wave Power (W)</td><td>{{ result.max_power_available }}</td><td>{{ result.av_power_available }}</td><td>{{ result.min_power_available }}</td>
+                            <td>Available Wave Power (kW/m)</td><td>{{ result.max_power_available }}</td><td>{{ result.av_power_available }}</td><td>{{ result.min_power_available }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -56,15 +56,15 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Maximum Wave Power Generation (W)</td>
+                            <td>Maximum Wave Power Generation (kW)</td>
                             {% for x in result.max_power %}<td>{{ x }}</td>{% endfor %}
                         </tr>
                         <tr>
-                            <td>Average Wave Power Generation (W)</td>
+                            <td>Average Wave Power Generation (kW)</td>
                             {% for x in result.av_power %}<td>{{ x }}</td>{% endfor %}
                         </tr>
                         <tr>
-                            <td>Minimum Wave Power Generation (W)</td>
+                            <td>Minimum Wave Power Generation (kW)</td>
                             {% for x in result.min_power %}<td>{{ x }}</td>{% endfor %}
                         </tr>
                         <tr>
