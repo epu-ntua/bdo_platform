@@ -505,19 +505,19 @@ def wec_area_evaluation_execution_process(request, exec_instance):
                              'df': 'power_df',
                              'query': '',
                              'title': "WEC Average Power Output",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id) + power_cols_str,
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=50&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id) + power_cols_str,
                              'done': False})
     visualisations['v2'] = ({'notebook_id': new_notebook_id,
                              'df': 'wec_cap_factors_df',
                              'query': '',
                              'title': "WEC Capacity Factor",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=wec_cap_factors_df&notebook_id0=" + str(new_notebook_id) + cap_factors_cols_str,
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=50&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=wec_cap_factors_df&notebook_id0=" + str(new_notebook_id) + cap_factors_cols_str,
                              'done': False})
     visualisations['v3'] = ({'notebook_id': new_notebook_id,
                              'df': 'danger_times_df',
                              'query': '',
                              'title': "Number of Shut Down Hours",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=danger_times_df&notebook_id0=" + str(new_notebook_id) + shut_down_cols_str,
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&n_contours0=50&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=danger_times_df&notebook_id0=" + str(new_notebook_id) + shut_down_cols_str,
                              'done': False})
     service_exec.dataframe_visualizations = visualisations
     service_exec.save()
@@ -1173,32 +1173,32 @@ def area_location_evaluation_execution_process(request, exec_instance):
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Mean significant wave height",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=500&step0=0.1&agg_func=AVG&query0="+str(wave_height_query_id),
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=50&step0=0.1&agg_func=AVG&query0="+str(wave_height_query_id),
                              'done': False})
     visualisations['v2'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Mean wave period",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=500&step0=0.1&agg_func=AVG&query0=" + str(wave_height_query_id),
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i1_sea_surface_wave_zero_upcrossing_period&n_contours0=50&step0=0.1&agg_func=AVG&query0=" + str(wave_height_query_id),
                              'done': False})
     visualisations['v3'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
                              'title': "Mean wave power",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=avg_power&contour_var_unit0=kW/m&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id),
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=avg_power&contour_var_unit0=kW/m&n_contours0=50&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id),
                              'done': False})
     visualisations['v4'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Maximum significant wave height",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=80&step0=0.1&agg_func=MAX&query0=" + str(
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=i0_sea_surface_wave_significant_height&n_contours0=50&step0=0.1&agg_func=MAX&query0=" + str(
                                  wave_height_query_id),
                              'done': False})
     visualisations['v5'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
                              'title': "Maximum wave power",
-                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=max_power&contour_var_unit0=kW/m&n_contours0=500&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id),
+                             'url': "/visualizations/get_map_visualization/?layer_count=1&viz_id0=20&action0=get_map_contour&contour_var0=max_power&contour_var_unit0=kW/m&n_contours0=50&step0=0.1&agg_func=AVG&lat_col0=i0_latitude&lon_col0=i0_longitude&df0=power_df&notebook_id0=" + str(new_notebook_id),
                              'done': False})
     service_exec.dataframe_visualizations = visualisations
     service_exec.save()
