@@ -766,16 +766,25 @@ def wec_load_matching_execution_process(request, exec_instance):
         # ADD THE VISUALISATIONS TO BE CREATED
         visualisations = dict()
         cols_str = ''
+        cols_str_norm = ''
         for i, converter_id in enumerate(converters_selection):
             converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-            cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW/m'
-        cols_str += '&y_var[]=load_profile' + '&y_var_unit[]=load_profile_unit'
+            cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW'
+            cols_str_norm += '&y_var[]=power for ' + str(converter.title) + '_normalized&y_var_unit[]=kW'
+        cols_str += '&y_var[]=load_profile' + '&y_var_unit[]=kW'
+        cols_str_norm += '&y_var[]=load_profile_normalized&y_var_unit[]=kW'
 
         visualisations['v1'] = ({'notebook_id': new_notebook_id,
                                  'df': 'power_df',
                                  'query': '',
-                                 'title': "Generated Power",
-                                 'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(new_notebook_id) + cols_str,
+                                 'title': "Physical units comparison",
+                                 'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(new_notebook_id) + cols_str + "&same_axis=1",
+                                 'done': False})
+        visualisations['v2'] = ({'notebook_id': new_notebook_id,
+                                 'df': 'power_norm_df',
+                                 'query': '',
+                                 'title': "Normalized values comparison",
+                                 'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_norm_df&notebook_id=" + str(new_notebook_id) + cols_str_norm + "&same_axis=1",
                                  'done': False})
         service_exec.dataframe_visualizations = visualisations
         service_exec.save()
