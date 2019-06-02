@@ -3,303 +3,685 @@
 <!DOCTYPE html>
 <html lang="en">
 
-	<head>
+<head>
 
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<meta name="description" content="">
-		<meta name="author" content="">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-		<title>Big Data Ocean</title>
+    <title>Big Data Ocean</title>
 
-		<!-- Bootstrap core CSS -->
-		<link href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
+    <!-- Bootstrap core CSS -->
+    <link href="{% static "vendor/bootstrap/css/bootstrap.min.css" %}?bdo_version={{ settings.BDO_VERSION }}"
+          rel="stylesheet">
 
-		<!-- Custom fonts for this template -->
-		<link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet" type="text/css">
-		<link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
-		<link href='https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic,900,900italic' rel='stylesheet' type='text/css'>
+    <!-- Custom fonts for this template -->
+    <link href="{% static "vendor/font-awesome/css/font-awesome.min.css" %}?bdo_version={{ settings.BDO_VERSION }}"
+          rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800'
+          rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Merriweather:400,300,300italic,400italic,700,700italic,900,900italic'
+          rel='stylesheet' type='text/css'>
 
-		<!-- Plugin CSS -->
-		<link href="{% static "vendor/magnific-popup/magnific-popup.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
+    <!-- Plugin CSS -->
+    <link href="{% static "vendor/magnific-popup/magnific-popup.css" %}?bdo_version={{ settings.BDO_VERSION }}"
+          rel="stylesheet">
 
-		<!-- Custom styles for this template -->
-		<link href="{% static "css/creative.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
-		
-
-	</head>
-
-	<body id="page-top">
-
-		<!-- Navigation -->
-		<nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
-			<div class="container">
-				<a class="navbar-brand js-scroll-trigger" href="#page-top">
-					<img id="logowhite" class="logo" src="{% static "img/logow.png" %}" alt="BigData Ocean">
-                    <img id="logoblack" style="display:none" class="logo" src="{% static "img/logo.png" %}" alt="BigData Ocean">
-				</a>
-				<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="navbarResponsive">
-					<ul class="navbar-nav ml-auto">
-					<li class="nav-item">
-						<a class="nav-link js-scroll-trigger" href="#about">About</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link js-scroll-trigger" href="#portfolio">Why BDO?</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link js-scroll-trigger" href="#contact">Contact</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link js-scroll-trigger" href="/accounts/login/" style="padding-top: 0px;">
-							<button id="mylogin" class="btn btn-info btn-cnlink">Log In
-							</button>
-						</a>
-					</li>
-					</ul>
-				</div>
-			</div>
-		</nav>
-
-		<header class="masthead text-center text-white d-flex">
-
-			<video autoplay muted loop class="videofullscreen" id="background-video">
-              <source src="{% static "video/bdo_video.mp4" %}" type="video/mp4">
-            </video>
+    <!-- Custom styles for this template -->
+    <link href="{% static "css/creative.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
 
-		  <div class="container my-auto">
-			<div class="row">
-			  <div class="col-lg-10 mx-auto">
-				<h1 class="customFadeInUp" id="mainheader">
-				  <div>Exploiting Oceans of Data for Maritime Apps</div>
-				</h1>
-			  </div>
-			  <div class="customFadeInUp col-lg-8 mx-auto">
-				<p class="mb-5">A maritime big data services marketplace that combines cross-domain data of different velocity, variety and volume
-				</p>
-				<a class="btn-cta js-scroll-trigger" href="#about">Find Out More</a>
-			  </div>
-			</div>
-		  </div>
+</head>
+
+<body id="page-top">
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand js-scroll-trigger" href="#page-top">
+            <img id="logowhite" class="logo" src="{% static "img/logow.png" %}" alt="BigData Ocean">
+            <img id="logoblack" style="display:none" class="logo" src="{% static "img/logo.png" %}" alt="BigData Ocean">
+        </a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="http://www.bigdataocean.eu/site/" target="_blank">Project info and
+                        News</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="#usecases">Use Cases</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="#features">Features</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="#contact">Contact Us</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="/accounts/login/" style="padding-top: 0px;">
+                        <button id="mylogin" class="btn btn-info btn-cnlink">Log In
+                        </button>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link js-scroll-trigger" href="/accounts/signup/" style="padding-top: 0px;">
+                        <button id="mylogin" class="btn btn-info btn-cnlink">Create account
+                        </button>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<header class="masthead text-center text-white d-flex">
+
+    <video autoplay muted loop class="videofullscreen" id="background-video">
+        <source src="{% static "video/bdo_video.mp4" %}" type="video/mp4">
+    </video>
 
 
-		</header>
-
-		<section class="bg-primary" id="about">
-		  <div class="container">
-			<div class="row">
-			  <div class="col-lg-8 mx-auto text-center">
-				<h2 class="section-heading text-white">BigDataOcean Platform</h2>
-				<hr class="light my-4">
-				<p class="text-faded mb-4">
-                    Create complex analytics and visualizations over inter-linked maritime datasets in an easy way and share them through the BigDataOcean community!
+    <div class="container my-auto">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <h1 class="customFadeInUp" id="mainheader">
+                    <div>Exploiting Oceans of Data for Maritime Apps</div>
+                </h1>
+            </div>
+            <div class="customFadeInUp col-lg-8 mx-auto">
+                <p class="mb-5">Take full advantage of maritime data and transform them into actionable information
                 </p>
-			  </div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-md-6 text-center">
-				<div class="service-box mt-5 mx-auto">
-				  <i class="fa fa-4x fa-pie-chart text-primary mb-3 sr-icons"></i>
-				  <h3 class="mb-3">Visualization</h3>
-				  <p class="text-faded mb-0">Choose from a variety of visualizations to project your data and analysis.  From charts to map projections we assure that you can see your data the way you like.</p>
-				</div>
-				</div>
-				<div class="col-lg-4 col-md-6 text-center">
-				<div class="service-box mt-5 mx-auto">
-				  <i class="fa fa-4x fa-bar-chart text-primary mb-3 sr-icons"></i>
-				  <h3 class="mb-3">Analysis</h3>
-				  <p class="text-faded mb-0">Save your results for further analysis. Create your dashboards with the data you want to maintain .</p>
-				</div>
-				</div>
-				<div class="col-lg-4 col-md-6 text-center">
-				<div class="service-box mt-5 mx-auto">
-				  <i class="fa fa-4x fa-comments text-primary mb-3 sr-icons"></i>
-				  <h3 class="mb-3">Feed</h3>
-				  <p class="text-faded mb-0">And if you cant find the data you want?<br>No problem, just post your request and you will get the messages from the people who have them.</p>
-				</div>
-				</div>				
-			</div>
-			<div class="row">
-				<div class="col-lg-8 mx-auto text-center">
-					<a class="btn btn-primary btn-xl js-scroll-trigger" href="#portfolio">Why BDO?</a>
-				</div>
-			</div>
-		  </div>
-		</section>
+                <a class="btn-cta js-scroll-trigger" href="#usecases">Our use Cases</a>
+            </div>
+        </div>
+    </div>
 
-		<section class="p-0" id="portfolio">
-			<div class="container-fluid p-0">
-				<div class="row no-gutters popup-gallery">
-					<div class="col-lg-4 col-sm-6">
-						<div class="portfolio-box" href="{% static "img/portfolio/fullsize/1.jpg" %}">
-							<img class="img-fluid" src="{% static "img/portfolio/thumbnails/fleet_operators.jpg" %}" alt="">
-							<div class="portfolio-box-caption">
-								<div class="portfolio-box-caption-content">
-									<div class="project-name">
-										Vessel Operators
-									</div>
-									<div class="project-category text-faded">
-										BigDataOcean provides data and tools that allow you to operate your fleet in a more efficient way.
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				  <div class="col-lg-4 col-sm-6">
-					<div class="portfolio-box" href="{% static "img/portfolio/fullsize/2.jpg" %}">
-					  <img class="img-fluid" src="{% static "img/portfolio/thumbnails/ship_builders.jpg" %}" alt="">
-					  <div class="portfolio-box-caption">
-						<div class="portfolio-box-caption-content">
-						  <div class="project-name">
-							Ship Owners
-						  </div>
-						  <div class="project-category text-faded">
-							Acquire vessel operation data and find out how engine components behave under different conditions.
-						  </div>
-						</div>
-					  </div>
-					</div>
-				  </div>
-				  <div class="col-lg-4 col-sm-6">
-					<div class="portfolio-box" href="{% static "img/portfolio/fullsize/3.jpg" %}">
-					  <img class="img-fluid" src="{% static "img/portfolio/thumbnails/public_authorities.jpg" %}" alt="">
-					  <div class="portfolio-box-caption">
-						<div class="portfolio-box-caption-content">
-							<div class="project-name">
-								Public Authorities
-							</div>
-						  <div class="project-category text-faded">
-							Detect anomalies in vessel behaviour and enable automated alarms that suit your need in no time.
-						  </div>
-						</div>
-					  </div>
-					</div>
-				  </div>
-				  <div class="col-lg-4 col-sm-6">
-					<div class="portfolio-box" href="{% static "img/portfolio/fullsize/4.jpg" %}">
-					  <img class="img-fluid" src="{% static "img/portfolio/thumbnails/researchers.jpg" %}" alt="">
-					  <div class="portfolio-box-caption">
-						<div class="portfolio-box-caption-content">
-						  <div class="project-name">
-							Researchers
-						  </div>
-						  <div class="project-category text-faded">
-							Get access to scientific as well as commercial maritime data & run customizable big data analytics on them - with BigDataOcean, you don't have to be tech savvy to do all that.
-						  </div>
-						</div>
-					  </div>
-					</div>
-				  </div>
-				  <div class="col-lg-4 col-sm-6">
-					<div class="portfolio-box" href="{% static "img/portfolio/fullsize/5.jpg" %}">
-					  <img class="img-fluid" src="{% static "img/portfolio/thumbnails/wave_energy.jpg" %}" alt="">
-					  <div class="portfolio-box-caption">
-						<div class="portfolio-box-caption-content">
-						  <div class="project-name">
-							Wave Energy Providers
-						  </div>
-						  <div class="project-category text-faded">
-							Research potential locations for wave energy systems and estimate their potential energy output.
-						  </div>
-						</div>
-					  </div>
-					</div>
-				  </div>
-				  <div class="col-lg-4 col-sm-6">
-					<div class="portfolio-box" href="{% static "img/portfolio/fullsize/6.jpg" %}">
-					  <img class="img-fluid" src="{% static "img/portfolio/thumbnails/life_belt.jpg" %}" alt="">
-					  <div class="portfolio-box-caption">
-						<div class="portfolio-box-caption-content">
-						  <div class="project-name">
-							Support
-						  </div>
-						  <div class="project-category text-faded">
-							Whatever your place in the maritime industry, our technical team and the community can develop services that will move your business into the era of Big Data - just test us!
-						  </div>
-						</div>
-					  </div>
-					</div>
-				  </div>
-				</div>
-			</div>
-		</section>
 
-		<section id="contact">
-		  <div class="container">
-			<div class="row">
-			  <div class="col-lg-8 mx-auto text-center">
-				<h2 class="section-heading">Let's Get In Touch!</h2>
-				<hr class="my-4">
-				<p class="mb-5">Ready to start your next project with us? That's great! Visit our project website and send us an email and we will get back to you as soon as possible!</p>
-			  </div>
-			</div>
-			<div class="row">
-			  <div class="col-lg-4 ml-auto text-center">
-				<i class="fa fa-phone fa-3x mb-3 sr-contact"></i>
-				<h3><a href="http://www.bigdataocean.eu"> www.bigdataocean.eu </a></h3>
-			  </div>
-			  <div class="col-lg-4 mr-auto text-center">
-				<i class="fa fa-envelope-o fa-3x mb-3 sr-contact"></i>
-				<h3>
-				  <a href="mailto:info@bigdataocean.eu"> info@bigdataocean.eu </a>
-				</h3>
-			  </div>
-			</div>
-		  </div>
-		</section>
-		
-		
-		<!----------- Footer ------------>
-		<div>
-			<footer class="footer-bs">
-				<div class="row">
-					<div class="col-md-4 footer-brand animated fadeInLeft text-center">
-						<a class="navbar-brand js-scroll-trigger" href="#page-top">
-							<img class="logo" src="{% static "img/logow.png" %}" alt="BigData Ocean">
-						</a>
-						<p> This project has received funding from the European Union Horizon 2020 research and innovation programme under grant agreement No 732310.</p>
-					</div>
-					<div class="col-md-4 footer-nav animated fadeInUp">
-						<div class="col-md-12">
-							<ul class="list">
-								<li><a href="http://www.bigdataocean.eu/site/project-summary/" target="_blank">About Us</a></li>
-								<li><a href="http://www.bigdataocean.eu/site/contact-us/" target="_blank">Contact Us</a></li>
-							</ul>
-						</div>
-					</div>
-					<div class="col-md-4 footer-social animated fadeInDown text-center">
-						<a class="navbar-brand js-scroll-trigger" href="#page-top">
-							<button type="button" class="btn btn-default">Back To Top</button>
-						</a>
-						<br>
-						
-						<br>
-						<ul id="social">
-							<li><a href="https://www.facebook.com/bigdataocean/" target="_blank"><i class="fa fa-2x fa-facebook"></i></a></li>
-							<li><a href="https://twitter.com/big_data_ocean" target="_blank"><i class="fa fa-2x fa-twitter"></i></a></li>
-							<li><a href="https://www.linkedin.com/company/big-data-ocean/" target="_blank"><i class="fa fa-2x fa-linkedin"></i></a></li>
-						</ul>
-                        <a href="http://www.bigdataocean.eu/site/subscribe/" target="_blank" class="btn btn-default" role="button">Subscribe</a>
-					</div>
-				</div>
-			</footer>
-		</div>
+</header>
 
-		<!-- Bootstrap core JavaScript -->
-		<script src="{% static "vendor/jquery/jquery.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
-		<script src="{% static "vendor/bootstrap/js/bootstrap.bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<section class="section-small-padding" id="usecases">
+    <div class="agency-portfolio-hero">
+        <section class="container section-small-padding">
+            <h1>
+                Showcase of our use case applications
+            </h1>
+            <p>
+                Browse our applications using BigDataOcean platform technology and get inspired now!
+            </p>
+        </section>
+    </div>
 
-		<!-- Plugin JavaScript -->
-		<script src="{% static "vendor/jquery-easing/jquery.easing.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
-		<script src="{% static "vendor/scrollreveal/scrollreveal.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
-		<script src="{% static "vendor/magnific-popup/jquery.magnific-popup.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <div class="agency-portfolio-gallery">
+        <div class="container-fluid">
+            <div class="row no-gutters">
+                <div class="col-sm-6 col-lg-3">
+                    <a data-toggle="modal" data-target="#ModalPilot1" href="#ModalPilot1" class="project">
+            <span class="mask">
+              <span class="info">
+                <h3> Fault Detection & Fuel Consumption</h3>
+                <p>
+                  For Ship Owners and Maritime Equipment Constructors
+                </p>
+              </span>
+              <span class="btn-see-project">
+                See project
+              </span>
+            </span>
+            <span style="background-image:url('{% static "img/portfolio/pilot1.jpg" %}');" class="pic">
 
-		<!-- Custom scripts for this template -->
-		<script src="{% static "js/creative.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+            </span>
+                    </a>
+                    <p class="mb-5">Vessel Fault Detection, Predictive Maintenance and Fuel Consumption Reduction</p>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                      <a data-toggle="modal" data-target="#ModalPilot2" href="#ModalPilot2" class="project">
+            <span class="mask">
+              <span class="info">
+                <h3>Mare Protection from oil spills</h3>
+                <p>
+                  For Emergency Response Companies, Shipping companies, Oil drilling companies and more
+                </p>
+              </span>
+              <span class="btn-see-project">
+                See project
+              </span>
+            </span>
+            <span style="background-image:url('{% static "img/portfolio/pilot2.jpg" %}');" class="pic">
+            </span>
+                    </a>
+                    <p class="mb-5">Mare Protection from oil spill pollution</p>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                       <a data-toggle="modal" data-target="#ModalPilot3" href="#ModalPilot3" class="project">
+            <span class="mask">
+              <span class="info">
+                <h3>Maritime Security and Anomaly Detection</h3>
+                <p>
+                  For Port authorities, Ocean Observatories, Port/Cargo Community,Transport and Logistics, Harbour Pilots
+                </p>
+              </span>
+              <span class="btn-see-project">
+                See project
+              </span>
+            </span>
+            <span style="background-image:url('{% static "img/portfolio/pilot3.jpg" %}');" class="pic">
+            </span>
+                    </a>
+                    <p class="mb-5">Maritime Security and Anomaly Detection</p>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                       <a data-toggle="modal" data-target="#ModalPilot4" href="#ModalPilot4" class="project">
+            <span class="mask">
+              <span class="info">
+                <h3>Evaluation of wave energy potential</h3>
+                <p>
+                  For Offshore Renewables Providers, Offshore Pilot Zone Concessionaires, WEC developers and more
+                </p>
+              </span>
+              <span class="btn-see-project">
+                See project
+              </span>
+            </span>
+            <span style="background-image:url('{% static "img/portfolio/pilot4.jpg" %}');" class="pic">
+            </span>
+                    </a>
+                    <p class="mb-5">Wave power as the next clean energy source</p>
+                </div>
 
-	</body>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center portfolio-bottom-margin ">
+            <a class="btn btn-primary btn-xl js-scroll-trigger" href="#features">See platform Features</a>
+        </div>
+    </div>
+</section>
+<section class="section-small-padding" >
+    <div class="index-features" data-scroll id="features">
+        <div class="container">
+            <header >
+                <h3>Rocking the boat with BigDataOcean Platform</h3>
+                <p>
+                    Take advantage of the available maritime data and transform them into actionable information
+                </p>
+        <p class="col-lg-8 mx-auto text-center portfolio-bottom-margin ">
+            <a class="btn-shadow btn-shadow-info" href="/accounts/signup/">Create account now</a>
+        </p>
+            </header>
+            <section class="section-small-padding features">
+                <div class="row">
+                    <div class="col-md-6 feature">
+                        <i class="fa fa-4x fa-database mb-3 sr-icons "></i>
+                        <section class="section-small-padding">
+                            <h4>
+                                Explore Oceans of data for your needs
+                            </h4>
+                            <p>
+                                Browse through the TBs of blue data available on the BigDataOcean Platform to find the
+                                information you need quickly.
+                            </p>
+                        </section>
+                    </div>
+                    <div class="col-md-6 feature">
+                        <i class="fa fa-4x fa-magic mb-3 sr-icons "></i>
+                        <section class="section-small-padding">
+                            <h4>
+                                Combine information at your fingertips
+                            </h4>
+                            <p>
+                                Mashup your enterprise data with public data in the most cost efficient way. Perform ad
+                                hoc queries over datasets coming from different providers
+                            </p>
+                        </section>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 feature">
+                        <i class="fa fa-4x fa-bar-chart mb-3 sr-icons "></i>
+                        <section class="section-small-padding">
+                            <h4>
+                                Dive into Deep Insights
+                            </h4>
+                            <p>
+                                Choose from a variety of visualizations to project your data and analysis. From charts
+                                to map projections we assure that you can see your data the way you like.
+                            </p>
+                        </section>
+                    </div>
+                    <div class="col-md-6 feature">
+                        <i class="fa fa-4x fa-comments mb-3 sr-icons "></i>
+                        <section class="section-small-padding">
+                            <h4>
+                                Tell us your needs and let's build it together!
+                            </h4>
+                            <p>
+                                Contact us today to discuss your maritime app and data analytic needs!
+                            </p>
+                        </section>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</section>
+
+
+<section id="contact">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="section-heading">Let's Get In Touch!</h2>
+                <hr class="my-4">
+                <p class="mb-5">Ready to start your next project with us? That's great! Visit our project website and
+                    send us an email and we will get back to you as soon as possible!</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 ml-auto text-center">
+                <i class="fa fa-phone fa-3x mb-3 sr-contact"></i>
+                <h3><a href="http://www.bigdataocean.eu"> www.bigdataocean.eu </a></h3>
+            </div>
+            <div class="col-lg-4 mr-auto text-center">
+                <i class="fa fa-envelope-o fa-3x mb-3 sr-contact"></i>
+                <h3>
+                    <a href="mailto:info@bigdataocean.eu"> info@bigdataocean.eu </a>
+                </h3>
+            </div>
+        </div>
+    </div>
+  <div class="index-clients">
+    <div class="container">
+      <header>
+        <h4>The BigDataOcean platform is maintained by</h4>
+      </header>
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-3 col-lg">
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+          <a href="http://www.holisticsa.gr" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/holistic.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+          <a href="http://www.ubitech.eu" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/ubitech.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+          <a href="http://www.marinetraffic.gr" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/marinetraffic.png"%}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+
+        </div>
+      </div>
+      <div >
+        <h4 class="supportof">Members of the project</h4>
+      </div>
+        <div class="row justify-content-center">
+        <div class="col-12 col-md-3 col-lg">
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+          <a href="http://www.epu.ntua.gr" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/dss_ntua.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+        </div>
+      </div>
+              <div class="row justify-content-center">
+        <div class="col-12 col-md-3 col-lg">
+             <a href="http://www.rdnester.pt" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/nester.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+             <a href="https://www.uni-bonn.de/" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/Uboon.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+          <a href="http://www.uninova.pt" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/uninova.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+          <a href="https://www.anek.gr" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/anek.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+          <a href="http://www.avin.gr" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/foinikas.png"%}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+ <a href="https://linksfoundation.com" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/ismb.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-3 col-lg">
+ <a href="https://www.hcmr.gr" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/hcmr.png"  %}"></a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+
+
+
+
+<!----------- Footer ------------>
+<div>
+    <footer class="footer-bs">
+        <div class="row">
+            <div class="col-md-4 footer-brand animated fadeInLeft text-center">
+                <a class="navbar-brand js-scroll-trigger" href="#page-top">
+                    <img class="logo" src="{% static "img/logow.png" %}" alt="BigData Ocean">
+                </a>
+                <p> This project has received funding from the European Union Horizon 2020 research and innovation
+                    programme under grant agreement No 732310.</p>
+            </div>
+            <div class="col-md-4 footer-nav animated fadeInUp">
+                <div class="col-md-12">
+                    <ul class="list">
+                        <li><a href="http://www.bigdataocean.eu/site/project-summary/" target="_blank">Project site</a></li>
+                        <li><a href="#usecases" >Use Cases</a></li>
+                        <li><a href="#features" >Features</a></li>
+                        <li><a href="#contact" >Contact Us</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4 footer-social animated fadeInDown text-center">
+                <a class="navbar-brand js-scroll-trigger" href="#page-top">
+                    <button type="button" class="btn btn-default">Back To Top</button>
+                </a>
+                <br>
+
+                <br>
+                <ul id="social">
+                    <li><a href="https://www.facebook.com/bigdataocean/" target="_blank"><i
+                            class="fa fa-2x fa-facebook"></i></a></li>
+                    <li><a href="https://twitter.com/big_data_ocean" target="_blank"><i class="fa fa-2x fa-twitter"></i></a>
+                    </li>
+                    <li><a href="https://www.linkedin.com/company/big-data-ocean/" target="_blank"><i
+                            class="fa fa-2x fa-linkedin"></i></a></li>
+                </ul>
+                <a href="http://www.bigdataocean.eu/site/subscribe/" target="_blank" class="btn btn-default"
+                   role="button">Subscribe</a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Modal Pilot 1-->
+<div class="modal fade" id="ModalPilot1" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Vessel Fault Detection, Predictive Maintenance and Fuel Consumption Reduction</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div>
+          <img class="modal-images" src="{% static "img/portfolio/pilot1modal.jpg" %}">
+          </div>
+          <h4 class="modalheaders">Goal</h4>
+          <p>
+              Damage and mechanical failures detection and predictive maintenance of vessel equipment. Investigation of the impact of the environmental conditions and the operational decisions taken on the vessel's fuel consumption
+          </p>
+          <h4 class="modalheaders">Description</h4>
+          <p>
+              Nowadays, naval engineers and shipping companies try to constantly minimise fixed and operational costs, as well as their impact on the maritime and generic environment. Amongst the main reasons that tend to significantly increase costs, are unpredicted damages and/or mechani­cal failures, as well as fuel consumption. Providing useful insights of the effect of such phenome­ na owners and/or operators can report high costs for fuels and repairs I spare parts (especially when requested in as close to real-time as possible), loss of earnings affecting financial viability due to lack of fuel consumption strategy, immobilisation of vessels and/or due to failure to comply with Service Level Agreements (SLAs), or even port state control (PSC) detention. Through this pilot, data from every available sensor will be collected and formulate a knowledge base that each owner and/or operator exploits towards the effort of being proactive rather than reactive and operationally efficient. These data, after being cleaned and integrated, will feed a complex prediction model for fault/damage/ failure prediction and a decision support tool for fuel consumption.
+          </p>
+          <h4 class="modalheaders">Stakeholders</h4>
+          <p>
+              Ship owners, Maritime Equipment Constructors
+          </p>
+          <h4 class="modalheaders">Contact Us</h4>
+          <p>
+              Are you interested in this application for your business? Let's  <a href = "mailto: info@bigdataocean.eu">get in touch</a>!
+          </p>
+ <div class="index-clients">
+    <div class="container">
+      <header>
+        <h4>Co-developed and used by</h4>
+      </header>
+      <div class="row justify-content-center ">
+        <div class="col-12 col-md-6 col-lg">
+            <a href="https://www.anek.gr" target="_blank"><img class="img-small img-fluid mb-4" src="{% static "img/logos/anek.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-6 col-lg">
+            <a href="http://www.avin.gr" target="_blank"><img class="img-small img-fluid mb-4" src="{% static "img/logos/foinikas.png"%}"></a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal Pilot 2-->
+<div class="modal fade" id="ModalPilot2" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Mare Protection from oil spill pollution</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div>
+          <img class="modal-images" src="{% static "img/portfolio/pilot2modal.jpg" %}">
+          </div>
+          <h4 class="modalheaders">Goal</h4>
+          <p>
+              Provide to the end users oil spill drift forecasting and simulation services for the marine environment and enhance the efficiency in managing oil spill pollution risks.
+          </p>
+          <h4 class="modalheaders">Description</h4>
+          <p>
+              Marine pollution from oil spills is a serious threat to the coastal countries. Mare Protection Pilot provides a series of scenarios based on the POSEIDON Oil Spill Model, offering essential information for the effective response and management of possible oil spill pollution incidents. Each test case scenario is addressed to various stakeholders groups demonstrating the extended capabilities of the pilot service. Forecasting simulations, enhanced with various cross-sectoral marine data, is taking advantage of the variety and extended ocean data volume available in the BigDataOcean platform.
+          </p>
+          <p>
+              The service provides access to:
+            <ul><li>Reports and visualized representation of the oil spill fate in the sea, driven by various environmental forcing.</li>
+<li>Additional information regarding the key areas that could be affected by the oil pollution, as well as about the marine traffic AIS information.</li>
+<li>Limited scale risk assessment analysis in order the high-risk areas during a possible oil spill accident to be identified.</li>
+<li>Oil spill dispersion results when the pollution source is located on the seabed, for direct use in case of oil drilling accidents.</li></ul>
+          </p>
+          <h4 class="modalheaders">Stakeholders</h4>
+          <p>
+              Emergency Response Companies, National Entities (Public Authorities), NGOs, Marine Research Institutes, Shipping companies and Oil drilling companiea
+          </p>
+          <h4 class="modalheaders">Contact Us</h4>
+          <p>
+              Are you interested in this application for your business? Let's  <a href = "mailto: info@bigdataocean.eu">get in touch</a>!
+          </p>
+ <div class="index-clients">
+    <div class="container">
+      <header>
+        <h4>Co-developed and used by</h4>
+      </header>
+      <div class="row justify-content-center ">
+        <div class="col-12 col-md-6 col-lg">
+            <a href="https://www.hcmr.gr" target="_blank"><img class="img-small img-fluid mb-4" src="{% static "img/logos/hcmr.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-6 col-lg">
+            <a href="http://www.epu.ntua.gr" target="_blank"><img class="img-small img-fluid mb-4" src="{% static "img/logos/dss_ntua.png"  %}"></a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal Pilot 3-->
+<div class="modal fade" id="ModalPilot3" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Maritime Security and Anomaly Detection</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div>
+          <img class="modal-images" src="{% static "img/portfolio/pilot3modal.jpg" %}">
+          </div>
+          <h4 class="modalheaders">Goal</h4>
+          <p>
+              Identify vessel routes based on their motion patterns to act proactively and minimise threats at sea.
+          </p>
+          <h4 class="modalheaders">Description</h4>
+          <p>
+              Events, activities and threats in the maritime ecosystem could potentially impact global safety,
+economic activity or the environment. Understanding of such events, activities, and threats,
+known as Maritime Situational Awareness (MSA), has been ineffective in the past due to the lack
+of data. However, current tracking technologies have transformed the problem into one of an
+overabundance of information, leading to a need for automated analysis.
+The anomaly detection service is capable of detecting in true real time a number of potential
+anomalies including deviations from vessels' Patterns of Life, proximity events, sailing in shallow
+or dangerous waters, frequent or vessel specific AIS field changes and AIS signal loss (indicating
+that a target has gone "dark"). On all such events, customers are able to view the vessels past
+track and further investigate the area or vessel of interest. This tool offers the option to focus on
+high risk fleet and monitor its activity. Through our vessel profiling tool, maritime professionals
+can get a representative view of a vessel's behaviour. Data about vessels' illegal activities, such
+as smuggling, illegal fishing or vessels that have been detained or even banned are collected and
+used to construct vessel risk profiles.</br>
+<b>Ask us today for details on how to access anomaly detection service and how the
+BigDataOcean platform can implement maritime services for you!</b>
+          </p>
+          <h4 class="modalheaders">Stakeholders</h4>
+          <p>
+              Port authorities, Ocean Observatories, Port/Cargo Community systems, Transport and Logistics companies,Harbour Pilots and Maritime Consultants
+          </p>
+          <h4 class="modalheaders">Contact Us</h4>
+          <p>
+              Are you interested in this application for your business? Let's  <a href = "mailto: info@bigdataocean.eu">get in touch</a>!
+          </p>
+ <div class="index-clients">
+    <div class="container">
+      <header>
+        <h4>Co-developed and used by</h4>
+      </header>
+      <div class="row justify-content-center ">
+        <div class="col-12 col-md-6 col-lg">
+            <a href="http://www.marinetraffic.gr" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/marinetraffic.png"%}"></a>
+        </div>
+        <div class="col-12 col-md-6 col-lg">
+             <a href="http://www.epu.ntua.gr" target="_blank"><img class="img-small img-fluid mb-4" src="{% static "img/logos/dss_ntua.png"  %}"></a>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal Pilot 4-->
+<div class="modal fade" id="ModalPilot4" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Wave power as the next clean energy source</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div>
+          <img class="modal-images" src="{% static "img/portfolio/pilot4modal.jpg" %}">
+          </div>
+          <h4 class="modalheaders">Goal</h4>
+          <p>
+              Evaluation of wave energy potential and contribution to development of wave energy solutions.
+          </p>
+          <h4 class="modalheaders">Description</h4>
+          <p>
+              BigDataOcean provides you with a set of services aiming at evaluating the wave potential for energy generation in multiple geographies.
+Whether you are a researcher developing new Wave Energy Converters (WEC), a WEC owner or a service provider performing site planning studies, a pilot zone concessionaire aiming at improving the zone characterization or an enthusiast about wave or other offshore renewable energies, you can find a dedicated service at BigDataOcean to help you further develop your solutions.
+In BigDataOcean you can find a range of multiple services related to Wave Energy, including:
+          </p>
+          <p>
+             <ul><li>Wave resource characterization in your selected location or area, based in historical data.</li>
+<li>Wave forecast.</li>
+<li>Assessment of Wave Energy Converters energy generation, allowing to compare your device with others.</li>
+<li>Forecast of energy generation for your WEC device.</li></ul>
+          </p>
+                    <p>
+All services use multiple numerical models and data sources including in-situ measurements. Make sure the selected location does not affect the environment by belonging to a protected area or other economic activities by being inside a maritime corridor or other area of interest. Additionally, you can also use general data services, allowing to quickly visualise data and create your own queries.
+Ask us today for details on how to access the BigDataOcean platform and the services implemented for you!
+          </p>
+          <h4 class="modalheaders">Stakeholders</h4>
+          <p>
+             Offshore Renewables Service Providers, Offshore Pilot Zone Concessionaires, WEC developers, Energy Producers, Hydrographic Centres
+          </p>
+          <h4 class="modalheaders">Contact Us</h4>
+          <p>
+              Are you interested in this application for your business? Let's  <a href = "mailto: info@bigdataocean.eu">get in touch</a>!
+          </p>
+ <div class="index-clients">
+    <div class="container">
+      <header>
+        <h4>Co-developed and supported by</h4>
+      </header>
+      <div class="row justify-content-center ">
+        <div class="col-12 col-md-4 col-lg">
+            <a href="http://www.uninova.pt" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/uninova.png"  %}"></a>
+        </div>
+        <div class="col-12 col-md-4 col-lg">
+            <a href="http://www.rdnester.pt" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/nester.png"  %}"></a>
+        </div>
+                  <div class="col-12 col-md-4 col-lg">
+            <a href="http://www.epu.ntua.gr" target="_blank"><img class="img-fluid mb-4" src="{% static "img/logos/dss_ntua.png"  %}"></a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Bootstrap core JavaScript -->
+<script src="{% static "vendor/jquery/jquery.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script src="{% static "vendor/bootstrap/js/bootstrap.bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+
+<!-- Plugin JavaScript -->
+<script src="{% static "vendor/jquery-easing/jquery.easing.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script src="{% static "vendor/scrollreveal/scrollreveal.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+<script src="{% static "vendor/magnific-popup/jquery.magnific-popup.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+
+<!-- Custom scripts for this template -->
+<script src="{% static "js/creative.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+</body>
 
 </html>
