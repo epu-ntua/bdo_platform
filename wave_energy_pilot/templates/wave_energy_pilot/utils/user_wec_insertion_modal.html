@@ -201,8 +201,19 @@
                 "data": {'wec_data': JSON.stringify(new_wec)},
                 "success": function(result) {
                     id = result.id;
-                    var $opt = $('<option selected value="'+id+'" data-id="'+id+'" data-title="'+new_wec.title+'" data-min_height="'+new_wec.min_height+'" data-max_height="'+new_wec.max_height+'" data-min_period="'+new_wec.min_energy_period+'" data-power="0">'+new_wec.title+'</option>');
-                    $("#converters-selector").append($opt);
+
+{#                    var $opt = $('<option selected value="'+id+'" data-id="'+id+'" data-title="'+new_wec.title+'" data-min_height="'+new_wec.min_height+'" data-max_height="'+new_wec.max_height+'" data-min_period="'+new_wec.min_energy_period+'" data-power="0">'+new_wec.title+'</option>');#}
+{#                    $("#converters-selector").append($opt);#}
+
+                    var $wec_row = $('' +
+                        '<div class="col-sm-12 wec_row" data-selected="false" style="padding: 0;">' +
+                        '   <span class="col-sm-8 wec_info"  style="padding: 0; cursor: pointer;" data-id="'+id+'" data-title="'+new_wec.title+'" data-min_height="'+new_wec.min_height+'" data-max_height="'+new_wec.max_height+'" data-max_period="'+new_wec.min_energy_period+'" data-power="0">'+new_wec.title+' '  +
+                        '   </span>' +
+                        '   <span class="col-sm-2" style="padding: 0; color: darkslategray;"><i class="fas fa-eye"></i></span>' +
+                        '   <span class="col-sm-2 del_wec" style="padding: 0; color: darkred; cursor: pointer;"><i class="fas fa-trash-alt"></i></span>' +
+                        '   </div> ');
+                    $(".converters-container .wecs_div").append($wec_row);
+
                     console.log('wec created');
                     $("#save_converter").attr({'disabled': false});
                     $('#new_wec #cancel_converter').click();

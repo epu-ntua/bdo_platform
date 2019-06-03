@@ -88,7 +88,7 @@ $(document).ready(function() {
             duration: 2500,
             content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected"
         },{
-            element: ".radio-container",
+            element: ".converters-container",
             placement: "left",
             title: "Wave energy converter selection",
             content: "Select the converter for your simulation. You can select only one"
@@ -130,7 +130,7 @@ $(document).ready(function() {
             content: "Dataset selection for application's execution"
         });
         wec_energy_generation_forecast_tour.addSteps([{
-            element: ".radio-container",
+            element: ".converters-container",
             placement: "left",
             title: "Wave energy converter selection",
             content: "Select the converter for your simulation. You can select only one"
@@ -182,7 +182,7 @@ $(document).ready(function() {
             duration: 2500,
             content: "Select the timeframe you wish to run the service. By default, minimum and maximum values of the dataset are selected"
         },{
-            element: ".radio-container",
+            element: ".converters-container",
             placement: "left",
             title: "Wave energy converter selection",
             content: "Select at least one converter to execute your evaluation"
@@ -376,6 +376,7 @@ $(document).ready(function() {
         });
 
         $('.app-selector').change(function () {
+            $('.wec_row').attr('data-selected', "false");
             $('#lat').val('');
             $('#lon').val('');
             $('#lat_min').val('');
@@ -414,9 +415,9 @@ $(document).ready(function() {
                             }
                         });
 
-                        $(".converters-container").change(function () {
+                        $(".converters-container").click(function () {
                             if(wecs_location_assessment_tour.getCurrentStep() == 3) {
-                                if ($(this).find("select").val().length > 0) {
+                                if ($(this).find(".wec_row[data-selected='true']").length > 0) {
                                     wecs_location_assessment_tour.goTo(4);
                                 }
                             }
@@ -458,7 +459,7 @@ $(document).ready(function() {
                 $('.spatial-selection').show();
                 $('.coverage-date-filters').show();
                 $(".run-service-button-container").show();
-                $('.radio-container').show();
+                $('.converters-container').show();
                 $('.wecs_assessment_area_dropdown').show();
 
                 create_new_area_select([[35,-16],[45,5]]);
@@ -473,8 +474,8 @@ $(document).ready(function() {
                     }
                 });
 
-                $(".radio-container").off('change');
-                $(".radio-container").change(function () {
+                $(".converters-container").off('click');
+                $(".converters-container").click(function () {
                     wec_assessment_area_tour.goTo(4);
                 });
             }
@@ -483,7 +484,8 @@ $(document).ready(function() {
                 $("#map").css("cursor", "pointer");
                 $('.spatial-selection').hide();
                 $('.radio-container').hide();
-                 removeAreaSelect();
+                removeAreaSelect();
+                $('.wecs_assessment_area_dropdown').hide();
                 // $('#startdatepicker input').val('');
                 // $('#enddatepicker input').val('');
                 mode = "location";
@@ -493,7 +495,7 @@ $(document).ready(function() {
                 $('.single-spatial-selection').show();
                 $(".run-service-button-container").show();
                 $('.coverage-date-filters').show();
-                $('.radio-container').show();
+                $('.converters-container').show();
                 $('.dataset-selector').show();
                 $(".wecs_forecast_dropdown").show();
 
@@ -536,8 +538,8 @@ $(document).ready(function() {
 
                 // set_forecast_timeframe(true);
 
-                $(".radio-container").off('change');
-                $(".radio-container").change(function () {
+                $(".converters-container").off('click');
+                $(".converters-container").click(function () {
                     wec_energy_generation_forecast_tour.goTo(3);
                 });
 
@@ -557,7 +559,7 @@ $(document).ready(function() {
                 $(".matching_analysis_dropdown").show();
                 $('.coverage-date-filters').show();
                 $('.run-service-button-container').show();
-                $('.radio-container').show();
+                $('.converters-container').show();
                 $('#upload_csv_container').show();
 
                 init_matching_analysis_tour();
@@ -593,8 +595,8 @@ $(document).ready(function() {
                         matching_analysis_tour.goTo(1);
                     }
 
-                    $(".radio-container").off('change');
-                    $(".radio-container").change(function () {
+                    $(".converters-container").off('click');
+                    $(".converters-container").click(function () {
                         matching_analysis_tour.goTo(4);
                     });
 
@@ -659,8 +661,8 @@ $(document).ready(function() {
 
             var dataset_id = $("#select_dataset_wecs_assessment_location :selected").val();
             var selected_converters = [];
-            $("#converters-selector :selected").each(function () {
-                selected_converters.push($(this).val());
+            $(".wec_row[data-selected='true']").each(function () {
+                selected_converters.push($(this).find(".wec_info").data('id'));
             });
             var converters_str = "";
             for(var i = 0; i < selected_converters.length; i++){
@@ -673,8 +675,11 @@ $(document).ready(function() {
             return url;
         }
         else if($('.app-selector :selected').val() === "3"){
-            var selected_converter = $('input[name=wec]:checked').val();
-            var url = "?start_date="+start_date+
+            var dataset_id = $("#select_dataset_wecs_forecast :selected").val();
+
+            var selected_converter = $(".wec_row[data-selected='true']").find(".wec_info").data('id');
+
+            var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
                 "&longitude_from="+lng_from+"&longitude_to="+lng_to+"&converters[]="+selected_converter;
             return url;
@@ -682,7 +687,7 @@ $(document).ready(function() {
         else if($('.app-selector :selected').val() === "4"){
 
             var dataset_id = $("#select_dataset_matching_analysis :selected").val();
-            var selected_converter = $('input[name=wec]:checked').val();
+            var selected_converter = $(".wec_row[data-selected='true']").find(".wec_info").data('id');
             var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+"&longitude_from="+lng_from+
                 "&longitude_to="+lng_to+"&converters[]="+selected_converter;
@@ -695,9 +700,9 @@ $(document).ready(function() {
             var lng_from = $("#lon_min").val();
             var lng_to = $("#lon_max").val();
 
-            var dataset_id = $("#select_dataset_wave_resource_assessment_area :selected").val();
+            var dataset_id = $("#select_dataset_wecs_assessment_area  :selected").val();
 
-            var selected_converter = $('input[name=wec]:checked').val();
+            var selected_converter = $(".wec_row[data-selected='true']").find(".wec_info").data('id');
 
             var url = "?dataset_id="+dataset_id+"&start_date="+start_date+
                 "&end_date="+enddate+"&latitude_from="+lat_from+"&latitude_to="+lat_to+
@@ -802,7 +807,8 @@ $(document).ready(function() {
            var data_radius = $("#data-radius").data('value');
 
            data.append('dataset_id', $("#select_dataset_matching_analysis :selected").val());
-           data.append('converters[]', $('input[name=wec]:checked').val());
+           data.append('converters[]', $(".wec_row[data-selected='true']").find(".wec_info").data('id'));
+           // data.append('converters[]', $('input[name=wec]:checked').val());
            data.append('latitude_from', parseFloat(lat) -  parseFloat(data_radius));
            data.append('latitude_to', parseFloat(lat) + parseFloat(data_radius));
            data.append('longitude_from', parseFloat(lng) -  parseFloat(data_radius));
@@ -939,5 +945,42 @@ $(document).ready(function() {
         });
     });
 
-    // $("#add-wec-btn").click();
+
+
+    $('body').on('click', '.wec_info', function () {
+        if($('.app-selector :selected').val() === "1"){
+            if ($(this).closest('.wec_row').attr('data-selected') === "true"){
+                $(this).closest('.wec_row').attr('data-selected', "false");
+            }
+            else{
+                $(this).closest('.wec_row').attr('data-selected', "true");
+            }
+        }
+        else{
+            $('.wec_row').attr('data-selected', "false");
+            $(this).closest('.wec_row').attr('data-selected', "true");
+        }
+    });
+
+
+    $('body').on('click', '.del_wec', function () {
+        if (confirm("Are you sure you want to delete the selected wave energy converter?")) {
+            var wec_id = $(this).closest(".wec_row").find(".wec_info").data('id');
+            var wec_row = $(this).closest(".wec_row");
+            $.ajax({
+                "type": "GET",
+                "url": "/wave-energy/energy_conversion/wec_delete/",
+                "data": {"wec_id": wec_id},
+                "success": function() {
+                    console.log('wec deleted');
+                    $(wec_row).remove();
+                },
+                error: function () {
+                    alert('Error deleting wec');
+                }
+            });
+        }
+        return false;
+    });
+
 });

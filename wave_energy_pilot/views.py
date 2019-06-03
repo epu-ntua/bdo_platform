@@ -233,9 +233,8 @@ def clean_up_new_note(notebook_id, wait_time_seconds=0):
 #     {'datasets_list': DATASETS,
 #      'energy_converters': CONVERTERS})
 
+
 def wec_creation(request):
-    # import pdb
-    # pdb.set_trace()
     new_wec = json.loads(request.GET['wec_data'])
     print new_wec
 
@@ -253,6 +252,13 @@ def wec_creation(request):
     return JsonResponse({'id': converter.id})
 
 
+def wec_delete(request):
+    wec_id = int(request.GET['wec_id'])
+    wec = Wave_Energy_Converters.objects.get(pk=wec_id)
+    wec.delete()
+    return JsonResponse({})
+
+
 @never_cache
 def energy_conversion_init(request):
     execution_steps = dict()
@@ -268,7 +274,13 @@ def energy_conversion_init(request):
     execution_steps['WEC_LOAD_MATCHING_SERVICE'] = ['starting service', 'Initializing Spark Session'] +\
                                                    [x['status'] for x in settings.WEC_LOAD_MATCHING_SERVICE_PARAGRAPHS] + \
                                                    ['done']
-    energy_converters = Wave_Energy_Converters.objects.filter(Q(owner_id=User.objects.get(username='BigDataOcean')) | Q(owner_id=request.user))
+    energy_converters_user = Wave_Energy_Converters.objects.filter(owner_id=request.user)
+    energy_converters_public = Wave_Energy_Converters.objects.filter(owner_id=User.objects.get(username='BigDataOcean'))
+    try:
+        energy_converters_nuno = Wave_Energy_Converters.objects.filter(owner_id=User.objects.get(username='nuno.amaro'))
+        energy_converters_public = energy_converters_public + energy_converters_nuno
+    except:
+        pass
 
     for dataset in DATASETS:
         try:
@@ -309,7 +321,8 @@ def energy_conversion_init(request):
             print "dataset not found"
     return render(request, 'wave_energy_pilot/energy_conversion_service.html',
                   {'datasets_list': DATASETS,
-                   'energy_converters': energy_converters,
+                   'energy_converters_user': energy_converters_user,
+                   'energy_converters_public': energy_converters_public,
                    'data_radius': DATA_RADIUS,
                    'execution_steps': execution_steps})
 
@@ -332,6 +345,8 @@ def wec_single_location_evaluation_execution_process(request, exec_instance):
     # GATHER THE SERVICE ARGUMENTS
     service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
     args_to_note = gather_service_args(service_args, request, service_exec)
+    args_to_note['dataset_table'] = Dataset.objects.get(pk=int(request.GET["dataset_id"])).table_name
+
     converters_selection = request.GET.getlist("converters[]")
     wecs = list()
     for converter_id in converters_selection:
@@ -466,6 +481,7 @@ def wec_area_evaluation_execution_process(request, exec_instance):
     # GATHER THE SERVICE ARGUMENTS
     service_args = ["latitude_from", "latitude_to", "longitude_from", "longitude_to", "start_date", "end_date"]
     args_to_note = gather_service_args(service_args, request, service_exec)
+    args_to_note['dataset_table'] = Dataset.objects.get(pk=int(request.GET["dataset_id"])).table_name
     converters_selection = request.GET.getlist("converters[]")
     wecs = list()
     for converter_id in converters_selection:
@@ -479,14 +495,17 @@ def wec_area_evaluation_execution_process(request, exec_instance):
         aWec['wec_matrix'] = converter.sample_rows
         wecs.append(aWec)
     args_to_note['wecs'] = wecs
-    args_to_note['dataset_id'] = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY.keys()[0]
+    # args_to_note['dataset_id'] = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY.keys()[0]
+    args_to_note['dataset_id'] = request.GET['dataset_id']
     # args_to_note['start_date'] = str(Dataset.objects.get(pk=int(args_to_note['dataset_id'])).temporalCoverageBegin)
     # args_to_note['end_date'] = str(Dataset.objects.get(pk=int(args_to_note['dataset_id'])).temporalCoverageEnd)
     service_exec.arguments = args_to_note
     service_exec.save()
     # CONFIGURE THE QUERY TO BE USED
-    dataset_id = settings.WEC_AREA_EVALUATION_SERVICE_DATASET_QUERY.keys()[0]
+    # dataset_id = settings.WEC_AREA_EVALUATION_SERVICE_DATASET_QUERY.keys()[0]
+    dataset_id = request.GET['dataset_id']
     query_id = settings.WEC_AREA_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
+
     wave_height_query_id = get_query_with_updated_filters(request, query_id)
     # CLONE THE SERVICE NOTE
     new_notebook_id = clone_service_note(request, service, service_exec)
@@ -543,7 +562,7 @@ def wec_area_evaluation_execution_process(request, exec_instance):
             nester_statistics(service_obj, dataset_obj)
         except:
             print 'Dataset or service does not exist'
-        t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 180))
+        t = Thread(target=clean_up_new_note, args=(str(new_notebook_id), 360))
         t.start()
     except Exception as e:
         print 'exception in livy execution'
@@ -607,6 +626,7 @@ def wec_generation_forecast_execution_process(request, exec_instance):
     # GATHER THE SERVICE ARGUMENTS
     service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to"]
     args_to_note = gather_service_args(service_args, request, service_exec)
+    args_to_note['dataset_table'] = Dataset.objects.get(pk=int(request.GET['dataset_id'])).table_name
     converters_selection = request.GET.getlist("converters[]")
     wecs = list()
     for converter_id in converters_selection:
@@ -620,11 +640,13 @@ def wec_generation_forecast_execution_process(request, exec_instance):
         aWec['wec_matrix'] = converter.sample_rows
         wecs.append(aWec)
     args_to_note['wecs'] = wecs
-    args_to_note['dataset_id'] = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY.keys()[0]
+    # args_to_note['dataset_id'] = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY.keys()[0]
+    args_to_note['dataset_id'] = request.GET['dataset_id']
     service_exec.arguments = args_to_note
     service_exec.save()
     # CONFIGURE THE QUERY TO BE USED
-    dataset_id = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY.keys()[0]
+    # dataset_id = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY.keys()[0]
+    dataset_id = request.GET['dataset_id']
     query_id = settings.WEC_GENERATION_FORECAST_SERVICE_DATASET_QUERY[dataset_id]
     wave_height_query_id = get_query_with_updated_filters(request, query_id)
     # CLONE THE SERVICE NOTE
@@ -634,7 +656,7 @@ def wec_generation_forecast_execution_process(request, exec_instance):
     power_cols_str = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW/m'
+        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW'
 
     visualisations['v1'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
@@ -740,6 +762,7 @@ def wec_load_matching_execution_process(request, exec_instance):
         # GATHER THE SERVICE ARGUMENTS
         service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
         args_to_note = gather_service_args(service_args, request, service_exec, 'post')
+        args_to_note['dataset_table'] = Dataset.objects.get(pk=int(request.POST['dataset_id'])).table_name
         load_profile_csv = request.FILES['load_profile_csv'].name
         args_to_note['load_profile_csv'] = load_profile_csv
         converters_selection = request.POST.getlist("converters[]")
@@ -1018,12 +1041,17 @@ def single_location_evaluation_execution_process(request, exec_instance):
     # GATHER THE SERVICE ARGUMENTS
     service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
     args_to_note = gather_service_args(service_args, request, service_exec)
+    args_to_note['dataset_table'] = Dataset.objects.get(pk=int(request.GET["dataset_id"])).table_name
     # CONFIGURE THE QUERY TO BE USED
     dataset_id = request.GET["dataset_id"]
     query_id = settings.LOCATION_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
     wave_height_query_id = get_query_with_updated_filters(request, query_id)
     # CLONE THE SERVICE NOTE
     new_notebook_id = clone_service_note(request, service, service_exec)
+    wave_height_query = AbstractQuery.objects.get(pk=int(wave_height_query_id))
+    twoDvar1 = wave_height_query.document['from'][0]['select'][0]['name']
+    twoDvar2 = wave_height_query.document['from'][1]['select'][0]['name']
+
     # ADD THE VISUALISATIONS TO BE CREATED
     visualisations = dict()
     # visualisations['v1'] = ({'notebook_id': '',
@@ -1036,20 +1064,20 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'df': '',
                              'query': wave_height_query_id,
                              'title': "Occurrence matrix",
-                             'url': "/visualizations/get_histogram_2d_am?viz_id=17&action=get_histogram_2d_am&y_var=i0_sea_surface_wave_significant_height&x_var=i1_sea_surface_wave_zero_upcrossing_period&bins=10&query=" + str(
+                             'url': "/visualizations/get_histogram_2d_am?viz_id=17&action=get_histogram_2d_am&y_var="+str(twoDvar1)+"&x_var="+str(twoDvar2)+"&bins=10&query=" + str(
                                  wave_height_query_id),
                              'done': False})
     visualisations['v3'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
                              'title': "Power line chart",
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&y_var_unit[]=kW/m&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=power&y_var_unit[]=kW/m&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
     visualisations['v4'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
                              'title': "Power histogram",
-                             'url': "/visualizations/get_histogram_chart_am/?bins=5&x_var=avg(power)&x_var_unit=kW/m&df=power_df&notebook_id="+str(new_notebook_id),
+                             'url': "/visualizations/get_histogram_chart_am/?bins=5&x_var=power&x_var_unit=kW/m&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
 
     start_year = int(args_to_note['start_date'].split('-')[0])
@@ -1057,7 +1085,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
     print start_year, end_year
     power_availability_vars = ''
     for year in range(start_year, end_year+1):
-        power_availability_vars += '&y_var[]=avg(power)_'+str(year)+'&y_var_unit[]=kW/m'
+        power_availability_vars += '&y_var[]=power_'+str(year)+'&y_var_unit[]=kW/m'
     visualisations['v5'] = ({'notebook_id': '',
                              'df': 'power_df_year_month',
                              'query': '',
@@ -1170,6 +1198,7 @@ def area_location_evaluation_execution_process(request, exec_instance):
     # GATHER THE SERVICE ARGUMENTS
     service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", "dataset_id"]
     args_to_note = gather_service_args(service_args, request, service_exec)
+    args_to_note['dataset_table'] = Dataset.objects.get(pk=int(request.GET["dataset_id"])).table_name
     # CONFIGURE THE QUERY TO BE USED
     dataset_id = request.GET["dataset_id"]
     query_id = settings.AREA_EVALUATION_SERVICE_DATASET_QUERY[dataset_id]
@@ -1297,10 +1326,16 @@ def wave_forecast_execution_process(request, exec_instance):
     # GATHER THE SERVICE ARGUMENTS
     service_args = ["start_date", "end_date", "latitude_from", "latitude_to", "longitude_from", "longitude_to", 'dataset_id']
     args_to_note = gather_service_args(service_args, request, service_exec)
+    args_to_note['dataset_table'] = Dataset.objects.get(pk=int(request.GET["dataset_id"])).table_name
     # CONFIGURE THE QUERY TO BE USED
     dataset_id = request.GET["dataset_id"]
     query_id = settings.WAVE_FORECAST_SERVICE_DATASET_QUERY[dataset_id]
     wave_forecast_query_id = get_query_with_updated_filters(request, query_id)
+
+    wave_forecast_query = AbstractQuery.objects.get(pk=int(wave_forecast_query_id))
+    twoDvar1 = wave_forecast_query.document['from'][0]['select'][0]['name']
+    twoDvar2 = wave_forecast_query.document['from'][1]['select'][0]['name']
+
     # CLONE THE SERVICE NOTE
     new_notebook_id = clone_service_note(request, service, service_exec)
     # ADD THE VISUALISATIONS TO BE CREATED
@@ -1308,20 +1343,20 @@ def wave_forecast_execution_process(request, exec_instance):
     visualisations['v1'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_forecast_query_id,
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i0_sea_surface_wave_significant_height&x_var=i0_time&limit=False&query="+str(wave_forecast_query_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]="+twoDvar1+"&x_var=i0_time&limit=False&query="+str(wave_forecast_query_id),
                              'done': False,
                              'title': 'Wave significant height'})
     visualisations['v2'] = ({'notebook_id': '',
                              'df': '',
                              'query': wave_forecast_query_id,
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=i1_sea_surface_wave_zero_upcrossing_period&x_var=i0_time&limit=False&query=" + str(
+                             'url': "/visualizations/get_line_chart_am/?y_var[]="+twoDvar2+"&x_var=i0_time&limit=False&query=" + str(
                                  wave_forecast_query_id),
                              'done': False,
                              'title': 'Wave mean period'})
     visualisations['v3'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=avg(power)&y_var_unit[]=kW/m&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=power&y_var_unit[]=kW&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False,
                              'title': 'Wave Energy'})
     service_exec.dataframe_visualizations = visualisations

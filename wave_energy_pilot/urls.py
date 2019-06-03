@@ -37,6 +37,7 @@ urlpatterns = [
     url(r'^energy_conversion/load_matching/status/(?P<exec_instance>[0-9]+)/$', views.energy_conversion_status, name='energy_conversion_status'),
 
     url(r'energy_conversion/new_wec/', views.wec_creation, name='wec_creation'),
+    url(r'energy_conversion/wec_delete/', views.wec_delete, name='wec_delete'),
 
     # Cancel execution
     url(r'^cancel_execution/(?P<exec_instance>[0-9]+)/$', views.cancel_execution, name='cancel_execution'),

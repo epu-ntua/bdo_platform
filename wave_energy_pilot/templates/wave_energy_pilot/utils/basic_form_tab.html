@@ -157,7 +157,7 @@
                        <select name="variables-selector" multiple="" class="ui dropdown" >
                             <option value="">Available Variables</option>
                             {% for variable in dataset.variables %}
-                                 <option value="{{ variable.title }}">{{ variable.title }}</option>
+                                 <option value="{{ variable.name }}">{{ variable.title }}</option>
                             {% endfor %}
                        </select>
                    </div>
