@@ -1,9 +1,20 @@
 // var query_id = $('#query-variables-select-container div').attr("id");
+$("#select_data_popover").click(function () {
+    $('.viz_item').popover('hide');
+});
+var widget_open_edit_modal = null;
+var widget_edit_id = null;
+var open_modal= false;
+var new_query_id;
+
 function hide_gif() {
-        $(".outputLoadImg").css("display", "none");
-    };
+    $(".outputLoadImg").css("display", "none");
+}
+
 $(document).ready(function () {
+    $('#dataframe .form-group').css('display','inline-block');
     var selected_val = null;
+    var viz_success = null;
     var var_list = null;
     var viz_request = '';
     var var_select = null;
@@ -11,78 +22,167 @@ $(document).ready(function () {
     var flag = false;
     $('[data-toggle="tooltip"]').tooltip();
 
-    function updateVariables() {
-        $('#query-variables-select-container').find('option').remove();
-        $('#query-dimensions-select-container').find('option').remove();
-        var record;
-        $('#addVizModal .variable-select').find('option').remove();
-        $('#addVizModal .variables-select ').find('option').remove();
-        $('#addVizModal .column-select ').find('option').remove();
-        $('#addVizModal .columns-select ').find('option').remove();
-        $('#addVizModal .ais-select ').find('option').remove();
-        var selected_query_id = parseInt($('#addVizModal #load-viz-query-select').find('option:selected').data('query-id'));
-        var doc;
-        $("#queries_container tbody tr").each(function () {
-            if(parseInt($(this).find('td').eq(0).text()) == selected_query_id){
-                doc = $(this).find('td').eq(3).text().replace(/\u'/g, "'").replace(/\'/g, '"').replace(/\False/g, '"False"').replace(/\True/g, '"True"').replace(/\None/g, '"None"')
-            }
-        });
-        var json_query_document = JSON.parse(doc);
-        var list_of_options_dims = [];
-        console.log(json_query_document);
-        for (var i = 0; i < json_query_document["from"].length; i++) {
-            for (var j = 0; j < json_query_document["from"][i]["select"].length; j++) {
-                record = json_query_document["from"][i]["select"][j];
-                if ((record['exclude'] === "False") || (record['exclude'] === '')) {
-                    if (record['type'] === 'VALUE') {
-                        $('#query-variables-select-container').append('<option value=' + String(record["name"]) + '>' + String(record["title"]) + '</option>');
-                    }
-                    else {
-                        var flag = false;
-                        for (var element in list_of_options_dims) {
-                            if (String(record["title"]) === String(element)) {
-                                flag = true;
-                            }
-                        }
-                        if (flag === false) {
-                            $('#query-dimensions-select-container').append('<option value=' + String(record["name"]) + '>' + String(record["title"]) + '</option>');
-                            list_of_options_dims.push(String(record["title"]));
-                        }
-                    }
+    $('#layers-list ul').empty();
+    $('#layers-list').dropdown();
+    $('#layers-list-title-button').click(function () {
+        $('#layers-list').trigger('click');
+    });
+    $("#query_name_span").text(null);
+    var layer_count = 0;
+    var layer_json = [];
+    var json;
+    var selected_visualization = null;
+    var first_time = true ;
+    var vis_created_flag = false;
+
+    $("#add_viz_btn").click(function () {
+        $("#addVizModal #viz_container").empty();
+        $('#addVizModal #submit-query-btn').hide();
+        $('#addVizModal #add_layer_btn').parent().hide();
+        $('#addVizModal #layers-list').parent().hide();
+    });
+
+    $("#add_layer_btn").parent().click(function () {
+        $(this).hide();
+        if((new_query_id!=null)&&(selected_visualization!=null)) {
+            alert("Layer is now saved. Please add a new layer!");
+            $("#viz_config").find("ul").children().each(function (index) {
+                if ($(this).attr("data-viz-type") != "map") {
+                    $(this).addClass('disabled');
+                }
+            });
+            $(".list-group").css('visibility','hidden');
+            $("#viz_config .list-group").children().each(function () {
+                $(this).find("#selected_viz_span").hide();
+            });
+            layer_json = [];
+            for (var i = 0; i < json.length; i++) {
+                var obj = json[i];
+                layer_json.push({});
+                for (var key in obj) {
+                    layer_json[i][key] = obj[key];
                 }
             }
+            $("#layers-list ul").append('<li class="layer_list_element item" id=layer_list_element'+String(layer_count)+' style="pointer-events: none" role=\"presentation\"><span  class="col-10 " style="display:inline; margin-right: 5px; pointer-events: none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query Name: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</span><button id=layer_list_element_btn'+String(layer_count)+' style="display: inline; pointer-events: auto!important; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
+            $(".layer_list_element #layer_list_element_btn"+String(layer_count)).click(function () {
+                 $("#viz_config .list-group").children().each(function () {
+                        $(this).find("#selected_viz_span").hide();
+                 });
+                var del_id = $(this).closest('li').attr('id');
+                for (var i = 0; i < layer_json.length; i++) {
+                    var obj = layer_json[i];
+                    // alert(del_id.split('layer_list_element')[1]);
+                    if (obj['layer_id']==del_id.split('layer_list_element')[1]){
+                        layer_count = layer_count-1;
+                        layer_json.splice(i,1);
+                        $(this).closest('li').remove();
+                        for(var j = i ; j < layer_json.length; j++){
+                            $(".layer_list_element #layer_list_element_btn"+String(j+1)).closest('li').attr('id','layer_list_element'+String(j));
+                            $(".layer_list_element #layer_list_element_btn"+String(j+1)).attr('id','layer_list_element_btn'+String(j));
+                            obj = layer_json[j];
+                            layer_json[j]['layer_id'] = layer_json[j]['layer_id']-1;
+                        }
+                        i=j;
+                    }
+                }
+                mapVizUrlCreator(layer_json,layer_count,'map');
+            });
+            layer_count = layer_count+1;
         }
-        var variables_content = $('#query-variables-select-container').html();
-        var dimensions_content = $('#query-dimensions-select-container').html();
+        else{
+            alert("Please select data and add visualization!")
+        }
+        $('#layers-list li').removeClass('disabled');
+        selected_visualization = null;
+        new_query_id = null;
+        $("#query_name_span").text(null);
+    });
 
-        $('#addVizModal .variable-select ').html(variables_content);
-        $('#addVizModal .variables-select ').html(variables_content);
-        $('#addVizModal .column-select ').html(variables_content + dimensions_content);
-        $('#addVizModal .columns-select ').html(variables_content + dimensions_content);
-    }
+    $("#addVizModal #select_data_popover").popover({
+        html: true,
+        animation: true,
+        title: 'Select query to use',
+        content: function () {
+            $('#query-container #query-select option').remove();
+            $('#all_queries_container').find('option').each(function () {
+                var check_query_val = $(this);
+                $('#selected-queries-table').find('td[data-columnname="query_id"]').each(function (){
+                    if($(this).text() === String(check_query_val.val())){
+                        check_query_val.clone().appendTo('#query-container #query-select');
+                    }
 
+                });
+            });
 
-    function populate_selects(){
-        $('.popover-content #use_existing_temp_res').parent().checkbox().first().checkbox({
-            onChecked: function(){
-                $('.popover-content #temporal_resolution').parent().addClass('disabled');
-            },
-            onUnchecked: function () {
-                $('.popover-content #temporal_resolution').parent().removeClass('disabled');
-            }
+            return $('#query-container').html();
+        }
+    }).click(function (e) {
+        // tour = tour_guide_senario(tour, "");
+        $(this).popover('toggle');
+        $('.popover-content .form-group #query-select').dropdown();
+
+        $('.popover-content #select_data_ok').click(function (e) {
+            new_query_id = $(".popover-content #query-select").dropdown('get value');
+            var new_query_text = $(".popover-content #query-select").dropdown('get text');
+            $('#addVizModal #selected_query').val(new_query_id);
+            $('#query_name_span').show();
+            $('#query_name_span').text(new_query_text);
+            $('#addVizModal #select_data_popover').popover("hide");
+            $('#addVizModal #viz_config .list-group').show();
+            $('#addVizModal #viz_config #viz_container').show();
+            // $('#add_layer_btn').parent().hide();
+            // $('#layers-list').parent().hide();
+            $(".list-group").css('visibility','visible');
+            // tour = tour_guide_senario(tour, "");
         });
-        $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
+        $('.popover-content #select_data_cancel').click(function (e) {
+            $('#addVizModal #select_data_popover').popover("hide");
+        })
+    });
 
-        $('.popover-content #use_color_column').parent().checkbox().first().checkbox({
-            onChecked: function(){
-                $('.popover-content #color_var').parent().removeClass('disabled');
-            },
-            onUnchecked: function () {
-                $('.popover-content #color_var').parent().addClass('disabled');
+    $(".viz_item").click(function (element) {
+        if ($('#layers-list ul li').length===0) {
+                init = 4;
+            }else{
+                init = 9;
             }
-        });
-        // $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
+        // tour = tour_guide_senario(tour, "");
+        if($('.popover').not('.tour').length) {
+            $('.viz_item').popover('hide');
+        }
+        else {
+            var component_id = $(this).attr('data-viz-id');
+            var component_type = $(this).attr('data-viz-type');
+            var component_selector = 'li[data-viz-id="' + component_id + '"]';
+            $(component_selector).popover({
+                html: true,
+                title: $(this).text() + ' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="' + $(this).attr('data-description') + '"></i>',
+                trigger: 'manual',
+                content: function () {
+                    return $('.all_viz_forms  #viz_' + String(component_id)).clone();
+                }
+            });
+            var chosen_viz = $(this).attr('data-viz-name');
+            updateVariables(chosen_viz, component_id, component_type, component_selector, createPopover);
+            // createPopover(component_id, component_type, component_selector, populate_selects(specific_viz_form_configuration));
+        }
 
+    });
+
+    function specific_viz_form_configuration(){
+
+        //AGGREGATE-VALUE
+        var allow_aggregate_value_submit = [true];
+        var aggregate_value_id = $('#viz_config ul li[data-viz-name="get_aggregate_value"]').attr('data-viz-id');
+        var aggregate_value_col_select = $('.popover-content #viz_'+aggregate_value_id+' #variable');
+        aggregate_value_col_select.on('change',function () {
+            allow_aggregate_value_submit = missing_parameter(aggregate_value_col_select,allow_aggregate_value_submit,'variable',0);
+        });
+        aggregate_value_col_select.dropdown('refresh');
+        aggregate_value_col_select.parent().dropdown('clear');
+
+
+        //DATA-TABLE
         $('.popover-content #select_all_columns').parent().checkbox().first().checkbox({
             onChecked: function(){
                 const options = $('.popover-content .columns-select #column_choice> option').toArray().map(
@@ -92,8 +192,454 @@ $(document).ready(function () {
             },
             onUnchecked: function() {
               $('.popover-content .columns-select #column_choice').dropdown('clear');
+
             },
         });
+        var allow_datatable_submit = [true];
+        var datatable_id = $('#viz_config ul li[data-viz-name="get_data_table"]').attr('data-viz-id');
+        var datatable_col_select = $('.popover-content #viz_'+datatable_id+' #column_choice');
+        datatable_col_select.on('change',function () {
+            allow_datatable_submit = missing_parameter(datatable_col_select,allow_datatable_submit,'column',0);
+        });
+        datatable_col_select.dropdown('set selected',datatable_col_select.find('option').val());
+        datatable_col_select.dropdown('refresh');
+        datatable_col_select.parent().dropdown('clear');
+
+
+        //HISTOGRAM
+        var allow_histogram_submit = [true,true];
+        var histogram_id = $('#viz_config ul li[data-viz-name="get_histogram_chart_am"]').attr('data-viz-id');
+        var histogramm_select = $('.popover-content #viz_'+histogram_id+' .column-select');
+        var histogram_input = $('.popover-content #viz_'+histogram_id+' #bins');
+        var viz_conf_histogram = viz_conf_json['visualiser']['histogram_chart_am'];
+        histogram_input.val(viz_conf_histogram['default_bins']);
+        histogram_input.on('input',function () {
+            allow_histogram_submit = limit_points(histogram_input,viz_conf_histogram,allow_histogram_submit,'bins',1)
+        });
+        histogramm_select.find('option').each(function () {
+            if ($(this).val().includes('time')){
+                $(this).remove();
+            }
+        });
+        var histogram_variable_select = $('.popover-content #viz_'+histogram_id+' #x_var');
+        histogram_variable_select.on('change',function () {
+            allow_histogram_submit = missing_parameter(histogram_variable_select,allow_histogram_submit,'variable',0);
+        });
+        histogram_variable_select.dropdown('refresh');
+        histogram_variable_select.parent().dropdown('clear');
+
+
+         //HISTOGRAM2D
+        var allow_histogram2d_submit = [true,true,true];
+        var histogram2d_id = $('#viz_config ul li[data-viz-name="get_histogram_2d_am"]').attr('data-viz-id');
+        var histogramm2d_select = $('.popover-content #viz_'+histogram2d_id+' .column-select');
+        var histogram2d_input = $('.popover-content #viz_'+histogram2d_id+' #bins');
+        var viz_conf_histogram2d = viz_conf_json['visualiser']['histogram_2d_am'];
+        histogram2d_input.val(viz_conf_histogram2d['default_bins']);
+        histogram2d_input.on('input',function () {
+            allow_histogram2d_submit = limit_points(histogram2d_input,viz_conf_histogram2d,allow_histogram2d_submit,'bins',0)
+        });
+        histogramm2d_select.find('option').each(function () {
+            if ($(this).val().includes('time')){
+                $(this).remove();
+            }
+        });
+        var histogram2d_yvariable_select = $('.popover-content #viz_'+histogram2d_id+' #y_var');
+        histogram2d_yvariable_select.on('change',function () {
+            allow_histogram2d_submit = missing_parameter(histogram2d_yvariable_select,allow_histogram2d_submit,'Y-Axis-Variable',1);
+        });
+        histogram2d_yvariable_select.dropdown('refresh');
+        histogram2d_yvariable_select.parent().dropdown('clear');
+
+        var histogram2d_xvariable_select = $('.popover-content #viz_'+histogram2d_id+' #x_var');
+        histogram2d_xvariable_select.on('change',function () {
+            allow_histogram2d_submit = missing_parameter(histogram2d_xvariable_select,allow_histogram2d_submit,'X-Axis-Variable',2);
+        });
+        histogram2d_xvariable_select.dropdown('refresh');
+        histogram2d_xvariable_select.parent().dropdown('clear');
+
+
+        //PIE CHART
+        var allow_pie_chart_submit = [true,true];
+        var pie_chart_id = $('#viz_config ul li[data-viz-name="get_pie_chart_am"]').attr('data-viz-id');
+        var pie_chart_agg_select = $('.popover-content #viz_'+pie_chart_id+' .aggregate-select');
+        pie_chart_agg_select.dropdown('set selected' , 'COUNT');
+        pie_chart_agg_select.find('option[value= "MAX"]').remove();
+        pie_chart_agg_select.find('option[value= "MIN"]').remove();
+        pie_chart_agg_select.find('option[value= "AVG"]').remove();
+        var pie_chart_col_select = $('.popover-content #viz_'+pie_chart_id+' #value_var');
+        pie_chart_col_select.on('change',function () {
+            allow_pie_chart_submit = missing_parameter(pie_chart_col_select,allow_pie_chart_submit,'variable',0);
+        });
+        pie_chart_col_select.dropdown('refresh');
+        pie_chart_col_select.parent().dropdown('clear');
+        var pie_chart_separator_select = $('.popover-content #viz_'+pie_chart_id+' #key_var');
+        pie_chart_separator_select.on('change',function () {
+            allow_pie_chart_submit = missing_parameter(pie_chart_separator_select,allow_pie_chart_submit,'separator',1);
+        });
+        pie_chart_separator_select.dropdown('set selected',pie_chart_separator_select.find('option').val());
+        pie_chart_separator_select.dropdown('refresh');
+        pie_chart_separator_select.parent().dropdown('clear');
+
+
+        //LINE-CHART
+        var allow_line_chart_submit = [true,true];
+        var line_chart_id = $('#viz_config ul li[data-viz-name="get_line_chart_am"]').attr('data-viz-id');
+        var line_chart_y_select = $('.popover-content #viz_'+line_chart_id+' #y_var');
+        line_chart_y_select.on('change',function () {
+            allow_line_chart_submit = missing_parameter(line_chart_y_select,allow_line_chart_submit,'Y-Axis-Variable',0);
+        });
+        line_chart_y_select.dropdown('set selected',line_chart_y_select.find('option').val());
+        line_chart_y_select.dropdown('refresh');
+        line_chart_y_select.parent().dropdown('clear');
+        var line_chart_x_select = $('.popover-content #viz_'+line_chart_id+' #x_var');
+        line_chart_x_select.on('change',function () {
+            allow_line_chart_submit = missing_parameter(line_chart_x_select,allow_line_chart_submit,'X-Axis-Variable',1);
+        });
+        line_chart_x_select.dropdown('refresh');
+        line_chart_x_select.parent().dropdown('clear');
+
+
+        //COLUMN-CHART
+        var allow_column_chart_submit = [true,true];
+        var column_chart_id = $('#viz_config ul li[data-viz-name="get_column_chart_am"]').attr('data-viz-id');
+        var column_chart_y_select = $('.popover-content #viz_'+column_chart_id+' #y_var');
+        column_chart_y_select.on('change',function () {
+            allow_column_chart_submit = missing_parameter(column_chart_y_select,allow_column_chart_submit,'Y-Axis-Variable',0);
+        });
+        column_chart_y_select.dropdown('set selected',column_chart_y_select.find('option').val());
+        column_chart_y_select.dropdown('refresh');
+        column_chart_y_select.parent().dropdown('clear');
+        var column_chart_x_select = $('.popover-content #viz_'+column_chart_id+' #x_var');
+        column_chart_x_select.on('change',function () {
+            allow_column_chart_submit = missing_parameter(column_chart_x_select,allow_column_chart_submit,'X-Axis-Variable',1);
+        });
+        column_chart_x_select.dropdown('refresh');
+        column_chart_x_select.parent().dropdown('clear');
+
+
+        //TIME SERIES
+         $('.popover-content #use_existing_temp_res').parent().checkbox().first().checkbox({
+            onChecked: function(){
+                $('.popover-content #temporal_resolution').parent().addClass('disabled');
+            },
+            onUnchecked: function () {
+                $('.popover-content #temporal_resolution').parent().removeClass('disabled');
+            }
+        });
+        $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
+
+        // $('.popover-content .checkbox').parent().removeClass('form-group label-floating');
+        var allow_time_series_submit = [true];
+        var time_series_id = $('#viz_config ul li[data-viz-name="get_time_series_am"]').attr('data-viz-id');
+        var time_series_checkbox = $('.popover-content #viz_'+time_series_id+' #use_existing_temp_res');
+        time_series_checkbox.parent().checkbox('check');
+        var time_series_col_select = $('.popover-content #viz_'+time_series_id+' #y_var');
+        time_series_col_select.on('change',function () {
+            allow_time_series_submit = missing_parameter(time_series_col_select,allow_time_series_submit,'variable',0);
+        });
+        time_series_col_select.dropdown('set selected',time_series_col_select.find('option').val());
+        time_series_col_select.dropdown('refresh');
+        time_series_col_select.parent().dropdown('clear');
+
+
+        // PLOTLINE VESSEL COURSE
+        var allow_plotline_submit = [true, true, true];
+        var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
+        var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
+        var plotline_platform_id_input = $('.popover-content #viz_'+ plotline_vessel_course_id+' #platform_id');
+        var viz_conf_plotline = viz_conf_json['visualiser']['map_plotline_vessel_course'];
+        var plotline_vessel_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id');
+        plotline_platform_id_input.val(' ');
+        plotline_vessel_course_input.val(viz_conf_plotline['default_points']);
+        plotline_vessel_course_input.on('input',function () {
+            allow_plotline_submit = limit_points(plotline_vessel_course_input,viz_conf_plotline,allow_plotline_submit,'positions',0);
+        });
+        aggregate_value_col_select.parent().dropdown('clear');
+        var plotline_vessel_col_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id-columns-select');
+        plotline_vessel_col_id_select.on('change', function(){
+            allow_plotline_submit = missing_parameter(plotline_vessel_col_id_select, allow_plotline_submit, 'Vessel-ID-Column',1 )
+            if ((plotline_vessel_col_id_select.val()!== '')&&(plotline_vessel_col_id_select.val()!==null)){
+                plotline_vessel_id_select.parent().removeClass('disabled');
+                plotline_vessel_id_select.find('option').remove();
+                $('.vessel-id-select option[data-type="'+ String(plotline_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+                plotline_vessel_id_select.parent().dropdown('clear');
+            }else{
+                plotline_vessel_id_select.find('option').remove();
+                plotline_vessel_id_select.parent().dropdown('clear');
+                plotline_vessel_id_select.parent().addClass('disabled');
+            }
+        });
+        plotline_vessel_col_id_select.parent().dropdown('clear');
+        plotline_vessel_id_select.on('change', function(){
+            allow_plotline_submit = missing_parameter(plotline_vessel_id_select, allow_plotline_submit, 'Vessel-ID', 2 )
+        });
+        plotline_vessel_id_select.parent().dropdown('clear');
+        plotline_vessel_id_select.parent().addClass('disabled');
+
+
+        //CONTOURS
+        var allow_contour_submit = [true,true];
+        var contour_id = $('#viz_config ul li[data-viz-name="get_map_contour"]').attr('data-viz-id');
+        var contours_input = $('.popover-content #viz_'+contour_id+' #n_contours');
+        var viz_conf_contour = viz_conf_json['visualiser']['map_contour'];
+        contours_input.val(viz_conf_contour['default_contours']);
+        contours_input.on('input',function () {
+            allow_contour_submit = limit_points(contours_input, viz_conf_contour, allow_contour_submit, 'contours',1);
+        });
+        var contour_col_select = $('.popover-content #viz_'+contour_id+' #contour_var');
+        contour_col_select.on('change',function () {
+            allow_contour_submit = missing_parameter(contour_col_select,allow_contour_submit,'variable',0);
+        });
+        contour_col_select.dropdown('refresh');
+        contour_col_select.parent().dropdown('clear');
+
+
+        // POLYGON LINE
+        var allow_polygon_submit = [true];
+        var polygon_id = $('#viz_config ul li[data-viz-name="get_map_polygon"]').attr('data-viz-id');
+        var polygon_input = $('.popover-content #viz_'+polygon_id+' #points_limit');
+        var viz_conf_polygon = viz_conf_json['visualiser']['map_polygon'];
+        polygon_input.val(viz_conf_polygon['default_points']);
+        polygon_input.on('input',function () {
+                allow_polygon_submit = limit_points(polygon_input,viz_conf_polygon,allow_polygon_submit,'points',0);
+        });
+
+
+        //HEATMAP
+        // var allow_heatmap_submit = [true,true];
+        var allow_heatmap_submit = [true];
+        var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
+        // var heatmap_points_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
+        var viz_conf_heatmap = viz_conf_json['visualiser']['map_heatmap'];
+        // heatmap_points_input.val(viz_conf_heatmap['default_points']);
+        // heatmap_points_input.on('input',function () {
+        //     allow_heatmap_submit = limit_points(heatmap_points_input, viz_conf_heatmap, allow_heatmap_submit, 'points',1);
+        // });
+        var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
+        heatmap_col_select.append('<option value="heatmap_frequency">Frequency</option>');
+        heatmap_col_select.on('change',function () {
+            allow_heatmap_submit = missing_parameter(heatmap_col_select,allow_heatmap_submit,'variable',0);
+        });
+        heatmap_col_select.dropdown('refresh');
+        heatmap_col_select.parent().dropdown('clear');
+
+
+         //MAP MARKERS VESSEL COURSE
+        var markers_checkbox_flag = false;
+        var allow_markers_vessel_submit = [true, true, true, true, true];
+         $('.popover-content #use_color_column').parent().checkbox().first().checkbox({
+            onChecked: function(){
+                $('.popover-content #color_var').parent().removeClass('disabled');
+                markers_checkbox_flag = true;
+                allow_markers_vessel_submit = missing_parameter(markers_vessel_color_var, allow_markers_vessel_submit, 'color-column', 4);
+
+            },
+            onUnchecked: function () {
+                $('.popover-content #color_var').parent().addClass('disabled');
+                $('.popover-content #color_var').dropdown('clear');
+                markers_checkbox_flag = false;
+                allow_markers_vessel_submit[4] = true;
+                $('.color-column_missing_error').remove();
+
+                var flag = true;
+                for (var el=0; el<allow_markers_vessel_submit.length;el++){
+                    if (allow_markers_vessel_submit[el]===false){
+                        flag = false;
+                    }
+                }
+                if (flag=== true){
+                    $('#select_conf_ok').removeClass('disabled');
+                }
+
+            }
+        });
+        var markers_vessel_id = $('#viz_config ul li[data-viz-name="get_map_markers_vessel_course"]').attr('data-viz-id');
+        var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
+        var viz_conf_markers_vessel = viz_conf_json['visualiser']['map_markers_vessel_course'];
+        var markers_vessel_col_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id-columns-select');
+        var markers_vessel_col_select = $('.popover-content #viz_'+markers_vessel_id+' #variable');
+        var markers_vessel_id_select = $('.popover-content #viz_'+markers_vessel_id+' #vessel-id');
+        markers_vessel_input.val(viz_conf_markers_vessel['default_points']);
+        markers_vessel_input.on('input',function () {
+            allow_markers_vessel_submit = limit_points(markers_vessel_input,viz_conf_markers_vessel,allow_markers_vessel_submit,'markers',1)
+        });
+        var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var');
+        markers_vessel_color_var.find('option[value= "i0_longitude"]').remove();
+        markers_vessel_color_var.find('option[value= "i0_latitude"]').remove();
+        markers_vessel_color_var.find('option[value= "i0_time"]').remove();
+        $('.popover-content #color_var').parent().addClass('disabled');
+        markers_vessel_color_var.on('change',function () {
+            if (markers_checkbox_flag) {
+                allow_markers_vessel_submit = missing_parameter(markers_vessel_color_var, allow_markers_vessel_submit, 'color-column', 4);
+            }
+        });
+        markers_vessel_color_var.dropdown('clear');
+        markers_vessel_col_select.on('change',function () {
+            allow_markers_vessel_submit = missing_parameter(markers_vessel_col_select, allow_markers_vessel_submit,'variable',0);
+        });
+        markers_vessel_col_select.dropdown('refresh');
+        markers_vessel_col_select.parent().dropdown('clear');
+
+
+        markers_vessel_col_id_select.on('change', function(){
+            allow_markers_vessel_submit = missing_parameter(markers_vessel_col_id_select, allow_markers_vessel_submit, 'Vessel-ID-Column',2 )
+            if ((markers_vessel_col_id_select.val()!== '')&&(markers_vessel_col_id_select.val()!==null)){
+                markers_vessel_id_select.parent().removeClass('disabled');
+                markers_vessel_id_select.find('option').remove();
+                $('.vessel-id-select option[data-type="'+ String(markers_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+            }else{
+                $('.popover-content #vessel-id').append('<option value=1>test</option>');
+                setTimeout(function() {
+                    markers_vessel_id_select.dropdown('set selected',markers_vessel_id_select.find('option').val());
+                    markers_vessel_id_select.parent().dropdown('clear');
+                    markers_vessel_id_select.find('option').remove();
+                    markers_vessel_id_select.parent().addClass('disabled');
+                }, 20);
+            }
+        });
+        markers_vessel_col_id_select.parent().dropdown('clear');
+        markers_vessel_id_select.on('change', function(){
+            allow_markers_vessel_submit = missing_parameter(markers_vessel_id_select, allow_markers_vessel_submit, 'Vessel-ID', 3 )
+        });
+
+
+
+
+
+         //MAP MARKERS GRID
+        var allow_markers_grid_submit = [true,true];
+        var markers_grid_id = $('#viz_config ul li[data-viz-name="get_map_markers_grid"]').attr('data-viz-id');
+        var markers_grid_input = $('.popover-content #viz_'+ markers_grid_id+' #marker_limit');
+        var viz_conf_markers_grid = viz_conf_json['visualiser']['map_markers_grid'];
+        markers_grid_input.val(viz_conf_markers_grid['default_points']);
+        markers_grid_input.on('input',function () {
+            allow_markers_grid_submit = limit_points(markers_grid_input,viz_conf_markers_grid,allow_markers_grid_submit,'markers',1);
+        });
+
+        var markers_grid_col_select = $('.popover-content #viz_'+markers_grid_id+' #variable');
+        markers_grid_col_select.on('change',function () {
+            allow_markers_grid_submit = missing_parameter(markers_grid_col_select,allow_markers_grid_submit,'variable',0);
+        });
+        markers_grid_col_select.dropdown('refresh');
+        markers_grid_col_select.parent().dropdown('clear');
+
+    }
+
+    function createPopover(component_id, component_type, component_selector){
+        $(component_selector).on("hidden.bs.popover", function(e) {
+            $(".viz_item").removeClass('waiting-disable');
+            selected_val = null;
+            var_list = null;
+            var_select = null;
+            col_select = null;
+            flag = false;
+            var selects_in_popover = '.popover-content #viz_' + component_id;
+            $(selects_in_popover).remove();
+            $(component_selector).popover('destroy');
+
+        });
+        $(component_selector).on("shown.bs.popover", function(e) {
+            $(".viz_item").removeClass('waiting-disable');
+            populate_selects(specific_viz_form_configuration);
+        });
+        $(component_selector).popover('show');
+        var popover_component = $('.popover#'+$(this).attr('aria-describedby'));
+        var viz_info_text = "";
+        $(popover_component).find('label.form_field_info').each(function () {
+            viz_info_text = viz_info_text + "\n-"+$(this).text()+": " + $(this).attr('title');
+        });
+        $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
+
+
+        // setTimeout(function () {
+        //     specific_viz_form_configuration();
+        // },150);
+
+
+
+        var popver_id = '#' + $(component_selector).attr('aria-describedby');
+        $(popver_id + ' #select_conf_ok').click(function (e) {
+            open_modal=true;
+            selected_visualization = $(component_selector).text();
+            $("#viz_config .list-group").children().each(function () {
+                $(this).find("#selected_viz_span").hide();
+            })
+            $(component_selector).find("#selected_viz_span").show();
+
+            submit_conf(component_selector, component_type);
+            $(component_selector).popover("hide");
+        });
+        $(popver_id + ' #select_conf_cancel').click(function (e) {
+            $(component_selector).popover("hide");
+        });
+
+    }
+
+    function updateVariables(chosen_viz,component_id, component_type, component_selector,_callback){
+        $('#addVizModal .variable-select').find('option').remove();
+        $('#addVizModal .variables-select ').find('option').remove();
+        $('#addVizModal .column-select ').find('option').remove();
+        $('#addVizModal .columns-select ').find('option').remove();
+        $('#addVizModal .variable-numeric-select').find('option').remove();
+        $('#addVizModal .variables-numeric-select ').find('option').remove();
+        $('#addVizModal .column-numeric-select ').find('option').remove();
+        $('#addVizModal .columns-numeric-select ').find('option').remove();
+        $('#addVizModal .vessel-id-columns-select ').find('option').remove();
+        $('#addVizModal .vessel-id-select ').find('option').remove();
+        $('#addVizModal .ais-select ').find('option').remove();
+        var variables_content = $('#query-variables-select-container #'+String(new_query_id)).html();
+        var dimensions_content = $('#query-dimensions-select-container #'+String(new_query_id)).html();
+        var variables_numeric_content = '';
+        var dimensions_numeric_content = '';
+        $.each($('#query-variables-select-container #'+String(new_query_id)).find('option'), function (i, el) {
+            if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")  || ($(el).data('datatype') === "DOUBLE")  || ($(el).data('datatype') === "BYTE")){
+                variables_numeric_content += $(el).prop('outerHTML');
+            }
+        });
+        $.each($('#query-dimensions-select-container #'+String(new_query_id)).find('option'), function (i, el) {
+            if(($(el).data('datatype') === "FLOAT") || ($(el).data('datatype') === "INT")  || ($(el).data('datatype') === "DOUBLE")  || ($(el).data('datatype') === "BYTE")){
+                dimensions_numeric_content += $(el).prop('outerHTML');
+            }
+        });
+        // var dataset_arguments_content = $('#query-datasets-extra-arguments #'+String(new_query_id)).html();
+        $('#addVizModal .variable-select ').html(variables_content);
+        $('#addVizModal .variables-select ').html(variables_content);
+        $('#addVizModal .column-select ').html(variables_content + dimensions_content);
+        $('#addVizModal .columns-select ').html(variables_content + dimensions_content);
+        $('#addVizModal .variable-numeric-select ').html(variables_numeric_content);
+        $('#addVizModal .variables-numeric-select ').html(variables_numeric_content);
+        $('#addVizModal .column-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
+        $('#addVizModal .columns-numeric-select ').html(variables_numeric_content + dimensions_numeric_content);
+        // $("#addVizModal .dataset-argument-select").html(dataset_arguments_content);
+        if((chosen_viz ==='get_map_plotline_vessel_course')||(chosen_viz==='get_map_markers_vessel_course')) {
+            $(".viz_item").addClass('waiting-disable');
+            $.ajax({
+                "type": "GET",
+                "url": "/visualizations/get_vessel_ids_info/" + String(new_query_id) + "/",
+                "success": function (result) {
+                    console.log(result);
+                    $.each(result, function (col_name, values_list) {
+                        $('#addVizModal .vessel-id-columns-select').append("<option value='" + col_name + "'>" + col_name + "</option>");
+                        $.each(values_list, function (_, id_value) {
+                            $('#addVizModal .vessel-id-select').append("<option data-type='"+ String(col_name) +"' value='" + id_value + "'>" + id_value + "</option>");
+                        });
+                    });
+                },
+                "error": function () {
+                    console.log('error getting vessel identifiers');
+                },
+                "complete": function (data) {
+                    _callback(component_id, component_type, component_selector);
+                }
+            });
+        }else{
+            _callback(component_id, component_type, component_selector);
+        }
+
+    }
+    function populate_selects(_mycallback){
+
 
          $(".popover-content .variable-select").dropdown({
                 clearable: true,
@@ -112,10 +658,43 @@ $(document).ready(function () {
             placeholder: 'Select Variable(s)',
         });
 
-         $(".popover-content .columns-select").dropdown({
+        $(".popover-content .columns-select").dropdown({
             clearable: true,
             placeholder: 'Select Variables or Dimensions',
         });
+
+        $(".popover-content .variable-numeric-select").dropdown({
+                clearable: true,
+                placeholder: 'Select a Variable',
+            });
+        $(".popover-content .variable-numeric-select").dropdown('clear');
+
+        $(".popover-content .column-numeric-select").dropdown({
+            clearable: true,
+            placeholder: 'Select a Variable or Dimension',
+
+        });
+        $(".popover-content .column-numeric-select").dropdown('clear');
+        $(".popover-content .variables-numeric-select").dropdown({
+            clearable: true,
+            placeholder: 'Select Variable(s)',
+        });
+
+         $(".popover-content .columns-numeric-select").dropdown({
+            clearable: true,
+            placeholder: 'Select Variables or Dimensions',
+        });
+
+        $(".popover-content .vessel-id-columns-select").dropdown({
+            clearable: true,
+            placeholder: 'Select the column to use as vessel identifier',
+        });
+
+        $(".popover-content .vessel-id").dropdown({
+            clearable: true,
+            placeholder: 'Select the vessel identifier',
+        });
+
 
         $(".popover-content .aggregate-select").dropdown({
             placeholder: 'Select an Aggregate Function'
@@ -144,7 +723,7 @@ $(document).ready(function () {
                 selected_val = null;
                 col_select = null;
             }
-         })
+         });
 
         $(".popover-content .variable-select").dropdown('setting','onChange',function () {
             selected_val = $(".popover-content .variable-select").dropdown('get value');
@@ -156,7 +735,7 @@ $(document).ready(function () {
                 selected_val = null;
                 var_select = null;
             }
-         })
+         });
 
         $(".popover-content .variables-select").dropdown('setting','onChange',function () {
             selected_val = $(".popover-content .variables-select").dropdown('get value');
@@ -184,218 +763,271 @@ $(document).ready(function () {
                 }
             }
          })
+        _mycallback();
+
     }
 
-
-    function specific_viz_form_configuration(){
-        //PIE CHART
-        var pie_chart_id = $('#viz_config ul li[data-viz-name="get_pie_chart_am"]').attr('data-viz-id');
-        var pie_chart_agg_select = $('.popover-content #viz_'+pie_chart_id+' .aggregate-select');
-        pie_chart_agg_select.dropdown('set selected' , 'COUNT');
-        pie_chart_agg_select.find('option[value= "MAX"]').remove();
-        pie_chart_agg_select.find('option[value= "MIN"]').remove();
-        pie_chart_agg_select.find('option[value= "AVG"]').remove();
-
-        //TIME SERIES
-        var time_series_id = $('#viz_config ul li[data-viz-name="get_time_series_am"]').attr('data-viz-id');
-        var time_series_checkbox = $('.popover-content #viz_'+time_series_id+' #use_existing_temp_res');
-        time_series_checkbox.parent().checkbox('check');
-
-        // PLOTLINE VESSEL COURSE
-        var plotline_vessel_course_id = $('#viz_config ul li[data-viz-name="get_map_plotline_vessel_course"]').attr('data-viz-id');
-        var plotline_vessel_course_input = $('.popover-content #viz_'+plotline_vessel_course_id+' #points_limit');
-        var plotline_platform_id_input = $('.popover-content #viz_'+ plotline_vessel_course_id+' #platform_id');
-        plotline_platform_id_input.val(' ');
-        plotline_vessel_course_input.val(20);
-        plotline_vessel_course_input.on('input',function () {
-            if (plotline_vessel_course_input.val()>=10000 || plotline_vessel_course_input.val()<0){
-                alert('Please set the limit of plotline points below 10000 and above 0.');
-                plotline_vessel_course_input.val(20);
-            }
-        });
-        // POLYGON LINE
-        var polygon_id = $('#viz_config ul li[data-viz-name="get_map_polygon"]').attr('data-viz-id');
-        var polygon_input = $('.popover-content #viz_'+polygon_id+' #points_limit');
-        polygon_input.val(1);
-        polygon_input.on('input',function () {
-            if ( polygon_input.val()>=100000 ||  polygon_input.val()<0){
-                alert('Please set the limit of polygon points below 100000 and above 0.');
-                 polygon_input.val(1);
-            }
-        });
-        //HEATMAP
-        var heatmap_id = $('#viz_config ul li[data-viz-name="get_map_heatmap"]').attr('data-viz-id');
-        var heatmap_input = $('.popover-content #viz_'+heatmap_id+' #points_limit');
-        heatmap_input.val(30);
-        heatmap_input.on('input',function () {
-            if ( heatmap_input.val()>=10000 || heatmap_input.val()<0){
-                alert('Please set the limit of heatmap points below 10000 and above 0.');
-                heatmap_input.val(30);
-            }
-        });
-        var heatmap_col_select = $('.popover-content #viz_'+heatmap_id+' #heat_col');
-        heatmap_col_select.append('<option value="heatmap_frequency">Frequency</option>');
-        heatmap_col_select.dropdown('refresh');
-        heatmap_col_select.parent().dropdown('clear');
-
-         //MAP MARKERS VESSEL COURSE
-        var markers_vessel_id = $('#viz_config ul li[data-viz-name="get_map_markers_vessel_course"]').attr('data-viz-id');
-
-        var markers_vessel_input = $('.popover-content #viz_'+ markers_vessel_id+' #marker_limit');
-        var markers_platform_id_input = $('.popover-content #viz_'+ markers_vessel_id+' #platform_id');
-        markers_platform_id_input.val(' ');
-        markers_vessel_input.val(20);
-        markers_vessel_input.on('input',function () {
-            if ( markers_vessel_input.val()>=1000 || markers_vessel_input.val()<0){
-                alert('Please set the limit of heatmap points below 1000 and above 0.');
-                markers_vessel_input.val(20);
-            }
-        });
-        var markers_vessel_color_var = $('.popover-content #viz_'+ markers_vessel_id+' #color_var').parent();
-        markers_vessel_color_var.find('option[value= "i0_platform_id"]').remove();
-        markers_vessel_color_var.dropdown('clear');
-        $('.popover-content #color_var').parent().addClass('disabled');
-
-         //MAP MARKERS GRID
-        var markers_grid_id = $('#viz_config ul li[data-viz-name="get_map_markers_grid"]').attr('data-viz-id');
-
-        var markers_grid_input = $('.popover-content #viz_'+ markers_grid_id+' #marker_limit');
-        markers_grid_input.val(30);
-        markers_grid_input.on('input',function () {
-            if ( markers_grid_input.val()>=1000 || markers_grid_input.val()<0){
-                alert('Please set the limit of heatmap points below 1000 and above 0.');
-                markers_grid_input.val(30);
-            }
-        });
-    }
-
-
-
-    $(".viz_item").click(function () {
-        $('.popover').hide();
-        var component_id = $(this).attr('data-viz-id');
-        var component_type = $(this).attr('data-viz-type');
-        var component_selector = 'li[data-viz-id="' + component_id + '"]';
-        $(component_selector).popover({
-            html: true,
-            title: $(this).text() + ' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="' + $(this).attr('data-description') + '"></i>',
-            trigger: 'manual',
-            content: function () {
-                return $('.all_viz_forms  #viz_' + String(component_id)).clone();
-            }
-        });
-        updateVariables();
-
-        $(component_selector).popover('show');
-        var popover_component = $('.popover#' + $(this).attr('aria-describedby'));
-        var viz_info_text = "";
-        $(popover_component).find('label.form_field_info').each(function () {
-            viz_info_text = viz_info_text + "\n-" + $(this).text() + ": " + $(this).attr('title');
-        });
-        $('#viz_id_icon').attr('title', $('#viz_id_icon').attr('title') + viz_info_text);
-
-        $(component_selector).on("hidden.bs.popover", function (e) {
-            selected_val = null;
-            var_list = null;
-            var_select = null;
-            col_select = null;
-            flag = false;
-            var selects_in_popover = '.popover-content #viz_' + component_id;
-            $(selects_in_popover).remove();
-            $(component_selector).popover('destroy');
-
-        });
-        populate_selects();
-        specific_viz_form_configuration();
-
-
-        var popver_id = '#' + $(component_selector).attr('aria-describedby');
-        $(popver_id + ' #select_conf_ok').click(function () {
-            $("#viz_config .list-group").children().each(function () {
-                $(this).find("#selected_viz_span").hide();
+    function submit_conf(component_selector,component_type) {
+        var conf_popover_id;
+        var submitted_args;
+        var selects;
+        var myData;
+        $('#add_layer_btn').parent().hide();
+        $('#layers-list').parent().hide();
+        $('#addVizModal #submit-modal-btn').hide();
+        if(component_type!='map') {
+            var viz_request = "/visualizations/";
+            viz_request += $('#addVizModal').find('.modal-body').find('#action').val();
+            conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+            submitted_args = $('#addVizModal').find(conf_popover_id).find('.popover-content').clone();
+            selects = $('#addVizModal').find(conf_popover_id).find('.popover-content').find("select");
+            $(selects).each(function (i) {
+                var select = this;
+                $(submitted_args).find("select").eq(i).val($(select).val());
+                $('#config-viz-form').append(select);
             });
-
-            $(component_selector).find("#selected_viz_span").show();
-            submit_conf(component_selector, component_type);
-            $(component_selector).popover("hide");
-        });
-        $(popver_id + ' #select_conf_cancel').click(function () {
-            $(component_selector).popover("hide");
-        });
-    });
-
-
-    function submit_conf(component_selector, component_type) {
-        var conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
-        var submitted_args = $(conf_popover_id).find('.popover-content').clone();
-        var selects = $(conf_popover_id).find('.popover-content').find("select");
-        $(selects).each(function (i) {
-            var select = this;
-            $(submitted_args).find("select").eq(i).val($(select).val());
-            $('#config-viz-form').append(select);
-        });
-        $('#config-viz-form').empty();
-        $('#config-viz-form').append(submitted_args);
-
-        if (component_type !== 'map') {
-            viz_request = "/visualizations/" + $(component_selector).data('viz-name');
-            var chartData = $("#config-viz-form").serialize();
-            viz_request += '?' + chartData + '&query=' + $('#selected_query').attr('value');
-            show_viz(viz_request);
+            $('#config-viz-form').empty();
+            $('#config-viz-form').append(submitted_args);
+            myData = $("#config-viz-form").serialize();
+            viz_request += '?';
+            viz_request += myData;
+            viz_request += '&query=' + $('#addVizModal #selected_query').val();
+            vis_created_flag = true;
+            show_viz(viz_request, component_type,1);
         }
-        else {
-            var json = [];
-            var mapChartData = getFormData($("#config-viz-form"), 0, $('#selected_query').attr('value'));
-            json.push(mapChartData);
-            viz_request = getMapVisualizationRequest(json);
-            show_viz(viz_request)
-        }
-        ;
+        else{
+            conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
+            submitted_args = $('#addVizModal').find(conf_popover_id).find('.popover-content').clone();
+            selects = $('#addVizModal').find(conf_popover_id).find('.popover-content').find("select");
+            $(selects).each(function (i) {
+                var select = this;
+                $(submitted_args).find("select").eq(i).val($(select).val());
+                $('#config-viz-form').append(select);
+            });
+            $('#config-viz-form').empty();
+            $('#config-viz-form').append(submitted_args);
+            myData = getFormData($("#config-viz-form"),layer_count,$('#addVizModal #selected_query').val());
+            json=[];
+            for (var i = 0; i < layer_json.length; i++) {
+                var obj = layer_json[i];
+                json.push({});
+                for (var key in obj) {
+                    json[i][key] = obj[key];
+                }
+            }
+            json.push(myData);
+            if (first_time){
+                mapVizUrlCreator(json, layer_count + 1, component_type);
+            }
+            else{
+                first_time = false;
+                mapVizUrlCreator(json, layer_count, component_type);
+            }
+        };
+        vis_created_flag = true;
+
     };
-
-    $("#addVizModal #submit-query-btn").click(function () {
-        $('#query #viz_container iframe').appendTo('#dynamic_dashboard');
-        html_editor.replaceRange('\n<div id="viz_container"><div class="loadingFrame"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
-        html_editor.refresh();
-        viz_request = "";
-        $('#query #addVizModal #viz_container').empty();
-    });
-
-    function getMapVisualizationRequest(json) {
-        var viz_request = "/visualizations/get_map_visualization/?layer_count=1&";
-        var url = "";
+    function mapVizUrlCreator(json,my_layer_count, comp_type){
+        var viz_request = "/visualizations/get_map_visualization/?";
+        viz_request += "layer_count="+String(my_layer_count)+"&";
+        var url="";
         for (var i = 0; i < json.length; i++) {
-            var obj = json[i];
+            var obj =json[i];
             for (var key in obj) {
-                url += "&" + (key) + obj['layer_id'] + "=" + (obj[key]);
+                if (key.includes('[]')){
+                    for (var jcount = 0; jcount<obj[key].length; jcount++) {
+                        url = url + "&" + (key.replace('[]', '')) + obj['layer_id'] + "[]" + "=" + (obj[key][jcount]);
+                    }
+                }else {
+                    url = url + "&" + (key) + obj['layer_id'] + "=" + (obj[key]);
+                }
             }
         }
-        url = url.replace("&", "");
+        url = url.replace("&","");
         viz_request += url;
-        return viz_request;
+        show_viz(viz_request, comp_type, String(my_layer_count));
     }
-
-    function show_viz(viz_request) {
-        // language=HTML
-        var htmlString = '<div class="outputLoadImg"><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
-        $("#viz_container").html(htmlString);
-        $('#addVizModal #submit-modal-btn').show();
-        $("#viz_container .outputLoadImg").css("display", "block");
-        $("#viz_container iframe").on("load", function () {
-            $(this).siblings(".outputLoadImg").css("display", "none");
-        });
-    }
-
-
-    function getFormData(form, count, query) {
+    function getFormData(form,count,query){
         var unindexed_array = form.serializeArray();
         var indexed_array = {};
-        $.map(unindexed_array, function (n) {
-            indexed_array[n['name']] = n['value'];
+        $.map(unindexed_array, function(n, i){
+            if(n['name'].includes('[]')){
+                if(indexed_array.hasOwnProperty(n['name'])){
+                    indexed_array[n['name']].push(n['value']);
+                }else{
+                    indexed_array[n['name']] = [n['value']];
+                }
+            }else {
+                indexed_array[n['name']] = n['value'];
+            }
         });
         indexed_array['query'] = query;
         indexed_array['layer_id'] = String(count);
-        indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000)) + 'layer' + String(count);
+        indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000))+'layer'+String(count) ;
         return indexed_array;
+    }
+    function show_viz(viz_request, comp_type, layer_count) {
+        $("#viz_container").html('<div class="loadingFrame"><img src="' + img_source_path + '"/></div><iframe class="iframe-class" id="viz-iframe" ' +
+            'src="' + viz_request + '" frameborder="0" allowfullscreen="" ' +
+            '></iframe>');
+
+
+        // $('#addVizModal #submit-modal-btn').show();
+        $("#addVizModal #viz_container .loadingFrame").css( "display", "block" );
+        $("#addVizModal #viz_container iframe").on( "load", function(){
+            $(this).siblings(".loadingFrame").css( "display", "none" );
+            var execution_flag = $(this).contents().find('.visualisation_execution_input').val();
+
+            if ((execution_flag === 'success')&&(comp_type === 'map')&&(open_modal === true)){
+                $('#add_layer_btn').parent().show();
+                $('#layers-list').parent().show();
+                $('#addVizModal #submit-modal-btn').show();
+                var map_iframe = $(this).contents();
+                map_iframe.find('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
+                map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
+                map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
+                map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
+                if(layer_count==='1') {
+                    init = 5;
+                }else{
+                    init = 10;
+                }
+                // tour = tour_guide_senario(tour,comp_type);
+            }else if((execution_flag === 'success')&&(comp_type !== 'map')&&(open_modal === true)){
+                $('#addVizModal #submit-modal-btn').show();
+                $('#add_layer_btn').parent().hide();
+                $('#layers-list').parent().hide();
+                init = 5;
+                // tour = tour_guide_senario(tour,comp_type);
+            }
+            else{
+                $('#add_layer_btn').parent().hide();
+                $('#layers-list').parent().hide();
+                $('#addVizModal #submit-modal-btn').hide();
+            }
+        });
+    }
+
+    $("#dismiss-modal-btn").click(function m(e) {
+        refresh_visualisation_modal();
+        $('#select_viz_popover').prop('disabled', true);
+        $('#select_conf_popover').prop('disabled', true);
+        // $('#addVizModal #viz_container').html('<div class="loadingFrame">' +
+        //     '                    <img src="' + img_source_path + '"/>' +
+        //     '                </div>');
+    });
+
+    $("#addVizModal #submit-modal-btn").click(function () {
+        init =11;
+        // tour = tour_guide_senario(tour,'');
+        if (vis_created_flag!==false){
+            refresh_visualisation_modal();
+        }else{
+            alert('Please create a Visualisation first.')
+        }
+    });
+
+
+    function refresh_visualisation_modal(){
+        open_modal = false;
+        $('#layers-list ul').empty();
+        $("#query_name_span").text(null);
+        layer_count = 0;
+        layer_json = [];
+        selected_visualization = null;
+        first_time = true ;
+        vis_created_flag = false;
+        $('#addVizModal #viz_config #add_layer_btn').parent().hide();
+        $('#addVizModal #viz_config #layers-list').parent().hide();
+        $("#viz_config .list-group").children().each(function () {
+            $(this).find("#selected_viz_span").hide();
+        });
+        $("#viz_config").find("ul").children().each(function (index) {
+                $(this).removeClass('disabled');
+        });
+        $('.viz_item').popover('hide');
+        $('#addVizModal #viz_config .list-group').hide();
+        $('#addVizModal #viz_config #viz_container').hide();
+
+
+    }
+
+    function check_list(list){
+        flag = true;
+        for(var i=0; i<list.length; i++){
+            if(list[i]===false){
+                flag=false;
+            }
+        }
+        return flag;
+    }
+
+    function limit_points(input, viz_conf, allow_submit, unit, parameter_id){
+        if (input.val()>viz_conf['limit'] || input.val()<=0 || (input.val()==='')){
+                if(allow_submit[parameter_id]===true) {
+                    $("<div class='conf-error-message limit_oob_message'>* Number of "+unit+" must be below " + String(viz_conf['limit']) + " and above 0.</div>").insertBefore("#select_conf_ok");
+                    $('#select_conf_ok').addClass('disabled');
+                }
+                allow_submit[parameter_id] = false;
+            }else{
+                allow_submit[parameter_id] = true;
+                $('.limit_oob_message').remove();
+                if(check_list(allow_submit)) {
+                    $('#select_conf_ok').removeClass('disabled');
+                }
+            }
+        return allow_submit
+    }
+
+
+    function missing_parameter(col_select, allow_submit,parameter_name,parameter_id){
+        if((col_select.val()=== null)||(col_select.val().length===0)){
+                if(allow_submit[parameter_id]===true) {
+                    $('#select_conf_ok').addClass('disabled');
+                    $("<div class='conf-error-message "+parameter_name+"_missing_error'>* Selection of "+ parameter_name +" is required.</div>").insertBefore("#select_conf_ok");
+                }
+                allow_submit[parameter_id] = false;
+            }
+            else{
+                allow_submit[parameter_id] = true;
+                $('.'+parameter_name+'_missing_error').remove();
+                if(check_list(allow_submit)){
+                    $('#select_conf_ok').removeClass('disabled');
+                }
+            }
+        return allow_submit
+    }
+    // tour = tour_guide_senario('', '');
+    $('#addVizModal').on('shown.bs.modal', function (e) {
+        init = 1;
+        // tour = tour_guide_senario(tour, "");
+    })
+
+
+
+});
+
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+$.ajaxSetup({
+    beforeSend: function (xhr, settings) {
+        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+            // Only send the token to relative URLs i.e. locally.
+            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+        }
     }
 });
