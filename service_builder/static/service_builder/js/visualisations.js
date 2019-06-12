@@ -13,6 +13,10 @@ function hide_gif() {
 
 $(document).ready(function () {
     $('#dataframe .form-group').css('display','inline-block');
+    $('#modal-tab-dataframe').click(function(){
+        refresh_visualisation_modal();
+    });
+
     var selected_val = null;
     var viz_success = null;
     var var_list = null;
@@ -53,7 +57,7 @@ $(document).ready(function () {
             });
             $(".list-group").css('visibility','hidden');
             $("#viz_config .list-group").children().each(function () {
-                $(this).find("#selected_viz_span").hide();
+                $(this).find(".selected_viz_span").hide();
             });
             layer_json = [];
             for (var i = 0; i < json.length; i++) {
@@ -66,7 +70,7 @@ $(document).ready(function () {
             $("#layers-list ul").append('<li class="layer_list_element item" id=layer_list_element'+String(layer_count)+' style="pointer-events: none" role=\"presentation\"><span  class="col-10 " style="display:inline; margin-right: 5px; pointer-events: none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query Name: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</span><button id=layer_list_element_btn'+String(layer_count)+' style="display: inline; pointer-events: auto!important; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
             $(".layer_list_element #layer_list_element_btn"+String(layer_count)).click(function () {
                  $("#viz_config .list-group").children().each(function () {
-                        $(this).find("#selected_viz_span").hide();
+                        $(this).find(".selected_viz_span").hide();
                  });
                 var del_id = $(this).closest('li').attr('id');
                 for (var i = 0; i < layer_json.length; i++) {
@@ -156,7 +160,7 @@ $(document).ready(function () {
             var component_selector = 'li[data-viz-id="' + component_id + '"]';
             $(component_selector).popover({
                 html: true,
-                title: $(this).text() + ' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA" id="viz_id_icon" class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="' + $(this).attr('data-description') + '"></i>',
+                title: $(this).text() + ' Visualisation' + '<i style="margin-left: 7px; color:#AAAAAA"  class="fas fa-info-circle form_field_info" data-html="true" data-toggle="tooltip" title="' + $(this).attr('data-description') + '"></i>',
                 trigger: 'manual',
                 content: function () {
                     return $('.all_viz_forms  #viz_' + String(component_id)).clone();
@@ -549,7 +553,7 @@ $(document).ready(function () {
         $(popover_component).find('label.form_field_info').each(function () {
             viz_info_text = viz_info_text + "\n-"+$(this).text()+": " + $(this).attr('title');
         });
-        $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
+        // $('#viz_id_icon').attr('title',  $('#viz_id_icon').attr('title')+viz_info_text);
 
 
         // setTimeout(function () {
@@ -563,9 +567,9 @@ $(document).ready(function () {
             open_modal=true;
             selected_visualization = $(component_selector).text();
             $("#viz_config .list-group").children().each(function () {
-                $(this).find("#selected_viz_span").hide();
+                $(this).find(".selected_viz_span").hide();
             })
-            $(component_selector).find("#selected_viz_span").show();
+            $(component_selector).find(".selected_viz_span").show();
 
             submit_conf(component_selector, component_type);
             $(component_selector).popover("hide");
@@ -639,6 +643,7 @@ $(document).ready(function () {
 
     }
     function populate_selects(_mycallback){
+
 
 
          $(".popover-content .variable-select").dropdown({
@@ -777,7 +782,7 @@ $(document).ready(function () {
         $('#addVizModal #submit-modal-btn').hide();
         if(component_type!='map') {
             var viz_request = "/visualizations/";
-            viz_request += $('#addVizModal').find('.modal-body').find('#action').val();
+            viz_request += $('#addVizModal').find('.modal-body').find('div#viz_'+ String($(component_selector).attr('data-viz-id'))).find('#action').val();
             conf_popover_id = '#' + $(component_selector).attr('aria-describedby');
             submitted_args = $('#addVizModal').find(conf_popover_id).find('.popover-content').clone();
             selects = $('#addVizModal').find(conf_popover_id).find('.popover-content').find("select");
@@ -887,6 +892,8 @@ $(document).ready(function () {
                 map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
                 map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
                 map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
+
+
                 if(layer_count==='1') {
                     init = 5;
                 }else{
@@ -894,10 +901,52 @@ $(document).ready(function () {
                 }
                 // tour = tour_guide_senario(tour,comp_type);
             }else if((execution_flag === 'success')&&(comp_type !== 'map')&&(open_modal === true)){
+                var iframe = $(this).contents();
                 $('#addVizModal #submit-modal-btn').show();
                 $('#add_layer_btn').parent().hide();
                 $('#layers-list').parent().hide();
                 init = 5;
+                iframe.find("#chartPaginationDiv").on('click', '#chartNextBtn', function () {
+                    var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
+                    if (page >= 0) {
+                        iframe.find('#chartPaginationDiv').find('#chartPrevBtn').prop('disabled', false);
+                    }
+                    hide_rows(page, iframe);
+                    page++;
+                    show_rows(page, iframe);
+                    iframe.find('#chartPaginationDiv').attr("page", page);
+                    lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+                    if (page >= lastPage - 1) {
+                        $(this).prop('disabled', true);
+                    }
+                });
+
+                iframe.find("#chartPaginationDiv").on('click', '#chartPrevBtn', function () {
+                    var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
+                    lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+                    if (page <= lastPage) {
+                        iframe.find('#chartPaginationDiv').find('#chartNextBtn').prop('disabled', false);
+                    }
+                    hide_rows(page, iframe);
+                    page--;
+                    show_rows(page, iframe);
+                    iframe.find('#chartPaginationDiv').attr("page", page);
+                    if (page <= 0) {
+                        $(this).prop('disabled', true);
+                    }
+                });
+
+                function hide_rows(page, iframe) {
+                    for (ix = page * 50; ix < (page + 1) * 50; ix++) {
+                        iframe.find('.table > tbody > tr[page="' + ix + '"]').hide();
+                    }
+                }
+
+                function show_rows(page, iframe) {
+                    for (ix = page * 50; ix < (page + 1) * 50; ix++) {
+                        iframe.find('.table > tbody > tr[page="' + ix + '"]').show();
+                    }
+                }
                 // tour = tour_guide_senario(tour,comp_type);
             }
             else{
@@ -940,7 +989,7 @@ $(document).ready(function () {
         $('#addVizModal #viz_config #add_layer_btn').parent().hide();
         $('#addVizModal #viz_config #layers-list').parent().hide();
         $("#viz_config .list-group").children().each(function () {
-            $(this).find("#selected_viz_span").hide();
+            $(this).find(".selected_viz_span").hide();
         });
         $("#viz_config").find("ul").children().each(function (index) {
                 $(this).removeClass('disabled');
@@ -948,6 +997,8 @@ $(document).ready(function () {
         $('.viz_item').popover('hide');
         $('#addVizModal #viz_config .list-group').hide();
         $('#addVizModal #viz_config #viz_container').hide();
+        $("#addVizModal #viz_container").empty();
+        $("#submit-modal-btn").hide();
 
 
     }

@@ -7,17 +7,19 @@
     <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
     <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
     {% for viz in available_viz %}
-        <style>
-            #{{ viz.view_name}}_tip{
-                opacity: .3;
-                position: relative;
-                bottom:1px;
-            }
-            li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
-                opacity: inherit;
-                margin:auto;
-                cursor:help;
-            }
+        {% if viz.data_source == 'query' %}
+            <style>
+                #{{ viz.view_name}}_tip{
+                    opacity: .3;
+                    position: relative;
+                    bottom:1px;
+                }
+                li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
+                    opacity: inherit;
+                    margin:auto;
+                    cursor:help;
+                }
+            {% endif %}
         </style>
     {% endfor %}
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}?bdo_version={{ settings.BDO_VERSION }}"/>
@@ -195,10 +197,12 @@
                             <div class="row" id="viz_config">
                                 <ul class="list-group collapse in col-sm-2" style="width: 15%; display: none">
                                     {% for viz in available_viz %}
-                                        <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
-                                            <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
-                                            <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
-                                        </li>
+                                        {% if viz.data_source == 'query' %}
+                                            <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
+                                                <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
+                                                <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+                                            </li>
+                                        {% endif %}
                                     {% endfor %}
 
                                 </ul>

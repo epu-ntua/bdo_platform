@@ -131,7 +131,8 @@ def get_markers_parameters(request, count):
     color_col = str(request.GET.get('color_var'+str(count), ''))
     lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
     lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
-    return cached_file, variable, vessel_id_column, vessel_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col
+    var_unit = str(request.GET.get('var_unit' + str(count), '-'))
+    return cached_file, variable, vessel_id_column, vessel_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col,var_unit
 
 
 def get_plotline_parameters(request, count):
@@ -690,13 +691,13 @@ def map_visualizer(request):
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid_for_dataset_coverage').id):
                     dataset_id = str(request.GET.get('dataset_id'))
-                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
+                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, var_unit = get_markers_parameters(request, count)
                     query_pk = load_modify_query_for_grid_coverage(dataset_id, marker_limit)
                     variable = AbstractQuery.objects.get(pk=int(query_pk)).document['from'][0]['select'][0]['name']
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
                                                        variable, agg_function,
                                                        lat_col, lon_col, m,
-                                                       request, cached_file, dataset_id)
+                                                       request, cached_file,var_unit, dataset_id)
             except ObjectDoesNotExist:
                 pass
 
@@ -729,7 +730,7 @@ def map_visualizer(request):
                 # Map Markers Course Vessel
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_vessel_course').id):
-                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
+                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, var_unit = get_markers_parameters(request, count)
                     m, extra_js = get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, agg_function,
                                              lat_col, lon_col, color_col, use_color_column, m, request, cached_file)
             except ObjectDoesNotExist:
@@ -737,12 +738,12 @@ def map_visualizer(request):
                 # Map Markers Grid
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid').id):
-                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(
+                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, var_unit = get_markers_parameters(
                         request, count)
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
                                                                 variable, agg_function,
                                                                 lat_col, lon_col, m,
-                                                                request, cached_file)
+                                                                request, cached_file, var_unit)
             except ObjectDoesNotExist:
                 pass
 
@@ -1536,7 +1537,7 @@ def get_marker_query_data(query, variable, color_col):
 
 
 
-def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request, cached_file, dataset_id=None):
+def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request, cached_file,df_var_unit, dataset_id=None):
     dic = {}
     print variable
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
@@ -1547,9 +1548,9 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
                 query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
             data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '')
         elif df != '':
-            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(df, lat_col, lon_col, notebook_id, request, variable)
-            var_title = 'title'
-            var_unit = 'unit'
+            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data('', df, lat_col, lon_col, notebook_id, request, variable)
+            var_title = variable
+            var_unit = df_var_unit
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
 
@@ -3348,7 +3349,7 @@ def get_pie_chart_am(request):
         key_var = str(request.GET.get('key_var', ''))
         value_var = str(request.GET.get('value_var', ''))
         x_var_unit = str(request.GET.get('x_var_unit', ''))
-        y_var_unit_list = request.GET.getlist('y_var_unit[]')
+        y_var_unit_list = str(request.GET.get('y_var_unit'))
         agg_function = str(request.GET.get('agg_func', 'sum'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
@@ -3356,7 +3357,7 @@ def get_pie_chart_am(request):
             query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
         elif df !='':
-            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], x_var_unit, y_var_unit_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], x_var_unit, [y_var_unit_list], True)
 
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')

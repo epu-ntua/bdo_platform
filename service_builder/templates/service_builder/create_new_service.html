@@ -11,20 +11,11 @@
     <style>
         #loadImg{position:absolute;z-index:999;}
         #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
-        .outputLoadImg{
-            text-align: center;
-{#            display: block;#}
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            min-width: 100%;
-        }
-        .viz_item {
+
+        .viz_item, .df_viz_item {
             cursor: pointer;
         }
+
         .popover{
             width: 500px;
             max-width: 600px;
@@ -48,20 +39,25 @@
             padding-bottom: 5px;
             width: 90%;
         }
-        #viz_container{
+        #viz_container, #df_viz_container{
             background-color: #d8d8d8;
             height: 500px;
             width: 80%;
             padding: 0;
         }
-        #viz_container iframe, #dynamic_dashboard iframe{
-            background-color: white;
-            height: 96%;
-            min-height: 480px;
-            width: 98%;
-            margin: 1% 1% 1% 1%;
+        #viz_container iframe,#df_viz_container iframe, #dynamic_dashboard iframe{
+            background-color: darkgrey;
+            width: 100%;
+            margin: 0;
             padding: 0;
+            height: 100%;
         }
+        .iframe-class{
+            height: calc(100% - 37px);
+            padding: 0px;
+            margin: 0% 0% 0% 0% !important;
+        }
+
 
         .conf-error-message{
             color: darkred;
@@ -72,6 +68,56 @@
             pointer-events: none;
             cursor: default;
         }
+
+        .loadingFrame{position:absolute;z-index:999;display:block;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
+
+    </style>
+    {% for viz in available_viz %}
+            <style>
+                #{{ viz.view_name}}_tip{
+                    opacity: .3;
+                    position: relative;
+                    bottom:1px;
+                }
+                li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
+                    opacity: inherit;
+                    margin:auto;
+                    cursor:help;
+                }
+            </style>
+    {% endfor %}
+    <style>
+        .disabled {
+        pointer-events:none;
+        opacity:0.6;
+    }
+
+    .unclickable{
+        text-decoration: none;
+        pointer-events:none;
+    }
+
+    .unclickable:hover{
+        cursor: not-allowed;
+    }
+
+    .viz_item:hover {
+        background-color: #d4dbe9;
+    }
+
+    .form_field_info{
+        pointer-events: auto!important;
+    }
+    .form_field_info:hover {
+        cursor: help;
+        color: rgb(45, 45, 45)!important;
+    }
+
+    .ng-wrapper{
+                width: 100%;
+                height: calc(100%);
+                display: block;
+            }
     </style>
 {% endblock %}
 
@@ -119,7 +165,7 @@
         {% endfor %}
     </div>
 
-    <div id="viz-container" style="height:630px" hidden>
+    <div id="viz-container" style="height:630px; " hidden>
 
 {#        <button type="button" id="select_viz_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>#}
     </div>
@@ -147,6 +193,7 @@
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
     <script src="{% static 'service_builder/js/visualisations.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'service_builder/js/dfvisualisations.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     <script src="{% static 'service_builder/js/queries_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script src="{% static 'service_builder/js/arguments_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
@@ -209,10 +256,12 @@
 
                                 <ul class="list-group collapse in col-sm-2" style="width: 15%; display: none">
                                     {% for viz in available_viz %}
-                                        <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
-                                            <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
-                                            <span id="selected_viz_span" class="glyphicon glyphicon-triangle-left" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
-                                        </li>
+                                        {% if viz.data_source == 'query' %}
+                                            <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
+                                                <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
+                                                <span  class="glyphicon glyphicon-triangle-left selected_viz_span" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+                                            </li>
+                                        {% endif %}
                                     {% endfor %}
 
                                 </ul>
@@ -281,16 +330,32 @@
                                 </input>
                             </div>
 
-                            <div class="row" id="viz_config" style="display: none;">
-                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                                    {% for viz in available_viz %}
-                                        {% if viz.datasource == 'dataframe' %}
-                                            <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
+                            <div class="row" id="df_viz_config" style="position: relative; top: 30px;" >
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%;  display: none" >
+                                {% for viz in available_viz %}
+                                        {% if viz.data_source == 'dataframe' %}
+                                            <li class="list-group-item df_viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
+                                                <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
+                                                <span  class="glyphicon glyphicon-triangle-left selected_viz_span" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+                                            </li>
                                         {% endif %}
                                     {% endfor %}
                                 </ul>
-                                <div id="viz_container" class="col-sm-8" style="width: 85%">
+                                <div id="df_visualisation_frame">
+                                    <div style="right: 55px; top:-60px; z-index: 2; position: absolute; display: none;">
+                                        <button type="button" id="df_add_layer_btn" class="btn btn-primary btn-md" >SAVE LAYER  <i class="glyphicon glyphicon-plus "></i></button>
+                                    </div>
+                                    <div class="ui buttons" style="display: none; top:-60px; position: absolute; z-index: 1; right: 205px; ">
+                                        <div id='df_layers-list' class="ui floating dropdown btn btn-secondary btn-md " tabindex="0">LAYERS
+                                          <i class="dropdown icon"></i>
+                                          <ul class="menu transition hidden unclickable" tabindex="-1"></ul>
+                                        </div>
+                                    </div>
 
+                                    <div  hidden id="df_viz_container" class="col-sm-8" style="width: 85%; height: 630px">
+
+
+                                    </div>
                                 </div>
                             </div>
 
@@ -303,7 +368,7 @@
                 <div class="modal-footer" >
                     <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
                     </button>
-                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-note-btn" style="display: none">Add
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-df-btn" style="display: none">Add
                     </button>
                     <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
                     </button>
