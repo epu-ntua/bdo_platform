@@ -1,5 +1,5 @@
 {% load static %}
-<div id="new_wec" class="modal" role="dialog" >
+<div id="new_wec" class="modal wec_modal" role="dialog" >
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header row">
@@ -153,7 +153,7 @@
             var $row = $('<tr></tr>');
             var $td = $('<td></td>');
             $row.append($td);
-            for(var i=1; i < $("#wec_values_table tr").eq(0).find('td').length; i++){
+            for(var i=1; i < $("#new_wec #wec_values_table tr").eq(0).find('td').length; i++){
                 var $col = $('<td><input type="text" value="0"></td>');
                 $row.append($col);
             }
@@ -169,8 +169,8 @@
 
         $("#add_col_btn").click(function () {
             var $td = $('<td></td>');
-            $("#wec_values_table tr:first-child").append($td);
-            $.each($("#wec_values_table tr").not(':first'), function (idx, row) {
+            $("#new_wec #wec_values_table tr:first-child").append($td);
+            $.each($("#new_wec #wec_values_table tr").not(':first'), function (idx, row) {
                 var $col = $('<td><input type="text" value="0"></td>');
                 $(row).append($col);
             });
@@ -179,7 +179,7 @@
 
         $("#remove_col_btn").click(function () {
             if($("#new_wec #wec_values_table tbody tr:first-child td").length > 2) {
-                $.each($("#wec_values_table tr"), function (idx, row) {
+                $.each($("#new_wec #wec_values_table tr"), function (idx, row) {
                     $(row).find("td:last-child").remove();
                 });
             }

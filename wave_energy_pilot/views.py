@@ -276,11 +276,7 @@ def energy_conversion_init(request):
                                                    ['done']
     energy_converters_user = Wave_Energy_Converters.objects.filter(owner_id=request.user)
     energy_converters_public = Wave_Energy_Converters.objects.filter(owner_id=User.objects.get(username='BigDataOcean'))
-    try:
-        energy_converters_nuno = Wave_Energy_Converters.objects.filter(owner_id=User.objects.get(username='nuno.amaro'))
-        energy_converters_public = energy_converters_public + energy_converters_nuno
-    except:
-        pass
+    energy_converters_all = energy_converters_user | energy_converters_public
 
     for dataset in DATASETS:
         try:
@@ -323,6 +319,7 @@ def energy_conversion_init(request):
                   {'datasets_list': DATASETS,
                    'energy_converters_user': energy_converters_user,
                    'energy_converters_public': energy_converters_public,
+                   'energy_converters_all': energy_converters_all,
                    'data_radius': DATA_RADIUS,
                    'execution_steps': execution_steps})
 

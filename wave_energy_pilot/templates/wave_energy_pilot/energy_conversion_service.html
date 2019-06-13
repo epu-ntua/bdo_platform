@@ -26,53 +26,53 @@
             border-radius: 3px;
         }
 
-        #new_wec #side input{
-            width: 40px;
-        }
-        #new_wec #side .divider_span{
-            margin: 0 3px;
-        }
-        #new_wec #side #wec_name{
-            width: 100%;
-        }
-        #new_wec #side td{
-            padding: 0 10px;
-        }
-        #new_wec #side{
-            padding: 0;
-        }
-        #new_wec #side .col-sm-4{
-            padding: 0;
-        }
-        #new_wec #wrap{
-            padding: 0;
-        }
-        #new_wec .modal-content {
-            height: 70vh;
-        }
-        #new_wec .modal-body {
-            height: 56vh;
-        }
-        #new_wec .modal-header {
-            text-align: center;
-            height: 6vh;
-            padding: 1vh;
-        }
-        #new_wec .modal-footer {
-            text-align: center;
-            height: 6vh;
-            padding: 1vh;
-        }
-        #new_wec #wec_values_table td, #new_wec #wec_values_table input{
+        .wec_modal #side input{
             width: 50px;
         }
-        #new_wec #wec_values_table tr td:first-child{
+        .wec_modal #side .divider_span{
+            margin: 0 3px;
+        }
+        .wec_modal #side #wec_name{
+            width: 100%;
+        }
+        .wec_modal #side td{
+            padding: 0 10px;
+        }
+        .wec_modal #side{
+            padding: 0;
+        }
+        .wec_modal #side .col-sm-4{
+            padding: 0;
+        }
+        .wec_modal #wrap{
+            padding: 0;
+        }
+        .wec_modal .modal-content {
+            height: 70vh;
+        }
+        .wec_modal .modal-body {
+            height: 56vh;
+        }
+        .wec_modal .modal-header {
+            text-align: center;
+            height: 6vh;
+            padding: 1vh;
+        }
+        .wec_modal .modal-footer {
+            text-align: center;
+            height: 6vh;
+            padding: 1vh;
+        }
+        .wec_modal #wec_values_table td, .wec_modal #wec_values_table input{
+            width: 50px;
+        }
+        .wec_modal #wec_values_table tr td:first-child{
             padding-left: 10px;
             text-align: right;
             padding-right: 5px;
             font-weight: bold;
         }
-        #new_wec #wec_values_table tr:first-child{
+        .wec_modal #wec_values_table tr:first-child{
             text-align: right;
             font-weight: bold;
         }
@@ -122,6 +122,7 @@
 {% block  js %}
     {% include 'wave_energy_pilot/utils/status_modal.html' %}
     {% include 'wave_energy_pilot/utils/user_wec_insertion_modal.html' %}
+    {% include 'wave_energy_pilot/utils/wec_info_modal.html' %}
     {% leaflet_js %}
 
     <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>

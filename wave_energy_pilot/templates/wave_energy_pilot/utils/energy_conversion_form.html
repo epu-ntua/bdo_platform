@@ -186,7 +186,7 @@
                 <span class="col-sm-8 wec_info"  style="padding: 0; cursor: pointer; margin-right: 10px;" data-id="{{ converter.id }}" data-title="{{ converter.title }}" data-min_height="{{ converter.min_height }}" data-max_height="{{ converter.max_height }}"
                                         data-max_period="{{ converter.max_energy_period }}" data-power="{{ converter.power }}">{{ converter.title }}
                 </span>
-                <span class="col-sm-1" style="padding: 0; color: darkslategray;"><i class="fas fa-eye"></i></span>
+                <span class="col-sm-1" style="padding: 0; color: darkslategray; cursor: pointer;" data-toggle="modal" data-target="#wec_info_{{ converter.id }}"><i class="fas fa-eye"></i></span>
                 <span class="col-sm-2 del_wec" style="padding: 0; color: darkred; cursor: pointer;"><i class="fas fa-trash-alt"></i></span>
             </div>
         {% endfor %}
@@ -195,7 +195,7 @@
                 <span class="col-sm-8 wec_info"  style="padding: 0; cursor: pointer; margin-right: 10px;" data-id="{{ converter.id }}" data-title="{{ converter.title }}" data-min_height="{{ converter.min_height }}" data-max_height="{{ converter.max_height }}"
                                         data-max_period="{{ converter.max_energy_period }}" data-power="{{ converter.power }}">{{ converter.title }}
                 </span>
-                <span class="col-sm-1" style="padding: 0; color: darkslategray;"><i class="fas fa-eye"></i></span>
+                <span class="col-sm-1" style="padding: 0; color: darkslategray; cursor: pointer;"  data-toggle="modal" data-target="#wec_info_{{ converter.id }}"><i class="fas fa-eye"></i></span>
             </div>
         {% endfor %}
     </div>

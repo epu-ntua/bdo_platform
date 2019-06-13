@@ -1,0 +1,125 @@
+{% load static %}
+{% for conv in energy_converters_all %}
+<div id="wec_info_{{ conv.id }}" class="modal wec_modal" role="dialog" >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header row">
+        <h5 class="modal-title">Wave Energy Converter's Info</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body row">
+          <div class="col-sm-12" id="wrap">
+              <div class="col-sm-3" id="side">
+                  <table>
+                      <tbody>
+                        <tr>
+                            <td>WEC's name</td><td><input type="text" name="wec_name" id="wec_name" value="{{ conv.title }}" readonly></td>
+                        </tr>
+                        <tr>
+                            <td>Wave height limits</td>
+                            <td>
+                                <input type="number" name="wec_height_min" id="wec_height_min"  value="{{ conv.min_height }}" readonly>
+                                <span class="divider_span">-</span>
+                                <input type="number" name="wec_height_max" id="wec_height_max"  value="{{ conv.max_height }}" readonly>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Wave period limits</td>
+                            <td>
+                                <input type="number" name="wec_period_min" id="wec_period_min"  value="{{ conv.min_energy_period }}" readonly>
+                                <span class="divider_span">-</span>
+                                <input type="number" name="wec_period_max" id="wec_period_max"  value="{{ conv.max_energy_period }}" readonly>
+                            </td>
+                        </tr>
+                      </tbody>
+                  </table>
+              </div>
+
+              <div class="col-sm-9" id="main" style="overflow: auto;position: relative;height: 50vh;">
+                  <div style="font-weight: bold; padding-left: 2%;">Energy Period (s)</div>
+                  <div style="    display: inline;">
+                      <table id="wec_values_table">
+                          <tbody>
+                          </tbody>
+                      </table>
+                  </div>
+                  <div style="left: 10px; position: absolute; width: 20px; padding-left: 1%; writing-mode: vertical-lr; font-weight: bold; transform: rotate(-180deg);">Significant Wave Height (m)</div>
+              </div>
+          </div>
+      </div>
+      <div class="modal-footer row">
+        <button type="button" class="btn btn-sm " data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+    var init_num_rows_{{conv.id }} = {{conv.sample_rows|length}};
+    var init_num_cols_{{conv.id }} = {{conv.sample_rows.0|length}};
+    var sample_rows_{{conv.id }} = {{conv.sample_rows|safe}};
+    function construct_new_wec_init_table_{{conv.id }}() {
+        var $row = $('<tr></tr>');
+        var $td = $('<td></td>');
+        $row.append($td);
+        for(var j=0; j < init_num_cols_{{conv.id }}; j++){
+            $td = $('<td></td>');
+            $row.append($td);
+        }
+        $("#wec_info_{{ conv.id }} #wec_values_table tbody").append($row);
+
+        for(var i=0; i < init_num_rows_{{conv.id }}; i++){
+            $row = $('<tr></tr>');
+            $td = $('<td></td>');
+            $row.append($td);
+            for(var j=0; j < init_num_cols_{{conv.id }}; j++){
+                var $col = $('<td><input type="text" value="'+sample_rows_{{conv.id }}[i][j]+'" readonly></td>');
+                $row.append($col);
+            }
+            $("#wec_info_{{ conv.id }} #wec_values_table tbody").append($row);
+        }
+    }
+
+    function update_new_wec_values_intervals_{{conv.id }}() {
+        var min_height = parseFloat($("#wec_height_min").val());
+        var max_height = parseFloat($("#wec_height_max").val());
+        var min_period = parseFloat($("#wec_period_min").val());
+        var max_period = parseFloat($("#wec_period_max").val());
+
+        var number_of_heights = parseFloat($("#wec_info_{{ conv.id }} #wec_values_table tbody tr").length - 1);
+        var number_of_periods = parseFloat($("#wec_info_{{ conv.id }} #wec_values_table tbody tr:first td").length -1);
+
+        var height_step = (max_height - min_height) / number_of_heights;
+        height_step = Math.round(height_step*100)/100;
+        var period_step = (max_period - min_period) / number_of_periods;
+        period_step = Math.round(period_step*100)/100;
+
+        var current_height = min_height;
+        $.each($("#wec_info_{{ conv.id }} #wec_values_table tbody tr").not(":first"), function (idx, elem) {
+            if(idx !== $("#wec_info_{{ conv.id }} #wec_values_table tbody tr").not(":first").length-1)
+                current_height += height_step;
+            else
+                current_height = max_height;
+            $(elem).find("td:first-child").html(Math.round(current_height*100)/100);
+        });
+        var current_period = min_period;
+        $.each($("#wec_info_{{ conv.id }} #wec_values_table tbody tr:first td").not(":first"), function (idx, elem) {
+            if(idx !== $("#wec_info_{{ conv.id }} #wec_values_table tbody tr:first td").not(":first").length-1)
+                current_period += period_step;
+            else
+                current_period = max_period;
+            $(elem).html(Math.round(current_period*100)/100);
+        })
+
+    }
+
+    $(document).ready(function() {
+        construct_new_wec_init_table_{{conv.id }}();
+        update_new_wec_values_intervals_{{conv.id }}();
+    });
+</script>
+
+{% endfor %}
