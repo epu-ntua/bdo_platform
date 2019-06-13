@@ -5,6 +5,7 @@ var mode='location';
 
 $(document).ready(function() {
     var wecs_location_assessment_tour;
+    wecs_location_assessment_tour = new Tour({});
     function init_wecs_location_assessment_tour() {
         wecs_location_assessment_tour = new Tour({
             storage: false,
@@ -55,6 +56,7 @@ $(document).ready(function() {
     }
 
     var wec_assessment_area_tour;
+    wec_assessment_area_tour = new Tour({});
     function init_wec_assessment_area_tour() {
         wec_assessment_area_tour = new Tour({
             storage: false,
@@ -99,9 +101,13 @@ $(document).ready(function() {
             title: "Service Execution",
             content: "Ready to execute!"
         }]);
+
+        wec_assessment_area_tour.init();
+        wec_assessment_area_tour.start(true);
     }
 
     var wec_energy_generation_forecast_tour;
+    wec_energy_generation_forecast_tour = new Tour({});
     function init_wec_energy_generation_forecast_tour(){
         wec_energy_generation_forecast_tour = new Tour({
             storage: false,
@@ -148,6 +154,7 @@ $(document).ready(function() {
 
 
     var matching_analysis_tour;
+    matching_analysis_tour = new Tour({});
     function init_matching_analysis_tour(){
         matching_analysis_tour = new Tour({
             storage: false,
@@ -199,6 +206,9 @@ $(document).ready(function() {
             title: "Service Execution",
             content: "Ready to execute!"
         }]);
+
+        matching_analysis_tour.init();
+        matching_analysis_tour.start(true);
     }
 
 
@@ -383,10 +393,10 @@ $(document).ready(function() {
             $('#lat_max').val('');
             $('#lon_min').val('');
             $('#lon_max').val('');
-            wecs_location_assessment_tour = null;
-            wec_assessment_area_tour = null;
-            wec_energy_generation_forecast_tour = null;
-            matching_analysis_tour = null;
+            wecs_location_assessment_tour.end();
+            wec_assessment_area_tour.end();
+            wec_energy_generation_forecast_tour.end();
+            matching_analysis_tour.end();
 
             if($('.app-selector :selected').val() === "1"){
                 $('.single-spatial-selection').show();
