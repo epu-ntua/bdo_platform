@@ -970,6 +970,12 @@ $(document).ready(function () {
         init =11;
         // tour = tour_guide_senario(tour,'');
         if (vis_created_flag!==false){
+            $('#viz_widget #viz_container iframe').removeAttr('id');
+            $('#viz_widget #viz_container iframe').appendTo('#dynamic_viz_addition');
+            var cursor = html_editor.getSearchCursor('<!-- ADD YOUR VISUALISATIONS HERE -->',{line:1});
+            cursor.findNext();
+            cursor.replace(String($('#dynamic_viz_addition').html())+'\n<!-- ADD YOUR VISUALISATIONS HERE -->','<!-- ADD YOUR VISUALISATIONS HERE -->');
+            $('#dynamic_viz_addition').empty();
             refresh_visualisation_modal();
         }else{
             alert('Please create a Visualisation first.')

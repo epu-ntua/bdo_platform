@@ -709,6 +709,13 @@ $(document).ready(function () {
 
     $("#addVizModal #submit-df-btn").click(function () {
         if (df_vis_created_flag!==false){
+            $('#dataframe #df_viz_container iframe').removeAttr('id');
+            $('#dataframe #df_viz_container iframe').appendTo('#dynamic_viz_addition');
+            var cursor = html_editor.getSearchCursor('<!-- ADD YOUR VISUALISATIONS HERE -->',{line:1});
+            cursor.findNext();
+            cursor.replace(String($('#dynamic_viz_addition').html())+'\n<!-- ADD YOUR VISUALISATIONS HERE -->','<!-- ADD YOUR VISUALISATIONS HERE -->');
+            $('#dynamic_viz_addition').empty();
+
             df_refresh_visualisation_modal();
         }else{
             alert('Please create a Visualisation first.')
