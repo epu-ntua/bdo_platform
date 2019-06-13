@@ -703,7 +703,7 @@ def map_visualizer(request):
 
             # Heatmap
             try:
-                if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id:
+                if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id or layer_id == Visualization.objects.get(view_name='get_df_map_heatmap').id:
                     cached_file, heat_col, lat_col, lon_col = get_heatmap_parameters(request,
                                                                                                         count)
                     m, extra_js = get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col,
@@ -1055,7 +1055,7 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, ca
             for s in data:
                 row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
                 heatmap_data.append(row)
-
+            data = heatmap_data
         heatmap_result_data, min_lat, min_lon, max_lat, max_lon, max_intensity = create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index)
         dict['min_lat'] = min_lat
         dict['max_lat'] = max_lat
@@ -2218,7 +2218,6 @@ def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
     else:
         maximum = -999999999
         minimum = 999999999
-
         for d in data:
             if d[heat_var_index] is not None:
                 if d[heat_var_index] > maximum:
@@ -2249,6 +2248,7 @@ def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
     min_lat = float(min_lat)
     max_lon = float(max_lon)
     min_lon = float(min_lon)
+
 
     return heatmap_result_data, min_lat, min_lon, max_lat, max_lon, maximum
 
@@ -3421,7 +3421,7 @@ def load_execute_dataframe_data(request, df, notebook_id):
 def get_data_table(request):
     try:
         query_pk, df, notebook_id = get_data_parameters(request, '')
-        column_choice = request.GET.getlist('column_choice[]')
+        column_choice = request.GET.getlist('column_choice[]','all')
         limit = 500
         offset = int(request.GET.get('offset', 0))
         if not column_choice:

@@ -853,47 +853,47 @@ $(document).ready(function () {
             iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
             iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
 
-            iframe.find("#chartPaginationDiv").on('click', '#chartNextBtn', function () {
-                var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
-                if (page >= 0) {
-                    iframe.find('#chartPaginationDiv').find('#chartPrevBtn').prop('disabled', false);
-                }
-                hide_rows(page, iframe);
-                page++;
-                show_rows(page, iframe);
-                iframe.find('#chartPaginationDiv').attr("page", page);
-                lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
-                if (page >= lastPage - 1) {
-                    $(this).prop('disabled', true);
-                }
-            });
-
-            iframe.find("#chartPaginationDiv").on('click', '#chartPrevBtn', function () {
-                var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
-                lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
-                if (page <= lastPage) {
-                    iframe.find('#chartPaginationDiv').find('#chartNextBtn').prop('disabled', false);
-                }
-                hide_rows(page, iframe);
-                page--;
-                show_rows(page, iframe);
-                iframe.find('#chartPaginationDiv').attr("page", page);
-                if (page <= 0) {
-                    $(this).prop('disabled', true);
-                }
-            });
-
-            function hide_rows(page, iframe) {
-                for (ix = page * 50; ix < (page + 1) * 50; ix++) {
-                    iframe.find('.table > tbody > tr[page="' + ix + '"]').hide();
-                }
-            }
-
-            function show_rows(page, iframe) {
-                for (ix = page * 50; ix < (page + 1) * 50; ix++) {
-                    iframe.find('.table > tbody > tr[page="' + ix + '"]').show();
-                }
-            }
+            // iframe.find("#chartPaginationDiv").on('click', '#chartNextBtn', function () {
+            //     var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
+            //     if (page >= 0) {
+            //         iframe.find('#chartPaginationDiv').find('#chartPrevBtn').prop('disabled', false);
+            //     }
+            //     hide_rows(page, iframe);
+            //     page++;
+            //     show_rows(page, iframe);
+            //     iframe.find('#chartPaginationDiv').attr("page", page);
+            //     lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+            //     if (page >= lastPage - 1) {
+            //         $(this).prop('disabled', true);
+            //     }
+            // });
+            //
+            // iframe.find("#chartPaginationDiv").on('click', '#chartPrevBtn', function () {
+            //     var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
+            //     lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+            //     if (page <= lastPage) {
+            //         iframe.find('#chartPaginationDiv').find('#chartNextBtn').prop('disabled', false);
+            //     }
+            //     hide_rows(page, iframe);
+            //     page--;
+            //     show_rows(page, iframe);
+            //     iframe.find('#chartPaginationDiv').attr("page", page);
+            //     if (page <= 0) {
+            //         $(this).prop('disabled', true);
+            //     }
+            // });
+            //
+            // function hide_rows(page, iframe) {
+            //     for (ix = page * 50; ix < (page + 1) * 50; ix++) {
+            //         iframe.find('.table > tbody > tr[page="' + ix + '"]').hide();
+            //     }
+            // }
+            //
+            // function show_rows(page, iframe) {
+            //     for (ix = page * 50; ix < (page + 1) * 50; ix++) {
+            //         iframe.find('.table > tbody > tr[page="' + ix + '"]').show();
+            //     }
+            // }
         });
     }
 

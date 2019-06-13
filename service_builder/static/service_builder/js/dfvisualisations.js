@@ -478,7 +478,8 @@ $(document).ready(function () {
 
     function df_populate_selects(_mycallback){
         $('.df-multi-input').dropdown({
-          allowAdditions: true,
+            allowAdditions: true,
+            allowReselection:true,
             keys: {
               delimiter: 32
             }
@@ -597,6 +598,7 @@ $(document).ready(function () {
             }
         });
         indexed_array['df'] = df;
+        indexed_array['notebook_id'] = notebook_id_for_url;
         indexed_array['layer_id'] = String(count);
         indexed_array['cached_file_id'] = String(Math.floor(Date.now() / 1000))+'layer'+String(count) ;
         return indexed_array;
@@ -647,48 +649,48 @@ $(document).ready(function () {
                 $('#addVizModal #submit-df-btn').show();
                 $('#df_add_layer_btn').parent().hide();
                 $('#df_layers-list').parent().hide();
-                var iframe = $(this).contents();
-                iframe.find("#chartPaginationDiv").on('click', '#chartNextBtn', function () {
-                    var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
-                    if (page >= 0) {
-                        iframe.find('#chartPaginationDiv').find('#chartPrevBtn').prop('disabled', false);
-                    }
-                    hide_rows(page, iframe);
-                    page++;
-                    show_rows(page, iframe);
-                    iframe.find('#chartPaginationDiv').attr("page", page);
-                    lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
-                    if (page >= lastPage - 1) {
-                        $(this).prop('disabled', true);
-                    }
-                });
-
-                iframe.find("#chartPaginationDiv").on('click', '#chartPrevBtn', function () {
-                    var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
-                    lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
-                    if (page <= lastPage) {
-                        iframe.find('#chartPaginationDiv').find('#chartNextBtn').prop('disabled', false);
-                    }
-                    hide_rows(page, iframe);
-                    page--;
-                    show_rows(page, iframe);
-                    iframe.find('#chartPaginationDiv').attr("page", page);
-                    if (page <= 0) {
-                        $(this).prop('disabled', true);
-                    }
-                });
-
-                function hide_rows(page, iframe) {
-                    for (ix = page * 50; ix < (page + 1) * 50; ix++) {
-                        iframe.find('.table > tbody > tr[page="' + ix + '"]').hide();
-                    }
-                }
-
-                function show_rows(page, iframe) {
-                    for (ix = page * 50; ix < (page + 1) * 50; ix++) {
-                        iframe.find('.table > tbody > tr[page="' + ix + '"]').show();
-                    }
-                }
+                // var iframe = $(this).contents();
+                // iframe.find("#chartPaginationDiv").on('click', '#chartNextBtn', function () {
+                //     var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
+                //     if (page >= 0) {
+                //         iframe.find('#chartPaginationDiv').find('#chartPrevBtn').prop('disabled', false);
+                //     }
+                //     hide_rows(page, iframe);
+                //     page++;
+                //     show_rows(page, iframe);
+                //     iframe.find('#chartPaginationDiv').attr("page", page);
+                //     lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+                //     if (page >= lastPage - 1) {
+                //         $(this).prop('disabled', true);
+                //     }
+                // });
+                //
+                // iframe.find("#chartPaginationDiv").on('click', '#chartPrevBtn', function () {
+                //     var page = parseInt(iframe.find('#chartPaginationDiv').attr("page"));
+                //     lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+                //     if (page <= lastPage) {
+                //         iframe.find('#chartPaginationDiv').find('#chartNextBtn').prop('disabled', false);
+                //     }
+                //     hide_rows(page, iframe);
+                //     page--;
+                //     show_rows(page, iframe);
+                //     iframe.find('#chartPaginationDiv').attr("page", page);
+                //     if (page <= 0) {
+                //         $(this).prop('disabled', true);
+                //     }
+                // });
+                //
+                // function hide_rows(page, iframe) {
+                //     for (ix = page * 50; ix < (page + 1) * 50; ix++) {
+                //         iframe.find('.table > tbody > tr[page="' + ix + '"]').hide();
+                //     }
+                // }
+                //
+                // function show_rows(page, iframe) {
+                //     for (ix = page * 50; ix < (page + 1) * 50; ix++) {
+                //         iframe.find('.table > tbody > tr[page="' + ix + '"]').show();
+                //     }
+                // }
             }
             else{
                 $('#df_add_layer_btn').parent().hide();
