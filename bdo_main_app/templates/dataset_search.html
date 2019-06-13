@@ -825,22 +825,27 @@
 
         $("#title-filter").attr({"placeholder": "Loading datasets..."});
 
-        $('document').ready(function(){
+           setTimeout(function(){
+              $('#main-section').jplist({
+                   itemsBox: '.selection-body',
+                   itemPath: '.dataset-section',
+                   panelPath: '.filter-section',
+                   noResults: '.jplist-no-results'
+               });
+              $("#explore_btn1_loading").hide();
+               if($("#main-section").attr("data-on-top") !== "true"){
+                   $("#explore_btn1").show();
+                }
+               $("#title-filter").attr({"placeholder": "Search for datasets in the BDO platform..."});
+           }, 1000);
+
+
+
+        $('#main-section').ready(function(){
+
            //check all jPList javascript options here
-           $('#main-section').jplist({
-              itemsBox: '.selection-body',
-              itemPath: '.dataset-section',
-              panelPath: '.filter-section',
-              noResults: '.jplist-no-results',
-{#              effect: 'fade',#}
-{#              duration: 300,	//animation duration#}
-{#              fps: 24 //frames per second value#}
-           });
-           $("#explore_btn1_loading").hide();
-           if($("#main-section").attr("data-on-top") !== "true"){
-               $("#explore_btn1").show();
-            }
-           $("#title-filter").attr({"placeholder": "Search for datasets in the BDO platform..."});
+
+
         });
 
         jQuery.fn.jplist.settings = {
