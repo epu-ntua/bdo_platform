@@ -219,10 +219,6 @@ $(document).ready(function() {
             "<h3 class='popover-title' style='box-shadow: 0px 1px #bfbfbf;'></h3>" +
             "<div class='popover-content'></div>" +
             "<div class='popover-navigation'>" +
-            // "<button class='btn btn-sm btn-primary' data-role='prev'>« Prev</button>" +
-            // "<span data-role='separator'>|</span>" +
-            // "<button class='btn btn-sm btn-primary' data-role='next'>Next »</button>" +
-            "<button class='btn btn-sm btn-primary pull-right' data-role='end'>End tour</button>" +
             "</div>" +
             "</div>",
     });
