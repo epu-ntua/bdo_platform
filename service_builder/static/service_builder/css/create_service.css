@@ -89,13 +89,13 @@
 }
 
 .holder{
-    margin-top: -220px;
+    margin-top: -410px;
     position:relative;
     z-index: 0;
 }
 .frame{
     width: 100%;
-    height:100%;
+    height:900px;
     min-height: 700px;
 }
 .bar{
@@ -103,7 +103,7 @@
     top:0;
     left:0;
     width:100%;
-    height: 220px;
+    height: 410px;
     background-color: #f9f9f9;
     border-width: 2px;
     border-bottom-width: 2px;

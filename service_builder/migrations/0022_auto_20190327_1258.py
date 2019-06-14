@@ -15,18 +15,18 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='service',
-            name='service_user',
-        ),
-        migrations.AlterField(
-            model_name='service',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_owner', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AlterField(
-            model_name='serviceaccessrequest',
-            name='creation_date',
-            field=models.DateTimeField(default=datetime.datetime(2019, 3, 27, 12, 58, 43, 807000)),
-        ),
+        # migrations.RemoveField(
+        #     model_name='service',
+        #     name='service_user',
+        # ),
+        # migrations.AlterField(
+        #     model_name='service',
+        #     name='user',
+        #     field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_owner', to=settings.AUTH_USER_MODEL),
+        # ),
+        # migrations.AlterField(
+        #     model_name='serviceaccessrequest',
+        #     name='creation_date',
+        #     field=models.DateTimeField(default=datetime.datetime(2019, 3, 27, 12, 58, 43, 807000)),
+        # ),
     ]
