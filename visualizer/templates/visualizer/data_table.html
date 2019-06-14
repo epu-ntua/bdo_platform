@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block viz_content %}
-
+{% if has_data %}
     <div id="chartdiv" style="overflow: visible; text-align: left; margin-top: 50px; height: auto;">
         <table class="table table-striped table-bordered ">
             <thead>
@@ -58,11 +58,15 @@
             </tbody>
         </table>
     </div>
-
     <div id="chartPaginationDiv" page="0" lastidx="{{ data|length }}">
         <button id="chartPrevBtn" disabled class="btn btn-default btn-sm">Previous</button>
         <button id="chartNextBtn" class="btn btn-default btn-sm">Next</button>
     </div>
+    {% else %}
+    <div id="chartdiv" style="overflow: visible; text-align: left; margin-top: 50px; height: auto;">
+        <h4 style="position: absolute; text-align: center; width: 100%; top: 50%;bottom: 50%">There are no available data.</h4>
+    </div>
+    {% endif %}
 
 {% endblock %}
 
