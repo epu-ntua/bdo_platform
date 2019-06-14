@@ -36,6 +36,7 @@ def requests(request):
                    for x in chain(my_requests_dashboard, my_requests_service, my_requests_dataset)]
 
     # my_requests = my_requests.order_by('-creation_date')
+    my_requests = sorted(my_requests, key=lambda k: k['creation_date'], reverse=True)
     my_resources_requests = [{"id": x.id,
                               "type": x.type,
                               "resource_id": x.resource.id,
@@ -47,7 +48,7 @@ def requests(request):
                               "response_date": x.response_date}
                              for x in chain(my_resources_requests_dashboard, my_resources_requests_service, my_resources_requests_dataset)]
     # my_resources_requests = my_resources_requests.order_by('-creation_date')
-
+    my_resources_requests = sorted(my_resources_requests, key=lambda k: k['creation_date'], reverse=True)
     return render(request, 'access_controller/requests_page.html', {
         'my_requests': my_requests,
         'my_resources_requests': my_resources_requests

@@ -87,6 +87,9 @@
                             </span>
                         </div>
                     </div>
+
+                {% empty %}
+                    You have not created any request.
                 {% endfor %}
             </div>
 
@@ -126,6 +129,8 @@
                             </span>
                         </div>
                     </div>
+                {% empty %}
+                    No requests for your resources.
                 {% endfor %}
             </div>
         </div>
