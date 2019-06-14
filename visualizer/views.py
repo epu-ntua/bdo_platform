@@ -29,6 +29,7 @@ from matplotlib import use
 from matplotlib.figure import Figure
 from django.contrib.staticfiles.templatetags.staticfiles import static
 use('Agg')
+import sys, os
 import matplotlib.pyplot as plt
 import pylab as pl
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -1737,40 +1738,44 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
 
 
 def get_makers_dataframe_data(color_col, df, lat_col, lon_col, time_col, notebook_id, request, variable):
-    livy = False
-    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-    if len(service_exec) > 0:
-        service_exec = service_exec[0]  # GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
-    if not livy:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df,
-                                                          order_by=time_col)
-    else:
-        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=time_col)
-    if not livy:
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    data = []
-    lat_index = 0
-    lon_index = 1
-    time_index = 2
-    var_index = 3
-    color_index = 4
-    for s in json_data:
-        row = [float(s[lat_col]), float(s[lon_col]), s[time_col]]
-        if variable != '':
-            row.append(str(s[variable]))
+    try:
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
+        if not livy:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df,
+                                                              order_by=time_col)
         else:
-            row.append('')
-        if color_col != '':
-            row.append(s[color_col])
-        else:
-            row.append('')
-        data.append(row)
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=time_col)
+        if not livy:
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        data = []
+        lat_index = 0
+        lon_index = 1
+        time_index = 2
+        var_index = 3
+        color_index = 4
+        for s in json_data:
+            row = [float(s[lat_col]), float(s[lon_col]), s[time_col]]
+            if variable != '':
+                row.append(str(s[variable]))
+            else:
+                row.append('')
+            if color_col != '':
+                row.append(s[color_col])
+            else:
+                row.append('')
+            data.append(row)
+    except:
+        raise ValueError(
+            'The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
     return data, lat_index, lon_index, var_index, color_index, time_index
 
 
@@ -2422,161 +2427,171 @@ def map_viz_folium_heatmap_time(request):
 
 
 def get_histogram_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
+    try:
+        query_pk = int(str(request.GET.get('query', '0')))
 
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
+        df = str(request.GET.get('df', ''))
+        notebook_id = str(request.GET.get('notebook_id', ''))
 
-    x_var = str(request.GET.get('x_var', ''))
-    bins = int(str(request.GET.get('bins', '5')))
+        x_var = str(request.GET.get('x_var', ''))
+        bins = int(str(request.GET.get('bins', '5')))
 
-    if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-        doc = query.document
+        if query_pk != 0:
+            query = AbstractQuery.objects.get(pk=query_pk)
+            query = TempQuery(document=query.document)
+            doc = query.document
 
-        from_table = ''
-        table_col = ''
-        cursor = None
-        var_unit = ''
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == x_var:
-                    var_title = s['title']
-                    if s['type'] == 'VALUE':
-                        v_obj = Variable.objects.get(pk=int(f['type']))
-                        var_unit = v_obj.unit
-                        if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-                            from_table = f['name'][:-2] + '_' + f['type']
-                            table_col = 'value'
-                            cursor = connections['default'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                            from_table = str(v_obj.dataset.table_name)
-                            table_col = str(v_obj.name)
-                            cursor = connections['UBITECH_POSTGRES'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-                            from_table = str(v_obj.dataset.table_name)
-                            table_col = str(v_obj.name)
-                            cursor = get_presto_cursor()
+            from_table = ''
+            table_col = ''
+            cursor = None
+            var_unit = ''
+            for f in doc['from']:
+                for s in f['select']:
+                    if s['name'] == x_var:
+                        var_title = s['title']
+                        if s['type'] == 'VALUE':
+                            v_obj = Variable.objects.get(pk=int(f['type']))
+                            var_unit = v_obj.unit
+                            if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+                                from_table = f['name'][:-2] + '_' + f['type']
+                                table_col = 'value'
+                                cursor = connections['default'].cursor()
+                            elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                                from_table = str(v_obj.dataset.table_name)
+                                table_col = str(v_obj.name)
+                                cursor = connections['UBITECH_POSTGRES'].cursor()
+                            elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+                                from_table = str(v_obj.dataset.table_name)
+                                table_col = str(v_obj.name)
+                                cursor = get_presto_cursor()
+                        else:
+                            d_obj = Dimension.objects.get(pk=int(s['type']))
+                            v_obj = d_obj.variable
+                            var_unit = d_obj.unit
+                            if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+                                from_table = f['name'][:-2] + '_' + f['type']
+                                table_col = d_obj.name + '_' + s['type']
+                                cursor = connections['default'].cursor()
+                            elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                                from_table = str(v_obj.dataset.table_name)
+                                table_col = str(d_obj.name)
+                                cursor = connections['UBITECH_POSTGRES'].cursor()
+                            elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+                                from_table = str(v_obj.dataset.table_name)
+                                table_col = str(d_obj.name)
+                                cursor = get_presto_cursor()
                     else:
-                        d_obj = Dimension.objects.get(pk=int(s['type']))
-                        v_obj = d_obj.variable
-                        var_unit = d_obj.unit
-                        if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-                            from_table = f['name'][:-2] + '_' + f['type']
-                            table_col = d_obj.name + '_' + s['type']
-                            cursor = connections['default'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                            from_table = str(v_obj.dataset.table_name)
-                            table_col = str(d_obj.name)
-                            cursor = connections['UBITECH_POSTGRES'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-                            from_table = str(v_obj.dataset.table_name)
-                            table_col = str(d_obj.name)
-                            cursor = get_presto_cursor()
-                else:
-                    s['exclude'] = True
-        # print doc
-        query.document = doc
-        raw = query.raw_query
-        print raw
-        try:
-            where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
-        except:
-            where_clause = ''
+                        s['exclude'] = True
+            # print doc
+            query.document = doc
+            raw = query.raw_query
+            print raw
+            try:
+                where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
+            except:
+                where_clause = ''
 
-        try:
-            join_clause = ' JOIN ' + str(raw.split("JOIN")[1].split('WHERE')[0].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
-        except:
-            join_clause = ''
+            try:
+                join_clause = ' JOIN ' + str(raw.split("JOIN")[1].split('WHERE')[0].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
+            except:
+                join_clause = ''
 
-        initial_from_table = from_table
-        if join_clause != '':
-            if join_clause.split('JOIN')[1].split('ON')[0].strip() == from_table:
-                from_table = raw.split("FROM")[2].split('JOIN')[0].strip()
+            initial_from_table = from_table
+            if join_clause != '':
+                if join_clause.split('JOIN')[1].split('ON')[0].strip() == from_table:
+                    from_table = raw.split("FROM")[2].split('JOIN')[0].strip()
 
-        bins -= 1
-        if where_clause == '':
-            raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
-                        histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
-                         (min({5}.{0}), max({5}.{0})) as range,
-                         count(*) as freq from {1} {4}, drb_stats {3} where {5}.{0} IS NOT NULL
+            bins -= 1
+            if where_clause == '':
+                raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
+                            histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
+                             (min({5}.{0}), max({5}.{0})) as range,
+                             count(*) as freq from {1} {4}, drb_stats {3} where {5}.{0} IS NOT NULL
+        
+                             group by 1
+                             order by 1)
+                            select range, freq
+                            from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
+            else:
+                raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
+                                    histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
+                                     (min({5}.{0}), max({5}.{0})) as range,
+                                     count(*) as freq from {1} {4}, drb_stats {3} AND {5}.{0} IS NOT NULL
     
-                         group by 1
-                         order by 1)
-                        select range, freq
-                        from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
+                                     group by 1
+                                     order by 1)
+                                    select range, freq
+                                    from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
+            # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
+            print raw_query
+            # result = execute_query_method(query)[0]
+
+            cursor.execute(raw_query)
+            data = cursor.fetchall()
+            json_data = []
+            for d in data:
+                if d[0][0] is not None :
+                    start_value = str(float(d[0][0]))
+                else :
+                    start_value = 'None'
+                if d[0][1] is not None :
+                    end_value = str(float(d[0][1]))
+                else :
+                    end_value = 'None'
+                json_data.append({"startValues": '['+ start_value + ',' + end_value + ']', "counts": str(d[1])})
+            y_var = 'counts'
+            x_var = 'startValues'
+            # print data
+            json_data = convert_unicode_json(json_data)
+            dataset_list = get_dataset_list(query)
+            analytics_dataset_visualisation(dataset_list)
         else:
-            raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
-                                histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
-                                 (min({5}.{0}), max({5}.{0})) as range,
-                                 count(*) as freq from {1} {4}, drb_stats {3} AND {5}.{0} IS NOT NULL
+            try:
+                bins += 1
+                var_title = x_var
+                livy = False
+                service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+                if len(service_exec) > 0:
+                    service_exec = service_exec[0]  # GET LAST
+                    session_id = service_exec.livy_session
+                    exec_id = service_exec.id
+                    updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+                    livy = service_exec.service.through_livy
+                if livy:
+                    tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
+                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=session_id, mode='livy')
+                    scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var,num_of_bins=bins)
+                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=session_id, mode='livy')
+                    json_data = create_livy_scala_toJSON_paragraph(session_id=session_id, df_name=df)
 
-                                 group by 1
-                                 order by 1)
-                                select range, freq
-                                from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
-        # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
-        print raw_query
-        # result = execute_query_method(query)[0]
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
+                else:
+                    tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
+                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=0, mode='zeppelin')
+                    scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var, num_of_bins=bins)
+                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=0, mode='zeppelin')
+                    toJSON_paragraph_id = create_zep_scala_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+                    json_data = get_zep_scala_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
-        cursor.execute(raw_query)
-        data = cursor.fetchall()
-        json_data = []
-        for d in data:
-            if d[0][0] is not None :
-                start_value = str(float(d[0][0]))
-            else :
-                start_value = 'None'
-            if d[0][1] is not None :
-                end_value = str(float(d[0][1]))
-            else :
-                end_value = 'None'
-            json_data.append({"startValues": '['+ start_value + ',' + end_value + ']', "counts": str(d[1])})
-        y_var = 'counts'
-        x_var = 'startValues'
-        # print data
-        json_data = convert_unicode_json(json_data)
-        dataset_list = get_dataset_list(query)
-        analytics_dataset_visualisation(dataset_list)
-    else:
-        bins += 1
-        var_title = x_var
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=session_id, mode='livy')
-            scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var,num_of_bins=bins)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=session_id, mode='livy')
-            json_data = create_livy_scala_toJSON_paragraph(session_id=session_id, df_name=df)
-
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
-        else:
-            tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=0, mode='zeppelin')
-            scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var, num_of_bins=bins)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=0, mode='zeppelin')
-            toJSON_paragraph_id = create_zep_scala_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_scala_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-
-        for i in range(0, len(json_data) - 1):
-            json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
-        var_unit = ''
-        json_data = json_data[:-1]
-        y_var = 'counts'
-        x_var = 'startValues'
+                for i in range(0, len(json_data) - 1):
+                    json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
+                var_unit = ''
+                json_data = json_data[:-1]
+                y_var = 'counts'
+                x_var = 'startValues'
+            except:
+                raise ValueError(
+                    'The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
+    except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
+        return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_histogram_chart_am')
     return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var, 'category_title': var_title + " (" +str(var_unit) + ")"})
 
@@ -3241,37 +3256,40 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_
     y_title_list = []
     livy = False
     service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-    if len(service_exec) > 0:
-        service_exec = service_exec[0]  # GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
-    if livy:
-        if ordering:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+    try:
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
+        if livy:
+            if ordering:
+                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+            else:
+                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
         else:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
-    else:
-        if ordering:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var,
-                                                          order_type='ASC')
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            if ordering:
+                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var,
+                                                              order_type='ASC')
+            else:
+                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
-    x_m_unit = x_var_unit
-    x_var_title = x_var
+        x_m_unit = x_var_unit
+        x_var_title = x_var
 
-    for i, x in enumerate(y_var_list):
-        y_title_list.append(str(x))
-        try:
-            y_m_unit.append(str(y_var_unit_list[i]))
-        except IndexError:
-            y_m_unit.append(str('unknown unit'))
-            pass
+        for i, x in enumerate(y_var_list):
+            y_title_list.append(str(x))
+            try:
+                y_m_unit.append(str(y_var_unit_list[i]))
+            except IndexError:
+                y_m_unit.append(str('unknown unit'))
+                pass
+    except:
+        raise ValueError('The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
 
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
@@ -3299,6 +3317,9 @@ def get_line_chart_am(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
@@ -3364,6 +3385,9 @@ def get_column_chart_am(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
@@ -3430,24 +3454,28 @@ def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_
 def load_execute_dataframe_data(request, df, notebook_id):
     # import pdb
     # pdb.set_trace()
-    livy = False
-    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-    if len(service_exec) > 0:
-        service_exec = service_exec[0]  # GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
-    if livy:
-        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
-    else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    headers = []
-    if len(data) > 0:
-        headers = [key for key in data[0].keys()]
+    try:
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
+        if livy:
+            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+        else:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        headers = []
+        if len(data) > 0:
+            headers = [key for key in data[0].keys()]
+    except:
+        raise ValueError(
+            'The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
     return data, headers
 
 
@@ -3473,6 +3501,9 @@ def get_data_table(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
     has_data = True
     if len(data) == 0:
