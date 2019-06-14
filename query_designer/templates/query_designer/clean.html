@@ -374,8 +374,7 @@
     </script>
 
     <script>
-        $('document').ready(function(){
-
+        setTimeout(function(){
            console.log("starting JPLIST");
            $("#initialising_div").removeClass("hidden");
            //check all jPList javascript options here
@@ -389,6 +388,8 @@
            $("#initialising_div").addClass("hidden");
 
            $('[data-toggle="tooltip"]').tooltip();
+        }, 1000);
+        $('document').ready(function(){
         });
     </script>
 
