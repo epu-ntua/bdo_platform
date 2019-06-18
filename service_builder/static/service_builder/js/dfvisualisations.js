@@ -158,21 +158,23 @@ $(document).ready(function () {
         line_chart_y_select.find('option').remove();
         line_chart_y_select.parent().dropdown('clear');
         var line_chart_y_unit = $('.popover-content #viz_'+line_chart_id+' #y_var_unit');
-        line_chart_y_unit.dropdown('setting','onAdd', function () {
-            setTimeout(function () {
-                 allow_line_chart_submit = df_missing_multi_parameter(line_chart_y_unit,allow_line_chart_submit,'Y-Axis-Unit',1);
-            },100);
-
+        // line_chart_y_unit.dropdown('setting','onAdd', function () {
+        //     setTimeout(function () {
+        //          allow_line_chart_submit = df_missing_multi_parameter(line_chart_y_unit,allow_line_chart_submit,'Y-Axis-Unit',1);
+        //     },100);
+        //
+        // });
+        // line_chart_y_unit.dropdown('setting','onRemove', function () {
+        //     allow_line_chart_submit = df_missing_multi_parameter(line_chart_y_unit,allow_line_chart_submit,'Y-Axis-Unit',1);
+        // });
+        // line_chart_y_unit.dropdown('set selected',line_chart_y_unit.find('option').val('-1'));
+        // line_chart_y_unit.dropdown('refresh');
+        // line_chart_y_unit.parent().dropdown('clear');
+        // line_chart_y_unit.find('option').remove();
+        // line_chart_y_unit.parent().dropdown('clear');
+        line_chart_y_unit.on('input',function () {
+            allow_line_chart_submit = df_missing_parameter(line_chart_y_unit,allow_line_chart_submit,'Y-Axis-Unit',1);
         });
-        line_chart_y_unit.dropdown('setting','onRemove', function () {
-            allow_line_chart_submit = df_missing_multi_parameter(line_chart_y_unit,allow_line_chart_submit,'Y-Axis-Unit',1);
-        });
-        line_chart_y_unit.dropdown('set selected',line_chart_y_unit.find('option').val('-1'));
-        line_chart_y_unit.dropdown('refresh');
-        line_chart_y_unit.parent().dropdown('clear');
-        line_chart_y_unit.find('option').remove();
-        line_chart_y_unit.parent().dropdown('clear');
-
         var line_chart_x_select = $('.popover-content #viz_'+line_chart_id+' #x_var');
         line_chart_x_select.on('input',function () {
             allow_line_chart_submit = df_missing_parameter(line_chart_x_select,allow_line_chart_submit,'X-Axis-Variable',2);
@@ -183,6 +185,7 @@ $(document).ready(function () {
         });
         $(line_chart_x_select).val('').trigger("input");
         $(line_chart_x_unit).val('').trigger("input");
+        $(line_chart_y_unit).val('').trigger("input");
 
         //COLUMN-CHART
         var allow_column_chart_submit = [true,true,true,true];
@@ -203,21 +206,23 @@ $(document).ready(function () {
         column_chart_y_select.find('option').remove();
         column_chart_y_select.parent().dropdown('clear');
         var column_chart_y_unit = $('.popover-content #viz_'+column_chart_id+' #y_var_unit');
-        column_chart_y_unit.dropdown('setting','onAdd', function () {
-            setTimeout(function () {
-                 allow_column_chart_submit = df_missing_multi_parameter(column_chart_y_unit,allow_column_chart_submit,'Y-Axis-Unit',1);
-            },100);
-
+        // column_chart_y_unit.dropdown('setting','onAdd', function () {
+        //     setTimeout(function () {
+        //          allow_column_chart_submit = df_missing_multi_parameter(column_chart_y_unit,allow_column_chart_submit,'Y-Axis-Unit',1);
+        //     },100);
+        //
+        // });
+        // column_chart_y_unit.dropdown('setting','onRemove', function () {
+        //     allow_column_chart_submit = df_missing_multi_parameter(column_chart_y_unit,allow_column_chart_submit,'Y-Axis-Unit',1);
+        // });
+        // column_chart_y_unit.dropdown('set selected',column_chart_y_unit.find('option').val('-1'));
+        // column_chart_y_unit.dropdown('refresh');
+        // column_chart_y_unit.parent().dropdown('clear');
+        // column_chart_y_unit.find('option').remove();
+        // column_chart_y_unit.parent().dropdown('clear');
+        column_chart_y_unit.on('input',function () {
+            allow_column_chart_submit = df_missing_parameter(column_chart_y_unit,allow_column_chart_submit,'Y-Axis-Unit',1);
         });
-        column_chart_y_unit.dropdown('setting','onRemove', function () {
-            allow_column_chart_submit = df_missing_multi_parameter(column_chart_y_unit,allow_column_chart_submit,'Y-Axis-Unit',1);
-        });
-        column_chart_y_unit.dropdown('set selected',column_chart_y_unit.find('option').val('-1'));
-        column_chart_y_unit.dropdown('refresh');
-        column_chart_y_unit.parent().dropdown('clear');
-        column_chart_y_unit.find('option').remove();
-        column_chart_y_unit.parent().dropdown('clear');
-
         var column_chart_x_select = $('.popover-content #viz_'+column_chart_id+' #x_var');
         column_chart_x_select.on('input',function () {
             allow_column_chart_submit = df_missing_parameter(column_chart_x_select,allow_column_chart_submit,'X-Axis-Variable',2);
@@ -228,6 +233,7 @@ $(document).ready(function () {
         });
         $(column_chart_x_select).val('').trigger("input");
         $(column_chart_x_unit).val('').trigger("input");
+        $(column_chart_y_unit).val('').trigger("input");
 
         //TIMESERIES
         var allow_timeseries_chart_submit = [true,true];
