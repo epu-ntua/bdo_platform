@@ -3418,6 +3418,9 @@ def get_pie_chart_am(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_pie_chart_am')
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title).replace("\n", " ") + " (" + str(x_m_unit) + ")", 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
@@ -4091,6 +4094,9 @@ def get_aggregate_value(request):
         else:
             value, unit, var_list, var_title, _ = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_aggregate_value')
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit, 'agg_func':agg_function, 'var_title': var_title})
