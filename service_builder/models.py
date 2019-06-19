@@ -19,6 +19,7 @@ class Service(Model):
     user = ForeignKey(User, related_name="service_owner")
     title = CharField(max_length=512)
     private = BooleanField(default=False)
+    can_be_shared = BooleanField(default=False)
     published = BooleanField(default=False)
 
     notebook_id = CharField(max_length=100)

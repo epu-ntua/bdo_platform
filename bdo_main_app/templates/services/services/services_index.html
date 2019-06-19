@@ -33,13 +33,13 @@
         <li class="nav-item active" style="width: 20%; display: inline-block; float: none;">
             <a class="nav-link" href="#pilot-services-div" role="tab" data-toggle="tab">
                 <i class="fas fa-cogs"></i>
-                Pilot Applications
+                Applications
             </a>
         </li>
         <li class="nav-item" style="width: 20%; display: inline-block; float: none;">
             <a class="nav-link" href="#myservices" role="tab" data-toggle="tab">
                 <i class="fas fa-cogs"></i>
-                My Services
+                BDO Services
             </a>
         </li>
 {#        <li class="nav-item " style="width: 20%; display: inline-block; float: none;">#}
@@ -51,7 +51,7 @@
         <li class="nav-item" style="width: 20%; display: inline-block; float: none;">
             <a class="nav-link" href="#mydashboards" role="tab" data-toggle="tab">
                 <i class="fas fa-bar-chart"></i>
-                My Dashboards
+                BDO Dashboards
             </a>
         </li>
 {#        <li class="nav-item" style="width: 20%; display: inline-block; float: none;">#}
@@ -87,9 +87,16 @@
         </div>
 
         <div class="tab-pane" id="myservices">
-
+            <h4>My Services</h4>
+            <hr>
             <div class="card-deck">
             {% for item in my_services %}
+                {% if forloop.counter == 5 %}
+                <div class="row">
+                    <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_services">Show more</button>
+                </div>
+                <div id="collapse_my_services" class="collapse">
+                {% endif %}
                 <div class="card card-default-width card-default-margin-right">
                     <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
                     <div class="card-body card-padding-20">
@@ -109,13 +116,13 @@
                         <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
                     </div>
 
-                    <ul class="list-group list-group-flush">
+                    <ul class="list-group list-group-flush" style="text-align: left;">
                         <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
                         <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
                         <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
                     </ul>
                     <div class="card-body text-center">
-                        <a class="btn btn-primary blue"
+                        <a class="btn btn-primary"
                             {% if item.title == 'Vessel Fault Prediction (FNK)'%}
                                 href="http://212.101.173.52:8062"
                             {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
@@ -128,9 +135,60 @@
                         </a>
                     </div>
                 </div>
+                {% if forloop.last and forloop.counter >= 5 %}
+                    </div>
+                {% endif %}
             {% empty %}
                 <b>No services are created yet. Click <a class="o-blue" href="/service_builder/create/">here</a> to create a new service.</b>
             {% endfor %}
+            </div>
+            <h4>Private Services</h4>
+            <hr>
+            <div class="card-deck">
+                {% for item in bdo_services %}
+                    {% if forloop.counter == 5 %}
+                    <div class="row">
+                        <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_bdo_services">Show more</button>
+                    </div>
+                    <div id="collapse_bdo_services" class="collapse">
+                    {% endif %}
+                    <div class="card card-default-width card-default-margin-right">
+                        <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                        <div class="card-body card-padding-20">
+                            <h5 class="card-title o-blue card-title-default-height">
+                                <a class="o-blue"
+                                    {% if item.title == 'Vessel Fault Prediction (FNK)'%}
+                                        href="http://212.101.173.52:8062"
+                                    {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
+                                        href="http://212.101.173.52:8065"
+                                    {% else %}
+                                        href="/services/service/{{item.pk}}"
+                                    {% endif %}
+                                >
+                                {{item.title}}
+                                </a>
+                            </h5>
+                            <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                        </div>
+
+                        <ul class="list-group list-group-flush" style="text-align: left;">
+                            <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                            <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                            <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
+                        </ul>
+                        <div class="card-body text-center">
+                            <a class="btn btn-success request-btn"  data-resource-id="{{ item.pk }}" data-toggle="modal" data-target="#request_access_service_modal" style=""
+                                 role="button">
+                                REQUEST ACCESS
+                            </a>
+                        </div>
+                    </div>
+                    {% if forloop.last and forloop.counter >= 5 %}
+                        </div>
+                    {% endif %}
+                {% empty %}
+                    <b>No services are available.</b>
+                {% endfor %}
             </div>
 
 
@@ -203,8 +261,16 @@
 {##}
 {#        </div>#}
         <div class="tab-pane" id="mydashboards">
+            <h4>My Dashboards</h4>
+            <hr>
             <div class="card-deck">
             {% for item in my_dashboards %}
+                {% if forloop.counter == 5 %}
+                    <div class="row">
+                        <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_dashboards">Show more</button>
+                    </div>
+                    <div id="collapse_my_dashboards" class="collapse">
+                {% endif %}
                 <div class="card card-default-width card-default-margin-right">
                     <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
                     <div class="card-body card-padding-20">
@@ -212,8 +278,8 @@
                         <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
                     </div>
 
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                    <ul class="list-group list-group-flush" style="text-align: left;">
+                        <li class="list-group-item">Dashboard Creator <div class="pull-right">{{ item.user.username }}</div></li>
                         <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
                         <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
                     </ul>
@@ -221,8 +287,45 @@
                         <a class="btn btn-primary blue" href="/services/dashboard/{{item.pk}}" role="button">SHOW DASHBOARD</a>
                     </div>
                 </div>
+                {% if forloop.last and forloop.counter >= 5 %}
+                    </div>
+                {% endif %}
             {% empty %}
                 <b>No dashboards are created yet. Click <a class="o-blue" href="/dashboards/create/">here</a> to create a new dashboard.</b>
+            {% endfor %}
+            </div>
+
+            <h4>Private Dashboards</h4>
+            <hr>
+            <div class="card-deck">
+            {% for item in bdo_dashboards %}
+                {% if forloop.counter == 5 %}
+                    <div class="row">
+                        <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_dashboards">Show more</button>
+                    </div>
+                    <div id="collapse_my_dashboards" class="collapse">
+                {% endif %}
+                <div class="card card-default-width card-default-margin-right">
+                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                    <div class="card-body card-padding-20">
+                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/dashboard/{{item.pk}}">{{ item.title }}</a></h5>
+                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                    </div>
+
+                    <ul class="list-group list-group-flush" style="text-align: left;">
+                        <li class="list-group-item">Dashboard Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
+                    </ul>
+                    <div class="card-body text-center">
+                        <a class="btn btn-success request-btn" data-resource-id="{{ item.pk }}"  data-toggle="modal" data-target="#request_access_dashboard_modal" style=""  role="button">REQUEST ACCESS</a>
+                    </div>
+                </div>
+                {% if forloop.last and forloop.counter >= 5 %}
+                    </div>
+                {% endif %}
+            {% empty %}
+                <b>No dashboards are available.</b>
             {% endfor %}
             </div>
         </div>
@@ -256,6 +359,181 @@
 
 {% endblock %}
 
+
+{% block modal %}
+    <div class="modal fade" id="request_access_service_modal" tabindex="-1" role="dialog" aria-hidden="true" style="width: 50%;left:45vh;">
+      <div class="modal-dialog " role="document" style="width: 50%;">
+        <div class="modal-content" style="height: inherit; ">
+          <div class="modal-header">
+            <h4 style="margin-bottom: 15px; margin-left:10px; font-weight: bold; text-align: center;" class="modal-title" id="deleteModalLabel">Access Request</h4>
+          </div>
+          <div class="modal-body" style="height: inherit;margin-top: 10px;margin-bottom: 30px">
+              <div class="form-group label-floating">
+                    <p>
+                        Do you want to create a request to access this private service?
+                    </p>
+                    <p>
+                        The owner of the service will be notified and he will accept or decline you request.
+                    </p>
+                    <p>
+                        You will then get notified about the outcome of your request.
+                    </p>
+              </div>
+          </div>
+          <div class="modal-footer" style="text-align: center;">
+              <button id="confirm-create-request-service-btn" type="button" class="btn btn-success btn-md"  data-dismiss="modal" style="margin-top: 0; margin-bottom: 0;" >Make request</button>
+              <button type="button" class="btn btn-secondary btn-md" data-dismiss="modal"  style="">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal fade" id="request_access_dashboard_modal" tabindex="-1" role="dialog" aria-hidden="true" style="width: 50%;left:45vh;">
+      <div class="modal-dialog " role="document" style="width: 50%;">
+        <div class="modal-content" style="height: inherit; ">
+          <div class="modal-header">
+            <h4 style="margin-bottom: 15px; margin-left:10px; font-weight: bold; text-align: center;" class="modal-title" id="deleteModalLabel">Access Request</h4>
+          </div>
+          <div class="modal-body" style="height: inherit;margin-top: 10px;margin-bottom: 30px">
+              <div class="form-group label-floating">
+                    <p>
+                        Do you want to create a request to access this private dashboard?
+                    </p>
+                    <p>
+                        The owner of the dashboard will be notified and he will accept or decline you request.
+                    </p>
+                    <p>
+                        You will then get notified about the outcome of your request.
+                    </p>
+              </div>
+          </div>
+          <div class="modal-footer" style="text-align: center;">
+              <button id="confirm-create-request-dashboard-btn" type="button" class="btn btn-success btn-md"  data-dismiss="modal" style="margin-top: 0; margin-bottom: 0;" >Make request</button>
+              <button type="button" class="btn btn-secondary btn-md" data-dismiss="modal"  style="">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
+
+
 {% block js %}
+
+    <script type="text/javascript">
+        var resource_id = -1;
+        $(".request-btn").click(function(){
+            resource_id = $(this).data('resource-id');
+            console.log(resource_id);
+        });
+
+        $("#confirm-create-request-service-btn").click(function(){
+           var csrftoken = getCookie('csrftoken');
+            $.ajax({
+                url: '/access_control/request_access_to_resource/service/',
+                type: 'POST',
+                data: {
+                    resource_id: resource_id,
+                    csrfmiddlewaretoken: csrftoken
+                },
+                success: function (result) {
+                    console.log(result);
+                    var message = 'Your request has been created successfully!';
+                    $.notify({
+                          icon: "add_alert",
+                          message: message
+
+                    },{
+                          type: 'success',
+                          timer: 2000,
+                          placement: {
+                              from: 'top',
+                              align: 'right'
+                          }
+                    });
+                },
+                error: function (result) {
+                    console.log(result);
+                    var message = 'An error occured. Your request failed.';
+                    $.notify({
+                          icon: "add_alert",
+                          message: message
+
+                    },{
+                          type: 'danger',
+                          timer: 2000,
+                          placement: {
+                              from: 'top',
+                              align: 'right'
+                          }
+                    });
+                }
+            });
+        });
+
+
+        $("#confirm-create-request-dashboard-btn").click(function(){
+           var csrftoken = getCookie('csrftoken');
+            $.ajax({
+                url: '/access_control/request_access_to_resource/dashboard/',
+                type: 'POST',
+                data: {
+                    resource_id: resource_id,
+                    csrfmiddlewaretoken: csrftoken
+                },
+                success: function (result) {
+                    console.log(result);
+                    var message = 'Your request has been created successfully!';
+                    $.notify({
+                          icon: "add_alert",
+                          message: message
+
+                    },{
+                          type: 'success',
+                          timer: 2000,
+                          placement: {
+                              from: 'top',
+                              align: 'right'
+                          }
+                    });
+                },
+                error: function (result) {
+                    console.log(result);
+                    var message = 'An error occured. Your request failed.';
+                    $.notify({
+                          icon: "add_alert",
+                          message: message
+
+                    },{
+                          type: 'danger',
+                          timer: 2000,
+                          placement: {
+                              from: 'top',
+                              align: 'right'
+                          }
+                    });
+                }
+            });
+        });
+
+
+        // using jQuery
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+    </script>
 
 {% endblock %}

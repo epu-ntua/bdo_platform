@@ -150,6 +150,7 @@ def publish_new_service(request):
         description = str(request.POST.get('description'))
         price = str(request.POST.get('price'))
         private = str(request.POST.get('private'))
+        can_be_shared = str(request.POST.get('can_be_shared'))
 
         service_id = int(request.POST.get('service_id'))
 
@@ -180,6 +181,12 @@ def publish_new_service(request):
             service.private = True
         else:
             service.private = False
+
+        if can_be_shared == "True":
+            service.can_be_shared = True
+        else:
+            service.can_be_shared = False
+
         service.published = True
 
         service.save()

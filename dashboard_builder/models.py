@@ -26,6 +26,7 @@ class Dashboard(Model):
 
     viz_components = JSONField(default=dict())
     private = BooleanField(default=True)
+    can_be_shared = BooleanField(default=False)
 
     description = CharField(blank=True, max_length=512, null=True, default=None)
     imageurl = URLField(blank=True, null=True, default=None)

@@ -1,19 +1,20 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import json
 import collections
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.utils.timezone import now
-
+from django.db.models import Q
 # from bdo_main_app.models import Service
 from dashboard_builder.models import Dashboard, DashboardAccess
-from service_builder.models import Service
+from service_builder.models import Service, ServiceAccess
 from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from access_controller.policy_enforcement_point import PEP
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ObjectDoesNotExist
 from website_analytics.views import *
+
 
 @never_cache
 def services(request):
@@ -24,8 +25,36 @@ def services(request):
     else:
         user_dashboards = []
         user_services = []
-    bdo_dashboards = Dashboard.objects.filter(private=False)
-    bdo_services = Service.objects.filter(published=True, private=False)
+    bdo_dashboards = Dashboard.objects.filter(private=True, can_be_shared=True).filter(~Q(user=user))
+    bdo_services = Service.objects.filter(published=True, private=True, can_be_shared=True).filter(~Q(user=user))
+
+    public_dashboards = Dashboard.objects.filter(private=False).filter(~Q(user=user))
+    public_services = Service.objects.filter(published=True, private=False).filter(~Q(user=user))
+
+    user_with_access_dashboards_list = []
+    if request.user.is_authenticated():
+        for access in DashboardAccess.objects.filter(user=request.user, valid=True):
+            s = access.start
+            e = access.end
+            if datetime(s.year, s.month, s.day) < datetime.now() < datetime(e.year, e.month, e.day):
+                user_with_access_dashboards_list.append(access.dashboard.id)
+
+    user_with_access_services_list = []
+    if request.user.is_authenticated():
+        for access in ServiceAccess.objects.filter(user=request.user, valid=True):
+            s = access.start
+            e = access.end
+            if datetime(s.year, s.month, s.day) < datetime.now() < datetime(e.year, e.month, e.day):
+                user_with_access_services_list.append(access.service.id)
+
+    user_with_access_dashboards = Dashboard.objects.filter(id__in=user_with_access_dashboards_list)
+    user_dashboards = user_dashboards | user_with_access_dashboards | public_dashboards
+    bdo_dashboards = [d for d in bdo_dashboards if d.id not in user_with_access_dashboards_list]
+
+    user_with_access_services = Service.objects.filter(id__in=user_with_access_services_list)
+    user_services = user_services | user_with_access_services | public_services
+    bdo_services = [s for s in bdo_services if s.id not in user_with_access_services_list]
+
     pilot_services = list()
     nester_service = {'title': 'Wave energy resource assessment',
                       'imageurl': 'https://cdn.pixabay.com/photo/2018/06/13/18/20/wave-3473335__340.jpg',

@@ -253,6 +253,7 @@ def save_dashboard(request, pk=None):
     print "end of data"
     title = dashboard_data.pop('title', None)
     private = dashboard_data.pop('private', None)
+    can_be_shared = dashboard_data.pop('can_be_shared', None)
 
     for order in dashboard_data.keys():
         print order
@@ -260,6 +261,7 @@ def save_dashboard(request, pk=None):
     dashboard.viz_components = dashboard_data
     dashboard.title = title
     dashboard.private = private
+    dashboard.can_be_shared = can_be_shared
     print dashboard.title
 
     dashboard.save()

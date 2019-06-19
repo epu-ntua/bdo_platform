@@ -131,6 +131,7 @@
                 output_js: js_editor.getValue(),
                 title: $("#publishForm #title").val(),
                 private: $("#publishForm #private").val(),
+                can_be_shared: $("#publishForm #can_be_shared").val(),
                 description: $("#publishForm #description").val(),
                 price: $("#publishForm #price").val()
             },

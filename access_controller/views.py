@@ -63,13 +63,25 @@ def request_access_to_resource(request, type):
                 try:
                     if type == "dashboard":
                         resource = Dashboard.objects.get(pk=resource_id)
-                        access_request = DashboardAccessRequest(resource=resource, user=request.user)
+                        if len(DashboardAccessRequest.objects.filter(resource=resource, user=request.user, response_date=None, status='open')) > 0:
+                            access_request = DashboardAccessRequest.objects.filter(resource=resource, user=request.user, response_date=None).first()
+                            access_request.creation_date = datetime.datetime.now()
+                        else:
+                            access_request = DashboardAccessRequest(resource=resource, user=request.user)
                     elif type == "service":
                         resource = Service.objects.get(pk=resource_id)
-                        access_request = ServiceAccessRequest(resource=resource, user=request.user)
+                        if len(ServiceAccessRequest.objects.filter(resource=resource, user=request.user, response_date=None, status='open')) > 0:
+                            access_request = ServiceAccessRequest.objects.filter(resource=resource, user=request.user, response_date=None).first()
+                            access_request.creation_date = datetime.datetime.now()
+                        else:
+                            access_request = ServiceAccessRequest(resource=resource, user=request.user)
                     elif type == "dataset":
                         resource = Dataset.objects.get(pk=resource_id)
-                        access_request = DatasetAccessRequest(resource=resource, user=request.user)
+                        if len(DatasetAccessRequest.objects.filter(resource=resource, user=request.user, response_date=None, status='open')) > 0:
+                            access_request = DatasetAccessRequest.objects.filter(resource=resource, user=request.user, response_date=None).first()
+                            access_request.creation_date = datetime.datetime.now()
+                        else:
+                            access_request = DatasetAccessRequest(resource=resource, user=request.user)
                     else:
                         raise Exception
                     access_request.save()
