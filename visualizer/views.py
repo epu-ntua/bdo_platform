@@ -2718,7 +2718,6 @@ def get_histogram_2d_matplotlib(request):
         print('Creating Histogram-2d')
         freq, xedges, yedges = np.histogram2d(list_x, list_y, bins, weights=list_counts)
         new_table = []
-
         for el in freq:
             hor_table = []
             for i in el:
@@ -2729,7 +2728,8 @@ def get_histogram_2d_matplotlib(request):
 
         xedges = [round(x, 2) for x in xedges]
         yedges = [round(y, 2) for y in yedges]
-
+        y_clean_axis = xedges[0:len(xedges)-1]
+        x_clean_axis = yedges[0:len(yedges)-1]
 
         # print('Creating X-Axis and Y-Axis different bins')
         # bin_x_cont = []
@@ -2753,6 +2753,18 @@ def get_histogram_2d_matplotlib(request):
         #     bin_y_cont.append(temp)
 
         fig, ax = plt.subplots()
+        # for i in range(len(yedges) - 1):
+        #     for j in range(len(xedges) - 1):
+        #         ax.text(xedges[j] + 0.5, yedges[i] + 0.5, freq[i, j],
+        #                 color="b", fontweight="bold", fontsize="4")
+
+        freq_html = []
+        freq_list = freq.tolist()
+        for freq_el_list in freq_list:
+            freq_row_html = []
+            for freq_el in freq_el_list:
+                freq_row_html.append(int(freq_el))
+            freq_html.append(freq_row_html)
 
         im, cbar = heatmap(new_table, xedges, yedges, ax=ax,
                            cmap="YlGn", cbarlabel="Percentage %")
@@ -2777,7 +2789,7 @@ def get_histogram_2d_matplotlib(request):
         viz.save()
         visualisation_type_analytics('get_histogram_2d_am')
         return render(request, 'visualizer/histogram_2d_matplotlib.html',
-                      {'img_name': img_name})
+                      {'img_name': img_name, 'freq_table':freq_html, 'x_axis': x_clean_axis, 'y_axis': y_clean_axis})
     except Exception, e:
         viz.status = 'failed'
         viz.save()
@@ -2866,6 +2878,15 @@ def histogram2d_load_modify_query(query_pk, x_var, y_var):
                 s['groupBy'] = False
     print doc
     doc['limit'] = []
+    not_null_filtering = {"a": {"a": str(x_var), "b": "", "op": "not_null"},
+                          "b": {"a": str(y_var), "b": "", "op": "not_null"}, "op": "AND"}
+    if doc['filters'].__len__() == 0:
+        doc['filters'] = not_null_filtering
+    else:
+        alpha_argument = doc["filters"]
+        beta_argument = not_null_filtering
+        doc['filters'] = json.loads(
+            '{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "AND"}')
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
     query.document = doc
 
@@ -4751,3 +4772,4 @@ def map_viz_folium_heatmap(request):
 #     # ax.set_extent(bbox)
 #     ax.coastlines(resolution='50m')
 #     return fig, ax
+
