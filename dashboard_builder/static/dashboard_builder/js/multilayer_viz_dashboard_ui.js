@@ -533,6 +533,7 @@ $("#select_data_popover").click(function () {
                 markers_grid_col_select.on('change',function () {
                     allow_markers_grid_submit = missing_parameter(markers_grid_col_select,allow_markers_grid_submit,'variable',0);
                 });
+                markers_grid_col_select.dropdown('set selected',markers_grid_col_select.find('option').val());
                 markers_grid_col_select.dropdown('refresh');
                 markers_grid_col_select.parent().dropdown('clear');
 

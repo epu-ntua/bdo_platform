@@ -310,17 +310,30 @@ $(document).ready(function () {
       //  MARKERS GRID
         var allow_markers_grid_submit = [true,true,true,true];
         var markers_grid_id = $('#df_viz_config ul li[data-viz-name="get_df_map_markers_grid"]').attr('data-viz-id');
-
         var markers_grid_col_select = $('.popover-content #viz_'+markers_grid_id+' #variable');
-        markers_grid_col_select.on('input',function () {
-            allow_markers_grid_submit = df_missing_parameter(markers_grid_col_select,allow_markers_grid_submit,'variable',0);
+        markers_grid_col_select.dropdown('setting','onAdd', function () {
+            setTimeout(function () {
+                 allow_column_chart_submit = df_missing_multi_parameter(markers_grid_col_select,allow_column_chart_submit,'Variable',0);
+            },100);
+
         });
-        $(markers_grid_col_select).val('').trigger("input");
+        markers_grid_col_select.dropdown('setting','onRemove', function () {
+            allow_column_chart_submit = df_missing_multi_parameter(markers_grid_col_select,allow_column_chart_submit,'Variable',0);
+        });
+        markers_grid_col_select.dropdown('set selected',markers_grid_col_select.find('option').val('-1'));
+        markers_grid_col_select.dropdown('refresh');
+        markers_grid_col_select.parent().dropdown('clear');
+        markers_grid_col_select.find('option').remove();
+        markers_grid_col_select.parent().dropdown('clear');
+
+
         var markers_grid_unit = $('.popover-content #viz_'+markers_grid_id+' #var_unit');
         markers_grid_unit.on('input',function () {
             allow_markers_grid_submit = df_missing_parameter(markers_grid_unit,allow_markers_grid_submit,'variable-unit',1);
         });
         $(markers_grid_unit).val('').trigger("input");
+
+
         var markers_grid_lat_col = $('.popover-content #viz_'+markers_grid_id+' #lat_col');
         markers_grid_lat_col.on('input',function () {
             allow_markers_grid_submit = df_missing_parameter(markers_grid_lat_col,allow_markers_grid_submit,'latitude-column',2);

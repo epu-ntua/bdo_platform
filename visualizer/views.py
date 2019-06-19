@@ -108,7 +108,7 @@ def get_contour_parameters(request, count):
     return cached_file, n_contours, step, variable, unit, lat_col, lon_col, agg_function
 
 
-def get_markers_parameters(request, count):
+def get_markers_parameters(request, count, viz_type):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
     marker_limit = str(request.GET.get("marker_limit" + str(count), '1'))
     try:
@@ -122,7 +122,10 @@ def get_markers_parameters(request, count):
         raise ValueError('Number of positions is not valid.')
     if marker_limit <= 0:
         raise ValueError('Number of positions has to be a positive number.')
-    variable = str(request.GET.get('variable' + str(count), ''))
+    if viz_type == 'markers_grid':
+        variable = request.GET.getlist('variable' + str(count)+'[]', '')
+    else:
+        variable = str(request.GET.get('variable' + str(count),''))
     if variable == '':
         raise ValueError('A variable has to be selected for each marker to show its value in a specific location.')
     agg_function = str(request.GET.get('agg_func', 'avg'))
@@ -134,6 +137,7 @@ def get_markers_parameters(request, count):
     lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
     time_col = str(request.GET.get('time_col' + str(count), 'time'))
     var_unit = str(request.GET.get('var_unit' + str(count), '-'))
+    var_unit = var_unit.split(',')
     return cached_file, variable, vessel_id_column, vessel_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col, time_col, var_unit
 
 
@@ -200,7 +204,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
                     else:
                         platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
                     platform_flag = True
-            elif(s['name'] == variable) and (s['exclude'] is not True):
+            elif(s['name'] in variable) and (s['exclude'] is not True):
                 s['exclude'] = False
                 if s['datatype'] == 'STRING':
                     s['aggregate'] = 'MIN'
@@ -282,7 +286,7 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
 
     for f in doc['from']:
         for s in f['select']:
-            if(s['name'] == variable) and (s['exclude'] is not True):
+            if(s['name'] in variable) and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['aggregate'] = agg_function
                 var_flag = True
@@ -693,7 +697,7 @@ def map_visualizer(request):
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid_for_dataset_coverage').id):
                     dataset_id = str(request.GET.get('dataset_id'))
-                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, _col, var_unit = get_markers_parameters(request, count)
+                    cached_file, variable, platform_id_col, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, _col, var_unit = get_markers_parameters(request, count,'coverage')
                     query_pk = load_modify_query_for_grid_coverage(dataset_id, marker_limit)
                     variable = AbstractQuery.objects.get(pk=int(query_pk)).document['from'][0]['select'][0]['name']
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
@@ -733,7 +737,7 @@ def map_visualizer(request):
                 # Map Markers Course Vessel
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_vessel_course').id or layer_id == Visualization.objects.get(view_name='get_df_map_markers_vessel_course').id):
-                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col,time_col, var_unit = get_markers_parameters(request, count)
+                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col,time_col, var_unit = get_markers_parameters(request, count, 'vessel')
                     m, extra_js = get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, var_unit, agg_function,
                                              lat_col, lon_col, time_col, color_col, use_color_column, m, request, cached_file)
             except ObjectDoesNotExist:
@@ -742,7 +746,7 @@ def map_visualizer(request):
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid').id or layer_id == Visualization.objects.get(view_name='get_df_map_markers_grid').id):
                     cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, _col, var_unit = get_markers_parameters(
-                        request, count)
+                        request, count,'markers_grid')
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
                                                                 variable, agg_function,
                                                                 lat_col, lon_col, m,
@@ -1529,14 +1533,16 @@ def get_contour_step_rounded(step):
 
 
 def get_marker_query_data(query, variable, color_col):
+    var_title = []
+    var_unit = []
     try:
         query_data = execute_query_method(query)
     except:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
-    var_title = var_unit = None
-    time_index = lat_index = lon_index = var_index = color_index = -1
+    time_index = lat_index = lon_index = color_index = -1
+    var_index = []
     for idx, c in enumerate(result_headers['columns']):
         if c['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
@@ -1544,10 +1550,10 @@ def get_marker_query_data(query, variable, color_col):
             lon_index = idx
         elif c['name'].split('_', 1)[1] == 'time':
             time_index = idx
-        elif c['name'] == variable:
-            var_index = idx
-            var_title = c['title'].encode('ascii')
-            var_unit = c['unit'].encode('ascii')
+        elif c['name'] in variable:
+            var_index.append(idx)
+            var_title.append(c['title'].encode('ascii'))
+            var_unit.append(c['unit'].encode('ascii'))
         elif c['name'] == color_col:
             color_index = idx
     return data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit
@@ -1559,6 +1565,7 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
     print variable
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
+            varidx_offset = 0
             if dataset_id is not None:
                 query = AbstractQuery.objects.get(pk=int(load_modify_query_for_grid_coverage(dataset_id, marker_limit)))
             else:
@@ -1569,12 +1576,23 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
             markers_data = []
             lat_index = 0
             lon_index = 1
-            var_index = 2
+            varidx_offset = 0
+            var_index = []
+            var_titles = []
+            # var_units = []
+            for v in variable:
+                var_titles.append(v)
+                # var_units.append(df_var_unit)
+                var_index.append(varidx_offset)
+                varidx_offset = varidx_offset + 1
+            varidx_offset = 2
             for s in data:
-                row = [float(s[lat_col]), float(s[lon_col]), float(s[variable])]
+                row = [float(s[lat_col]), float(s[lon_col])]
+                for v in variable:
+                    row.append(s[v])
                 markers_data.append(row)
             data = markers_data
-            var_title = variable
+            var_title = var_titles
             var_unit = df_var_unit
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
@@ -1585,6 +1603,7 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
         dic['var_index'] = var_index
         dic['var_title'] = var_title
         dic['var_unit'] = var_unit
+        dic['offset_var_idx'] = varidx_offset
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dic, f, default=myconverter)
         visualisation_type_analytics('get_map_markers_grid')
@@ -1598,8 +1617,9 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
         var_index = cached_data['var_index']
         var_title = cached_data['var_title']
         var_unit = cached_data['var_unit']
+        varidx_offset = cached_data['offset_var_idx']
 
-    ret_html = create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit)
+    ret_html = create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit, varidx_offset)
     return m, ret_html
 
 
@@ -1613,11 +1633,13 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vesse
             data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_query_data(query, variable, color_col)
         elif df != '':
             data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, time_col, notebook_id, request, variable)
-            var_title = variable
-            var_unit = var_unt
+            var_unit = var_unt[0]
+            var_index = [var_index]
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
-
+        var_title = variable
+        var_unit = var_unit[0]
+        var_index = var_index[0]
         dic['data'] = data
         dic['color_index'] = color_index
         dic['lat_index'] = lat_index
@@ -1705,7 +1727,7 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
     return ret_html
 
 
-def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit):
+def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit, varidx_offset):
     pol_group_layer = folium.map.FeatureGroup(name='Markers - Grid Layer : ' + str(time.time()).replace(".","_") ,
                                               overlay=True,
                                               control=True).add_to(m)
@@ -1724,10 +1746,18 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
             max_lon = d[lon_index]
         if d[lon_index] < min_lon and d[lon_index] is not None:
             min_lon = d[lon_index]
-        if d[var_index] is not None:
+        flag = False
+        string_var = ''
+        count = 0
+        for v_idx in var_index:
+            if d[v_idx +varidx_offset] is not None:
+                flag = True
+                string_var = string_var + var_title[count] + ": " + str(round(d[v_idx+varidx_offset],3)) +" "+ str(var_unit[count])+"<br>"
+            count = count + 1
+        if flag:
             folium.Marker(
                 location=[d[lat_index], d[lon_index]],
-                popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
+                popup= string_var + "Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
