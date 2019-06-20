@@ -1047,6 +1047,10 @@ $(function () {
                     title: 'Define query filters',
                     width: '70vw'
                 });
+                var close_btn = $('.ui-button.ui-corner-all.ui-widget.ui-dialog-titlebar-close');
+                $(close_btn).removeClass('ui-button-icon-only');
+                $(close_btn).text('');
+                $(close_btn).append('<span class="fas fa-times"></span>');
             },
 
             getFilterOptions: function () {
