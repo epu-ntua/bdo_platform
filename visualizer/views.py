@@ -1135,7 +1135,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                 oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
             viz.status = 'running'
             viz.save()
-            mappath = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
+            mappath, data_grid = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
             print 'mappath'
             print mappath
             legpath = get_contour_legend(max_val, min_val)
@@ -1179,7 +1179,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
 
         print 'mapname ok'
         map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
-                                                  step, mapname)
+                                                  step, mapname,unit, variable)
         viz.status = 'done'
         viz.save()
         visualisation_type_analytics('get_map_contour')
@@ -1196,7 +1196,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
         raise Exception('An error occurred while creating the contours on map.')
 
 
-def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname):
+def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname,unit,variable):
     f = open(mapname, 'r')
     map_html = f.read()
     soup = BeautifulSoup(map_html, 'html.parser')
@@ -1208,13 +1208,11 @@ def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, m
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
     f.close()
-    # import pdb
-    # pdb.set_trace()
     temp_html = render_to_string('visualizer/map_viz_folium.html',
                                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step,
                                   'data_grid': data_grid, 'min_lat': min_lat,
                                   'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon,
-                                  'agg_function': agg_function, 'legend_id': legpath})
+                                  'agg_function': agg_function, 'legend_id': legpath, 'unit':unit, 'variable': variable})
     if "var startsplitter = 42;" in temp_html:
         ret_html = "<script> " + temp_html.split("var startsplitter = 42;")[1].split("var endsplitter = 42;")[
             0] + " </script>"
@@ -1262,6 +1260,7 @@ def get_contour_legend(max_val, min_val):
     cax = pl.axes([0.1, 0.2, 0.8, 0.6])
     cbar = pl.colorbar(orientation="horizontal", cax=cax)
     cbar.ax.tick_params(labelsize=9, colors="#ffffff")
+    # cbar.set_label('', color='white', )
     ts = str(time.time()).replace(".", "")
     # legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
     import sys
@@ -1403,7 +1402,21 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     plt.close()
     fig = None
     ax = None
-    return mappath
+    new_data_grid = []
+    try:
+        data_grid = zi.data.tolist()
+        for row in data_grid:
+            new_row = []
+            for el in row:
+                if np.isnan(el):
+                    new_row.append(-9999999)
+                else:
+                    new_row.append(el)
+            new_data_grid.append(new_row)
+        data_grid = new_data_grid
+    except:
+        data_grid = []
+    return mappath, data_grid
 
 
 def get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index):
