@@ -6,6 +6,7 @@ $("#select_data_popover").click(function () {
 // var widget_edit_id = null;
 var new_dataframe_name = null;
 var df_open_modal = false;
+var df_contour_flag = false;
 
 function hide_gif() {
     $(".outputLoadImg").css("display", "none");
@@ -50,11 +51,17 @@ $(document).ready(function () {
 
 
     $("#df_add_layer_btn").parent().click(function () {
+        if (df_selected_visualization.trim()==='Contours On Map'){
+            df_contour_flag = true;
+        }
         $(this).hide();
         if((new_dataframe_name!==null)&&(df_selected_visualization!==null)) {
             alert("Layer is now saved. Please add a new layer!");
             $("#df_viz_config").find("ul").children().each(function (index) {
                 if ($(this).attr("data-viz-type") != "map") {
+                    $(this).addClass('disabled');
+                }
+                if (df_contour_flag&&($(this).attr("data-viz-name") === "get_df_map_contour")){
                     $(this).addClass('disabled');
                 }
             });
@@ -70,7 +77,7 @@ $(document).ready(function () {
                     df_layer_json[i][key] = obj[key];
                 }
             }
-            $("#df_layers-list ul").append('<li class="df_layer_list_element item" id=df_layer_list_element'+String(df_layer_count)+' style="pointer-events: none" role=\"presentation\"><span  class="col-10 " style="display:inline; margin-right: 5px; pointer-events: none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Dataframe Name: ' + $("#selected_dataframe").val() + ' / Visualization: ' + String(df_selected_visualization) + '</span><button id=df_layer_list_element_btn'+String(df_layer_count)+' style="display: inline; pointer-events: auto!important; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
+            $("#df_layers-list ul").append('<li class="df_layer_list_element item" id=df_layer_list_element'+String(df_layer_count)+' style="pointer-events: none" role=\"presentation\"><span  class="col-10 " style="display:inline; margin-right: 5px; pointer-events: none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\">Visualization: ' + String(df_selected_visualization)+ ' -- Dataframe Name: ' + $("#selected_dataframe").val() +  '</span><button id=df_layer_list_element_btn'+String(df_layer_count)+' style="display: inline; pointer-events: auto!important; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
             $(".df_layer_list_element #df_layer_list_element_btn"+String(df_layer_count)).click(function () {
                  $("#df_viz_config .list-group").children().each(function () {
                         $(this).find(".selected_viz_span").hide();

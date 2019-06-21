@@ -6,6 +6,7 @@ var widget_open_edit_modal = null;
 var widget_edit_id = null;
 var open_modal= false;
 var new_query_id;
+var contour_flag = false;
 
 function hide_gif() {
     $(".outputLoadImg").css("display", "none");
@@ -47,11 +48,17 @@ $(document).ready(function () {
     });
 
     $("#add_layer_btn").parent().click(function () {
+        if (selected_visualization.trim()==='Contours On Map'){
+            contour_flag = true;
+        }
         $(this).hide();
         if((new_query_id!=null)&&(selected_visualization!=null)) {
             alert("Layer is now saved. Please add a new layer!");
             $("#viz_config").find("ul").children().each(function (index) {
                 if ($(this).attr("data-viz-type") != "map") {
+                    $(this).addClass('disabled');
+                }
+                if (contour_flag&&($(this).attr("data-viz-name") === "get_map_contour")){
                     $(this).addClass('disabled');
                 }
             });
@@ -993,6 +1000,7 @@ $(document).ready(function () {
         selected_visualization = null;
         first_time = true ;
         vis_created_flag = false;
+        contour_flag = false;
         $('#addVizModal #viz_config #add_layer_btn').parent().hide();
         $('#addVizModal #viz_config #layers-list').parent().hide();
         $("#viz_config .list-group").children().each(function () {
