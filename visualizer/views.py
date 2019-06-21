@@ -841,7 +841,7 @@ def get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + ' / Ship ID: ' + str(vessel_id), overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Visualization: Plotline -- Layer:' + str(time.time()).replace(".","_") + ' -- Ship ID: ' + str(vessel_id), overlay=True,
                                               control=True).add_to(m)
     folium.PolyLine(points, color=color, weight=2.5, opacity=0.8,
                     ).add_to(pol_group_layer)
@@ -887,7 +887,7 @@ def get_map_polygon(marker_limit, color, query_pk, df, notebook_id, lat_col, lon
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Polygon - Layer:' + str(time.time()).replace(".","_") , overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Visualization: Polygon -- Layer:' + str(time.time()).replace(".","_") , overlay=True,
                                               control=True).add_to(m)
     folium.PolyLine(points, color=color, weight=2.0, opacity=0.8,
                     ).add_to(pol_group_layer)
@@ -1074,8 +1074,8 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, ca
         min_lon = cached_data['min_lon']
         max_lon = cached_data['max_lon']
         heatmap_result_data = cached_data['heatmap_result_data']
-
-    HeatMap(heatmap_result_data,max_val=1.0, radius = 15,name="Heat Map - Layer: "+str(time.time()).replace(".","_")).add_to(m)
+    viz_layer = str(time.time()).replace(".","_")
+    HeatMap(heatmap_result_data,max_val=1.0, radius = 15,name="Visualization: Heatmap -- Layer: " + viz_layer + " -- Variable:" + str(heat_col)).add_to(m)
     # if needed use gradient above gradient={0: 'blue',0.2: 'lightblue',0.3:'cadetblue', 0.4: 'lightgreen',0.5:'green',0.6:'lime', 0.7:'yellow',0.9:'orange',1: 'red'}
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     ret_html = ""
@@ -1171,11 +1171,11 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
             mappath = cached_data['image_path'].encode('ascii')
             legpath = cached_data['leg_path'].encode('ascii')
             data_grid = cached_data['data_grid']
-            data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
+            # data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
 
         print viz.id + lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, max_lat, max_lon, min_lat, min_lon
         mapname = create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
-                                max_lon, min_lat, min_lon, legpath)
+                                max_lon, min_lat, min_lon, legpath,variable)
 
         print 'mapname ok'
         map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
@@ -1222,7 +1222,7 @@ def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, m
 
 
 def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat, max_lon,
-                            min_lat, min_lon, legpath):
+                            min_lat, min_lon, legpath, variable):
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     # read in png file to numpy array
     data_img = Image.open(mappath)
@@ -1231,7 +1231,7 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     # Overlay the image
     contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
-    contour_layer.layer_name = 'Contours On Map - Layer:' + str(time.time()).replace(".","_")
+    contour_layer.layer_name = 'Visualization: Contours On Map -- Layer:' + str(time.time()).replace(".","_") + ' -- Variable: ' + str(variable)
     m.add_child(contour_layer)
     legend_img = Image.open(legpath)
     legend = trim(legend_img)
@@ -1633,7 +1633,8 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vesse
 
 def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_index, m, time_index, var_index,
                                 var_title, var_unit, vessel_id):
-    pol_group_layer = folium.map.FeatureGroup(name='Markers - Vessel Course Layer : ' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(vessel_id),
+    vessel_titles = [el.encode('ascii') for el in vessel_id]
+    pol_group_layer = folium.map.FeatureGroup(name='Visualization: Markers - Vessel Course -- Layer : ' + str(time.time()).replace(".","_") + ' -- Ship ID(s): ' + str(vessel_titles),
                                               overlay=True,
                                               control=True).add_to(m)
     color_dict = dict()
@@ -1690,7 +1691,7 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
 
 
 def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit):
-    pol_group_layer = folium.map.FeatureGroup(name='Markers - Grid Layer : ' + str(time.time()).replace(".","_") ,
+    pol_group_layer = folium.map.FeatureGroup(name='Visualization: Markers - Grid -- Layer : ' + str(time.time()).replace(".","_") ,
                                               overlay=True,
                                               control=True).add_to(m)
     min_lat = 90

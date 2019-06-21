@@ -9,6 +9,7 @@ $("#select_data_popover").click(function () {
         // {#Variable to store active ckeditor version #}
         var textEditNote = CKEDITOR.appendTo('change_note');
         var textEditor = CKEDITOR.appendTo('viz_note');
+        var contour_flag = false;
         // {#Function to change tabs in modal from data to notes and create new ckeditor instance if it doesnt exist#}
         $(document).ready(function () {
             var init = 0;
@@ -42,6 +43,9 @@ $("#select_data_popover").click(function () {
 
             });
             $("#add_layer_btn").parent().click(function () {
+                if (selected_visualization.trim()==='Contours On Map'){
+                    contour_flag = true;
+                }
                 init = 6;
                 tour = tour_guide_senario(tour,'');
                 $(this).hide();
@@ -49,6 +53,9 @@ $("#select_data_popover").click(function () {
                     alert("Layer is now saved. Please add a new layer!");
                     $("#viz_config").find("ul").children().each(function (index) {
                         if ($(this).attr("data-viz-type") != "map") {
+                            $(this).addClass('disabled');
+                        }
+                        if (contour_flag&&($(this).attr("data-viz-name") === "get_map_contour")){
                             $(this).addClass('disabled');
                         }
                     });
@@ -64,7 +71,8 @@ $("#select_data_popover").click(function () {
                             layer_json[i][key] = obj[key];
                         }
                     }
-                    $("#layers-list ul").append('<li class="layer_list_element item" id=layer_list_element'+String(layer_count)+' style="pointer-events: none" role=\"presentation\"><span  class="col-10 " style="display:inline; margin-right: 5px; pointer-events: none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Query Name: ' + $("#query_name_span").text() + ' / Visualization: ' + String(selected_visualization) + '</span><button id=layer_list_element_btn'+String(layer_count)+' style="display: inline; pointer-events: auto!important; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
+
+                    $("#layers-list ul").append('<li class="layer_list_element item" id=layer_list_element'+String(layer_count)+' style="pointer-events: none" role=\"presentation\"><span  class="col-10 " style="display:inline; margin-right: 5px; pointer-events: none;" role=\"menuitem\" tabindex=\"-1\" href=\"#\"> Visualization: ' + String(selected_visualization)+ ' -- Query Name: ' + $("#query_name_span").text() + '</span><button id=layer_list_element_btn'+String(layer_count)+' style="display: inline; pointer-events: auto!important; padding:2px 5px; font-size:10px;" type="button" class="btn btn-xs btn-primary col-2"><i class="glyphicon glyphicon-remove"></i></button></li>');
                     $(".layer_list_element #layer_list_element_btn"+String(layer_count)).click(function () {
                          $("#viz_config .list-group").children().each(function () {
                                 $(this).find("#selected_viz_span").hide();
@@ -951,6 +959,7 @@ $("#select_data_popover").click(function () {
                 selected_visualization = null;
                 first_time = true ;
                 vis_created_flag = false;
+                contour_flag = false;
                 $('#myModal #viz_config #add_layer_btn').parent().hide();
                 $('#myModal #viz_config #layers-list').parent().hide();
                 $("#viz_config .list-group").children().each(function () {
