@@ -5,8 +5,9 @@ import collections, re
 from datetime import datetime
 
 from django.contrib.auth.models import User
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.template import Context, Template
 
@@ -237,6 +238,22 @@ def publish_new_service(request):
     return HttpResponse(json.dumps(result), content_type="application/json")
 
 
+def delete_service(request, pk):
+    user = request.user
+    try:
+        service = Service.objects.get(pk=pk)
+        try:
+            if service.user_id != user.id:
+                raise PermissionDenied
+        except:
+            return HttpResponseForbidden()
+
+        service.delete()
+    except ObjectDoesNotExist:
+        pass
+    return redirect('/bdo')
+
+
 def load_service(request, pk):
     service = Service.objects.get(pk=pk)
     title = service.title
@@ -264,6 +281,11 @@ def load_service(request, pk):
 
     output_html = output_html.replace('iframe src', 'iframe src-a')
 
+    # check if user is the owner or just has been granted access
+    owner = False
+    if service.user_id == request.user.id:
+        owner = True
+
     return render(request, 'service_builder/load_service.html', {
         'service_title': service.title,
         'output_html': output_html,
@@ -271,6 +293,7 @@ def load_service(request, pk):
         'output_js': output_js,
         'arguments': json.dumps(arguments),
         'service_id': pk,
+        'is_owner': owner,
         'published': service.published})
 
 

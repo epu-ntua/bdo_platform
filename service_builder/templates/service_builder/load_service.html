@@ -33,6 +33,14 @@
 {% block content %}
     {% csrf_token %}
     <div class="container" style="width: 100%; ">
+        {% if is_owner %}
+            <div class="row col-sm-12">
+                <a href="{% url 'delete_service' pk=service_id %}" onclick="return confirm('Are you sure you want to delete this service?')" id="confirm-service-delete" type="button" class="btn btn-sm btn-danger"><span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Service</span></a>
+{#                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal" type ="button" id="delete_service_btn" style="float: left; background-color: rgb(160, 0, 0) !important ; padding-left: 15px;">#}
+{#                     <span style="font-size: 15px;float: left; margin-right: 18px" class="glyphicon glyphicon-trash"></span><span style="float: right">Delete Service</span>#}
+{#                </button>#}
+            </div>
+        {% endif %}
         <h2 style="text-align: center">{{ service_title }}</h2>
         {% autoescape off %}
             {{ output_html }}
@@ -54,4 +62,25 @@
 
 {% endblock %}
 
+
+{% block modal %}
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="width: 50%;top:30vh; left:45vh;">
+        <div class="modal-dialog " role="document" style="width: 50%;">
+            <div class="modal-content" style="height: inherit; ">
+                <div class="modal-header">
+                    <h4 style="margin-bottom: 15px; margin-left:10px; font-weight: bold" class="modal-title" id="deleteModalLabel">Delete Service</h4>
+                </div>
+                <div class="modal-body" style="height: inherit;margin-top: 10px;margin-bottom: 30px">
+                    Are you sure you want to delete this Service?
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'delete_service' pk=service_id %}" id="confirm-service-delete" type="button" class="btn btn-primary"  style=" background-color: rgb(160, 0, 0) !important ; margin-top: 0;" class="btn btn-md">Delete</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"  style="float: right;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
 

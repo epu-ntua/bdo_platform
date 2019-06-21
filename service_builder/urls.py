@@ -9,6 +9,8 @@ urlpatterns = [
     url('^load_dataframe/$', views.load_dataframe, name='load_dataframe'),
     url('^save_dataframe/$', views.save_dataframe, name='save_dataframe'),
 
+    url('^delete_service/(?P<pk>\d+)/$', views.delete_service, name='delete_service'),
+
     url('^publish/$', views.publish_new_service, name='publish_new_service'),
 
     url('service/(?P<pk>\d+)/$', views.load_service, name='load_service'),
