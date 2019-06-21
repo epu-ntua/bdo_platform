@@ -1,4 +1,5 @@
 $(document).ready(function(){
+    $("#initialising_div").removeClass("hidden");
      $.ajax({
             "type": "POST",
             "url": "/service_builder/run_initial_zep_paragraph/",
@@ -7,9 +8,11 @@ $(document).ready(function(){
             },
             "success": function(result) {
                 console.log(result);
+                $("#initialising_div").addClass("hidden");
             },
             error: function (jqXHR) {
-                alert('error');
+                alert('error initialising spar session');
+                $("#initialising_div").addClass("hidden");
             }
         });
 

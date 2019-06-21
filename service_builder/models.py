@@ -81,3 +81,8 @@ class ServiceAccessRequest(Model):
     @property
     def type(self):
         return 'service'
+
+
+class SavedDataframes(Model):
+    user = ForeignKey(User)
+    filename = CharField(max_length=200)

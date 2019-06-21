@@ -175,6 +175,7 @@ def clone_zep_note(notebook_id, name):
     data['name'] = name
     str_data = json.dumps(data)
     # Make a post request
+    print 'cloning note'
     response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/"+notebook_id, data=str_data)
     print response
     response_json = response.json()
@@ -259,15 +260,20 @@ def create_zep_arguments_paragraph(notebook_id, title, args_json_string):
     return paragraph_id
 
 
-def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name="df"):
+def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name="df", livy=False):
     data = dict()
     if index >= 0:
         data['index'] = index
     data['title'] = title
     conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
-    data['text'] = '%spark.pyspark' \
+    if livy is True:
+        data['text'] = '%livy.pyspark' \
                    '\n'+df_name+'= load_df("(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
                    '\n'+df_name+'.printSchema()'
+    else:
+        data['text'] = '%spark.pyspark' \
+                       '\n' + df_name + '= load_df("(' + str(raw_query).replace("\n", " ") + ') AS SPARKQ0")' \
+                                                                                             '\n' + df_name + '.printSchema()'
     data['editorHide'] = True
     # data['text'] =  '%spark.pyspark' \
     #                 '\n' + df_name + '= spark.read.format("jdbc")' \
@@ -278,6 +284,52 @@ def create_zep__query_paragraph(notebook_id, title, raw_query, index=-1, df_name
     #                 '.load()' \
     #                 '\n' + df_name + '.printSchema()'
 
+    str_data = json.dumps(data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = response.json()
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def create_zep__query_load_dataframe_paragraph(notebook_id, title, filename, index=-1, df_name="df", livy=True):
+    data = dict()
+    if index >= 0:
+        data['index'] = index
+    data['title'] = title
+    conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
+    if livy is True:
+        data['text'] = '%livy.pyspark' \
+                       '\n' + df_name + '= sqlContext.read.parquet("' + str(filename) + '") ' \
+                       '\n' + df_name + '.printSchema()'
+    else:
+        data['text'] = '%spark.pyspark' \
+                       '\n'+ df_name + '= sqlContext.read.parquet("' + str(filename) + '") ' \
+                       '\n'+ df_name+'.printSchema()'
+    data['editorHide'] = True
+    str_data = json.dumps(data)
+    response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
+    print response
+    response_json = response.json()
+    paragraph_id = response_json['body']
+    print paragraph_id
+    return paragraph_id
+
+
+def create_zep__query_save_dataframe_paragraph(notebook_id, title, filename, index=-1, df_name="df", livy=True):
+    data = dict()
+    if index >= 0:
+        data['index'] = index
+    data['title'] = title
+    conn_dict = connections[settings.ZEPPELIN_DB].settings_dict
+    if livy is True:
+        data['text'] = '%livy.pyspark' \
+                       '\n' + df_name + '.write.parquet(path="' + str(filename) + '", mode="overwrite") '
+    else:
+        data['text'] = '%spark.pyspark' \
+                       '\n' + df_name + '.write.parquet(path="' + str(filename) + '", mode="overwrite") '
+    data['editorHide'] = True
     str_data = json.dumps(data)
     response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
     print response
@@ -375,6 +427,7 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode, attempt=
             if counter == 0:
                 # return 2
                 return HttpResponse(status=500)
+        return 0
 
 
 def create_zep_viz_paragraph(notebook_id, title):

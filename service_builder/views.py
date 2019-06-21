@@ -19,10 +19,10 @@ from django.utils.datastructures import MultiValueDictKeyError
 from query_designer.models import Query, TempQuery
 from service_builder.forms import ServiceForm
 from visualizer.models import Visualization
-from service_builder.models import Service, ServiceTemplate, ServiceInstance
+from service_builder.models import Service, ServiceTemplate, ServiceInstance, SavedDataframes
 from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph, run_zep_note, clone_zep_note, delete_zep_paragraph, \
     create_zep_getDict_paragraph, get_zep_getDict_paragraph_response, create_zep_arguments_paragraph, get_result_dict_from_livy, close_livy_session, \
-    delete_zep_notebook
+    delete_zep_notebook, create_zep__query_load_dataframe_paragraph, create_zep__query_save_dataframe_paragraph
 
 
 def create_new_service(request):
@@ -31,6 +31,12 @@ def create_new_service(request):
         saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
     else:
         saved_queries = []
+
+    if request.user.is_authenticated():
+        saved_dataframes = SavedDataframes.objects.filter(user=user)
+    else:
+        saved_dataframes = []
+
     available_viz = Visualization.objects.filter(hidden=False).order_by('order')
     available_templates = ServiceTemplate.objects.all()
     if settings.TEST_SERVICES:
@@ -49,6 +55,7 @@ def create_new_service(request):
     # service = Service.objects.get(pk=3)
     return render(request, 'service_builder/create_new_service.html', {
         'saved_queries': saved_queries,
+        'saved_dataframes': saved_dataframes,
         'available_viz': available_viz,
         'available_templates': available_templates,
         'notebook_id': service.notebook_id,
@@ -60,7 +67,9 @@ def create_new_service(request):
 def run_initial_zep_paragraph(request):
     service_id = request.POST.get('service_id')
     service = Service.objects.get(pk=service_id)
+    print 'running BASE_NOTE_LOADER_PARAGRAPH'
     run_zep_paragraph(service.notebook_id, paragraph_id=settings.BASE_NOTE_LOADER_PARAGRAPH, livy_session_id=0, mode='zeppelin')
+    print 'running BASE_NOTE_ARG_PARAGRAPH'
     run_zep_paragraph(service.notebook_id, paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH, livy_session_id=0, mode='zeppelin')
     return HttpResponse("OK")
 
@@ -124,12 +133,44 @@ def load_query(request):
         doc['filters'] = update_filter(filters, arg)
 
     raw_query = Query(document=doc).raw_query
-    query_paragraph_id = create_zep__query_paragraph(notebook_id, 'query paragraph', raw_query, index=2, df_name="df_" + query_name)
+    query_paragraph_id = create_zep__query_paragraph(notebook_id, 'query paragraph', raw_query, index=2, df_name="df_" + query_name, livy=True)
     run_zep_paragraph(notebook_id, query_paragraph_id, livy_session_id=0, mode='zeppelin')
 
 
     result = {query_name: {"dataframe": "df_" + query_name, "paragraph": query_paragraph_id}}
     return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+def load_dataframe(request):
+    notebook_id = str(request.POST.get('notebook_id'))
+    dataframe_name = str(request.POST.get('dataframe_name'))
+    df = SavedDataframes.objects.get(user=request.user, filename=dataframe_name)
+    df_id = df.pk
+    username = df.user.username
+    print "dataframe name: " + dataframe_name
+
+    dataframe_paragraph_id = create_zep__query_load_dataframe_paragraph(notebook_id, 'dataframe paragraph', username + '/' + dataframe_name + '.parquet', index=0, df_name="df_" + str(df_id), livy=True)
+    run_zep_paragraph(notebook_id, dataframe_paragraph_id, livy_session_id=0, mode='zeppelin')
+
+    result = {dataframe_name: {"dataframe": "df_" + str(df_id), "paragraph": dataframe_paragraph_id}}
+    return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+def save_dataframe(request):
+    dataframe_name = str(request.POST.get('dataframe_name'))
+    notebook_id = str(request.POST.get('notebook_id'))
+    username = request.user.username
+
+    df = SavedDataframes(user=request.user, filename=dataframe_name)
+
+    dataframe_paragraph_id = create_zep__query_save_dataframe_paragraph(notebook_id, 'dataframe save paragraph', username + '/' + dataframe_name + '.parquet', index=0, df_name=dataframe_name, livy=True)
+    result = run_zep_paragraph(notebook_id, dataframe_paragraph_id, livy_session_id=0, mode='zeppelin')
+    if result == 0:
+        df.save()
+        result = {dataframe_name: {"dataframe": "df_" + dataframe_name, "paragraph": dataframe_paragraph_id}}
+        return HttpResponse(json.dumps(result), content_type="application/json")
+    else:
+        return HttpResponse(status=500)
 
 
 def publish_new_service(request):
@@ -396,7 +437,7 @@ def submit_service_args(request, service_id):
         for name, info in queries.iteritems():
             for original_paragraph_id in info['paragraphs']:
                 raw_query = TempQuery.objects.get(pk=int(info['temp_q'])).raw_query
-                new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=2, df_name="df_"+name)
+                new_query_paragraph_id = create_zep__query_paragraph(new_notebook_id, '', raw_query, index=2, df_name="df_"+name, livy=True)
                 if settings.TEST_SERVICES:
                     excluded_paragraphs.append(original_paragraph_id)
                     new_created_paragraphs.append(new_query_paragraph_id)

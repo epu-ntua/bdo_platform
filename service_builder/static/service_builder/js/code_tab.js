@@ -61,6 +61,7 @@ $(document).ready(function(){
                     }
                 );
                 // Make request to load the query
+                $("#loading_div").removeClass("hidden");
                 $.ajax({
                     "type": "POST",
                     "url": "/service_builder/load_query/",
@@ -72,6 +73,7 @@ $(document).ready(function(){
                     },
                     "success": function(result) {
                         alert("Query loaded in a Spark Dataframe with name: " + result[load_query_name]['dataframe']);
+                        $("#loading_div").addClass("hidden");
                         console.log(result);
 
                         // Update the paragraphs info of the loaded query
@@ -81,11 +83,94 @@ $(document).ready(function(){
                     },
                     error: function (jqXHR) {
                         alert('error');
+                        $("#loading_div").addClass("hidden");
                     }
                 });
             }
             selected = false;
             $('#load_query_popbtn').popover("hide");
+        })
+    });
+
+
+    $("#save_dataframe_btn").click(function () {
+        $("#saving_div").removeClass("hidden");
+        var df_name = $("#df_name").val();
+        $.ajax({
+            "type": "POST",
+            "url": "/service_builder/save_dataframe/",
+            "data": {
+                dataframe_name: df_name,
+                notebook_id: notebook_id
+            },
+            "success": function(result) {
+                alert("Successfully saved the selected dataframe!");
+                console.log(result);
+                $("#saving_div").addClass("hidden");
+            },
+            error: function (jqXHR) {
+                alert('error');
+                $("#saving_div").addClass("hidden");
+            }
+        });
+    });
+
+
+    // Popover to load saved dataframe
+    $("#load_dataframe_popbtn").popover({
+        html: true,
+        animation:true,
+        trigger: 'manual',
+        content: function() {
+            return $('#load-dataframe-select-container').html();
+        }
+    }).click(function(e) {
+        $(this).popover('toggle');
+
+        // Gather the queries as select options
+        $('#load-dataframe-select').empty();
+        $('#load-dataframe-select').append('<option disabled selected>-- select one of the saved dataframes to load --</option>');
+
+        $('#selected-dataframes-table tbody tr').each(function( index ) {
+            var dataframe_id = $( this ).children().eq(0).text();
+            var dataframe_name = $( this ).children().eq(1).text();
+            $('#load-dataframe-select').append('<option  data-dataframe-id="'+dataframe_id+'" data-dataframe-name="'+dataframe_name+'" > ' + dataframe_name + ' </option>');
+        });
+        $('.popover-content #load-dataframe-select').select2();
+
+        // Get the selected query to load
+        var load_dataframe_name;
+        var selected = false;
+        $('.popover-content #load-dataframe-select').on('change', function() {
+            selected = true;
+            load_dataframe_name = $(this).children(":selected").attr("data-dataframe-name");
+        });
+
+        // Load the query
+        $('.popover-content #load_dataframe_btn').click(function (e) {
+            if (selected){
+                $("#loading_div").removeClass("hidden");
+                // Make request to load the dataframe
+                $.ajax({
+                    "type": "POST",
+                    "url": "/service_builder/load_dataframe/",
+                    "data": {
+                        dataframe_name: load_dataframe_name,
+                        notebook_id: notebook_id
+                    },
+                    "success": function(result) {
+                        alert("Query loaded in a Spark Dataframe with name: " + result[load_dataframe_name]['dataframe']);
+                        console.log(result);
+                        $("#loading_div").addClass("hidden");
+                    },
+                    error: function (jqXHR) {
+                        alert('error');
+                        $("#loading_div").addClass("hidden");
+                    }
+                });
+            }
+            selected = false;
+            $('#load_dataframe_popbtn').popover("hide");
         })
     });
 });

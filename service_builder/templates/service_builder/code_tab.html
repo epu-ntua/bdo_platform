@@ -1,12 +1,52 @@
+{% load static %}
 <div id="code_container" class="tab-pane fade">
+    <div id="initialising_div" class="" style="text-align: center; position: absolute; width: 100%; height: 100%; top: 0; bottom: 0; left: 0; right: 0; background-color: #3d3d3dc7; color: white; z-index:1;">
+        <div style="background-color: white; color: #394146; margin: 15% 35%;     border-radius: 10px;">
+            <h3 style="display: inline-block;">Initialising Spark Session</h3>
+            <img  alt="" src="{% static 'wave_energy_pilot/img/service_loading.gif' %}" style="width: 3vh;">
+        </div>
+    </div>
+    <div id="loading_div" class="hidden" style="text-align: center; position: absolute; width: 100%; height: 100%; top: 0; bottom: 0; left: 0; right: 0; background-color: #3d3d3dc7; color: white; z-index:1;">
+        <div style="background-color: white; color: #394146; margin: 15% 35%;     border-radius: 10px;">
+            <h3 style="display: inline-block;">Loading</h3>
+            <img  alt="" src="{% static 'wave_energy_pilot/img/service_loading.gif' %}" style="width: 3vh;">
+        </div>
+    </div>
+    <div id="saving_div" class="hidden" style="text-align: center; position: absolute; width: 100%; height: 100%; top: 0; bottom: 0; left: 0; right: 0; background-color: #3d3d3dc7; color: white; z-index:1;">
+        <div style="background-color: white; color: #394146; margin: 15% 35%;     border-radius: 10px;">
+            <h3 style="display: inline-block;">Saving</h3>
+            <img  alt="" src="{% static 'wave_energy_pilot/img/service_loading.gif' %}" style="width: 3vh;">
+        </div>
+    </div>
+
     <div id="main-container">
+
+        <div style="display: none;">
+            <table id="selected-dataframes-table">
+                <tbody>
+                    {% for sd in saved_dataframes %}
+                        <tr>
+                            <td>{{ sd.pk }}</td>
+                            <td>{{ sd.filename }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
         <div class="edit_hover_code">
             <h3 style="margin-top:20px; display:inline-block">User Service Code</h3>
             <i id="code_tip" class="fa fa-info-circle " title="The service code can be written by the user here." data-toggle="tooltip" data-placement="right" style="margin:auto" ></i>
-            <button type="button" id="load_query_popbtn" style="display:block;" class="btn btn-md btn-primary" data-toggle="popover" title="" data-placement="right">
-            Load Query
-        </button>
+            <br>
+            <button type="button" id="load_query_popbtn" style="display:inline-block;" class="btn btn-md btn-primary" data-toggle="popover" title="" data-placement="right">
+                Load Query
+            </button>
+            <button type="button" id="load_dataframe_popbtn" style="display:inline-block;" class="btn btn-md btn-primary" data-toggle="popover" title="" data-placement="right">
+                Load a Saved Dataframe
+            </button>
+            <button type="button" id="save_dataframe_modalbtn" style="display:inline-block;" class="btn btn-md btn-primary" data-toggle="modal" data-target="#saveDataframeModal">
+                Save a Dataframe
+            </button>
         </div>
 
     </div>
@@ -25,6 +65,13 @@
 
             </select>
             <button type="button" id="load_query_btn" class="btn btn-sm btn-success" data-toggle="popover">Load</button>
+        </div>
+
+        <div id="load-dataframe-select-container">
+            <select id="load-dataframe-select" class="form-control" name="query">
+
+            </select>
+            <button type="button" id="load_dataframe_btn" class="btn btn-sm btn-success" data-toggle="popover">Load</button>
         </div>
 
         <input id="notebook_id" value="{{ notebook_id }}"/>

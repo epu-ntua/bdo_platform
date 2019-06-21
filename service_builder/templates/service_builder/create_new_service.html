@@ -236,4 +236,27 @@
             </div>
         </div>
     </div>
+
+
+    <div id="saveDataframeModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false" style="width: 50vw;margin-left: 25vw !important;">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header text-center">
+{#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
+                    <h4 class="modal-title">Save your dataframe</h4>
+                </div>
+                <div class="modal-body" style="min-height: 20vh; height: 20vh;">
+                    <form id="saveDataframeForm" style="text-align: center; padding-top: 50px;">
+                        <label for="title">Dataframe Name</label>
+                        <input type="text" name="title" class="form-control" id="df_name">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="save_dataframe_btn">Save</button>
+                    <button type="button" class="btn btn-default"  data-dismiss="modal" id="dismiss-save-df-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -6,6 +6,8 @@ urlpatterns = [
     url('^run_initial_zep_paragraph/$', views.run_initial_zep_paragraph, name='run_initial_zep_paragraph'),
 
     url('^load_query/$', views.load_query, name='load_query'),
+    url('^load_dataframe/$', views.load_dataframe, name='load_dataframe'),
+    url('^save_dataframe/$', views.save_dataframe, name='save_dataframe'),
 
     url('^publish/$', views.publish_new_service, name='publish_new_service'),
 
