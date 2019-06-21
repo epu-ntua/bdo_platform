@@ -665,11 +665,11 @@ $(document).ready(function () {
                 $('#df_add_layer_btn').parent().show();
                 $('#df_layers-list').parent().show();
                 $('#addVizModal #submit-df-btn').show();
-                var map_iframe = $(this).contents();
-                map_iframe.find('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
-                map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
-                map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
-                map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
+                // var map_iframe = $(this).contents();
+                // map_iframe.find('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
+                // map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
+                // map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
+                // map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
 
             }else if((execution_flag === 'success')&&(comp_type !== 'map')&&(df_open_modal === true)){
                 $('#addVizModal #submit-df-btn').show();

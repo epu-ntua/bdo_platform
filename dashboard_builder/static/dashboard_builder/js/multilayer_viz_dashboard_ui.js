@@ -896,11 +896,11 @@ $("#select_data_popover").click(function () {
                         $('#add_layer_btn').parent().show();
                         $('#layers-list').parent().show();
                         $('#myModal #submit-modal-btn').show();
-                        var map_iframe = $(this).contents();
-                        map_iframe.find('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
-                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
-                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
-                        map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
+                        // var map_iframe = $(this).contents();
+                        // map_iframe.find('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
+                        // map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
+                        // map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
+                        // map_iframe.find(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
                         if(layer_count==='1') {
                             init = 5;
                         }else{
