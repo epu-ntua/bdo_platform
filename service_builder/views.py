@@ -48,7 +48,7 @@ def create_new_service(request):
     else:
         new_notebook_id = clone_zep_note(settings.SERVICE_BUILDER_BASE_NOTE, "BigDataOceanService")
         # run_zep_paragraph(new_notebook_id, paragraph_id='20180514-011802_1275384604')
-        service = Service(user=user, private=True, notebook_id=new_notebook_id, published=False, arguments_paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH)
+        service = Service(user=user, private=True, notebook_id=new_notebook_id, arguments={"filter-arguments": [], "algorithm-arguments": []}, published=False, arguments_paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH)
         service.save()
 
     form = ServiceForm()
@@ -165,6 +165,7 @@ def save_dataframe(request):
 
     dataframe_paragraph_id = create_zep__query_save_dataframe_paragraph(notebook_id, 'dataframe save paragraph', username + '/' + dataframe_name + '.parquet', index=0, df_name=dataframe_name, livy=True)
     result = run_zep_paragraph(notebook_id, dataframe_paragraph_id, livy_session_id=0, mode='zeppelin')
+    delete_zep_paragraph(notebook_id, dataframe_paragraph_id)
     if result == 0:
         df.save()
         result = {dataframe_name: {"dataframe": "df_" + dataframe_name, "paragraph": dataframe_paragraph_id}}

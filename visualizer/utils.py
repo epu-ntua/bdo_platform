@@ -418,8 +418,8 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode, attempt=
             if response_status != 200 and counter == 1:
                 if attempt == 1:
                     import time
-                    time.sleep(7)
-                    restart_zep_interpreter(settings.ZEPPELIN_SPARK_INTERPRETER)
+                    # time.sleep(7)
+                    # restart_zep_interpreter(settings.ZEPPELIN_SPARK_INTERPRETER)
                     return 1
                 else:
                     # return 2

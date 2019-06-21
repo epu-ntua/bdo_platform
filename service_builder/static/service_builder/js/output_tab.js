@@ -170,28 +170,6 @@ function show_hide_results(){
         '        <div class="loadingDiv">\n' +
         '            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>\n' +
         '        </div>\n' +
-        '   </div>\n' +
-        '</div><div id="service_container" class="text-center">\n' +
-        '    <div id="service_config_container" class="text-center">\n' +
-        '        <button type="button" id="argsCollapseBtn" class="btn btn-md btn-primary" data-toggle="collapse" data-target="#serviceConfigCollapse">\n' +
-        '          Configure\n' +
-        '        </button>\n' +
-        '        <div id="serviceConfigCollapse" class="collapse in" >\n' +
-        '            <div class="well">\n' +
-        '                <h4 class="modal-title">Please give your input</h4>\n' +
-        '                <form id="service_args_container" class="modal-body" style="padding: 0 25%">\n' +
-        '\n' +
-        '                </form>\n' +
-        '                <button type="button" class="btn btn-success" data-toggle="collapse" data-target="#serviceConfigCollapse" id="submitServiceConfig">Submit</button>\n' +
-        '                <button type="button" class="btn btn-default" data-toggle="collapse" data-target="#serviceConfigCollapse">Cancel</button>\n' +
-        '            </div>\n' +
-        '        </div>\n' +
-        '    </div>\n' +
-        '\n' +
-        '    <div id="service_result_container" class="text-center">\n' +
-        '        <div class="loadingDiv">\n' +
-        '            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>\n' +
-        '        </div>\n' +
         '        <!-- ADD YOUR VISUALISATIONS HERE --> \n' +
         '   </div>\n' +
         '</div>\n');
@@ -279,8 +257,8 @@ function show_hide_results(){
         "            //     });\n" +
         "            //     $( this ).attr({'src': src});\n" +
         "            // });\n" +
-        "            $(\".loadingDiv\").css( \"display\", \"none\" );\n" +
-        "            $(\".loadingFrame\").css( \"display\", \"block\" );\n" +
+        "            //$(\".loadingDiv\").css( \"display\", \"none\" );\n" +
+        "            //$(\".loadingFrame\").css( \"display\", \"block\" );\n" +
         "            $(\".viz_container iframe\").on( \"load\", function(){\n" +
         "                $(this).siblings(\".loadingFrame\").css( \"display\", \"none\" )\n" +
         "            });\n" +
