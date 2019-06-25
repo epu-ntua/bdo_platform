@@ -3487,47 +3487,62 @@ def get_data_table(request):
     visualisation_type_analytics('get_data_table')
     return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
 
-def map_oil_spill_hcmr(map):
-    filepath = 'visualizer/static/visualizer/files/kml.json'
+def map_oil_spill_hcmr(map, min_lat, max_lat, min_lon, max_lon):
+    all_polygons = []
     color = 'green'
-    map, polygons = hcmr_create_polygons_on_map(map, filepath, color)
-    return map, polygons
+    pol_group_layer = folium.map.FeatureGroup(name='Protected Areas',
+                                              overlay=True,
+                                              control=True).add_to(map)
+    for i in range(1, 10):
+        print 'Creating Natura Zone ' + str(i)
+        # import pdb
+        # pdb.set_trace()
+        filepath = 'visualizer/static/visualizer/natura_files/natura'+str(i)+'.json'
+        map, polygons = hcmr_create_polygons_on_map(pol_group_layer, filepath, color, map,  min_lat, max_lat, min_lon, max_lon )
+        if len(all_polygons) == 0:
+            all_polygons = polygons
+        else:
+            all_polygons.append(polygons)
+    return map, all_polygons
 
 
-def hcmr_create_polygons_on_map(map, filepath, polygon_color):
+def hcmr_create_polygons_on_map(pol_group_layer, filepath, polygon_color, map, min_lat, max_lat, min_lon, max_lon):
     with open(filepath) as f:
         kml_data = json.load(f)
 
     shapely_polygons = []
-    pol_group_layer = folium.map.FeatureGroup(name='Protected Areas',
-                                              overlay=True,
-                                              control=True).add_to(map)
-    count_polygons = 0
-    for placemark in kml_data['placemarks']:
-        for polygon in placemark['polygons']:
-                points_inner = []
-                points_outer = []
-                points = []
-                external_shapely = []
-                internal_shapely = []
-                for coordinate in polygon['outer_boundary']['coordinates']:
-                    points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
-                    external_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
-                points.append(points_outer)
-                for inner_polygon in polygon['inner_boundaries']:
-                    hole = []
-                    single_internal_shapely = []
-                    for coordinate in inner_polygon['coordinates']:
-                        hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
-                        single_internal_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
-                    points.append(hole)
-                    points_inner.append(hole)
-                    internal_shapely.append(single_internal_shapely)
-                count_polygons = count_polygons+1
-                folium.PolyLine(points, color=polygon_color, weight=2.0, opacity=0.8,
-                                fill=polygon_color
-                                ).add_to(pol_group_layer)
-                shapely_polygons.append(Polygon(external_shapely, internal_shapely))
+    limits = kml_data['limits']
+    off_limits_flag = False
+    if limits['max_lat'] < min_lat or limits['min_lat'] > max_lat or limits['max_lon'] < min_lon or limits['min_lon'] > max_lon:
+        off_limits_flag = True
+        print 'Area off limits'
+    if not off_limits_flag:
+        count_polygons = 0
+        for placemark in kml_data['placemarks']:
+            for polygon in placemark['polygons']:
+                    points_inner = []
+                    points_outer = []
+                    points = []
+                    external_shapely = []
+                    internal_shapely = []
+                    for coordinate in polygon['outer_boundary']['coordinates']:
+                        points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                        external_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
+                    points.append(points_outer)
+                    for inner_polygon in polygon['inner_boundaries']:
+                        hole = []
+                        single_internal_shapely = []
+                        for coordinate in inner_polygon['coordinates']:
+                            hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                            single_internal_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
+                        points.append(hole)
+                        points_inner.append(hole)
+                        internal_shapely.append(single_internal_shapely)
+                    count_polygons = count_polygons+1
+                    folium.PolyLine(points, color=polygon_color, weight=2.0, opacity=0.8,
+                                    fill=polygon_color
+                                    ).add_to(pol_group_layer)
+                    shapely_polygons.append(Polygon(external_shapely, internal_shapely))
     return map, shapely_polygons
 
 
@@ -3857,7 +3872,7 @@ def map_markers_in_time_hcmr(request):
             ais_asked = True
 
         if natura_layer == "true":
-            m, shapely_polygons = map_oil_spill_hcmr(m)
+            m, shapely_polygons = map_oil_spill_hcmr(m, min_lat, max_lat, min_lon, max_lon)
 
     features = convert_unicode_json(features)
 
