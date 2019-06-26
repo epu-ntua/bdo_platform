@@ -377,6 +377,40 @@ $(document).ready(function() {
     }
 
     $(function () {
+        function interractive_marker(onLocationfound, user_marker) {
+            function check_marker_position(lat, lon, user_marker, lat_selector, lon_selector){
+                lat_selector.val(lat.toFixed(4));
+                lon_selector.val(lon.toFixed(4));
+            }
+
+            $('#lat').on('input',function () {
+                if($('#lat').val()<-90){
+                    $('#lat').val((-90).toFixed(4));
+                }else if($('#lat').val()>90){
+                    $('#lat').val((90).toFixed(4));
+                }
+                onLocationfound({latlng:[$('#lat').val(),$('#lon').val()]});
+            });
+            $('#lat').on('change',function () {
+                if (($('#lat').val() !== '') && ($('#lat').val() !== undefined) && ($('#lat').val()!== null)) {
+                    check_marker_position(parseFloat($('#lat').val()),parseFloat($('#lon').val()),user_marker, $('#lat'),$('#lon'))
+                }
+            });
+            $('#lon').on('input',function () {
+                if($('#lon').val()<-180){
+                    $('#lon').val((-180).toFixed(4));
+                }else if($('#lon').val()>180){
+                    $('#lon').val((180).toFixed(4));
+                }
+                onLocationfound({latlng:[$('#lat').val(),$('#lon').val()]});
+            });
+            $('#lon').on('change',function () {
+                if (($('#lon').val() !== '') && ($('#lon').val() !== undefined) && ($('#lon').val()!== null)) {
+                    check_marker_position(parseFloat($('#lat').val()),parseFloat($('#lon').val()),user_marker,$('#lat'),$('#lon'))
+                }
+            });
+
+        };
         $('#lat, #lon').change(function () {
             update_dataset_list_location();
         });
@@ -432,15 +466,19 @@ $(document).ready(function() {
                         if (user_marker != undefined) {
                             map.removeLayer(user_marker);
                         }
-
                         user_marker = L.marker([e.latlng.lat, e.latlng.lng], {draggable:true}).bindPopup("AS4254").addTo(map);
                         single_marker_layer = L.layerGroup(user_marker);
-                        map.addLayer(single_marker_layer);
+                        onLocationfound = function(e){
+                            user_marker.setLatLng(e.latlng).update();
+                        };
                         user_marker.on('dragend', function (e) {
-                             $('#lat').val(e.target._latlng.lat);
-                             $('#lon').val(e.target._latlng.lng).trigger('change');
-                             wecs_location_assessment_tour.goTo(1);
+                            $('#lat').val(e.target._latlng.lat);
+                            $('#lon').val(e.target._latlng.lng).trigger("change");
+                            wecs_location_assessment_tour.goTo(1);
                         });
+                        map.addLayer(single_marker_layer);
+                        map.on('locationfound', onLocationfound);
+                        interractive_marker(onLocationfound, user_marker);
                         wecs_location_assessment_tour.goTo(1);
                     }
                 });
@@ -529,16 +567,21 @@ $(document).ready(function() {
                         if (user_marker != undefined) {
                             map.removeLayer(user_marker);
                         }
-
                         user_marker = L.marker([e.latlng.lat, e.latlng.lng], {draggable:true}).bindPopup("AS4254").addTo(map);
                         single_marker_layer = L.layerGroup(user_marker);
-                        map.addLayer(single_marker_layer);
+                        onLocationfound = function(e){
+                            user_marker.setLatLng(e.latlng).update();
+                        };
                         user_marker.on('dragend', function (e) {
-                             $('#lat').val(e.target._latlng.lat);
-                             $('#lon').val(e.target._latlng.lng).trigger("change");
-                             wec_energy_generation_forecast_tour.goTo(1);
+                            $('#lat').val(e.target._latlng.lat);
+                            $('#lon').val(e.target._latlng.lng).trigger("change");
+                            wec_energy_generation_forecast_tour.goTo(1);
                         });
+                        map.addLayer(single_marker_layer);
+                        map.on('locationfound', onLocationfound);
+                        interractive_marker(onLocationfound, user_marker);
                         wec_energy_generation_forecast_tour.goTo(1);
+
                     }
                 });
 
@@ -589,16 +632,21 @@ $(document).ready(function() {
                         if (user_marker != undefined) {
                             map.removeLayer(user_marker);
                         }
-
                         user_marker = L.marker([e.latlng.lat, e.latlng.lng], {draggable:true}).bindPopup("AS4254").addTo(map);
                         single_marker_layer = L.layerGroup(user_marker);
-                        map.addLayer(single_marker_layer);
+                        onLocationfound = function(e){
+                            user_marker.setLatLng(e.latlng).update();
+                        };
                         user_marker.on('dragend', function (e) {
-                             $('#lat').val(e.target._latlng.lat);
-                             $('#lon').val(e.target._latlng.lng).trigger("change");
-                             matching_analysis_tour.goTo(1);
+                            $('#lat').val(e.target._latlng.lat);
+                            $('#lon').val(e.target._latlng.lng).trigger("change");
+                            matching_analysis_tour.goTo(1);
                         });
+                        map.addLayer(single_marker_layer);
+                        map.on('locationfound', onLocationfound);
+                        interractive_marker(onLocationfound, user_marker);
                         matching_analysis_tour.goTo(1);
+                        
                     }
 
                     $(".converters-container").off('click');
