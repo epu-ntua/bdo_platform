@@ -122,8 +122,8 @@ def get_markers_parameters(request, count):
     if marker_limit <= 0:
         raise ValueError('Number of positions has to be a positive number.')
     variable = str(request.GET.get('variable' + str(count), ''))
-    if variable == '':
-        raise ValueError('A variable has to be selected for each marker to show its value in a specific location.')
+    # if variable == '':
+    #     raise ValueError('A variable has to be selected for each marker to show its value in a specific location.')
     agg_function = str(request.GET.get('agg_func', 'avg'))
     if not agg_function.lower() in AGGREGATE_VIZ:
         raise ValueError('The given aggregate function is not valid.')
@@ -132,7 +132,6 @@ def get_markers_parameters(request, count):
     lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
     lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
     return cached_file, variable, vessel_id_column, vessel_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col
-
 
 def get_plotline_parameters(request, count):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
@@ -690,7 +689,7 @@ def map_visualizer(request):
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid_for_dataset_coverage').id):
                     dataset_id = str(request.GET.get('dataset_id'))
-                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
+                    cached_file, variable, vessel_id_column, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
                     query_pk = load_modify_query_for_grid_coverage(dataset_id, marker_limit)
                     variable = AbstractQuery.objects.get(pk=int(query_pk)).document['from'][0]['select'][0]['name']
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
@@ -1533,6 +1532,28 @@ def get_marker_query_data(query, variable, color_col):
         elif c['name'] == color_col:
             color_index = idx
     return data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit
+
+def get_live_ais_query_data(query, variable):
+    try:
+        query_data = execute_query_method(query)
+    except:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+    var_title = var_unit = None
+    time_index = lat_index = lon_index = var_index = color_index = -1
+    for idx, st in enumerate(result_headers['columns']):
+        if st['name'].split('_', 1)[1] == 'latitude':
+            lat_index = idx
+        elif st['name'].split('_', 1)[1] == 'longitude':
+            lon_index = idx
+        elif st['name'].split('_', 1)[1] == 'time':
+            time_index = idx
+        elif st['name'] == variable:
+            var_index = idx
+            var_title = st['title'].encode('ascii')
+            var_unit = st['unit'].encode('ascii')
+    return data, lat_index, lon_index, time_index, var_index, var_title, var_unit
 
 
 
@@ -4066,6 +4087,139 @@ def get_aggregate_value(request):
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_aggregate_value')
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit, 'agg_func':agg_function, 'var_title': var_title})
+
+def get_live_ais(request):
+    m = create_map()
+    js_list = []
+    old_map_id_list = []
+    extra_js = ""
+    legend_id = ""
+    query_pk, df, notebook_id = get_data_parameters(request, '')
+    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, '')
+    list_of_vessels = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk)
+    dict_vessels = {}
+    dict_vessels['vessels'] = vessel_id
+    folium.LayerControl().add_to(m)
+    temp_map = 'templates/map1' + str(int(time.time())) + '.html'
+    m.save(temp_map)
+    map_html = open(temp_map, 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    if js_list:
+        js_all.extend(js_list)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
+    html1 = render_to_string('visualizer/live_ais_folium_template.html',
+                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id, 'query_pk': query_pk, 'vessel_id': json.dumps(dict_vessels), 'vessel_column': vessel_column, 'variable': variable, 'lov_json': json.dumps(list_of_vessels)})
+    # print(html1)
+    return HttpResponse(html1)
+
+
+def live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk):
+    if len(vessel_id) <= 17:
+        list_of_vessels = {}
+        for vessel in vessel_id:
+            query = load_modify_query_live_ais(query_pk, 1, vessel_column, vessel, variable)
+            data, lat_index, lon_index, time_index, var_index, var_title, var_unit = get_live_ais_query_data(query, variable)
+            vessel_dict = {}
+            vessel_dict['latitude'] = data[0][lat_index]
+            vessel_dict['longitude'] = data[0][lon_index]
+            vessel_dict['time'] = data[0][time_index]
+            vessel_dict['variable'] = data[0][var_index]
+            vessel_dict['unit'] = var_unit
+            vessel_dict['variable_title'] = var_title
+            list_of_vessels[str(vessel)] = vessel_dict
+    else:
+        raise ValueError('The visualisation is not available for more than seventeen vessels')
+    return list_of_vessels
+
+
+def ajax_get_live_ais_new_position(request):
+    query_pk = str(request.GET.get('query_pk','0'))
+    vessel_column = str(request.GET.get("vessel_column", ''))
+    variable = str(request.GET.get('variable', ''))
+    vessel_id = [int(x) for x in request.GET.getlist('vessel_id[]')]
+    result = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk)
+    return JsonResponse(result)
+
+
+
+def load_modify_query_live_ais(query_pk, marker_limit, vessel_column, vessel_id, variable):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    time_flag = platform_flag = lat_flag = lon_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
+                order_var = s['name']
+                time_flag = True
+                s['groupBy'] = False
+                s['aggregate'] = ''
+            elif (s['name'] == variable) and (s['exclude'] is not True):
+                s['exclude'] = False
+                var_flag = True
+                if (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
+                    platform_id_filtername = str(s['name'])
+                    if str(s['type']) == "VALUE":
+                        platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                    else:
+                        platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
+                    platform_flag = True
+            elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
+                platform_id_filtername = str(s['name'])
+                s['exclude'] = False
+                s['groupBy'] = False
+                s['aggregate'] = ''
+                if str(s['type']) == "VALUE":
+                    platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                else:
+                    platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
+                platform_flag = True
+
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['groupBy'] = False
+                s['aggregate'] = ''
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['groupBy'] = False
+                s['aggregate'] = ''
+                lon_flag = True
+            else:
+                s['exclude'] = True
+    if not time_flag:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        doc['orderings'] = [{'name': order_var, 'type': 'DESC'}]
+    if not platform_flag:
+        raise ValueError(
+            'Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        if platform_id_datatype == "STRING":
+            vessel_argument = json.loads(
+                '{"a":"' + str(platform_id_filtername) + '", "b": "\'' + str(vessel_id) + '\'", "op": "eq"}')
+        else:
+            vessel_argument = json.loads(
+                '{"a":"' + str(platform_id_filtername) + '", "b": ' + str(vessel_id) + ', "op": "eq"}')
+
+    doc['filters'] = vessel_argument
+
+    if not lat_flag or not lon_flag:
+        raise ValueError(
+            'Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
 
 def myconverter(o):
     if isinstance(o, datetime):
