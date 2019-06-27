@@ -1376,17 +1376,27 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     # fig, ax1 = plt.subplots(nrows=1)
     min_val = None
     max_val = None
-    for r in zi:
-        for c in r:
-            if c is not None:
+    # import pdb
+    # pdb.set_trace()
+    for i, r in enumerate(zi):
+        for j, c in enumerate(r):
+            if str(c) == '--':
+                zi[i][j] = None
+                print '--'
+                continue
+            if c is not None and not np.isnan(c):
                 min_val = c
                 max_val = c
                 break
         if min_val is not None:
             break
-    for r in zi:
-        for c in r:
-            if c is not None:
+    for i, r in enumerate(zi):
+        for j, c in enumerate(r):
+            if str(c) == '--':
+                zi[i][j] = None
+                print '--'
+                continue
+            if c is not None and not np.isnan(c):
                 if c < min_val:
                     min_val = c
                 if c > max_val:
@@ -1409,6 +1419,9 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     ax = fig.add_subplot(111)
     # plt.contourf(Lons, Lats, final_data, levels=levels, cmap=plt.cm.coolwarm)
     # ax1.contour(xi, yi, zi, levels=levels, linewidths=0.5, colors='k')
+    # import pdb
+    # pdb.set_trace()
+    # print zi
     cs = plt.contourf(xi, yi, zi, levels=levels, cmap="rainbow")
     # ax.clabel(cs, fmt='%2.1f', colors='w', fontsize=5)
     # plt.tricontourf(x, y, z, levels=levels, cmap="RdBu_r")
@@ -4704,7 +4717,7 @@ def createjson(lonlat,time,status,color):
 
 
 def execute_query_method(q):
-    result = q.execute()
+    result = q.execute(from_visualizer=True)
     print q.document
     dataset_list = get_dataset_list(q)
     analytics_dataset_visualisation(dataset_list)
