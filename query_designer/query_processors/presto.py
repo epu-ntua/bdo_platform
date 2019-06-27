@@ -16,7 +16,7 @@ from aggregator.models import Variable, Dimension
 from .utils import GRANULARITY_MIN_PAGES, ResultEncoder
 
 
-def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
+def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False, from_visualizer=False):
     dimension_values = preprocess_dimension_values(dimension_values)
     selects = OrderedDict()
     headers = []
@@ -38,6 +38,10 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                                                                  prejoin_groups, self)
     else:
         limit, query, subquery_cnt = build_query(c_name, columns, groups, selects, self)
+
+    # if for map visualisation, do not perform round on select, but choose min
+    if from_visualizer:
+        query = remove_round_from_select(query)
 
     cursor = choose_db_cursor(v_obj)
 
@@ -223,6 +227,11 @@ def is_query_for_average(from_list):
             if 'type' in s and s['type'] == 'VALUE' and s['aggregate'] != 'AVG':
                 return False
     return True
+
+
+def remove_round_from_select(q):
+    select_clause = q.split('(SELECT')[1].split('FROM')[0].replace('round', 'MIN').replace(', 0', '').replace(', 1', '').replace(', 2', '')
+    return q.split('(SELECT')[0] + '(SELECT' + select_clause + 'FROM' + q.split('(SELECT')[1].split('FROM')[1]
 
 
 def extract_prejoin_name(from_list):

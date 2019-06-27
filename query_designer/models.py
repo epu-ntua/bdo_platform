@@ -279,7 +279,7 @@ class AbstractQuery(Model):
 
         return all_rows
 
-    def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False):
+    def process(self, dimension_values='', variable='', only_headers=False, commit=True, execute=False, raw_query=False, from_visualizer=False):
         is_postgres = True
         is_presto = True
         try:
@@ -304,17 +304,17 @@ class AbstractQuery(Model):
 
         data = q_process(self, dimension_values=dimension_values, variable=variable,
                          only_headers=only_headers, commit=commit,
-                         execute=execute, raw_query=raw_query)
+                         execute=execute, raw_query=raw_query, from_visualizer=from_visualizer)
 
         return data, encoder
 
-    def execute(self, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=True):
+    def execute(self, dimension_values='', variable='', only_headers=False, commit=True, with_encoder=True, from_visualizer=False):
         try:
             doc = self.document
         except ValueError:
             return JsonResponse({'error_message': 'Invalid query document'}, status=400)
 
-        result = self.process(dimension_values, variable, only_headers, commit, execute=True)
+        result = self.process(dimension_values, variable, only_headers, commit, execute=True, from_visualizer=from_visualizer)
 
         if with_encoder:
             return result
