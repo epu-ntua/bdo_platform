@@ -182,6 +182,7 @@ function show_hide_results(){
         "#service_result_container{ position: relative; min-height: 500px; width: 100%; background-color: white; display: none;}\n" +
         ".loadingDiv, .loadingFrame{position:absolute;z-index:999;display:none;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}\n" +
         ".viz_container{position: relative; height: 400px; width: 100%; margin: 1% 0;}\n" +
+        ".viz_container iframe{height: 100%; width: 100%;}\n" +
         "#service_result_container iframe{border: none; box-shadow: 0 0 3px 0px #a28e8eb0;}\n" +
         "th{text-align: center; font-weight: 600 !important;}\n" +
         "#service_result_container .nav>li {display: inline-block !important;width: 300px !important; float: none !important;}");

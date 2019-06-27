@@ -244,7 +244,7 @@ def create_zep_arguments_paragraph(notebook_id, title, args_json_string):
     data = dict()
     data['title'] = title
     data['index'] = 1
-    data['text'] = '%spark.pyspark' \
+    data['text'] = '%livy.pyspark' \
                    '\nimport json' \
                    '\narguments = dict()' \
                    '\nresult = dict()' \
@@ -400,7 +400,7 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode, attempt=
         kind = 'spark'
         if 'pyspark' in code:
             kind = 'pyspark'
-        code = code.replace('%spark.pyspark\n', '').replace('%spark.pyspark', '').replace('%pyspark\n', '').replace('%pyspark', '').replace('%spark\n', '').replace('%spark', '')
+        code = code.replace('%livy.pyspark\n', '').replace('%livy.pyspark', '').replace('%spark.pyspark\n', '').replace('%spark.pyspark', '').replace('%pyspark\n', '').replace('%pyspark', '').replace('%spark\n', '').replace('%spark', '')
 
         if code is not None or code != '':
             execute_code_on_livy(code=code, session_id=livy_session_id, kind=kind)
@@ -447,7 +447,7 @@ def create_zep_viz_paragraph(notebook_id, title):
 def create_zep_sort_paragraph(notebook_id, title, sort_col):
     data = dict()
     data['title'] = 'bdo_test_paragraph'
-    data['text'] = '%spark.pyspark' \
+    data['text'] = '%livy.pyspark' \
                    '\ndf = df.sort("' + sort_col + '")'
     str_data = json.dumps(data)
     response = requests.post(settings.ZEPPELIN_URL+"/api/notebook/" + str(notebook_id) + "/paragraph", data=str_data)
@@ -461,7 +461,7 @@ def create_zep_sort_paragraph(notebook_id, title, sort_col):
 def create_zep_reg_table_paragraph(notebook_id, title):
     data = dict()
     data['title'] = 'bdo_test_paragraph'
-    data['text'] = '%spark.pyspark' \
+    data['text'] = '%livy.pyspark' \
                    '\ndf.registerTempTable("tempTablePostgres")'
 
     str_data = json.dumps(data)
@@ -783,7 +783,7 @@ def restart_zep_interpreter(interpreter_id):
 def create_zep_drop_all_paragraph(notebook_id, title):
     data = dict()
     data['title'] = 'bdo_test_paragraph'
-    data['text'] = '%spark.pyspark' \
+    data['text'] = '%livy.pyspark' \
                    '\nsqlContext.dropTempTable("tempTablePostgres")' \
                    '\ndf=None'
 
@@ -801,13 +801,13 @@ def create_zep_toJSON_paragraph(notebook_id, title, df_name, order_by='', order_
     data['title'] = 'bdo_test_paragraph'
     if order_by != '':
         if order_type == 'ASC':
-            data['text'] = '%spark.pyspark' \
+            data['text'] = '%livy.pyspark' \
                            '\n{0}.orderBy("{1}", ascending=True).toJSON().collect()'.format(df_name, order_by)
         else:
-            data['text'] = '%spark.pyspark' \
+            data['text'] = '%livy.pyspark' \
                            '\n{0}.orderBy("{1}", ascending=False).toJSON().collect()'.format(df_name, order_by)
     else:
-        data['text'] = '%spark.pyspark' \
+        data['text'] = '%livy.pyspark' \
                        '\n{0}.toJSON().collect()'.format(df_name)
 
     str_data = json.dumps(data)
@@ -822,7 +822,7 @@ def create_zep_toJSON_paragraph(notebook_id, title, df_name, order_by='', order_
 def create_zep_tempView_paragraph(notebook_id, title, df_name):
     data = dict()
     data['title'] = 'bdo_test_paragraph'
-    data['text'] = '%spark.pyspark' \
+    data['text'] = '%livy.pyspark' \
                    '\n{0}.createTempView("{0}_scala")'.format(df_name)
 
     str_data = json.dumps(data)
@@ -837,7 +837,7 @@ def create_zep_tempView_paragraph(notebook_id, title, df_name):
 def create_zep_scala_histogram_paragraph(notebook_id, title, df_name, hist_col, num_of_bins):
     data = dict()
     data['title'] = 'bdo_test_paragraph'
-    data['text'] = '%spark' \
+    data['text'] = '%livy.spark' \
                    '\nval {0}_scala = spark.table("{0}_scala")' \
                    '\nval (startValues,counts) = {0}_scala.select("{1}").map(value => value.getDouble(0)).rdd.histogram({2})' \
                    '\nval {0}_scala = sc.parallelize(startValues zip counts).toDF("startValues","counts").withColumn("startValues", round($"startValues", 3))' \
@@ -901,7 +901,7 @@ def get_zep_toJSON_paragraph_response(notebook_id, paragraph_id):
 def create_zep_getDict_paragraph(notebook_id, title, dict_name):
     data = dict()
     data['title'] = 'bdo_test_paragraph'
-    data['text'] = '%spark.pyspark' \
+    data['text'] = '%livy.pyspark' \
                    '\nprint {0}'.format(dict_name)
 
     str_data = json.dumps(data)

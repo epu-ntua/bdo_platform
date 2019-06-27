@@ -373,17 +373,27 @@ def wec_single_location_evaluation_execution_process(request, exec_instance):
     visualisations = dict()
     power_cols_str = ''
     cap_factors_cols_str = ''
+    unit_list_1 = ''
+    unit_list_2 = ''
+    unit_list_3 = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW&y_var_min[]=None&y_var_max[]=None'
-        cap_factors_cols_str += '&y_var[]=capacity factor for ' + str(converter.title) + '&y_var_unit[]=%&y_var_min[]=0&y_var_max[]=100'
-        cap_factors_cols_str += '&y_var[]=avg(capacity factor for ' + str(converter.title) + ')&y_var_unit[]=%&y_var_min[]=0&y_var_max[]=100'
+        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_min[]=None&y_var_max[]=None'
+        unit_list_1 += 'kW,'
+        cap_factors_cols_str += '&y_var[]=capacity factor for ' + str(converter.title) + '&y_var_min[]=0&y_var_max[]=100'
+        unit_list_2 += '%,'
+        cap_factors_cols_str += '&y_var[]=avg(capacity factor for ' + str(converter.title) + ')&y_var_min[]=0&y_var_max[]=100'
+        unit_list_2 += '%,'
 
+    unit_list_1 = unit_list_1[:-1]
+    power_cols_str += '&y_var_unit=' + unit_list_1
+    unit_list_2 = unit_list_2[:-1]
+    cap_factors_cols_str += '&y_var_unit=' + unit_list_2
     visualisations['v1'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
                              'title': "Generated Power",
-                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&notebook_id=" + str(
+                             'url': "/visualizations/get_line_chart_am/?x_var=time&df=power_df&same_axis=1&notebook_id=" + str(
                                  new_notebook_id) + power_cols_str,
                              'done': False})
     visualisations['v2'] = ({'notebook_id': new_notebook_id,
@@ -651,9 +661,13 @@ def wec_generation_forecast_execution_process(request, exec_instance):
     # ADD THE VISUALISATIONS TO BE CREATED
     visualisations = dict()
     power_cols_str = ''
+    unit_list_1 = ''
     for i, converter_id in enumerate(converters_selection):
         converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-        power_cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW'
+        power_cols_str += '&y_var[]=power for ' + str(converter.title)
+        unit_list_1 += 'kW,'
+    unit_list_1 = unit_list_1[:-1]
+    power_cols_str += '&y_var_unit=' + unit_list_1
 
     visualisations['v1'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
@@ -787,12 +801,22 @@ def wec_load_matching_execution_process(request, exec_instance):
         visualisations = dict()
         cols_str = ''
         cols_str_norm = ''
+        unit_list_1 = ''
+        unit_list_2 = ''
         for i, converter_id in enumerate(converters_selection):
             converter = Wave_Energy_Converters.objects.get(pk=int(converter_id))
-            cols_str += '&y_var[]=power for ' + str(converter.title) + '&y_var_unit[]=kW'
-            cols_str_norm += '&y_var[]=power for ' + str(converter.title) + '_normalized&y_var_unit[]=kW'
-        cols_str += '&y_var[]=load_profile' + '&y_var_unit[]=kW'
-        cols_str_norm += '&y_var[]=load_profile_normalized&y_var_unit[]=kW'
+            cols_str += '&y_var[]=power for ' + str(converter.title)
+            cols_str_norm += '&y_var[]=power for ' + str(converter.title) + '_normalized'
+            unit_list_1 += 'kW,'
+            unit_list_2 += 'kW,'
+
+        unit_list_1 = unit_list_1 + 'kW'
+        cols_str += '&y_var_unit=' + unit_list_1
+        unit_list_2 = unit_list_2 + 'kW'
+        cols_str_norm += '&y_var_unit=' + unit_list_2
+
+        cols_str += '&y_var[]=load_profile'
+        cols_str_norm += '&y_var[]=load_profile_normalized'
 
         visualisations['v1'] = ({'notebook_id': new_notebook_id,
                                  'df': 'power_df',
@@ -1068,7 +1092,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
                              'df': 'power_df',
                              'query': '',
                              'title': "Power line chart",
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=power&y_var_unit[]=kW/m&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=power&y_var_unit=kW/m&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False})
     visualisations['v4'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
@@ -1081,8 +1105,12 @@ def single_location_evaluation_execution_process(request, exec_instance):
     end_year = int(args_to_note['end_date'].split('-')[0])
     print start_year, end_year
     power_availability_vars = ''
+    unit_list_1 = ''
     for year in range(start_year, end_year+1):
-        power_availability_vars += '&y_var[]=power_'+str(year)+'&y_var_unit[]=kW/m'
+        power_availability_vars += '&y_var[]=power_'+str(year)
+        unit_list_1 += 'kW/m,'
+    unit_list_1 = unit_list_1[:-1]
+    power_availability_vars += '&y_var_unit=' + unit_list_1
     visualisations['v5'] = ({'notebook_id': '',
                              'df': 'power_df_year_month',
                              'query': '',
@@ -1353,7 +1381,7 @@ def wave_forecast_execution_process(request, exec_instance):
     visualisations['v3'] = ({'notebook_id': new_notebook_id,
                              'df': 'power_df',
                              'query': '',
-                             'url': "/visualizations/get_line_chart_am/?y_var[]=power&y_var_unit[]=kW&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
+                             'url': "/visualizations/get_line_chart_am/?y_var[]=power&y_var_unit=kW&x_var=time&df=power_df&notebook_id="+str(new_notebook_id),
                              'done': False,
                              'title': 'Wave Energy'})
     service_exec.dataframe_visualizations = visualisations

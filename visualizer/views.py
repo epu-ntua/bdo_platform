@@ -2498,7 +2498,6 @@ def get_histogram_chart_am(request):
             from_table = ''
             table_col = ''
             cursor = None
-            var_unit = ''
             for f in doc['from']:
                 for s in f['select']:
                     if s['name'] == x_var:
@@ -2613,7 +2612,10 @@ def get_histogram_chart_am(request):
                     livy = service_exec.service.through_livy
                 if livy:
                     tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
-                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=session_id, mode='livy')
+                    try:
+                        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=session_id, mode='livy')
+                    except:
+                        pass
                     scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var,num_of_bins=bins)
                     run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=session_id, mode='livy')
                     json_data = create_livy_scala_toJSON_paragraph(session_id=session_id, df_name=df)
@@ -2622,7 +2624,10 @@ def get_histogram_chart_am(request):
                     delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
                 else:
                     tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
-                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=0, mode='zeppelin')
+                    try:
+                        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=0, mode='zeppelin')
+                    except:
+                        pass
                     scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var, num_of_bins=bins)
                     run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=0, mode='zeppelin')
                     toJSON_paragraph_id = create_zep_scala_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
@@ -3410,6 +3415,15 @@ def get_time_series_am(request):
         y_var_list = request.GET.getlist('y_var[]')
         x_var_unit = str(request.GET.get('x_var_unit', ''))
         y_var_unit_list = request.GET.getlist('y_var_unit[]')
+
+        y_var_min_list = request.GET.getlist('y_var_min[]')
+        same_axis = request.GET.get('same_axis', '0')
+        if len(y_var_min_list) == 0:
+            y_var_min_list = ['None'] * len(y_var_list)
+        y_var_max_list = request.GET.getlist('y_var_max[]')
+        if len(y_var_max_list) == 0:
+            y_var_max_list = ['None'] * len(y_var_list)
+
         agg_function = str(request.GET.get('agg_func', 'avg'))
         chart_type = str(request.GET.get('chart_type', 'line'))
         if not agg_function.lower() in AGGREGATE_VIZ:
@@ -3438,10 +3452,10 @@ def get_time_series_am(request):
     visualisation_type_analytics('get_time_series_am')
     if chart_type == 'line':
         return render(request, 'visualizer/line_chart_am.html',
-                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
+                      {'data': json_data, 'value_col': zip(y_var_list, y_var_min_list, y_var_max_list), 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
     else:
         return render(request, 'visualizer/column_chart_am.html',
-                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'category_title': str(order_var) + " " + str(x_m_unit), 'isDate': 'true', 'min_period': min_chart_period})
+                      {'data': json_data, 'value_col': zip(y_var_list, y_var_min_list, y_var_max_list), 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'category_title': str(order_var) + " " + str(x_m_unit), 'isDate': 'true', 'min_period': min_chart_period})
 
 
 def get_column_chart_am(request):

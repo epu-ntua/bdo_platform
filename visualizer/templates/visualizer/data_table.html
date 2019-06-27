@@ -83,7 +83,7 @@
                 page++;
                 show_rows(page);
                 $('#chartPaginationDiv').attr("page", page);
-                lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+                lastPage = Math.floor(parseInt($('#chartPaginationDiv').attr("lastidx")) / 50);
                 if (page >= lastPage - 1) {
                     $(this).prop('disabled', true);
                 }
@@ -91,7 +91,7 @@
 
             $("#chartPaginationDiv").on('click', '#chartPrevBtn', function () {
                 var page = parseInt($('#chartPaginationDiv').attr("page"));
-                lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+                lastPage = Math.floor(parseInt($('#chartPaginationDiv').attr("lastidx")) / 50);
                 if (page <= lastPage) {
                     $('#chartPaginationDiv').find('#chartNextBtn').prop('disabled', false);
                 }

@@ -738,7 +738,9 @@ $(document).ready(function () {
     $("#addVizModal #submit-df-btn").click(function () {
         if (df_vis_created_flag!==false){
             $('#dataframe #df_viz_container iframe').removeAttr('id');
-            $('#dataframe #df_viz_container iframe').appendTo('#dynamic_viz_addition');
+            $('#dynamic_viz_addition').append('<div class="viz_container"><div class="loadingFrame"><img src="' + img_source_path + '"/></div></div>');
+            $('#dataframe #df_viz_container iframe').appendTo('#dynamic_viz_addition .viz_container');
+
             var cursor = html_editor.getSearchCursor('<!-- ADD YOUR VISUALISATIONS HERE -->',{line:1});
             cursor.findNext();
             cursor.replace(String($('#dynamic_viz_addition').html())+'\n<!-- ADD YOUR VISUALISATIONS HERE -->','<!-- ADD YOUR VISUALISATIONS HERE -->');
