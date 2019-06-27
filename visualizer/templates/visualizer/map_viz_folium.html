@@ -59,6 +59,8 @@
         var step = parseFloat("{{ step }}");
         var final_data={{ data_grid |safe}};
         var agg_func= "{{ agg_function }}";
+        var var_unit = "{{ unit }}";
+        var var_title = "{{ variable }}";
         var popup = L.popup();
         map.on('click',latLngPop);
 
@@ -68,29 +70,38 @@
             var cl_lon=e.latlng.lng.toFixed(4);
             var idx_lat=parseInt((cl_lat-min_lat)/step);
             var idx_lon=parseInt((cl_lon-min_lon)/step);
-
-
+{#            console.log('Pressed lat:'+String(cl_lat));#}
+{#            console.log('Pressed lon:'+String(cl_lon));#}
+{#            console.log('Index lat:'+String(idx_lat));#}
+{#            console.log('Index lon:'+String(idx_lon));#}
+{#            console.log(final_data);#}
 
             if((cl_lat<max_lat)&&(cl_lon<max_lon)&&(cl_lat>min_lat)&&(cl_lon>min_lon)) {
 
                 for (i=min_lat ; i<cl_lat ; i=i+step){
                     var sa_lat=i;
                 }
+{#                console.log(sa_lat);#}
                 sa_lat=Number((sa_lat).toFixed(4));
+{#                console.log(sa_lat);#}
                 var ea_lat= Number((sa_lat + step).toFixed(4));
 
                 for (i=min_lon ; i<cl_lon ; i=i+step){
                     var sa_lon=i;
                 }
+{#                console.log(sa_lon);#}
                 sa_lon=Number((sa_lon).toFixed(4));
+{#                console.log(sa_lon);#}
                 var ea_lon= Number((sa_lon + step).toFixed(4));
 
-                var value = (final_data[idx_lon])[idx_lat];
-                if (value != "-9999999") {
+                var value = (final_data[idx_lat])[idx_lon];
+{#                console.log(value);#}
+                if (value !== -9999999) {
+                    value = Number((value).toFixed(4));
                     popup.setLatLng(e.latlng)
                         .setContent("Latitude Area: [" + sa_lat +"  ,  " + ea_lat +"]"+
                             "<br>Longitude Area: [" + sa_lon +"  ,  " + ea_lon +"]"+
-                            "<br>Value ("+ agg_func +") : " + value)
+                            "<br>" + var_title +"("+ agg_func +") : " + value+" "+ var_unit)
                         .openOn(map);
                 }
             }

@@ -1,5 +1,5 @@
 {% extends 'visualizer/viz_base.html' %}
-
+{% load index %}
 {% load static %}
 
 {% block css %}
@@ -32,6 +32,35 @@
         {% with 'visualizer/img/temp/'|add:img_name as image_static %}
             <img src="{% static image_static %}" alt="Histogram2D">
         {% endwith %}
+        <p>
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseTable" aria-expanded="false" aria-controls="collapseTable">
+            Frequency Table
+          </button>
+        </p>
+        <div class="collapse" id="collapseTable">
+          <div class="card card-body">
+              <table class="table">
+                  <thead>
+                    <tr>
+                    <th scope="col" style="text-align: center"></th>
+                        {% for el in x_axis %}
+                            <th scope="col" style="text-align: center">{{ el }}</th>
+                        {% endfor %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for row in freq_table %}
+                    <tr>
+                        <th scope="row">{{ y_axis|index:forloop.counter0 }}</th>
+                        {% for el in row %}
+                            <td>{{ el }}</td>
+                        {% endfor %}
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+              </table>
+          </div>
+        </div>
     </div>
 
 {% endblock %}
