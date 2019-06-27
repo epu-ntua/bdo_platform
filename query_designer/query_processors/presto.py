@@ -411,8 +411,19 @@ def build_where_clause(self):
     else:
         where_clause = self.process_filters(filters, 'presto')
 
+    extra_filters = ''
+    for f in self.document['from']:
+        table_name = Variable.objects.get(pk=int(f['type'])).dataset.table_name
+        col_name = Variable.objects.get(pk=int(f['type'])).name
+        if extra_filters == '':
+            extra_filters += table_name + '.' + col_name + ' is not NULL'
+        else:
+            extra_filters += ' OR ' + table_name + '.' + col_name + ' is not NULL'
+
     if where_clause:
-        where_clause = 'WHERE ' + where_clause + ' \n'
+        where_clause = 'WHERE ' + where_clause + ' AND (' + extra_filters + ') \n'
+    else:
+        where_clause = 'WHERE ' + extra_filters + ' \n'
     return where_clause
 
 
