@@ -1150,7 +1150,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                     oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
                 viz.status = 'running'
                 viz.save()
-                mappath = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
+                mappath, data_grid = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
                 print 'mappath'
                 print mappath
                 legpath = get_contour_legend(max_val, min_val)
