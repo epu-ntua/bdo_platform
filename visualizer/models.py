@@ -14,6 +14,7 @@ class Visualization(Model):
                       default='visualizer/static/visualizer/img/default-img.jpg')
     type = CharField(max_length=512, default='')
     order = IntegerField(default=999)
+    data_source = CharField(max_length=512, default='query')
     # info has the following structure
     """
         {

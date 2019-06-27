@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block viz_content %}
-
+{% if has_data %}
     <div id="chartdiv" style="overflow: visible; text-align: left; margin-top: 50px; height: auto;">
         <table class="table table-striped table-bordered ">
             <thead>
@@ -58,17 +58,64 @@
             </tbody>
         </table>
     </div>
-
     <div id="chartPaginationDiv" page="0" lastidx="{{ data|length }}">
         <button id="chartPrevBtn" disabled class="btn btn-default btn-sm">Previous</button>
         <button id="chartNextBtn" class="btn btn-default btn-sm">Next</button>
     </div>
+    {% else %}
+    <div id="chartdiv" style="overflow: visible; text-align: left; margin-top: 50px; height: auto;">
+        <h4 style="position: absolute; text-align: center; width: 100%; top: 50%;bottom: 50%">There are no available data.</h4>
+    </div>
+    {% endif %}
 
 {% endblock %}
 
 
 
 {% block js %}
+    <script>
+        $("#chartPaginationDiv").on('click', '#chartNextBtn', function () {
+                var page = parseInt($('#chartPaginationDiv').attr("page"));
+                if (page >= 0) {
+                    $('#chartPaginationDiv').find('#chartPrevBtn').prop('disabled', false);
+                }
+                hide_rows(page);
+                page++;
+                show_rows(page);
+                $('#chartPaginationDiv').attr("page", page);
+                lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+                if (page >= lastPage - 1) {
+                    $(this).prop('disabled', true);
+                }
+            });
+
+            $("#chartPaginationDiv").on('click', '#chartPrevBtn', function () {
+                var page = parseInt($('#chartPaginationDiv').attr("page"));
+                lastPage = Math.floor(parseInt(iframe.find('#chartPaginationDiv').attr("lastidx")) / 50);
+                if (page <= lastPage) {
+                    $('#chartPaginationDiv').find('#chartNextBtn').prop('disabled', false);
+                }
+                hide_rows(page);
+                page--;
+                show_rows(page);
+                $('#chartPaginationDiv').attr("page", page);
+                if (page <= 0) {
+                    $(this).prop('disabled', true);
+                }
+            });
+
+            function hide_rows(page) {
+                for (ix = page * 50; ix < (page + 1) * 50; ix++) {
+                    $('.table > tbody > tr[page="' + ix + '"]').hide();
+                }
+            }
+
+            function show_rows(page) {
+                for (ix = page * 50; ix < (page + 1) * 50; ix++) {
+                    $('.table > tbody > tr[page="' + ix + '"]').show();
+                }
+            }
+    </script>
 
 
 {% endblock %}

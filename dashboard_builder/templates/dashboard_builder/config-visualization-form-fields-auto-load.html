@@ -130,6 +130,12 @@
                                   <input id="{{ argument.name }}" type="checkbox" name="{{ argument.name }}" >
                                   <label >{{ argument.title }}</label >
                                 </div>
+                            {% elif argument.type == 'DF_MULTIPLE_INPUT' %}
+                                    <select id="{{ argument.name }}" name="{{ argument.name }}[]" multiple="" class="ui search fluid dropdown df-multi-input">
+                                        <option value="-1"></option>
+                                    </select>
+                            {% elif argument.type == 'DF_SIMPLE_INPUT' %}
+                                    <input id="{{ argument.name }}" type="text" class="form-control full-width df-simple-input" name="{{ argument.name }}"  value="{{ argument.default }}">
                             {% else %}
                                 <input id="{{ argument.name }}" type="text" class="form-control full-width " name="{{ argument.name }}"  value="{{ argument.default }}">
                             {% endif %}

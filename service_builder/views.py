@@ -52,6 +52,12 @@ def create_new_service(request):
         service = Service(user=user, private=True, notebook_id=new_notebook_id, arguments={"filter-arguments": [], "algorithm-arguments": []}, published=False, arguments_paragraph_id=settings.BASE_NOTE_ARG_PARAGRAPH)
         service.save()
 
+    conf_viz_json = ''
+    try:
+        with open('visualizer/static/visualizer/visualisations_settings.json') as f:
+            conf_viz_json = json.dumps(json.load(f))
+    except:
+        pass
     form = ServiceForm()
     # service = Service.objects.get(pk=3)
     return render(request, 'service_builder/create_new_service.html', {
@@ -62,7 +68,8 @@ def create_new_service(request):
         'notebook_id': service.notebook_id,
         'zeppelin_url': settings.ZEPPELIN_URL,
         'service_id': service.id,
-        'service_form': form})
+        'service_form': form,
+        'visualisation_configuration': conf_viz_json})
 
 
 def run_initial_zep_paragraph(request):

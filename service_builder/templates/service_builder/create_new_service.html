@@ -11,20 +11,11 @@
     <style>
         #loadImg{position:absolute;z-index:999;}
         #loadImg {display:table-cell;width:100%;height:300px;background:#fff;text-align:center;vertical-align:middle;}
-        .outputLoadImg{
-            text-align: center;
-{#            display: block;#}
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            min-width: 100%;
-        }
-        .viz_item {
+
+        .viz_item, .df_viz_item {
             cursor: pointer;
         }
+
         .popover{
             width: 500px;
             max-width: 600px;
@@ -48,20 +39,85 @@
             padding-bottom: 5px;
             width: 90%;
         }
-        #viz_container{
+        #viz_container, #df_viz_container{
             background-color: #d8d8d8;
             height: 500px;
             width: 80%;
             padding: 0;
         }
-        #viz_container iframe, #dynamic_dashboard iframe{
-            background-color: white;
-            height: 96%;
-            min-height: 480px;
-            width: 98%;
-            margin: 1% 1% 1% 1%;
+        #viz_container iframe,#df_viz_container iframe, #dynamic_dashboard iframe{
+            background-color: darkgrey;
+            width: 100%;
+            margin: 0;
             padding: 0;
+            height: 100%;
         }
+        .iframe-class{
+            height: calc(100% - 37px);
+            padding: 0px;
+            margin: 0% 0% 0% 0% !important;
+        }
+
+
+        .conf-error-message{
+            color: darkred;
+            font-size: small;
+        }
+
+        .waiting-disable{
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .loadingFrame{position:absolute;z-index:999;display:block;right:0;left:0;bottom:0;top:0;background:#fff;text-align:center;border:thin dashed;}
+
+    </style>
+    {% for viz in available_viz %}
+            <style>
+                #{{ viz.view_name}}_tip{
+                    opacity: .3;
+                    position: relative;
+                    bottom:1px;
+                }
+                li[data-viz-id="{{ viz.id }}"]:hover  #{{ viz.view_name }}_tip{
+                    opacity: inherit;
+                    margin:auto;
+                    cursor:help;
+                }
+            </style>
+    {% endfor %}
+    <style>
+        .disabled {
+        pointer-events:none;
+        opacity:0.6;
+    }
+
+    .unclickable{
+        text-decoration: none;
+        pointer-events:none;
+    }
+
+    .unclickable:hover{
+        cursor: not-allowed;
+    }
+
+    .viz_item:hover {
+        background-color: #d4dbe9;
+    }
+
+    .form_field_info{
+        pointer-events: auto!important;
+    }
+    .form_field_info:hover {
+        cursor: help;
+        color: rgb(45, 45, 45)!important;
+    }
+
+    .ng-wrapper{
+                width: 100%;
+                height: calc(100%);
+                display: block;
+            }
     </style>
 {% endblock %}
 
@@ -90,6 +146,29 @@
 
         </div>
     </div>
+
+    <div id="query-container" style="display: none;">
+        <select id="query-select" class="ui search selection form-control " name="query" style="width: 300px !important;">
+{#            {% for query in saved_queries %}#}
+{#                <option value="{{ query.id }}">{{ query.title }}</option>#}
+{#            {% endfor %}#}
+        </select>
+        <div><a href="/queries/" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+        <input id="new_query_doc" type="hidden" value=""/>
+        <button type="button" id="select_data_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>
+        <button type="button" id="select_data_cancel" class="btn btn-sm pull-right" data-toggle="popover">Cancel</button>
+    </div>
+
+    <div id="all_queries_container" style="display: none;">
+        {% for query in saved_queries %}
+                <option value="{{ query.id }}">{{ query.title }}</option>
+        {% endfor %}
+    </div>
+
+    <div id="viz-container" style="height:630px; " hidden>
+
+{#        <button type="button" id="select_viz_ok" class="btn btn-sm btn-success" data-toggle="popover">OK</button>#}
+    </div>
 {% endblock %}
 
 
@@ -99,6 +178,8 @@
 
     {# Code Mirror    #}
     <script src="http://codemirror.net/lib/codemirror.js"></script>
+    <script src="http://codemirror.net/addon/search/search.js"></script>
+    <script src="http://codemirror.net/addon/search/searchcursor.js"></script>
     <!-- For HTML/XML -->
     <script src="http://codemirror.net/mode/xml/xml.js"></script>
     <script src="http://codemirror.net/mode/htmlmixed/htmlmixed.js"></script>
@@ -114,6 +195,7 @@
     <script src="{% static "vendor/Semantic-UI-CSS-master/semantic.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.min.js"></script>
     <script src="{% static 'service_builder/js/visualisations.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script src="{% static 'service_builder/js/dfvisualisations.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     <script src="{% static 'service_builder/js/queries_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script src="{% static 'service_builder/js/arguments_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
@@ -121,6 +203,11 @@
     <script src="{% static 'service_builder/js/output_tab.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script src="{% static 'service_builder/js/publish.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script src="{% static 'service_builder/js/templates.js' %}?bdo_version={{ settings.BDO_VERSION }}"></script>
+    <script>
+        var img_source_path =  "{% static "img/loading_gif.gif" %}";
+        var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');
+        var notebook_id_for_url = "{{ notebook_id }}";
+    </script>
 
 {% endblock %}
 
@@ -128,78 +215,166 @@
 {% block modal %}
 
     <div id="addVizModal" class="modal fade row" role="dialog" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog">
+        <div class="modal-dialog" >
             <!-- Modal content-->
-            <div class="modal-content">
+            <div class="modal-content" style="height: 93vh">
                 <div class="modal-header text-center">
-{#                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>#}
-                    <h4 class="modal-title">Add a new visualisation to the service</h4>
-                </div>
-                <div class="modal-body">
-                    {# LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN #}
-                    {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
-                    <div id="query-variables-select-container" hidden></div>
-                    <div id="query-dimensions-select-container" hidden ></div>
 
-                    <ul class="nav nav-pills">
-                        <li class="active"><a data-toggle="pill" id="queryPill" href="#query">From Query</a></li>
-{#                        <li><a data-toggle="pill" id="dataframePill" href="#dataframe">From Dataframe</a></li>#}
-                    </ul>
+                </div>
+                <div class="modal-body" style="height: 80vh;">
                     <div class="tab-content">
-                        <div id="query" class="tab-pane fade in active">
-                            <div class="row text-left">
-                                <div id="load-viz-query-select-container">
-                                    <select id="load-viz-query-select" class="form-control " name="load-viz-query">
-                                        <option disabled selected>-- select one of the saved queries --</option>
-                                        {% for query in saved_queries %}
-                                            <option value="{{ query.id }}"
-                                                    data-query-id="{{ query.id }}">
-                                                {{ query.title }}
-                                            </option>
-                                        {% endfor %}
-                                    </select>
-                                    <div><a href="/queries/" id="new_query_link" style="color: #3b5998"> + or create a new query </a></div>
+                        <div class="text-center">
+                            <h4 class="modal-title">Add a new visualisation to the service</h4>
+                            <ul class="nav nav-pills">
+                              <li class="active"><a id="modal-tab-data" data-toggle="pill" href="#viz_widget">Visualization</a></li>
+                              <li><a id="modal-tab-dataframe" data-toggle="pill" href="#dataframe">Dataframe</a></li>
+                            </ul>
+                        </div>
+                        <div class="tab-pane fade in active" id="viz_widget">
+                            <div class="row">
+                                <div id="tour_input_select_data" class="text-left" id="model-button-row" style="display: inline">
+                                    <button type="button" id="select_data_popover" class="btn btn-lg btn-primary"
+                                            data-toggle="popover" title="Select your data" data-placement="right"
+                                    >Select data
+                                    </button>
                                 </div>
-                                <input type="hidden" id="selected_query" value="">
+
+                                <div style="display: inline; margin-left: 80px;">
+                                    <span><strong>Selected Query: </strong></span><span id="query_name_span" style="display: none;"></span>
+                                </div>
+
+
+                                <button type="button" id="select_viz_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select visualization type" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">2. Select visualisation
+                                </button>
+                                <button type="button" id="select_conf_popover" class="btn btn-lg btn-primary"
+                                        data-toggle="popover" title="Select your data" data-placement="bottom"
+                                        data-container="body" disabled style="display: none">3. Configure
+                                </button>
                             </div>
 
-                            <div class="row" id="viz_config" style="display: none;">
-                                <ul class="list-group collapse in col-sm-2" style="width: 15%">
-                                    {% for viz in available_viz %}
-                                        <li class="list-group-item viz_item" data-viz-type="{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>
-                                    {% endfor %}
-                                </ul>
-                                <div id="viz_container" class="col-sm-8" style="width: 85%">
+                            <div class="row" id="viz_config" >
 
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%; display: none">
+                                    {% for viz in available_viz %}
+                                        {% if viz.data_source == 'query' %}
+                                            <li class="list-group-item viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
+                                                <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
+                                                <span  class="glyphicon glyphicon-triangle-left selected_viz_span" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                </ul>
+                                <div id="visualisation_frame">
+                                    <div style="right: 25px; top:80px; z-index: 2; position: absolute; display: none;">
+                                        <button type="button" id="add_layer_btn" class="btn btn-primary btn-md" >SAVE LAYER  <i class="glyphicon glyphicon-plus "></i></button>
+                                    </div>
+                                    <div class="ui buttons" style="display: none; top:80px; position: absolute; z-index: 1; right: 190px; ">
+                                        <div id='layers-list' class="ui floating dropdown btn btn-secondary btn-md " tabindex="0">LAYERS
+                                          <i class="dropdown icon"></i>
+                                          <ul class="menu transition hidden unclickable" tabindex="-1"></ul>
+                                        </div>
+                                    </div>
+
+                                    <div hidden id="viz_container" class="col-sm-8" style="width: 85%; height: 690px">
+
+{#                                        <div id="loading_prebuilt" class="loadingFrame">#}
+{#                                            <img src="{% static 'img/loading_gif.gif' %}"/>#}
+{#                                        </div>#}
+
+                                    </div>
                                 </div>
+
+                            </div>
+
+{#                        LOAD ALL THE FORMS FOR EVERY VISUALIZATION AND KEEP IT HIDDEN#}
+                            {% include "dashboard_builder/config-visualization-form-fields-auto-load.html" %}
+
+                            <div id="query-variables-select-container" hidden>
+                                {% for query in saved_queries %}
+                                    <div id={{ query.id }}>
+                                        {% for el in query.document.from %}
+                                            {% for var in el.select %}
+                                                {% if var.exclude == False or var.exclude == ''%}
+                                                     {% if var.type == 'VALUE' %}
+                                                             <option value="{{ var.name }}" data-datatype="{{ var.datatype }}">{{ var.title }}</option>
+                                                     {% endif %}
+
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div id="query-dimensions-select-container" hidden >
+                                {% for query in saved_queries %}
+                                    <div id={{ query.id }}>
+                                        {% for el in query.document.from %}
+                                            {% for var in el.select %}
+                                                {% if var.exclude == False or var.exclude == ''%}
+                                                    {% if var.type != 'VALUE' %}
+                                                             <option value="{{ var.name }}" data-datatype="{{ var.datatype }}">{{ var.title }}</option>
+                                                     {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
 
-{#                        <div id="dataframe" class="tab-pane fade">#}
-{#                            <div class="row text-left">#}
-{#                                <label for="selected_dataframe">Dataframe name:</label>#}
-{#                                <input id="selected_dataframe" class="form-control" name="selected_dataframe">#}
-{#                                </input>#}
-{#                            </div>#}
-{##}
-{#                            <div class="row" id="viz_config" style="display: none;">#}
-{#                                <ul class="list-group collapse in col-sm-2" style="width: 15%">#}
-{#                                    {% for viz in available_viz %}#}
-{#                                        <li class="list-group-item viz_item" data-viz-id="{{ viz.id }}"><i class="fa fa-line-chart margin-right-1"></i>{{ viz.title }}</li>#}
-{#                                    {% endfor %}#}
-{#                                </ul>#}
-{#                                <div id="viz_container" class="col-sm-8" style="width: 85%">#}
-{##}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
+                        <div id="dataframe" class="tab-pane fade">
+                            <div class="row text-left">
+                                <label for="selected_dataframe">Dataframe name:</label>
+                                <input id="selected_dataframe" class="form-control" name="selected_dataframe">
+                                </input>
+                            </div>
+
+                            <div class="row" id="df_viz_config" style="position: relative; top: 30px;" >
+                                <ul class="list-group collapse in col-sm-2" style="width: 15%;  display: none" >
+                                {% for viz in available_viz %}
+                                        {% if viz.data_source == 'dataframe' %}
+                                            <li class="list-group-item df_viz_item" data-viz-type = "{{ viz.type }}" data-viz-id="{{ viz.id }}" data-viz-name="{{ viz.view_name}}" data-description="{{ viz.description }}" >
+                                                <i class="{{ viz.icon }}" style="margin-right:0.3vw"></i>{{ viz.title }}
+                                                <span  class="glyphicon glyphicon-triangle-left selected_viz_span" style="position: absolute;right: 5px;top:13.5px; display: none;"></span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                                <div id="df_visualisation_frame">
+                                    <div style="right: 55px; top:-60px; z-index: 2; position: absolute; display: none;">
+                                        <button type="button" id="df_add_layer_btn" class="btn btn-primary btn-md" >SAVE LAYER  <i class="glyphicon glyphicon-plus "></i></button>
+                                    </div>
+                                    <div class="ui buttons" style="display: none; top:-60px; position: absolute; z-index: 1; right: 205px; ">
+                                        <div id='df_layers-list' class="ui floating dropdown btn btn-secondary btn-md " tabindex="0">LAYERS
+                                          <i class="dropdown icon"></i>
+                                          <ul class="menu transition hidden unclickable" tabindex="-1"></ul>
+                                        </div>
+                                    </div>
+
+                                    <div  hidden id="df_viz_container" class="col-sm-8" style="width: 85%; height: 690px">
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    <div hidden id="dynamic_viz_addition"></div>
+                        <input type="hidden" id="selected_query" value="">
                     </div>
 
+
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="submit-query-btn">Add</button>
-                    <button type="button" class="btn btn-success"  data-dismiss="modal" id="submit-dataframe-btn" style="display: none;">Add</button>
-                    <button type="button" class="btn btn-default"  data-dismiss="modal" id="dismiss-modal-btn">Cancel</button>
+                <div class="modal-footer" >
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-modal-btn" style="display: none;">Add
+                    </button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="submit-df-btn" style="display: none">Add
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="dismiss-modal-btn">Cancel
+                    </button>
                 </div>
             </div>
         </div>
@@ -260,3 +435,5 @@
         </div>
     </div>
 {% endblock %}
+
+

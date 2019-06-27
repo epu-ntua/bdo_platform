@@ -54,5 +54,14 @@
     <script>
         var map = {{ map_id|safe }};
     </script>
+    <script>
+    $(document).ready(function () {
+        $('.leaflet-control-layers.leaflet-control').trigger('mouseenter');
+        $(".leaflet-control-layers-list .leaflet-control-layers-base label span").hide();
+        $(".leaflet-control-layers-list .leaflet-control-layers-base label div").hide();
+        $(".leaflet-control-layers-list .leaflet-control-layers-base label").append('<span style="display:block">Mapbox Layers</span>');
+    });
+
+    </script>
 
 {% endblock %}
