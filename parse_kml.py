@@ -147,6 +147,10 @@ def build_coord_map(coordinates):
     global max_lat
     global min_lat
     global min_lon
+    loc_max_lon = -180
+    loc_max_lat = -90
+    loc_min_lon = 180
+    loc_min_lat = 90
     for c in coordinates:
         coor_map = {}
         longitude, latitude = c.strip().split(',')
@@ -160,9 +164,24 @@ def build_coord_map(coordinates):
             max_lon = float(longitude)
         if float(longitude) < min_lon:
             min_lon = float(longitude)
+
+        if float(latitude) > loc_max_lat:
+            loc_max_lat = float(latitude)
+        if float(latitude) < loc_min_lat:
+            loc_min_lat = float(latitude)
+        if float(longitude) > loc_max_lon:
+            loc_max_lon = float(longitude)
+        if float(longitude) < loc_min_lon:
+            loc_min_lon = float(longitude)
         # coor_map['altitude'] = float(altitude)
         coor_list.append(coor_map)
     coord_map['coordinates'] = coor_list
+    limits = {}
+    limits['min_lat'] = loc_min_lat
+    limits['max_lat'] = loc_max_lat
+    limits['min_lon'] = loc_min_lon
+    limits['max_lon'] = loc_max_lon
+    coord_map['polygon_limits'] = limits
     return coord_map
 
 
@@ -188,7 +207,7 @@ def create_map_grid_zone(json_file_path, grid_file_path, multiplier):
     kml_filepath = json_file_path
     with open(kml_filepath) as json_kml_data:
         kml_data = json.load(json_kml_data)
-    file = open(grid_file_path, 'w')
+    # file = open(grid_file_path, 'w')
     # resolution in the form of a multiplier
     # max,min lat/lons of the area to be separated into a grid
     limits = kml_data['limits']
@@ -214,10 +233,10 @@ def create_map_grid_zone(json_file_path, grid_file_path, multiplier):
                 inner_polygons.append(inner_p)
             polygon['outer'] = outer_p
             polygon['inners'] = inner_polygons
-            polygon['min_lat'] = point['outer_boundary']['min_lat']
-            polygon['max_lat'] = point['outer_boundary']['max_lat']
-            polygon['min_lon'] = point['outer_boundary']['min_lon']
-            polygon['max_lon'] = point['outer_boundary']['max_lon']
+            polygon['min_lat'] = point['outer_boundary']['polygon_limits']['min_lat']
+            polygon['max_lat'] = point['outer_boundary']['polygon_limits']['max_lat']
+            polygon['min_lon'] = point['outer_boundary']['polygon_limits']['min_lon']
+            polygon['max_lon'] = point['outer_boundary']['polygon_limits']['max_lon']
             polygons.append(polygon)
     natura_grid = []
     lat_max = int(lat_dist*multiplier)
@@ -261,7 +280,7 @@ def create_map_grid_zone(json_file_path, grid_file_path, multiplier):
             else:
                 natura_grid_row.append(0)
         natura_grid.append(natura_grid_row)
-    file.close()
+    # file.close()
     dic = {}
     with open(grid_file_path + '.csv', 'w') as csvfile:
         writer = csv.writer(csvfile)
@@ -271,6 +290,8 @@ def create_map_grid_zone(json_file_path, grid_file_path, multiplier):
         dic['resolution'] = multiplier
         dic['min_lat'] = min_lat
         dic['min_lon'] = min_lon
+        dic['max_lon'] = max_lon
+        dic['max_lat'] = max_lat
         json.dump(dic, file, default=myconverter)
 
 

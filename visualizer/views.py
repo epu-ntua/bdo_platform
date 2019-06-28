@@ -3554,13 +3554,22 @@ def color_point_oil_spill(shapely_polygons, point_lat,point_lon):
             color = 'red'
     return color
 
-def color_point_oil_spill2(natura_table, point, resolution, min_lat, min_lon):
-    if len(natura_table) != 0:
+def color_point_oil_spill2(natura_tables, point, max_min_loc):
+    if len(natura_tables) != 0:
+        count = 0
+        for el in max_min_loc:
+            if point[1] > el['min_lon'] and point[1] < el['max_lon']:
+                table = natura_tables[count]
+                min_lat = el['min_lat']
+                min_lon = el['min_lon']
+                resolution = el['resolution']
+                break
+            count = count + 1
         try:
             x = int((point[0] - min_lat)*resolution)
             y = int((point[1] - min_lon)*resolution)
-            if (x>0) and (y>0):
-                if natura_table[x][y] == 1:
+            if (x > 0) and (y > 0):
+                if table[x][y] == 1:
                     return 'red'
             else:
                 pass
@@ -3783,10 +3792,7 @@ def map_markers_in_time_hcmr(request):
         if livy:
             data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
         else:
-            # toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=order_var, order_type='ASC')
-            # run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            # data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            # delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+
             data = []
             with open('visualizer/static/visualizer/files/' + data_file) as json_data:
                 data = json.load(json_data)
@@ -3802,36 +3808,34 @@ def map_markers_in_time_hcmr(request):
         m.fit_bounds([(min_lat - zoom_offset , min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
         # HCMR asked to remove the zoom according to the simulated oilspill. They need the output zoomed out.
 
-        # filtered_polygons = []
-        # simulation_frame = Polygon([(min_lat, min_lon), (max_lat,min_lon), (max_lat,max_lon),(min_lat,max_lon)])
-        # count_inters = 0
-        # for pol in shapely_polygons:
-        #     if simulation_frame.intersects(pol):
-        #         filtered_polygons.append(pol)
-        #         count_inters = count_inters + 1
-        # print 'intersects:' + str(count_inters)
         natura_table = []
         min_grid_lat = ''
         min_grid_lon = ''
         resolution = ''
         if natura_layer == "true":
-            # with open('visualizer/static/visualizer/files/'+ rp_file, 'r') as file:
-            #     line = file.readline()
-            #     # import pdb
-            #     # pdb.set_trace()
-            #     while line:
-            #         red_points.append((float(line.split(',')[0]), float(line.split(',')[1]), float(line.split(',')[2])))
-            #         line = file.readline()
-            #     file.close()
-            with open('visualizer/static/visualizer/files/natura_grid_fr.csv', 'r') as csvfile:
-                reader = csv.reader(csvfile)
-                natura_table = [[int(e) for e in r] for r in reader]
-                csvfile.close()
-            with open('visualizer/static/visualizer/files/natura_grid_info_fr', 'r') as file:
-                natura_info = json.load(file)
-            min_grid_lat = natura_info['min_lat']
-            min_grid_lon = natura_info['min_lon']
-            resolution = natura_info['resolution']
+            grid_files_list = []
+            grid_lat_lon_min_max_list = []
+            for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
+                if not filename.endswith(".csv"):
+                    with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
+                        natura_info = json.load(file)
+                    min_grid_lat = natura_info['min_lat']
+                    min_grid_lon = natura_info['min_lon']
+                    max_grid_lat = natura_info['max_lat']
+                    max_grid_lon = natura_info['max_lon']
+                    grid_polygon = Polygon([(max_grid_lat,min_grid_lon),(min_grid_lat,min_grid_lon), (min_grid_lat,max_grid_lon), (max_grid_lat,max_grid_lon)])
+                    spill_polygon = Polygon([(max_lat,min_lon),(min_lat,min_lon),(min_lat,max_lon),(max_lat,max_lon)])
+                    if grid_polygon.intersects(spill_polygon):
+                        grid_files_list.append(filename)
+                        grid_lat_lon_min_max_list.append(natura_info)
+
+            grid_tables = []
+            for grid_file in grid_files_list:
+                with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
+                    reader = csv.reader(csvfile)
+                    natura_table = [[int(e) for e in r] for r in reader]
+                    csvfile.close()
+                grid_tables.append(natura_table)
 
         import pytz
         timezone = pytz.utc
@@ -3848,7 +3852,7 @@ def map_markers_in_time_hcmr(request):
                     # "times": [str(d[order_var])],
                     "style": {
                         # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
-                        "color": color_point_oil_spill2(natura_table, (d[lat_col], d[lon_col], d['Status']), resolution, min_grid_lat, min_grid_lon),
+                        "color": color_point_oil_spill2(grid_tables, (d[lat_col], d[lon_col], d['Status']), grid_lat_lon_min_max_list),
                         # "color": "red"
                     }
                 }
