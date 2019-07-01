@@ -13,6 +13,8 @@ from bdo_main_app.models import Service
 def home(request):
     return render(request, 'bdoindex.html')
 
+def terms(request):
+    return render(request, 'terms.html')
 
 def exploretools(request):
     return render(request, 'explore.html')

@@ -6,6 +6,8 @@ import service_builder.views as sb_views
 urlpatterns = [
     # home & signup
     url('^$', views.home, name='home'),
+    # Terms of Usage
+    url('^terms/$', views.terms, name='terms'),
     url('^bdo/$', views.dataset_search, name='bdo'),
     url('^search/$', views.search, name='search'),
     url('^exploretools/$', views.exploretools, name='exploretools'),
@@ -30,4 +32,6 @@ urlpatterns = [
     url('^pilot/oil-spill-simulation/$', views.load_hcmr_service, name='wave-energy-pilot'),
     url('^pilot/fault-prediction-anek/$', views.load_anek_service, name='wave-energy-pilot'),
     url('^pilot/fault-prediction-fnk/$', views.load_fnk_service, name='wave-energy-pilot'),
+
+
 ]
