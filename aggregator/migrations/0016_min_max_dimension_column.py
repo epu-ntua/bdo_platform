@@ -119,5 +119,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(forwards)
+        # migrations.RunPython(forwards)
     ]

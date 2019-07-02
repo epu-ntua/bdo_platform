@@ -19,16 +19,16 @@ class Migration(migrations.Migration):
             field=models.CharField(default='table', max_length=200),
             preserve_default=False,
         ),
-        migrations.AddField(
-            model_name='dimension',
-            name='description',
-            field=models.TextField(null=True),
-        ),
-        migrations.AddField(
-            model_name='variable',
-            name='description',
-            field=models.TextField(null=True),
-        ),
+        # migrations.AddField(
+        #     model_name='dimension',
+        #     name='description',
+        #     field=models.TextField(null=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='variable',
+        #     name='description',
+        #     field=models.TextField(null=True),
+        # ),
         migrations.AlterField(
             model_name='dataset',
             name='references',

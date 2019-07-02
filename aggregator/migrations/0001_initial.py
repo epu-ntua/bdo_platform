@@ -36,6 +36,7 @@ class Migration(migrations.Migration):
                 ('max', models.FloatField(blank=True, default=None, null=True)),
                 ('step', models.FloatField(blank=True, default=None, null=True)),
                 ('axis', models.TextField()),
+                ('description', models.CharField(null=True, max_length=200))
             ],
             options={
                 'abstract': False,
@@ -53,6 +54,7 @@ class Migration(migrations.Migration):
                 ('cell_methods', django.contrib.postgres.fields.ArrayField(base_field=models.TextField(), size=None)),
                 ('type_of_analysis', models.TextField()),
                 ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='variables', to='aggregator.Dataset')),
+                ('description', models.CharField(null=True, max_length=200))
             ],
             options={
                 'abstract': False,
