@@ -236,6 +236,7 @@ function pageScroll() {
                 }
                 post_data_obj['title'] = $('#dashboard_title').val();
                 post_data_obj['private'] = $('input[name="private"]').is(':checked');
+                post_data_obj['can_be_shared'] = $('input[name="can_be_shared"]').is(':checked');
                 var post_data = encodeURIComponent(JSON.stringify(post_data_obj));
                 $.ajax({
                     "type": "POST",

@@ -116,6 +116,7 @@ $(function () {
         filters: [],
         common_dimensions: [],
         datasets: [],
+        dataset_names: [],
 
         // the Query Toolbox objects, only one is created
         objects: [],
@@ -415,7 +416,8 @@ $(function () {
                 var $table = $("#graph-data-table");
                 $table.find('thead').empty();
                 $table.find('tbody').empty();
-                $.ajax({
+                $("#cancel-query-btn").show();
+                var xhr = $.ajax({
                     url: '/queries/execute/',
                     type: 'POST',
                     data: {
@@ -423,6 +425,7 @@ $(function () {
                         csrfmiddlewaretoken: $('[name="csrfmiddlewaretoken"]').val()
                     },
                     success: function (response) {
+                        $("#cancel-query-btn").hide();
                         $('.no-data-message').hide();
                         $('#chartdiv').show();
                         $('#paginationDiv').show();
@@ -464,12 +467,17 @@ $(function () {
                         }
                     },
                     error: function (response) {
+                        $("#cancel-query-btn").hide();
                         hide_gif();
                         $('#chartdiv').hide();
                         $('#paginationDiv').hide();
                         $('.no-data-message').show();
                         alert('We are sorry, an error occurred.');
                     }
+                });
+                $("#cancel-query-btn").click(function () {
+                    xhr.abort();
+                    $(this).prop("onclick", null).off("click");
                 })
             };
 

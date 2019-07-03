@@ -858,6 +858,14 @@ $(document).ready(function () {
             else
                 message += " It may take 1-2 minutes, please wait.";
         }
+        else if(viz_request.indexOf("get_map_contour") > 0){
+            if (magnitude === "billion")
+                message += " The dataset used contains billions of rows. \nIt may take a few minutes, please wait.";
+            else if (magnitude === "million" && number_of_digits > 2)
+                message += " The dataset used contains hundreds of millions of rows. \nIt may take 1-2 minutes, please wait.";
+            else
+                message += " It may take 1-2 minutes, please wait.";
+        }
         else{
             message += " It will not take long.";
         }
