@@ -14,6 +14,10 @@ def home(request):
     return render(request, 'bdoindex.html')
 
 
+def documentation(request):
+    return render(request, 'documentation.html')
+
+
 def exploretools(request):
     return render(request, 'explore.html')
 

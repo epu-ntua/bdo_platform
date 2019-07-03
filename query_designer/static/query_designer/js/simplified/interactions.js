@@ -66,13 +66,16 @@ $(function() {
     function update_datasets_and_common_dimensions() {
         var all_dimensions = [], common_dimensions = [];
         var all_datasets = [];
+        var all_dataset_names = [];
         $.each(QueryToolbox.variables, function (_, v_obj) {
             $.each(v_obj.dimensions, function (_, d_obj) {
                  all_dimensions.push(d_obj.name);
             });
             all_datasets.push(v_obj.dataset_id);
+            all_dataset_names.push(v_obj.dataset_name.trim());
         });
         QueryToolbox.datasets = all_datasets.filter( onlyUnique );
+        QueryToolbox.dataset_names = all_dataset_names.filter( onlyUnique );
 
         all_dimensions = all_dimensions.filter( onlyUnique );
         common_dimensions = all_dimensions;
@@ -110,6 +113,7 @@ $(function() {
                 console.log('Joined Datasets');
             }
         }
+
         $.each(QueryToolbox.variables, function (_, variable) {
             included_vars.push(parseInt(variable.id));
         });
@@ -132,7 +136,8 @@ $(function() {
                     unit: newVariable.unit,
                     dimensions: newVariable.dimensions,
                     canDelete: true,
-                    dataset_id: newVariable.dataset_id
+                    dataset_id: newVariable.dataset_id,
+                    dataset_name: newVariable.dataset_name
                 });
 
                 // Select2 for the aggregation function
@@ -158,6 +163,7 @@ $(function() {
                     aggregate: $fieldset.find('.col-prefix').find("select").val(),
                     dimensions: newVariable.dimensions,
                     dataset_id: newVariable.dataset_id,
+                    dataset_name: newVariable.dataset_name,
                     dataset_size: newVariable.dataset_size,
                     dataset_lat_min: newVariable.dataset_lat_min,
                     dataset_lat_max: newVariable.dataset_lat_max,
@@ -171,6 +177,39 @@ $(function() {
 
 
         var common_dimensions = update_datasets_and_common_dimensions();
+
+
+        var hasGlobal = false;
+        $.each(QueryToolbox.dataset_names, function (idx, dataset) {
+           if(dataset.toLowerCase().indexOf("global") >= 0){
+               hasGlobal = true;
+           }
+        });
+        if(hasGlobal){
+            console.log('has global');
+            $("#mapchoices").val(1).trigger("change");
+
+
+            var start = new Date(parseInt(selection[0].dataset_time_min));
+            var end  = new Date(parseInt(selection[0].dataset_time_min) + 3600000);
+
+            var startpick = $('#startdatepicker').datetimepicker({
+                autoclose: true,
+                pickerPosition: 'top-left',
+            });
+            $('#startdatepicker').datetimepicker("update", start);
+            console.log('start date');
+            startdate = $('#startdatepicker input').val();
+
+            var endpick = $('#enddatepicker').datetimepicker({
+                autoclose: true,
+                pickerosition: 'top-left',
+            });
+            $('#enddatepicker').datetimepicker("update", end);
+            enddate = $('#enddatepicker input').val();
+            console.log('end date');
+        }
+
 
         $("#joined_dimensions_div").html("").addClass("hidden");
         if (joined_flag){
@@ -706,7 +745,7 @@ $(function() {
                 variable.aggregate = aggr;
             }
         });
-        $(this).select2();
+        // $(this).select2();
         // mark as unsaved
         QueryToolbox.tabMarker.currentUnsaved();
     });
@@ -824,25 +863,52 @@ $(function() {
     /* On run query btn click, execute the query and fetch results */
     $('body').on('click', '#run-query-btn', function () {
         if(QueryToolbox.datasets.length <= 2){
-            $('a[href="#dataDiv"]').trigger('click');
-            $("#viz_config .list-group").children().each(function () {
-                $(this).find("#selected_viz_span").hide();
+            var hasGlobal = false;
+            $.each(QueryToolbox.dataset_names, function (idx, dataset) {
+               if(dataset.toLowerCase().indexOf("global") >= 0){
+                   hasGlobal = true;
+               }
             });
+            if(hasGlobal  && startdate === null && enddate === null && bounds[0] === -90 && bounds[1] === -180 && bounds[2] === 90 && bounds[3] === 180) {
+                var r = confirm("You are trying to query a very large dataset with global measurements. \n" +
+                    "This operation requires some time and it is recommended to filter your selection on space and time. \n" +
+                    "Do you want to filter your query to a smaller area for faster results?");
+                if (r == true) {
+                    $("#chart-sidebar #chart-control-list .nav-pills li").eq(1).find('a').click();
 
-            var message = decide_message();
-            $(".outputLoadImg #loading_message").html(message);
+                    setTimeout(function () {
+                        $("#mappreview").click();
+                    }, 1000);
 
-            $(".outputLoadImg").hide();
-            $(".outputLoadImg").delay(100).show();
-
-            updated_available_visualisations();
-
-            QueryToolbox.fetchQueryData();
+                } else {
+                    proceed_to_execute();
+                }
+            }
+            else{
+                proceed_to_execute();
+            }
         }
         else{
             alert("You have selected variables from more than two different datasets. Please update your selection.");
         }
     });
+
+    function proceed_to_execute(){
+        $('a[href="#dataDiv"]').trigger('click');
+        $("#viz_config .list-group").children().each(function () {
+            $(this).find("#selected_viz_span").hide();
+        });
+
+        var message = decide_message();
+        $(".outputLoadImg #loading_message").html(message);
+
+        $(".outputLoadImg").hide();
+        $(".outputLoadImg").delay(100).show();
+
+        updated_available_visualisations();
+
+        QueryToolbox.fetchQueryData();
+    }
 
     /* On next page btn click, increase the offset and execute the query to fetch results */
     $('body').on('click', '#dataNextBtn', function () {

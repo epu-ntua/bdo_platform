@@ -1,10 +1,10 @@
 {
   "visualiser":{
     "line_chart_am":{
-      "limit":600
+      "limit":2000
     },
     "column_chart_am":{
-      "limit":500
+      "limit":2000
     },
     "pie_chart_am":{
       "limit":20
@@ -28,11 +28,11 @@
     },
     "map_contour":{
       "limit":50,
-      "default_contours":20
+      "default_contours":50
     },
     "map_heatmap":{
       "limit":50000,
-      "default_points":100
+      "default_points":1000
     },
     "map_markers_grid":{
       "limit":1000,

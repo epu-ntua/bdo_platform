@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+    <style>
+        p{
+            margin-top: 30px;
+        }
+        h3{
+            margin-top: 0;
+        }
+        img{
+            box-shadow: 1px 1px 3px #797979;
+            max-width: 100%;
+            margin-bottom: 30px;
+        }
+        .nav-pills>li {
+            float: none;
+            display: block;
+            margin: 15px 0px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2 style="text-align: center;">BDO DOCUMENTATION</h2>
+    <div style="text-align: center; background-color: #e8e8e8;" class="col-sm-2">
+        <ul class="nav nav-pills" style="width: 80%; margin: 0 10%; text-align: center;">
+            <li class="active"><a data-toggle="pill" href="#menu1">Home & BDO Datasets</a></li>
+            <li><a data-toggle="pill" href="#menu3">Creating Queries</a></li>
+            <li><a data-toggle="pill" href="#menu4">Creating Dashboards</a></li>
+            <li><a data-toggle="pill" href="#menu5">Creating Analytical Services</a></li>
+            <li><a data-toggle="pill" href="#menu6">Applications & Dashboards</a></li>
+            <li><a data-toggle="pill" href="#menu7">Requests</a></li>
+            <li><a data-toggle="pill" href="#menu7">Controlling Access</a></li>
+            <li><a data-toggle="pill" href="#menu2">User Profile</a></li>
+        </ul>
+    </div>
+    <div class="tab-content col-sm-9" style="">
+        <div id="menu1" class="tab-pane fade in active">
+            <h3>Home & BDO Datasets</h3>
+            <p>After the login, the user is directed into the home page of the platform. Here, there are several choices for the user. Specifically, the user can navigate to the BDO Datasets by using the search bar in the centre of the page, use the Query Designer Tool using the “Explore and Create” link or see the available applications and dashboards by clicking on the corresponding link on the top left.</p>
+            <div style="width: 100%; text-align: center;">
+                <img src="{% static '/img/documentation/home_page.png' %}" style="max-height: 40vh;"/>
+            </div>
+            <p>When using the search bar to navigate to the datasets, the user can see aggregated information for every one of them and use the filters on the left side of the page to find the datasets of his interest.</p>
+            <p>The interface allows filtering by a dataset’s title, its variables, its publisher, its observation type and its license as well as its privacy status, whether it contains time or depth information and if it is being updated and by using its spatial and temporal coverage. The user can also choose the category of the datasets he is interested in, to limit the results of his search or apply a sorting to them. All the datasets that are relevant to the user’s search are displayed on the screen carrying the most basic information about them such as: title, a short description, source, size, category and privacy status.</p>
+            <div style="width: 100%; text-align: center;">
+              <img src="{% static '/img/documentation/datasets_overview.png' %}" style="max-height: 40vh;"/>
+            </div>
+            <p>The user can see more information about a dataset by clicking on it. The popup that appears contains more details regarding the chosen dataset.</p>
+            <div style="width: 100%; text-align: center;">
+              <img src="{% static '/img/documentation/dataset_popup.png' %}" style="max-height: 40vh;"/>
+            </div>
+            <p>Still, if the user wants to find out more about the dataset, the user can click on the “VIEW MORE” button. A page has been created for displaying the detailed information for each dataset, along with a short preview of its data (5 rows from the database table).</p>
+            <div style="width: 100%; text-align: center;">
+              <img src="{% static '/img/documentation/view_sample_data.png' %}" style="max-height: 40vh;"/>
+            </div>
+            <p>Alternatively, the user can see all the available metadata of the dataset, such as the publisher, license, spatial/ temporal coverage, observation type and more.</p>
+            <div style="width: 100%; text-align: center;">
+              <img src="{% static '/img/documentation/dataset_metadata.png' %}" style="max-height: 40vh;"/>
+            </div>
+            <p>Information about the variables stored in each dataset is also available.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/variables_info.png' %}" style="max-height: 40vh;"/>
+            </div>
+            <p>In the case of a private dataset, a user can see that this dataset is available through the platform, but he/she cannot preview its data. However, he/she can view information about it and create an access request to its owner.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/private_dataset.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+        </div>
+        <div id="menu2" class="tab-pane fade">
+            <h3>User Profile</h3>
+            <p> At the right side of the navigation bar, the user can follow a link to view and edit his profile information.
+                The basic information of the user’s profile is displayed here, with the option to edit it. At this page, the user can provide more information about his own profile, such as the organisation the user is associated with, the user’s business role and more.
+            </p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/profile_link.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/profile.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/profile_edit.png' %}" style="max-height: 90vh; max-width: 100%;"/>
+            </div>
+        </div>
+        <div id="menu3" class="tab-pane fade">
+            <h3>Query Designer</h3>
+            <p>Through the query designer’s environment, the user can explore the available datasets of the platform. This environment is offered by
+                the Query Designer component and utilises the Query Execution service for retrieving the stored data, the Visualisation Generation
+                service to create visualisations using these data and the Access Control service to resolve the access to each queried dataset. The
+                user is provided with tools to create custom queries, through an intuitive graphical interface, without writing any SQL, but at the
+                same time, having rich expressive capabilities. The execution of the created queries is performed by utilising the back-end service
+                of the query execution. The layout of the Query Designer environment has been updated, in order to be more user-friendly and easy-to-use.
+                At the left panel, that contains the selections for the query, three main tabs have been created. The “VARIABLES” tab contains the list
+                of the variables that are included at the query, with information about their related dimensions (i.e. latitude, longitude, time, depth, etc.),
+                the dataset to which they belong and the aggregate function that can be applied, if any. At the “FILTERS” tab the user can define all the
+                desired filters to narrow down the query results, based on space, time and every other field of the query. Finally, the “OPERATIONS” tab
+                contains some extra operations that can applied on the query, like ordering, grouping and defining different spatial or temporal
+                resolutions.
+            </p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/QD.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>At the beginning, the user is prompted to select a dataset to query, from the list of all available datasets shown in the second column of the following figure.</p>
+            <p>If a user is looking for a particular dataset, he/she can use the “Search in title” filter of the first column of ‘Select Data’ page. Furthermore, the user can search datasets by variable or publisher using the related dropdown lists from the filters section. Additionally, the user can filter datasets with time or depth information using the related checkboxes. More options have been made available since the previous version, like the ability to see only updating datasets, sort them by different fields and also filter them based on their spatial and temporal coverage. The figure below shows an indicative case in which the user used some of these filters.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/select_dataset.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p>By clicking on a dataset, a list of its variables is displayed for the user to select from. The datasets that are displayed on the screen are the public ones, those that belong to the user and the ones he has been granted access to. Moreover, by clicking on the ‘Dimensions’ button, the dimensions of the dataset are displayed. The user can select one or more variables by clicking on them and add them to the query he is creating.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/select_variables.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>At the dataset selection window, there are additional information for each of the displayed datasets, such as metadata (at the “INFO” tab) and the new “COVERAGE” tab that contains coverage information and has been included at this version.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/metadata_and_coverage.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>After performing the selection of the dataset to be used and the variables to be queried, this information is passed to the main Query Designer environment. In order to better guide the users for using the tool, a set of popovers are displayed that provide them with information about the abilities offered by it or how to perform some actions, like running the created query, or selecting more variables.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/variables_selected.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>The created query execution is triggered by clicking the “RUN” button. Then, according to the user selections in the Query Designer’s environment, a suitable JSON document that describes the query is generated. This JSON document is translated into the proper SQL query, which is executed by the back-end service. After the execution is finished, the raw result data are listed. On the left panel the user can see the queried variables and on the right side the user can browse the data using the “NEXT” and “PREVIOUS” buttons. In the case of performing a query that combines variables from different datasets, there is a possibility that the two datasets do not match on their dimensions, like space and time. This may result in the very time-consuming process of examining the whole Cartesian product of the datasets. In order to avoid this, before the actual execution, an initial check is performed on the metadata of the datasets and the user is informed with a message about whether the query can be executed or not.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/query_results.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>In the “CHART” tab of the right panel, there is a list of all the available visualisation types in the platform. The user can click on an item in order to see a form that guides him to configure as he desires the specific visualisation (i.e. select the axes variables). The visualisation configuration fields have been updated and an adjustment has been made for some visualisations that must accept only numerical fields of the query, by utilising the available metadata of the variables. Moreover, the items on the visualisation list are being automatically enabled or disabled, depending on the fields of the query results. For example if the query results do not contain information about latitude and longitude, the map visualisations are being disabled.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/viz_config_QD.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p>The user selection is then translated into a proper request to the platform. For the generation of the requested visualisation the respective back-end service related to the visualisations of the platform is called with that request. After a while, the final visualisation is created and displayed to the user, who can browse the values of the chart, annotate or download the visualisation as an image. The user can then either choose to replace the visualisation with a new one or add it into a new dashboard in order to create a report.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/created_visaualisation_QD.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p>At the “FILTER” panel for the query configuration, the user can limit the requested data based on space and time, or define some more filters on the other fields of the query. For filtering on space, the user is able to choose the geographical area of his query using a set of predefined options in a dropdown list, or manually adjust the minimum/maximum values for latitude and longitude through four input fields.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/spatial_filtering.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <p>Moreover, the spatial filtering can be performed using a map and manually selecting the desired area through a drag-and-drop boundary box. This tool has been changed since the last version, with a view to improving the user’s experience when selecting spatial coverage.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/filter_on_map.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <p>For temporal filtering, the desired time period of the query can be selected using a calendar-like datetime picker, which guides the user to select the starting/ ending date and time of the query.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/temporal_filter.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <p>Custom filters to the different variables and dimensions of a query can also be defined by selecting the field/ column that will be filtered, the operand and the respective value.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/variable_filter.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <p>At the “OPERATIONS” tab, the user can define some more actions on the created query, like for example sorting the query results based on a specific field/ column or define a group by statement.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/operations_tab.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <p>For the harmonisation of the query data and in order to assist the combination of multiple datasets based on space and time, even if they have different spatial and temporal resolution, the user can select the desired resolution to be used for the query. For example, the user can either choose to group the results at minute or hour level and at a specific latitude and longitude degrees.</p>
+            <p>The use of these fields is very important when trying to combine different datasets. Without the use of defined resolutions, the query that will be executed will try to find exact matches on the joined fields, like latitude, longitude and time. This can often lead to very time-demanding operations and can also result in failing to combine datasets that concern the same geographical area and time period, but do not have exact matches on their values about space and time.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/resolutions.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <p>While building a query, the user has the ability to clear his/her selection by clicking the “New” button and create a brand new query. If the user wants to make his/her query available for a future use in the Query Designer, or for creating dashboards and services, the user can save it and provide a name for it. Moreover, a new addition to the platform is that the user can also view and load the already saved queries by clicking the “Open” button.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/saved_queries_dialog.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+        </div>
+
+        <div id="menu4" class="tab-pane fade">
+            <h3>Dashboard Builder</h3>
+            <p>The Dashboard Builder is an environment that provides to the user the ability to create a custom dashboard/ report by adding multiple widgets with visualisations, images, tables and text into a single place, which can be accessed later by the specific user or others.</p>
+
+            <p>A dashboard can be either public or private. In the case of a private dashboard, access to view and edit it has only its owner (the user who built it) or any other logged-in user to which the owner has granted access.</p>
+
+            <p>In order to add a visualisation widget into the dashboard, an interface like the one presented in the Query Designer is displayed, where the user is prompted to select the data (one of the already saved queries) that he/she wants to use for the visualisation, the visualisation type and provide the custom configuration. Then a proper request is created, which can be handled by the back-end service of the visualisation generation. The visualisation that is created is then presented to the user to preview it and add it to the dashboard.</p>
+
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/visualisation_widget.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>In addition, the user has the option to include in the dashboard custom notes, text, images, tables and other elements using a WYSIWYG editor.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/note_widget.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>The environment allows putting multiple layers on the same map for creating dynamically a multilayer map visualisation. The user can select data and create a map visualisation, save it as a layer by pressing a button and then move on creating more layers by repeating the same steps. The preview allows the user to see all the layers on the same map, delete any of them if he doesn’t need it as well as hide or show them. Each layer can be created using a different query which makes this feature extremely useful and results in a meaningful multilayer representation. Once the creation of the multilayer visualisation is completed, it can be added to the dashboard. </p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/saving_layer.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/multilayer.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p>After multiple widgets are included in the newly created dashboard, the user can resize each widget separately, change the layout and the position of each widget and also provide custom titles in the widget and the whole dashboard.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/dashboard.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>When the user is satisfied with the dashboard he created, he/she can save it by pressing the “Save Dashboard” button. A notification pops up on the top right of the screen verifying the dashboard has been stored and containing a link to view the saved dashboard.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/dashboard_save.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p>By pressing on the link, the user can view the created dashboard and edit it if he/she wishes, by pressing the “Edit Dashboard” Button. The user is navigated to the Edit Dashboard interface, where he can edit the existing elements of the dashboard or add new widgets.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/dashboard_view.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>The dashboard can also be deleted by pressing the red “Delete” button on the right. A window pops up asking for confirmation. Once the user presses the “Delete” button again, the dashboard is deleted and no longer available.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/dashboard_delete.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>The dashboard viewing interface also gives the ability to share a created dashboard by pressing the green “Share” button on the left. A window appears on the screen. The owner of the dashboard can fill in the username or email of another user to whom he wishes to share the dashboard and give editing rights.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/dashboard_share.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+        </div>
+
+        <div id="menu5" class="tab-pane fade">
+            <h3>Service/Analytics Builder</h3>
+            <p>The Service/Analytics Builder is the environment that provides the functionality of creating a new analytical service on top of the BigDataOcean platform. </p>
+
+            <p>The first step of the service building process is the selection of the different queries that will be used in the context of the service. The user can select one of the already saved queries or create a new one through the Query Designer and then add it to the service. The selected queries are gathered in a table in the “queries” tab and can be later used for analysis or to create visualisations.</p>
+
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/queries_selection.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>The second step is the definition of the arguments that will be exposed to the service end-user, in order to parameterise the service. The service arguments are divided into two categories. First, the filter arguments are arguments that are connected to the filters of the selected queries and can be parameterised by the user in order the queries to return different values based on the user input. The definition of a filter argument is made by selecting one of the available filters that are present in the selected queries and then, define the type of the argument (e.g. Integer), its name, its title which is the name of the argument that will be displayed to the end-user, the default value and a short description.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/query_arguments_selection.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>The algorithm’s arguments are exposed to the end-user and their values can be obtained in the service code using a dictionary. This dictionary contains the values of all these arguments, which can be used in the code in order to customise the algorithm. A new algorithm argument can be created by providing its title, name, description, type and a default value.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/algorithm_arguments_selection.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p>The two types of arguments are gathered in two respective tables, where the ability is given to the user to edit or delete them.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/select_arguments.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p>The third step of the service creation process is the creation of the service code. For this, an Apache Zeppelin Notebook is provided to the end-user, in order to write the custom code of the service.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/service_code.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>At this tab, the platform gives to the service provider the ability to load data into a Spark Dataframe using one of the available queries and then use this Dataframe in the code. This assists the service provider, as the user does not have to deal with the data loading process and the user does not need to know the underlying data model.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/load_dataframes.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>The final step is the definition of the service output. The output is the interface that will be displayed to the end-user when the user accesses the service. The output definition is performed by writing the required code (HTML, CSS, and JavaScript) of the interface. In order to support the service provider, the user has the option to load a predefined service template, which auto-fills the respective fields, which can then be tweaked.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/service_output.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>The service builder also gives the ability to directly load a new visualisation into the service output. The visualisation can be generated using either data from a service query, or from a Dataframe that is present at the service code. The user may select the visualisation type to be added, provide the required configuration, preview it and then, add it to the code of the service output.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/service_visualisations.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+            <p>At the last tab, the newly created service can be previewed. The output has two sections, the configuration and the results. At the first section, a form is displayed that is dynamically generated from the already defined service arguments. Each input field of the form is adjusted according to the type of the respective argument (e.g. if the argument’s type is Date, a datetime picker is created to assist the end-user). By clicking the submit button the arguments are collected and the service code is executed according to the input. The results section contains all the output of the service and it is displayed after the execution and the included visualisations. Finally, the user can provide the required information and terms of the service (i.e. the title, price, etc.) and then publish it.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/service_preview.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+        </div>
+
+
+        <div id="menu6" class="tab-pane fade">
+            <h3>Applications & Dashboards</h3>
+            <p>All the available services and the created dashboards of the BigDataOcean platform are gathered in the “Applications & Dashboards” page. At this page the user can see some information and a short description for each service and the user can choose to view one of them. Three tabs are available that include the five pilot applications and the services and dashboards of the current user.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/applications_and_dashboards.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+        </div>
+
+
+        <div id="menu7" class="tab-pane fade">
+            <h3>Requests</h3>
+            <p></p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/applications_and_dashboards.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+        </div>
+
+        <div id="menu8" class="tab-pane fade">
+            <h3>Controlling Access</h3>
+            <p></p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/applications_and_dashboards.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+{% endblock %}

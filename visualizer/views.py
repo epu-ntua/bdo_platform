@@ -3239,9 +3239,23 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
                 # s['aggregate'] = ''   commented out this in order to get values when join on lat/lon (otherwise join on does not have agg)
                 s['groupBy'] = False
                 s['exclude'] = True
+    desc = False
     if ordering == True:
         if x_flag == True:
-            doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+            order_index = -1
+            try:
+                order_index = [x['name'] for x in doc['orderings']].index(x_var)
+            except ValueError:
+                order_index = -1
+            if order_index >= 0:
+                if doc['orderings'][order_index]['type'] == 'ASC':
+                    desc = False
+                else:
+                    desc = True
+            else:
+                doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+                desc = False
+
         else:
             raise ValueError('-Variable or Dimension for the X-Axis of Line-Charts and Column-Charts is needed.\n-Variable or Dimension for creating the sub-groups of the Pie-Chart is needed.')
     try:
@@ -3252,7 +3266,7 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
     except:
         pass
     query.document = doc
-    return query
+    return query, desc
 
 def load_modify_query_aggregate(query_pk, var, agg_function):
     query = AbstractQuery.objects.get(pk=query_pk)
@@ -3302,9 +3316,22 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
                 # s['aggregate'] = ''
                 s['groupBy'] = False
                 s['exclude'] = True
+    desc = False
     if ordering == True:
         if x_flag == True:
-            doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+            time_index = -1
+            try:
+                time_index = [x['name'].split('_', 1)[1] for x in doc['orderings']].index('time')
+            except ValueError:
+                time_index = -1
+            if time_index >= 0:
+                if doc['orderings'][time_index]['type'] == 'ASC':
+                    desc = False
+                else:
+                    desc = True
+            else:
+                doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+                desc = False
         else:
             raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     try:
@@ -3314,7 +3341,7 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
     except:
         pass
     query.document = doc
-    return query, order_var, min_period
+    return query, order_var, min_period, desc
 
 
 def get_chart_query_data(query, x_var, y_var_list):
@@ -3424,10 +3451,12 @@ def get_line_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             if limit == 'True':
-                query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, True)
+                query, desc = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, True)
             else:
-                query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
+                query, desc = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
+            if desc:
+                json_data = list(reversed(json_data))
             x_var_title = x_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
                 try:
@@ -3477,8 +3506,10 @@ def get_time_series_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
+            query, order_var, min_period, desc = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
+            if desc:
+                json_data = list(reversed(json_data))
             min_chart_period = chart_min_period_finder(min_period)
             x_var_title = x_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
@@ -3519,7 +3550,7 @@ def get_column_chart_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
+            query, _ = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
             x_var_title = x_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
@@ -3559,7 +3590,7 @@ def get_pie_chart_am(request):
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
+            query, _ = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
             key_var_title = key_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
