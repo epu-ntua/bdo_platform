@@ -22,7 +22,9 @@
                 {% if redirect_field_value %}
                     <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
                 {% endif %}
+
                 <button class="btn btn-success" type="submit">{% trans "Sign Up" %}</button>
+             <p>By signing up you agree to the BigDataOcean platform <a class="o-blue" href="/terms" target="_blank" style="text-decoration:underline">terms and conditions.</a></p>
             </form>
         </div>
     </div>
