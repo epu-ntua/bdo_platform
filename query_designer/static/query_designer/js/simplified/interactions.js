@@ -872,7 +872,7 @@ $(function() {
             if(hasGlobal  && startdate === null && enddate === null && bounds[0] === -90 && bounds[1] === -180 && bounds[2] === 90 && bounds[3] === 180) {
                 var r = confirm("You are trying to query a very large dataset with global measurements. \n" +
                     "This operation requires some time and it is recommended to filter your selection on space and time. \n" +
-                    "Do you want to filter your query to a smaller area for faster results?");
+                    "Do you want to filter your query to a smaller area for faster results before the execution?");
                 if (r == true) {
                     $("#chart-sidebar #chart-control-list .nav-pills li").eq(1).find('a').click();
 
