@@ -469,9 +469,8 @@ def process(request, exec_instance):
             for el in valid_points:
                 oil_spill_start = oil_spill_start + 'start_lat'+str(v_count)+'='+ str(el[0]) + '&start_lon'+str(v_count)+'='+ str(el[1])+'&'
                 v_count = v_count +1
-            visualization_url = "http://" + request.META[
-                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?"+oil_spill_start+"markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer + "&time_interval=" + time_interval + "&valid_points="+ str(len(valid_points))
-            visualization_url = "http://" + request.META['HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?"+oil_spill_start \
+            visualization_url = "https://" + request.META['HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" \
+                                + "?"+oil_spill_start \
                                 + "&markerType=circle&lat_col=Lat&lon_col=Lon" \
                                 + "&data_file=" + hcmr_data_filename + "&red_points_file=" \
                                 + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer \

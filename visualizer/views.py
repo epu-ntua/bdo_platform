@@ -624,9 +624,9 @@ def load_modify_query_contours(agg_function, query_pk, round_num, variable):
 def create_map():
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+    attr_str = 'Map data &copy;<a href="https://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+               'Imagery \u00A9 <a href="https://mapbox.com">Mapbox</a>'
     location = [0, 0]
     zoom_start = 2
     max_zoom = 30
@@ -1946,9 +1946,9 @@ def map_course_mt(request):
 
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+    attr_str = 'Map data &copy;<a href="https://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+               'Imagery \u00A9 <a href="https://mapbox.com">Mapbox</a>'
     if len(data1) > 0:
         min_lat = float(min(data1, key=lambda x: x[lat_index])[lat_index])
         max_lat = float(max(data1, key=lambda x: x[lat_index])[lat_index])
@@ -2146,9 +2146,9 @@ def map_course_mt(request):
 def map_markers_in_time(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+    attr_str = 'Map data &copy;<a href="https://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+               'Imagery \u00A9 <a href="https://mapbox.com">Mapbox</a>'
     location = [0, 0]
     zoom_start = 2
     max_zoom = 30
@@ -2444,9 +2444,9 @@ def map_viz_folium_heatmap_time(request):
 
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+    attr_str = 'Map data &copy;<a href="https://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+               'Imagery \u00A9 <a href="https://mapbox.com">Mapbox</a>'
     location = [0, 0]
     zoom_start = 2
     max_zoom = 13
@@ -4595,9 +4595,9 @@ def map_script(htmlmappath):
 def map_viz_folium(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+    attr_str = 'Map data &copy;<a href="https://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+               'Imagery \u00A9 <a href="https://mapbox.com">Mapbox</a>'
     location = [0, 0]
     zoom_start = 2
     max_zoom = 30
@@ -5039,9 +5039,9 @@ def get_presto_cursor():
 def map_viz_folium_heatmap(request):
     tiles_str = 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token='
     token_str = 'pk.eyJ1IjoiZ3RzYXBlbGFzIiwiYSI6ImNqOWgwdGR4NTBrMmwycXMydG4wNmJ5cmMifQ.laN_ZaDUkn3ktC7VD0FUqQ'
-    attr_str = 'Map data &copy;<a href="http://openstreetmap.org">OpenStreetMap</a>contributors, ' \
+    attr_str = 'Map data &copy;<a href="https://openstreetmap.org">OpenStreetMap</a>contributors, ' \
                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' \
-               'Imagery \u00A9 <a href="http://mapbox.com">Mapbox</a>'
+               'Imagery \u00A9 <a href="https://mapbox.com">Mapbox</a>'
     location = [0, 0]
     zoom_start = 2
     max_zoom = 13
