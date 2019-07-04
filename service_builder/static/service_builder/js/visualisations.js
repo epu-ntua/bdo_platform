@@ -355,7 +355,8 @@ $(document).ready(function () {
 
     $("#addVizModal #submit-query-btn").click(function () {
         $('#query #viz_container iframe').appendTo('#dynamic_dashboard');
-        html_editor.replaceRange('\n<div id="viz_container"><div class="loadingFrame"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
+        html_editor.replaceRange('\n<div id="viz_container"><div class="loadingFrame"><img' +
+            ' src="https://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
         html_editor.refresh();
         viz_request = "";
         $('#query #addVizModal #viz_container').empty();
