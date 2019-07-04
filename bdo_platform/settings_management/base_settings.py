@@ -116,6 +116,7 @@ MIDDLEWARE_CLASSES = [
 
 LOGIN_EXEMPT_URLS = (
     r'^$',
+	r'^terms/$',
     r'^about$',
     r'^register$',
     r'^accounts/',
