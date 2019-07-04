@@ -1188,7 +1188,8 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
             mappath = cached_data['image_path'].encode('ascii')
             legpath = cached_data['leg_path'].encode('ascii')
             data_grid = cached_data['data_grid']
-            data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
+            # data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
+            has_data = True
         if has_data:
             print viz.id + lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, max_lat, max_lon, min_lat, min_lon
             mapname = create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
