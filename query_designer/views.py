@@ -96,6 +96,8 @@ def clean(request, pk=None):
     date_now = datetime.now()
     time_end_timestamp = max([d.temporalCoverageEndTimestamp for d in Dataset.objects.all() if d.temporalCoverageEndTimestamp != ""] + [long(time.mktime(date_now.timetuple())) * 1000])
 
+    dataset_list = dataset_list.order_by('order', 'title')
+
     try:
         with open('visualizer/static/visualizer/visualisations_settings.json') as f:
             conf_viz_json = json.dumps(json.load(f))

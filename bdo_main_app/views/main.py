@@ -30,7 +30,7 @@ def dataset_search(request):
         data_on_top = request.GET.get('data-on-top')
 
     storage_target = 'UBITECH_PRESTO'
-    dataset_list = Dataset.objects.filter(stored_at=storage_target).exclude(variables=None)
+    dataset_list = Dataset.objects.filter(stored_at=storage_target).exclude(variables=None).order_by('order', 'title')
     # organization_list = Organization.objects.all()
     organization_list = sorted(set([d.publisher for d in dataset_list]))
     observation_list = sorted(set([d.observations for d in dataset_list]))
