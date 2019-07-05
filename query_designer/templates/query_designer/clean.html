@@ -19,7 +19,7 @@
     <link href="{% static "query_designer/css/data-modal.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
-    <link href="{% static 'query_designer/js/handsontable/handsontable.full.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
+{#    <link href="{% static 'query_designer/js/handsontable/handsontable.full.min.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">#}
 
     <link href="{% static 'query_designer/css/formulas.css' %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
 
@@ -229,8 +229,7 @@
                                     <div class="no-data-message">{% trans 'No data available' %}</div>
                                     <div class="outputLoadImg" style="display: none">
                                         <h4 id="loading_message" style="text-align: center; white-space: pre-line;"></h4>
-                                        <img src="https://assets.motherjones
-                                        .com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>
+                                        <img src="/static/img/loading_gif.gif"/>
                                     </div>
                                     <table id="graph-data-table" class="table">
                                         <thead></thead>

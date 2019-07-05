@@ -309,6 +309,9 @@ class Variable(BaseVariable):
     # {min, 10%, 25%, 50%, 75%, 90%, max}
     distribution = ArrayField(FloatField(), size=7, blank=True, null=True, default=None)
 
+    class Meta:
+        ordering = ['title']
+
     def __unicode__(self):
         return u'%s' % self.title
 

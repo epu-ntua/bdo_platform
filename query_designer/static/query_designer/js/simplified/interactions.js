@@ -1202,6 +1202,7 @@ function reset(){
         $('#id_category > option').remove();
         $('#id_orderby > option').remove();
         $('#resetMapBounds').click();
+        $('#resetDates').click();
         $('#chart-filters > .filter').remove();
         QueryToolbox.objects[0].queryId = null;
         $('#chart-name input').val('').trigger('change');
