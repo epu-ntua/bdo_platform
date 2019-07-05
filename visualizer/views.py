@@ -190,7 +190,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
                 order_var = s['name']
                 s['groupBy'] = True
                 if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_hour'
+                    s['aggregate'] = 'date_trunc_minute'
                 time_flag = True
             elif s['name'] == color_col and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -1675,7 +1675,7 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
 
 def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, var_unt, agg_function, lat_col, lon_col, time_col, color_col, use_color_col, m, request,cached_file):
     dic = {}
-
+    color_col = 'i0_' + str(vessel_column)
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_column, vessel_id, color_col, agg_function, use_color_col)
@@ -1721,7 +1721,8 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vesse
 def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_index, m, time_index, var_index,
                                 var_title, var_unit, vessel_id):
     vessel_titles = [el.encode('ascii') for el in vessel_id]
-    pol_group_layer = folium.map.FeatureGroup(name='Visualization: Markers - Vessel Course -- Layer : ' + str(time.time()).replace(".","_") + ' -- Ship ID(s): ' + str(vessel_titles),
+    marker_pol_group_layer = folium.map.FeatureGroup(name='Visualization: Markers - Vessel Course -- Layer : ' + str(
+        time.time()).replace(".","_") + ' -- Ship ID(s): ' + str(vessel_titles),
                                               overlay=True,
                                               control=True).add_to(m)
     color_dict = dict()
@@ -1730,15 +1731,31 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
     max_lat = -90
     min_lon = 180
     max_lon = -180
+    polygon_list = []
+    feat_group_list = []
+    vessel_list = []
     for d in data:
         if color_col != '':
             if d[color_index] not in color_dict.keys():
                 if color_cnt < len(FOLIUM_COLORS):
-                    color_dict[d[color_index]] = FOLIUM_COLORS[color_cnt]
+                    vessel_dic = dict()
+                    vessel_dic['color'] = FOLIUM_COLORS[color_cnt]
+                    vessel_dic['plotline_index'] = color_cnt
+                    color_dict[d[color_index]] = vessel_dic
                 else:
-                    color_dict[d[color_index]] = FOLIUM_COLORS[len(FOLIUM_COLORS) - 1]
+                    vessel_dic = dict()
+                    vessel_dic['color'] = FOLIUM_COLORS[len(FOLIUM_COLORS) - 1]
+                    vessel_dic['plotline_index'] = color_cnt
+                    color_dict[d[color_index]] = vessel_dic
+                vessel_list.append(d[color_index])
+                pol_group_layer = folium.map.FeatureGroup(
+                    name='Visualization: Plotline Layer:' + str(d[color_index]), overlay=True,
+                    control=True).add_to(m)
+                polygon_list.append([])
+                feat_group_list.append(pol_group_layer)
                 color_cnt += 1
-            marker_color = color_dict[d[color_index]]
+
+            marker_color = color_dict[d[color_index]]['color']
         else:
             marker_color = 'blue'
 
@@ -1751,6 +1768,7 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
         if d[lon_index] < min_lon:
             min_lon = d[lon_index]
 
+        polygon_list[color_dict[d[color_index]]['plotline_index']].append([d[lat_index],d[lon_index]])
         try:
             var_val = str(round(d[var_index], 3))
         except:
@@ -1767,7 +1785,12 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
             icon=folium.Icon(color=marker_color),
             # radius=2,
 
-        ).add_to(pol_group_layer)
+        ).add_to(marker_pol_group_layer)
+
+    for el in color_dict.keys():
+        # my_color = color_dict[el]['color']
+        folium.PolyLine(polygon_list[color_dict[el]['plotline_index']], color='white',
+                        weight=2.0, opacity=0.8).add_to(feat_group_list[color_dict[el]['plotline_index']])
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
