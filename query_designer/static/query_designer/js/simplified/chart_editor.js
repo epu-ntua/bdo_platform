@@ -875,7 +875,7 @@ $(document).ready(function () {
 
     function show_viz(viz_request) {
         // language=HTML
-        var htmlString = '<div class="outputLoadImg"><h4 id="loading_message" style="text-align: center; white-space: pre-line;"></h4><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
+        var htmlString = '<div class="outputLoadImg"><h4 id="loading_message" style="text-align: center; white-space: pre-line;"></h4><button id="stop_viz_btn" class="btn btn-sm btn-danger" style="display: block; width: 10%; margin-left: 45%;">Stop</button><img src="/static/img/loading_gif.gif"/></div><iframe class="iframe-class" id="viz-iframe" src="' + viz_request + '" frameborder="0" allowfullscreen="" ></iframe>';
         $("#viz_container").html(htmlString);
 
         var message = decide_message(viz_request);

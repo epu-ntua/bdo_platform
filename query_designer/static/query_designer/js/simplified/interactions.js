@@ -992,6 +992,13 @@ $(function() {
         $(this).closest('.fieldset').find('.collapse').collapse("toggle");
     });
 
+    // *** Stop Visualisation *** //
+    $('body').on('click', '#stop_viz_btn', function () {
+        $('#viz_container').find('iframe').remove();
+        $('#viz_container').find(".outputLoadImg").css("display", "none");
+        $('#viz_container').append('<iframe onload="hide_gif();"></iframe>');
+    });
+
 });
 
 
