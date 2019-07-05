@@ -835,6 +835,12 @@ $(function() {
 
     function updated_available_visualisations(){
         var possible_vessel_identifiers = ["platform_id", "platform_id_hash", "ship_id", "ship_name", "imo_id", 'imo', "voyage_number", "trip_identifier", "mmsi"];
+        var hasLiveAIS = false;
+            $.each(QueryToolbox.dataset_names, function (idx, dataset) {
+               if(dataset.toLowerCase().indexOf("time") >= 0 && dataset.toLowerCase().indexOf("real") >= 0){
+                   hasLiveAIS = true;
+               }
+            });
         $("#viz_group_container .viz_item").removeClass("viz_item_disabled").prop('title', '').prop('data-toggle', '');
         $('.tooltip').remove();
         if (QueryToolbox.common_dimensions.indexOf("latitude") < 0 || QueryToolbox.common_dimensions.indexOf("longitude") < 0){
@@ -856,6 +862,14 @@ $(function() {
             var tooltip_title = 'This type of visualisation cannot be created for the current data. They do not contain a vessel identifier field.';
             $("#viz_group_container  .viz_item[data-viz-name='get_map_plotline_vessel_course']").addClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
             $("#viz_group_container  .viz_item[data-viz-name='get_map_markers_vessel_course']").addClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
+            $("#viz_group_container  .viz_item[data-viz-name='get_map_contour']").addClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
+        }
+        if (hasLiveAIS){
+            $("#viz_group_container  .viz_item[data-viz-name='get_live_ais']").removeClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
+        }
+        else{
+            var tooltip_title = 'This type of visualisation cannot be created for the current data. Real time AIS data are required.';
+            $("#viz_group_container  .viz_item[data-viz-name='get_live_ais']").addClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
         }
     }
 
