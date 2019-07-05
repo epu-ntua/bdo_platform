@@ -3532,7 +3532,7 @@ def get_time_series_am(request):
     visualisation_type_analytics('get_time_series_am')
     if chart_type == 'line':
         return render(request, 'visualizer/line_chart_am.html',
-                      {'data': json_data, 'value_col': zip(y_var_list, y_var_min_list, y_var_max_list), 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
+                      {'data': json_data, 'value_col': zip(y_var_list, y_var_min_list, y_var_max_list), 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'same_axis': same_axis, 'isDate': 'true', 'min_period':min_chart_period})
     else:
         return render(request, 'visualizer/column_chart_am.html',
                       {'data': json_data, 'value_col': zip(y_var_list, y_var_min_list, y_var_max_list), 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'category_title': str(order_var) + " " + str(x_m_unit), 'isDate': 'true', 'min_period': min_chart_period})
