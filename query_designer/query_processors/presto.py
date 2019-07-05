@@ -230,7 +230,7 @@ def is_query_for_average(from_list):
 
 
 def remove_round_from_select(q):
-    select_clause = q.split('(SELECT')[1].split('FROM')[0].replace('round', 'MIN').replace(', 0', '').replace(', 1', '').replace(', 2', '')
+    select_clause = q.split('(SELECT')[1].split('FROM')[0].replace('round(', 'MIN(').replace(', 0', '').replace(', 1', '').replace(', 2', '')
     return q.split('(SELECT')[0] + '(SELECT' + select_clause + 'FROM' + q.split('(SELECT')[1].split('FROM')[1]
 
 
