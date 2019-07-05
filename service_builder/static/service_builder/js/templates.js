@@ -21,7 +21,7 @@ $(".template_item").click(function () {
 
 function togglemask(show) {
   if(show)
-    $('#service_container').append('<img id="loadergif" src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif" width="" height="">');
+    $('#service_container').append('<img id="loadergif" src="/static/img/loading_gif.gif" width="" height="">');
   else
     $('#service_container').find("#loadergif").remove();
 }

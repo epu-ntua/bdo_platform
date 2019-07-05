@@ -168,7 +168,7 @@ function show_hide_results(){
         '\n' +
         '    <div id="service_result_container" class="text-center">\n' +
         '        <div class="loadingDiv">\n' +
-        '            <img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/>\n' +
+        '            <img src="/static/img/loading_gif.gif"/>\n' +
         '        </div>\n' +
         '        <!-- ADD YOUR VISUALISATIONS HERE --> \n' +
         '   </div>\n' +
@@ -463,7 +463,7 @@ function show_hide_results(){
 
     // $("#addVizModal #submit-query-btn").click(function () {
     //     $('#query #viz_container iframe').appendTo('#dynamic_dashboard');
-    //     html_editor.replaceRange('\n<div id="viz_container"><div class="loadingFrame"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
+    //     html_editor.replaceRange('\n<div id="viz_container"><div class="loadingFrame"><img src="/static/img/loading_gif.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
     //     html_editor.refresh();
     //     viz_request = "";
     //     $('#query #addVizModal #viz_container').empty();
@@ -471,7 +471,7 @@ function show_hide_results(){
 
     // $("#addVizModal #submit-df-btn").click(function () {
     //     $('#dataframe #df_viz_container iframe').appendTo('#dynamic_dashboard');
-    //     html_editor.replaceRange('\n<div class="viz_container row"><div class="loadingFrame"><img src="http://assets.motherjones.com/interactives/projects/features/koch-network/shell19/img/loading.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
+    //     html_editor.replaceRange('\n<div class="viz_container row"><div class="loadingFrame"><img src="/static/img/loading_gif.gif"/></div><iframe src="'+viz_request+'" frameborder="0" allowfullscreen="" style="width: 100%;min-height: 500px;"></iframe></div>\n', {line: Infinity});
     //     html_editor.refresh();
     //     viz_request = "";
     //     $('#dataframe #addVizModal #df_viz_container').empty();
