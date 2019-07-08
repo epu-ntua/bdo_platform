@@ -844,7 +844,7 @@ $(document).ready(function () {
         }
         else if(viz_request.indexOf("get_map_markers_vessel_course") > 0 || viz_request.indexOf("get_map_plotline_vessel_course") > 0){
             if (magnitude === "billion")
-                message += " The dataset used contains billions of rows. \nIt may take a few minutes, please wait.";
+                message += " The dataset used contains billions of data. \nIt may take 10-12 minutes, please wait.";
             else if (magnitude === "million" && number_of_digits > 2)
                 message += " The dataset used contains hundreds of millions of rows. \nIt may take a few minutes, please wait.";
             else
@@ -852,7 +852,7 @@ $(document).ready(function () {
         }
         else if(viz_request.indexOf("get_map_markers_grid") > 0){
             if (magnitude === "billion")
-                message += " The dataset used contains billions of rows. \nIt may take a few minutes, please wait.";
+                message += " The dataset used contains billions of rows. \nIt may take 10-12 minutes, please wait.";
             else if (magnitude === "million" && number_of_digits > 2)
                 message += " The dataset used contains hundreds of millions of rows. \nIt may take 1-2 minutes, please wait.";
             else
@@ -860,7 +860,7 @@ $(document).ready(function () {
         }
         else if(viz_request.indexOf("get_map_contour") > 0){
             if (magnitude === "billion")
-                message += " The dataset used contains billions of rows. \nIt may take a few minutes, please wait.";
+                message += " The dataset used contains billions of rows. \nIt may take 10-12 minutes, please wait.";
             else if (magnitude === "million" && number_of_digits > 2)
                 message += " The dataset used contains hundreds of millions of rows. \nIt may take 1-2 minutes, please wait.";
             else

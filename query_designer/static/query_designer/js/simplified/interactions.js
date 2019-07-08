@@ -809,6 +809,36 @@ $(function() {
 
 
     function decide_message(){
+        var magnitude = "";
+        var number_of_digits = 0;
+        // Check if magnitude is thousands
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf("thousand") > 0){
+                magnitude = "thousand";
+            }
+        });
+        // Check if magnitude is millions
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf("million") > 0){
+                magnitude = "million";
+            }
+        });
+        // Check if magnitude is billions
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf("billion") > 0){
+                magnitude = "billion";
+            }
+        });
+        // Check largest number of digits of the largest magnitude
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf(magnitude) > 0){
+                if(number_of_digits < v_obj.dataset_size.split(" ")[0].length){
+                    number_of_digits = v_obj.dataset_size.split(" ")[0].length;
+                }
+            }
+        });
+
+
         var message = "We are fetching your data. ";
 
         if(QueryToolbox.datasets.length > 1){
@@ -818,13 +848,31 @@ $(function() {
             message += " They are grouped based on your selection. It may take 1-2 minutes, please wait.";
         }
         else if(QueryToolbox.temporal_resolution !== "" && QueryToolbox.spatial_resolution !== "" ){
-            message += " They are being harmonised on space and time. It may take 1-2 minutes, please wait.";
+            message += " They are being harmonised on space and time.\n";
+            if (magnitude === "billion")
+                message += " The dataset used contains billions of data and it may take 10-12 minutes, please wait.";
+            else if (magnitude === "million" && number_of_digits > 2)
+                message += " The dataset used contains hundreds of millions of rows and it may take a few minutes, please wait.";
+            else
+                message += " It may take 1-2 minutes, please wait.";
         }
         else if(QueryToolbox.spatial_resolution !== ""){
-            message += " They are being harmonised on space. It may take 1-2 minutes, please wait.";
+            message += " They are being harmonised on space.\n";
+            if (magnitude === "billion")
+                message += " The dataset used contains billions of data and it may take 10-12 minutes, please wait.";
+            else if (magnitude === "million" && number_of_digits > 2)
+                message += " The dataset used contains hundreds of millions of rows and it may take a few minutes, please wait.";
+            else
+                message += " It may take 1-2 minutes, please wait.";
         }
         else if(QueryToolbox.temporal_resolution !== ""){
-            message += " They are being harmonised on time. It may take 1-2 minutes, please wait";
+            message += " They are being harmonised on time.\n";
+            if (magnitude === "billion")
+                message += " The dataset used contains billions of data and it may take 10-12 minutes, please wait.";
+            else if (magnitude === "million" && number_of_digits > 2)
+                message += " The dataset used contains hundreds of millions of rows and it may take a few minutes, please wait.";
+            else
+                message += " It may take 1-2 minutes, please wait.";
         }
         else{
             message += " It will not take long.";
