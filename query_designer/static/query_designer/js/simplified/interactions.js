@@ -910,7 +910,6 @@ $(function() {
             var tooltip_title = 'This type of visualisation cannot be created for the current data. They do not contain a vessel identifier field.';
             $("#viz_group_container  .viz_item[data-viz-name='get_map_plotline_vessel_course']").addClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
             $("#viz_group_container  .viz_item[data-viz-name='get_map_markers_vessel_course']").addClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
-            $("#viz_group_container  .viz_item[data-viz-name='get_map_contour']").addClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
         }
         if (hasLiveAIS){
             $("#viz_group_container  .viz_item[data-viz-name='get_live_ais']").removeClass("viz_item_disabled").prop('title', tooltip_title).prop('data-toggle', 'tooltip').tooltip({trigger: "hover"});
