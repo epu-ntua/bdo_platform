@@ -15,6 +15,13 @@
 {% endblock %}
 
 {% block content %}
+  <div id="initialising_div" class="" style="display: none; text-align: center; position: absolute; width: 100%; height: 100%; top: 0; bottom: 0; left: 0; right: 0; background-color: #3d3d3dc7; color: white; z-index:1;">
+    <div style="background-color: white; color: #394146; margin: 15% 35%;     border-radius: 3px;">
+        <h3 style="display: inline-block;">Gathering datasets' information</h3>
+        <img  alt="" src="{% static 'wave_energy_pilot/img/service_loading.gif' %}" style="width: 3vh;">
+    </div>
+  </div>
+
   <div id="main-section" data-on-top='{{ data_on_top }}'>
     <div id="main-row" class="row">
         <div class="text-center">
@@ -820,24 +827,33 @@
     <script src="{% static "/js/jplist.jquery-ui-bundle.min.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
 
     <script>
-        var time_start_timestamp = {{time_start_timestamp}}
-        var time_end_timestamp = {{ time_end_timestamp }}
+        var time_start_timestamp = {{time_start_timestamp}};
+        var time_end_timestamp = {{ time_end_timestamp }};
 
         $("#title-filter").attr({"placeholder": "Loading datasets..."});
+        if($("#main-section").attr("data-on-top") === "true"){
+            $("#initialising_div").show();
+        }
+        else{
+            $("#initialising_div").hide();
+        }
 
-           setTimeout(function(){
-              $('#main-section').jplist({
+        setTimeout(function(){
+           $('#main-section').jplist({
                    itemsBox: '.selection-body',
                    itemPath: '.dataset-section',
                    panelPath: '.filter-section',
                    noResults: '.jplist-no-results'
-               });
-              $("#explore_btn1_loading").hide();
-               if($("#main-section").attr("data-on-top") !== "true"){
-                   $("#explore_btn1").show();
-                }
-               $("#title-filter").attr({"placeholder": "Search for datasets in the BDO platform..."});
-           }, 1000);
+           });
+           $("#explore_btn1_loading").hide();
+           if($("#main-section").attr("data-on-top") !== "true"){
+               $("#explore_btn1").show();
+           }
+           $("#title-filter").attr({"placeholder": "Search for datasets in the BDO platform..."});
+
+           $("#initialising_div").hide();
+
+        }, 1000);
 
 
 
