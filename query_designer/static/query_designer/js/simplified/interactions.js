@@ -190,24 +190,24 @@ $(function() {
             $("#mapchoices").val(1).trigger("change");
 
 
-            var start = new Date(parseInt(selection[0].dataset_time_min));
-            var end  = new Date(parseInt(selection[0].dataset_time_min) + 3600000);
-
-            var startpick = $('#startdatepicker').datetimepicker({
-                autoclose: true,
-                pickerPosition: 'top-left',
-            });
-            $('#startdatepicker').datetimepicker("update", start);
-            console.log('start date');
-            startdate = $('#startdatepicker input').val();
-
-            var endpick = $('#enddatepicker').datetimepicker({
-                autoclose: true,
-                pickerosition: 'top-left',
-            });
-            $('#enddatepicker').datetimepicker("update", end);
-            enddate = $('#enddatepicker input').val();
-            console.log('end date');
+            // var start = new Date(parseInt(selection[0].dataset_time_min));
+            // var end  = new Date(parseInt(selection[0].dataset_time_min) + 3600000);
+            //
+            // var startpick = $('#startdatepicker').datetimepicker({
+            //     autoclose: true,
+            //     pickerPosition: 'top-left',
+            // });
+            // $('#startdatepicker').datetimepicker("update", start);
+            // console.log('start date');
+            // startdate = $('#startdatepicker input').val();
+            //
+            // var endpick = $('#enddatepicker').datetimepicker({
+            //     autoclose: true,
+            //     pickerosition: 'top-left',
+            // });
+            // $('#enddatepicker').datetimepicker("update", end);
+            // enddate = $('#enddatepicker input').val();
+            // console.log('end date');
         }
 
 
