@@ -3493,12 +3493,15 @@ def map_oil_spill_hcmr(map, min_lat, max_lat, min_lon, max_lon):
     pol_group_layer = folium.map.FeatureGroup(name='Protected Areas',
                                               overlay=True,
                                               control=True).add_to(map)
+
     for i in range(1, 10):
         print 'Creating Natura Zone ' + str(i)
         # import pdb
         # pdb.set_trace()
         filepath = 'visualizer/static/visualizer/natura_files/natura'+str(i)+'.json'
-        map, polygons = hcmr_create_polygons_on_map(pol_group_layer, filepath, color, map,  min_lat, max_lat, min_lon, max_lon )
+        metadata_path = 'visualizer/static/visualizer/natura_grid_files/natura'+str(i)+'_grid__info'
+        map, polygons = hcmr_create_polygons_on_map(pol_group_layer, filepath, color, map,  min_lat, max_lat,
+                                                    min_lon, max_lon, metadata_path )
         if len(all_polygons) == 0:
             all_polygons = polygons
         else:
@@ -3506,17 +3509,20 @@ def map_oil_spill_hcmr(map, min_lat, max_lat, min_lon, max_lon):
     return map, all_polygons
 
 
-def hcmr_create_polygons_on_map(pol_group_layer, filepath, polygon_color, map, min_lat, max_lat, min_lon, max_lon):
-    with open(filepath) as f:
-        kml_data = json.load(f)
-
+def hcmr_create_polygons_on_map(pol_group_layer, filepath, polygon_color, map, min_lat, max_lat, min_lon, max_lon,
+                                metadata_path):
     shapely_polygons = []
-    limits = kml_data['limits']
     off_limits_flag = False
-    if limits['max_lat'] < min_lat or limits['min_lat'] > max_lat or limits['max_lon'] < min_lon or limits['min_lon'] > max_lon:
-        off_limits_flag = True
-        print 'Area off limits'
+    with open(metadata_path) as f:
+        meta_data = json.load(f)
+        if meta_data['max_lat'] < min_lat or meta_data['min_lat'] > max_lat or meta_data['max_lon'] < min_lon or meta_data['min_lon'] > max_lon:
+            off_limits_flag = True
+            print 'Area off limits'
+
     if not off_limits_flag:
+        with open(filepath) as f:
+            kml_data = json.load(f)
+
         count_polygons = 0
         for placemark in kml_data['placemarks']:
             for polygon in placemark['polygons']:
