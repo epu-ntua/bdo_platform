@@ -61,6 +61,11 @@ def execute_query(request, pk=None):
                                with_encoder=True)
         except ValueError as ve:
             return JsonResponse({"error_message": str(ve.message)})
+        except Exception as e:
+            if e.args[0] == 'max_memory_exceeded':
+                return JsonResponse({"error_message": 'Your query execution exceeded the available memory. Please limit your selection on space and time and try again.'})
+            else:
+                return JsonResponse({"error_message": str(e.message)})
         response, encoder = result
         # import pdb
         # pdb.set_trace()

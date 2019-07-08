@@ -92,7 +92,15 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         results = []
         if execute:
             cursor.execute(query)
-            all_rows = cursor.fetchall()
+            try:
+                all_rows = cursor.fetchall()
+            except Exception, e:
+                if e.message.index('exceeded') >= 0:
+                    print 'MAX MEMORY EXCEEDED'
+                    raise Exception('max_memory_exceeded')
+                else:
+                    print 'other error'
+                    raise Exception('error')
             print "First rows"
             print all_rows[:3]
             print header_sql_types
@@ -262,13 +270,20 @@ def build_prejoin_query(prejoin_name, columns, prejoin_groups, self):
 def build_query(c_name, columns, groups, selects, self):
     select_clause = build_select_clause(columns)
     from_clause = build_from_clause(selects)
-    all_joins_for_check, join_clause = build_join_clause(c_name, selects, self)
+    all_joins_for_check, join_clause, needs_join_reorder = build_join_clause(c_name, selects, self)
     if not is_same_range_joins(all_joins_for_check):
         raise ValueError("Datasets have columns in common but actually nothing to join (ranges with nothing in common)")
     where_clause = build_where_clause(self)
     group_clause = build_group_by_clause(groups)
     order_by_clause = build_order_by_clause(self)
     limit, limit_clause = build_limit_clause(self)
+
+    if needs_join_reorder:
+        table1 = from_clause.split('FROM ')[1].strip()
+        table2 = join_clause.split('JOIN ')[1].split('ON')[0].strip()
+        from_clause = from_clause.replace(table1, table2)
+        join_clause = join_clause.split('ON')[0].replace(table2, table1) + ' ON ' + join_clause.split('ON')[1]
+
     # organize into subquery
     subquery = 'SELECT * FROM (' + select_clause + from_clause + join_clause + where_clause + group_clause + order_by_clause + ') AS SQ1\n'
     q = subquery + limit_clause
@@ -354,7 +369,9 @@ def build_join_clause(c_name, selects, self):
     all_joins_for_check = []
     tables_in_query = set()
     tables_in_query.add(selects[self.document['from'][0]['select'][0]['name']]['table'])
-    for _from in self.document['from'][1:]:
+    join_from_index = -1
+    needs_join_reorder = False
+    for idx, _from in enumerate(self.document['from'][1:], 1):
         joins = []
         joins_for_check = []
         for s in _from['select']:
@@ -395,6 +412,7 @@ def build_join_clause(c_name, selects, self):
         if selects[_from['select'][0]['name']]['table'] not in tables_in_query:
             tables_in_query.add(selects[_from['select'][0]['name']]['table'])
             print "WE HAVE JOIN"
+            join_from_index = idx
             join_clause += 'JOIN %s ON %s\n' % \
                            (selects[_from['select'][0]['name']]['table'],
                             ' AND '.join(joins))
@@ -402,6 +420,16 @@ def build_join_clause(c_name, selects, self):
                 raise ValueError("No common columns for all the datasets. They cannot be combined.")
 
         all_joins_for_check.append(joins_for_check)
+
+    if join_clause != '':
+        print 'join_clause is not empty'
+        dataset1 = Variable.objects.get(pk=int(self.document['from'][0]['type'])).dataset
+        dataset2 = Variable.objects.get(pk=int(self.document['from'][join_from_index]['type'])).dataset
+        print long(dataset1.number_of_rows) , long(dataset2.number_of_rows)
+        if long(dataset2.number_of_rows) > long(dataset1.number_of_rows):
+            print 'needs reorder'
+            needs_join_reorder = True
+
     print "Joins to check"
     print all_joins_for_check
     if not is_same_range_joins(all_joins_for_check):
@@ -410,7 +438,7 @@ def build_join_clause(c_name, selects, self):
     print "Query Continues"
 
     # where
-    return all_joins_for_check, join_clause
+    return all_joins_for_check, join_clause, needs_join_reorder
 
 
 def build_where_clause(self):

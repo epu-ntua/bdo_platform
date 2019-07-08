@@ -435,6 +435,7 @@ $(function () {
                         $("#viz_container").append(iframe);
 
                         if(response.hasOwnProperty('error_message')) {
+                            console.log(response['error_message']);
                             hide_gif();
                             $('#chartdiv').hide();
                             $('#paginationDiv').hide();
@@ -467,6 +468,7 @@ $(function () {
                         }
                     },
                     error: function (response) {
+                        console.log(response['error_message']);
                         $("#cancel-query-btn").hide();
                         hide_gif();
                         $('#chartdiv').hide();

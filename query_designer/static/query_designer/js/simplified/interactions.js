@@ -185,7 +185,15 @@ $(function() {
                hasGlobal = true;
            }
         });
-        if(hasGlobal){
+
+        var magnitude = '';
+        $.each(QueryToolbox.variables, function (_, v_obj) {
+            if(v_obj.dataset_size.indexOf("billion") > 0){
+                magnitude = "billion";
+            }
+        });
+
+        if(hasGlobal || magnitude == "billion"){
             console.log('has global');
             $("#mapchoices").val(1).trigger("change");
 
