@@ -566,11 +566,13 @@ $(function () {
                     }
                     else{
                         that.objects[0].queryId = Number(data.pk);
+                        $('#query-id-li a #query--id').text(data.pk);
                     }
                     that.tabMarker.currentSaved();
 
                     // update status
                     $('#selected_query').val(parseInt(data.pk));
+                    // $('#selected_query').val(parseInt(data.pk));
                     // run callback
                     if (callback) {
                         callback(data.pk)
