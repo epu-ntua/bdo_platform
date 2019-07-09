@@ -4038,9 +4038,10 @@ def map_markers_in_time_hcmr(request):
         min_grid_lat = ''
         min_grid_lon = ''
         resolution = ''
+        grid_tables = []
+        grid_lat_lon_min_max_list = []
         if natura_layer == "true":
             grid_files_list = []
-            grid_lat_lon_min_max_list = []
             for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
                 if not filename.endswith(".csv"):
                     with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
@@ -4055,7 +4056,6 @@ def map_markers_in_time_hcmr(request):
                         grid_files_list.append(filename)
                         grid_lat_lon_min_max_list.append(natura_info)
 
-            grid_tables = []
             for grid_file in grid_files_list:
                 with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
                     reader = csv.reader(csvfile)
