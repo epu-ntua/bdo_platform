@@ -510,10 +510,7 @@ def build_prejoin_where_clause(self, view_name):
     if not filters:
         where_clause = ''
     else:
-        where_clause = process_prejoin_filters(filters, self, view_name)
-
-    if where_clause:
-        where_clause = 'WHERE ' + where_clause + ' \n'
+        where_clause = self.process_filters(filters, mode='presto', use_table_names = False)
 
     extra_filters = ''
     for f in self.document['from']:

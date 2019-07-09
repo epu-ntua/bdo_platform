@@ -98,7 +98,7 @@ class AbstractQuery(Model):
                 'not': ('NOT', None),
             }[op.lower()][0 if mode == 'presto' else 1]
 
-    def process_filters(self, filters, mode='postgres', quote=False):
+    def process_filters(self, filters, mode='postgres', quote=False, use_table_names=False):
         print 'filters:'
         print filters
         # end value
@@ -119,7 +119,10 @@ class AbstractQuery(Model):
                                     col_name = v_obj.name
                                 else:
                                     col_name = 'value'
-                    filters = table_name + '.' + col_name
+                    if use_table_names:
+                        filters = table_name + '.' + col_name
+                    else:
+                        filters = col_name
             except:
                 return filters
             return filters
@@ -144,7 +147,10 @@ class AbstractQuery(Model):
                                         col_name = v_obj.name
                                     else:
                                         col_name = 'value'
-                        filters = table_name + '.' + col_name
+                        if use_table_names:
+                            filters = table_name + '.' + col_name
+                        else:
+                            filters = col_name
                 except:
                     return filters
                 return "%s" % filters
@@ -156,14 +162,22 @@ class AbstractQuery(Model):
             v = Variable.objects.get(pk=_from['type'])
 
             if _from['name'] == filters['a']:
-                filters['a'] = '%s.%s' % (_from['name'], 'value')
+                if use_table_names:
+                    filters['a'] = '%s.%s' % (_from['name'], 'value')
+                else:
+                    filters['a'] = '%s' % ('value')
 
             for x in _from['select']:
                 if x['name'] == filters['a']:
                     if x['type'] != 'VALUE':
                         # print 'type' + x['type']
-                        filters['a'] = '%s.%s' % \
+                        if use_table_names:
+                            filters['a'] = '%s.%s' % \
                                        (_from['name'], Dimension.objects.get(pk=int(x['type'])).data_column_name)
+                        else:
+                            filters['a'] = '%s' % \
+                                           (Dimension.objects.get(pk=int(x['type'])).data_column_name)
+
                     else:
                         v_obj = Variable.objects.get(pk=int(_from['type']))
                         if v_obj.dataset.stored_at == 'UBITECH_POSTGRES' or \
@@ -171,8 +185,12 @@ class AbstractQuery(Model):
                             col_name = v_obj.name
                         else:
                             col_name = 'value'
-                        filters['a'] = '%s.%s' % \
+                        if use_table_names:
+                            filters['a'] = '%s.%s' % \
                                        (_from['name'], col_name)
+                        else:
+                            filters['a'] = '%s' % \
+                                           (col_name)
 
         if filters['op'] in ['inside_rect', 'outside_rect', ]:
             print 'inside_rect'
@@ -194,8 +212,12 @@ class AbstractQuery(Model):
                 if _from['name'] == (v_name + '_' + str(v_id)):
                     table_name = _from['name']
 
-            lat = table_name + '.' + lat_col_name
-            lng = table_name+'.'+lon_col_name
+            if use_table_names:
+                lat = table_name + '.' + lat_col_name
+                lng = table_name + '.' + lon_col_name
+            else:
+                lat = lat_col_name
+                lng = lon_col_name
 
             result = '%s >= %s AND %s <= %s' % (lat, rect_start[0], lat, rect_end[0])
             result += ' AND %s >= %s AND %s <= %s' % (lng, rect_start[1], lng, rect_end[1])
