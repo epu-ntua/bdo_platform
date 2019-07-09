@@ -233,14 +233,19 @@ $(function() {
             }
 
             //automatically fill spatial and temporal resolution when joining datasets
-            if(( $('#temporal_resolution').val()==='') && (common_dimensions.indexOf("time") >= 0) ){
-                $('#temporal_resolution').val('hour');
-                $('#temporal_resolution').trigger('change');
-            }
-            if(( $('#spatial_resolution').val()==='') && ((common_dimensions.indexOf("latitude") >= 0) || (common_dimensions.indexOf("longitude") >= 0) )){
-                $('#spatial_resolution').val('0.1');
-                $('#spatial_resolution').trigger('change');
-            }
+            // if(( $('#temporal_resolution').val()==='') && (common_dimensions.indexOf("time") >= 0) ){
+            //     $('#temporal_resolution').val('hour');
+            //     $('#temporal_resolution').trigger('change');
+            // }
+            // if(( $('#spatial_resolution').val()==='') && ((common_dimensions.indexOf("latitude") >= 0) || (common_dimensions.indexOf("longitude") >= 0) )){
+            //     $('#spatial_resolution').val('0.1');
+            //     $('#spatial_resolution').trigger('change');
+            // }
+            $('#temporal_resolution').val('hour');
+            $('#temporal_resolution').trigger('change');
+            $('#spatial_resolution').val('0.1');
+            $('#spatial_resolution').trigger('change');
+
 
             if($('#spatial_resolution').val() !== "")
                 $("#joined_dimensions_div").append("<p id='harmonised_space' style='margin: 0;'>Harmonised on space: " + $('#spatial_resolution').val() + "deg</p>");
