@@ -16,8 +16,8 @@ def build_create_view_query(dataset1, dataset2):
     common_columns = find_common_columns(dataset1_columns, dataset2_columns)
     dataset1_private_cols = get_list_minus_sublist(dataset1_columns, common_columns)
     dataset2_private_cols = get_list_minus_sublist(dataset2_columns, common_columns)
-    dataset1_vars = [c[0] for c in dataset1_private_cols if is_variable(c[0])]
-    dataset2_vars = [c[0] for c in dataset2_private_cols if is_variable(c[0])]
+    dataset1_vars = [c for c in dataset1_private_cols if is_variable(c[0])]
+    dataset2_vars = [c for c in dataset2_private_cols if is_variable(c[0])]
 
     query = """CREATE OR REPLACE VIEW %s_%s AS""" % (dataset1, dataset2)
     query += build_select_clause(common_columns, dataset1, dataset1_vars, dataset2, dataset2_vars)
@@ -71,7 +71,7 @@ def get_presto_cursor():
 def find_common_columns(d1_columns, d2_columns):
     result = []
     for c1 in d1_columns:
-        if c1 in d2_columns:
+        if c1 in d2_columns and c1 in [['latitude'], ['longitude'], ['time']]:
             result.append(c1)
     return result
 

@@ -354,7 +354,8 @@ def build_select_clause(columns):
 
 
 def build_prejoin_select_clause(columns):
-    select_clause = 'SELECT ' + ','.join(['%s(%s) AS %s' % (c[3], c[2], c[1]) for c in columns]) + '\n'
+    import re
+    select_clause = 'SELECT ' + ','.join(['%s AS %s' % (re.sub("[(].*[.]", "(", c[0]), c[1]) for c in columns]) + '\n'
     return select_clause
 
 
@@ -513,6 +514,21 @@ def build_prejoin_where_clause(self, view_name):
 
     if where_clause:
         where_clause = 'WHERE ' + where_clause + ' \n'
+
+    extra_filters = ''
+    for f in self.document['from']:
+        table_name = Variable.objects.get(pk=int(f['type'])).dataset.table_name
+        col_name = Variable.objects.get(pk=int(f['type'])).name
+        if extra_filters == '':
+            extra_filters += col_name + ' is not NULL'
+        else:
+            extra_filters += ' OR ' + col_name + ' is not NULL'
+
+    if where_clause:
+        where_clause = 'WHERE ' + where_clause + ' AND (' + extra_filters + ') \n'
+    else:
+        where_clause = 'WHERE ' + extra_filters + ' \n'
+
     return where_clause
 
 
