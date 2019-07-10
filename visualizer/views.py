@@ -1252,7 +1252,7 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     data = trim(data_img)
     data_img.close()
     # Overlay the image
-    contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
+    contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=1, mercator_project=True,
                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
     contour_layer.layer_name = 'Visualization: Contours On Map -- Layer:' + str(time.time()).replace(".","_") + ' -- Variable: ' + str(variable)
     m.add_child(contour_layer)
@@ -1263,10 +1263,14 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     # contour_legend_layer.layer_name = 'Contours Legend - Layer:' + str(time.time()).replace(".", "_")
     # m.add_child(contour_legend_layer)
     # Overlay an extra coastline field (to be removed)
-    folium.GeoJson(open('ne_50m_land.geojson').read(),
-                   style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
+    # folium.GeoJson(open('mygeodata_merged.json').read(),
+    #                style_function=lambda feature: {'fillColor':'grey', 'fillOpacity': 0.9, 'color': 'black', 'weight': 2}) \
+    #     .add_to(m) \
+    #     .layer_name = 'Coastline - Layer'
+    folium.GeoJson(open('ne_10m_land.json').read(),
+                   style_function=lambda feature: {'fillColor': 'grey', 'fillOpacity': 0.9, 'color': 'black', 'weight': 2}) \
         .add_to(m) \
-        .layer_name = 'Coastline - Layer'
+        .layer_name = 'Land'
     # Parse the HTML to pass to template through the render
     mapname = 'templates/map'+str(mappath).split('/temp/')[1].split('.png')[0]+'.html'
     print 'mapname'
@@ -1335,46 +1339,17 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     for x_index, x in enumerate(xi):
         for y_index, y in enumerate(yi):
             land = False
-            xcord, ycord = bm(x, y)
-            if bm.is_land(xcord, ycord):
-                land = True
-            xcord, ycord = bm(x+0.1, y)
-            if bm.is_land(xcord, ycord):
-                land = True
-            xcord, ycord = bm(x, y+0.1)
-            if bm.is_land(xcord, ycord):
-                land = True
-            # xcord, ycord = bm(x+0.1, y+0.1)
-            # if bm.is_land(xcord, ycord):
-            #     land = True
+            # x_offset_list = y_offset_list = [-0.075, -0.05, -0.025, -0.01, 0, 0.01, 0.025, 0.05, 0.075]
+            x_offset_list = y_offset_list = [0]
+            for x_offset in x_offset_list:
+                for y_offset in y_offset_list:
+                    xcord, ycord = bm(x + x_offset, y + y_offset)
+                    if bm.is_land(xcord, ycord):
+                        land = True
 
             # print 'examining ' + str(x) + ', ' + str(y)
             # print str(land)
             if land:
-                # try:
-                #     zi[y_index-1][x_index-1] = None
-                # except:
-                #     pass
-                # try:
-                #     zi[y_index][x_index-1] = None
-                # except:
-                #     pass
-                # try:
-                #     zi[y_index-1][x_index] = None
-                # except:
-                #     pass
-                # try:
-                #     zi[y_index+1][x_index+1] = None
-                # except:
-                #     pass
-                # try:
-                #     zi[y_index][x_index+1] = None
-                # except:
-                #     pass
-                # try:
-                #     zi[y_index+1][x_index] = None
-                # except:
-                #     pass
                 try:
                     zi[y_index][x_index] = None
                 except:
