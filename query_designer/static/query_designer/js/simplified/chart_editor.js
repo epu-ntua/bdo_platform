@@ -730,7 +730,7 @@ $(document).ready(function () {
     }
 
     $(".viz_item").click(function () {
-        if($('.popover').length) {
+        if($('.popover').length - $('.popover.tour').length) {
             $('.viz_item').popover('hide');
         }
         else {
