@@ -91,6 +91,27 @@
         <!-- /.col-lg-12 -->
     </div>
 
+    <div id="global_message_alert" class="alert alert-warning alert-dismissible row"  style="display: none; padding: 5px 15% !important; margin: 0% 0% !important; background: #a64a4a; color: white; text-align: center;">
+{#        <a href="" class="close" data-dismiss="alert" aria-label="close">&times;</a>#}
+{#        <a class="close" onclick="$('.alert').hide()">&times;</a>#}
+        <p>You are trying to query a very large dataset with global measurements.</p>
+        <p>This operation requires a lot of time and it is recommended to filter your selection on space and time.</p>
+        <p>Please filter your query to a smaller area and try again.</p>
+        <button type="button" class="btn btn-sm btn-primary" onclick="$(this).closest('.alert ').hide()" style="margin: 0;">
+            <span>Ok</span>
+        </button>
+    </div>
+
+    <div id="spatial_filter_message_alert" class="alert alert-warning alert-dismissible row"  style="display: none; padding: 5px 15% !important; margin: 0% 0% !important; background: #a64a4a; color: white; text-align: center;">
+{#        <a href="" class="close" data-dismiss="alert" aria-label="close">&times;</a>#}
+{#        <a class="close" onclick="$('.alert').hide()">&times;</a>#}
+        <p>You have selected a very large area to query.</p>
+        <p>Please narrow your selection to a smaller area and try again.</p>
+        <button type="button" class="btn btn-sm btn-primary" onclick="$(this).closest('.alert ').hide()" style="margin: 0;">
+            <span>Ok</span>
+        </button>
+    </div>
+
     <div id="error_message_alert" class="alert alert-danger alert-dismissible row" >
 {#        <a href="" class="close" data-dismiss="alert" aria-label="close">&times;</a>#}
         <a class="close" onclick="$('.alert').hide()">&times;</a>
@@ -145,7 +166,7 @@
                         <div id="chart-control-list">
                             <ul class="nav nav-pills">
                                 <li style="float: left; width: 32%" class="active"><a data-toggle="pill" href="#variables_div">Variables</a></li>
-                                <li style="width: 34%"><a data-toggle="pill" href="#filters_div">Filters</a></li>
+                                <li style="width: 34%; margin-left: 4px;"><a data-toggle="pill" href="#filters_div">Filters</a></li>
                                 <li style="float: right; width: 32%" ><a data-toggle="pill" href="#operations_div">Operations</a></li>
                             </ul>
                             <div class="tab-content">

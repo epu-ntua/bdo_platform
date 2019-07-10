@@ -943,22 +943,28 @@ $(function() {
                    hasGlobal = true;
                }
             });
+
             if(hasGlobal  && startdate === null && enddate === null && bounds[0] === -90 && bounds[1] === -180 && bounds[2] === 90 && bounds[3] === 180) {
-                var r = confirm("You are trying to query a very large dataset with global measurements. \n" +
-                    "This operation requires some time and it is recommended to filter your selection on space and time. \n" +
-                    "Do you want to filter your query to a smaller area for faster results before the execution?");
-                if (r == true) {
-                    $("#chart-sidebar #chart-control-list .nav-pills li").eq(1).find('a').click();
-
-                    setTimeout(function () {
-                        $("#mappreview").click();
-                    }, 1000);
-
-                } else {
-                    proceed_to_execute();
-                }
+                // var r = confirm("You are trying to query a very large dataset with global measurements. \n" +
+                //     "This operation requires some time and it is recommended to filter your selection on space and time. \n" +
+                //     "Do you want to filter your query to a smaller area for faster results before the execution?");
+                // if (r == true) {
+                //     $("#chart-sidebar #chart-control-list .nav-pills li").eq(1).find('a').click();
+                //
+                //     setTimeout(function () {
+                //         $("#mappreview").click();
+                //     }, 1000);
+                //
+                // } else {
+                //     proceed_to_execute();
+                // }
+                $("#global_message_alert").show();
+                $("#chart-sidebar #chart-control-list .nav-pills li").eq(1).find('a').click();
             }
-            else{
+            else if((bounds[2] - bounds[0] > 17) || (bounds[3] - bounds[1] > 43)){
+                $("#spatial_filter_message_alert").show();
+                $("#chart-sidebar #chart-control-list .nav-pills li").eq(1).find('a').click();
+            }            else{
                 proceed_to_execute();
             }
         }
@@ -1043,6 +1049,12 @@ $(function() {
         }
     });
 
+    $("#choices select").on("select2:unselecting", function () {
+        $("#lat_min").val("");
+        $("#lat_max").val("");
+        $("#lon_min").val("");
+        $("#lon_max").val("");
+    });
 
 
 
