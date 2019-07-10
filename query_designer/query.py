@@ -25,10 +25,11 @@ def execute_query(request, pk=None):
             q = AbstractQuery(document=json.loads(doc_str))
         else:
             q = AbstractQuery.objects.get(pk=pk)
-            try:
-                q.document = json.loads(doc_str)
-            except ValueError:
-                pass
+            # try:
+            #     q.document = json.loads(doc_str)
+            # except ValueError:
+            #     pass
+            q.document['limit'] = 1000000
         # print q.document
         # print q.raw_query
         # get POST params
