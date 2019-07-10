@@ -1301,21 +1301,26 @@ def get_contour_legend(max_val, min_val):
 def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_index, lon_index, var_index):
     import matplotlib.tri as tri
     from mpl_toolkits.basemap import Basemap
+    print 'creating x,y,z'
     x = np.array([i[lon_index] for i in final_data])
     y = np.array([i[lat_index] for i in final_data])
     z = np.array([i[var_index] for i in final_data])
+    print 'finding min, max'
     min_x = min(x)
     min_y = min(y)
     max_x = max(x)
     max_y = max(y)
+    print 'creating basemap'
     bm = Basemap(llcrnrlon = min_x, llcrnrlat = min_y,
                urcrnrlon = max_x, urcrnrlat =
                  max_y,projection='cyl', resolution='i')
-
+    print 'creating triangulation'
     triang = tri.Triangulation(x, y)
     interpolator = tri.LinearTriInterpolator(triang, z)
     Xi, Yi = np.meshgrid(xi, yi)
+    print 'interpolating'
     zi = interpolator(Xi, Yi)
+    print 'interpolating done'
     # print zi[:1]
     # print xi[:3]
     # print yi[:3]
@@ -1326,6 +1331,7 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     len_xi = len(xi)
     len_yi = len(yi)
     land = None
+    print 'checking is land'
     for x_index, x in enumerate(xi):
         for y_index, y in enumerate(yi):
             land = False
@@ -1373,12 +1379,13 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
                     zi[y_index][x_index] = None
                 except:
                     pass
-
+    print 'done is land'
     # fig, ax1 = plt.subplots(nrows=1)
     min_val = None
     max_val = None
     # import pdb
     # pdb.set_trace()
+    print 'deleting masked'
     for i, r in enumerate(zi):
         for j, c in enumerate(r):
             if str(c) == '--':
@@ -1489,6 +1496,7 @@ def get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat
 
 
 def get_contour_grid(data, lat_index, lon_index, step, var_index):
+    print 'creating lats and bins'
     min_lat = 90
     max_lat = -90
     min_lon = 180
@@ -1518,12 +1526,13 @@ def get_contour_grid(data, lat_index, lon_index, step, var_index):
     lats_bins = np.arange(min_lat, max_lat + 0.00001, step)
     lons_bins = np.arange(min_lon, max_lon + 0.00001, step)
     Lats, Lons = np.meshgrid(lats_bins, lons_bins)
+    print 'done creating lats and bins'
     return Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val
 
 
 def get_contours_query_data(query, variable):
     try:
-        result = execute_query_method(query)[0]
+        result = execute_query_method(query, from_visualizer=False)[0]
     except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     result_data = result['results']
@@ -1540,7 +1549,8 @@ def get_contours_query_data(query, variable):
             lat_index = idx
         elif c['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
-    data = [row for row in result_data if row[var_index] is not None]
+    # data = [row for row in result_data if row[var_index] is not None]
+    data = result_data
     # print("THE UNIT IS " + unit)
     return data, lat_index, lon_index, var_index, unit
 
@@ -4773,8 +4783,8 @@ def createjson(lonlat,time,status,color):
 
 
 
-def execute_query_method(q):
-    result = q.execute(from_visualizer=True)
+def execute_query_method(q, from_visualizer=True):
+    result = q.execute(from_visualizer=from_visualizer)
     print q.document
     dataset_list = get_dataset_list(q)
     analytics_dataset_visualisation(dataset_list)
