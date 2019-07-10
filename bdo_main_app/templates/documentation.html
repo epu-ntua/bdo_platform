@@ -33,7 +33,7 @@
             <li><a data-toggle="pill" href="#menu5">Creating Analytical Services</a></li>
             <li><a data-toggle="pill" href="#menu6">Applications & Dashboards</a></li>
             <li><a data-toggle="pill" href="#menu7">Requests</a></li>
-            <li><a data-toggle="pill" href="#menu7">Controlling Access</a></li>
+            <li><a data-toggle="pill" href="#menu8">Controlling Access</a></li>
             <li><a data-toggle="pill" href="#menu2">User Profile</a></li>
         </ul>
     </div>
@@ -285,34 +285,54 @@
         <div id="menu6" class="tab-pane fade">
             <h3>Applications & Dashboards</h3>
             <p>All the available services and the created dashboards of the BigDataOcean platform are gathered in the “Applications & Dashboards” page. At this page the user can see some information and a short description for each service and the user can choose to view one of them. Three tabs are available that include the five pilot applications and the services and dashboards of the current user.</p>
+            <p>At the "PILOT APPLICATIONS" tab, the BigDataOcean pilot applications are displayed and the user can select to go to one of them.</p>
             <div style="width: 100%; max-width: 100%; text-align: center; ">
               <img src="{% static '/img/documentation/applications_and_dashboards.png' %}" style="max-height: 40vh; max-width: 100%;"/>
             </div>
 
 
-            <p></p>
+            <p>At the "MY SERVICES" tab, the services created by the user and the services to which he has access are listed, along with some extra information about them. At the bottom of the page, there is a list with the services created by other users of the platform that can be shared with the logged in user, if he first requests access to them.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/all_services.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/private_services.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
 
-            <p></p>
+            <p>At the "MY DASHBOARDS" tab, the dashboards created by the user and the dashboards to which he has access are listed. At the bottom of the page, there is a list with the dashboards created by other users of the platform that can be shared with the logged in user, if he first requests access to them.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/all_dashboards.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/private_dashboards.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
 
-            <p></p>
-
-            <p></p>
-
-            <p></p>
+            <p>As noted before, the user can request for access to services or dashboards created by other users and are listed as available for sharing. By clicking the "REQUEST ACCESS" button and selecting "MAKE REQUEST" a new access request is created and it will be handled by the owner of the service/dashboard.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/requesting_access.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
         </div>
 
 
         <div id="menu7" class="tab-pane fade">
             <h3>Requests</h3>
-            <p></p>
+            <p>This section of the BigDataOcean platform is about the requests that can be made from the platform users, in order to create new, on-demand services, add a new dataset or integrate a new data source that is not included currently in the platform.</p>
+
+            <p>By clicking the "Requests" option at the navigation bar, the user can browse all the requests that have been created in the platform. The requests can be either open or solved. In addition, the user can search for a request using keywords, create a new one or view an already created request.</p>
             <div style="width: 100%; max-width: 100%; text-align: center; ">
-              <img src="{% static '/img/documentation/applications_and_dashboards.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+              <img src="{% static '/img/documentation/requests.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
             </div>
 
 
-            <p></p>
+            <p>The user can choose to view a specific request. The information and the description of the request is presented, the user can up-vote for it if he finds it useful and also leave a comment on the discussion section or even make an offer to fulfil the request.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/a_request.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
 
-            <p></p>
+            <p>The creation of a new request is made by providing the required information displayed in the above figure. The user may provide a title for the request, a text that describes better what the user wants to be added to the platform, some keywords to assist the searching in order for the request to be properly found and a pricing scheme for the implementation of the request.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/request_new.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
 
             <p></p>
 
@@ -323,21 +343,22 @@
 
         <div id="menu8" class="tab-pane fade">
             <h3>Controlling Access</h3>
-            <p></p>
+            <p>At the "user menu", there is an option to see the access requests created by the current user, or the the ones created by other users for the current user's resources (Datasets, Dashboards and Services).</p>
             <div style="width: 100%; max-width: 100%; text-align: center; ">
-              <img src="{% static '/img/documentation/applications_and_dashboards.png' %}" style="max-height: 40vh; max-width: 100%;"/>
+              <img src="{% static '/img/documentation/access_requests_link.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
             </div>
 
 
-            <p></p>
+            <p>At the first tab, there is a list of the current user's requests. For each request, its type is displayed, the creation date and its status (Open, Rejected or Accepted). If the request is accepted a link is created for the visiting the resource.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/my_requests.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
 
-            <p></p>
+            <p>At the second tab, there is a list with requests made by other users for the private resources of the current user. The resource information is displayed, along with the user who made request, link to his profile, the creation date, the status of the request and if it is open, the option to accept or decline it.</p>
+            <div style="width: 100%; max-width: 100%; text-align: center; ">
+              <img src="{% static '/img/documentation/requests_for_my_resources.PNG' %}" style="max-height: 40vh; max-width: 100%;"/>
+            </div>
 
-            <p></p>
-
-            <p></p>
-
-            <p></p>
         </div>
     </div>
 
