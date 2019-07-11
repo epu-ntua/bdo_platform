@@ -4,15 +4,15 @@
 {% load static %}
 {% load leaflet_tags %}
 <head>
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
-    <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
+    <script src="https://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
 </head>
 
 
 {% block css %}
     {% leaflet_css %}
 
-    <link rel="stylesheet" href="http://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/1.5.2/css/ionicons.min.css">
     <link rel="stylesheet" href="{% static 'css/leaflet.awesome-markers.css' %}?bdo_version={{ settings.BDO_VERSION }}">
     <link rel="stylesheet" href="{% static 'css/MarkerCluster.css' %}?bdo_version={{ settings.BDO_VERSION }}">
 
@@ -59,6 +59,8 @@
         var step = parseFloat("{{ step }}");
         var final_data={{ data_grid |safe}};
         var agg_func= "{{ agg_function }}";
+        var var_unit = "{{ unit }}";
+        var var_title = "{{ var_title }}";
         var popup = L.popup();
         map.on('click',latLngPop);
 
@@ -85,12 +87,14 @@
                 sa_lon=Number((sa_lon).toFixed(4));
                 var ea_lon= Number((sa_lon + step).toFixed(4));
 
-                var value = (final_data[idx_lon])[idx_lat];
-                if (value != "-9999999") {
+                var value = (final_data[idx_lat])[idx_lon];
+{#                console.log(value);#}
+                if (value !== -9999999) {
+                    value = Number((value).toFixed(4));
                     popup.setLatLng(e.latlng)
                         .setContent("Latitude Area: [" + sa_lat +"  ,  " + ea_lat +"]"+
                             "<br>Longitude Area: [" + sa_lon +"  ,  " + ea_lon +"]"+
-                            "<br>Value ("+ agg_func +") : " + value)
+                            "<br>" + var_title +": " + value+" "+ var_unit)
                         .openOn(map);
                 }
             }

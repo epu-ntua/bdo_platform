@@ -29,6 +29,7 @@ from matplotlib import use
 from matplotlib.figure import Figure
 from django.contrib.staticfiles.templatetags.staticfiles import static
 use('Agg')
+import sys, os
 import matplotlib.pyplot as plt
 import pylab as pl
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -107,7 +108,7 @@ def get_contour_parameters(request, count):
     return cached_file, n_contours, step, variable, unit, lat_col, lon_col, agg_function
 
 
-def get_markers_parameters(request, count):
+def get_markers_parameters(request, count, viz_type):
     cached_file = str(request.GET.get('cached_file_id' + str(count), str(time.time()).split('.')[0]))
     marker_limit = str(request.GET.get("marker_limit" + str(count), '1'))
     try:
@@ -121,17 +122,23 @@ def get_markers_parameters(request, count):
         raise ValueError('Number of positions is not valid.')
     if marker_limit <= 0:
         raise ValueError('Number of positions has to be a positive number.')
-    variable = str(request.GET.get('variable' + str(count), ''))
+    if viz_type == 'markers_grid':
+        variable = request.GET.getlist('variable' + str(count)+'[]', '')
+    else:
+        variable = str(request.GET.get('variable' + str(count),''))
     if variable == '':
         raise ValueError('A variable has to be selected for each marker to show its value in a specific location.')
     agg_function = str(request.GET.get('agg_func', 'avg'))
     if not agg_function.lower() in AGGREGATE_VIZ:
         raise ValueError('The given aggregate function is not valid.')
-    use_color_col = request.GET.get('use_existing_temp_res'+str(count), '') == 'on'
+    use_color_col = (request.GET.get('use_color_column'+str(count), '') == 'on')
     color_col = str(request.GET.get('color_var'+str(count), ''))
     lat_col = str(request.GET.get('lat_col' + str(count), 'latitude'))
     lon_col = str(request.GET.get('lon_col' + str(count), 'longitude'))
-    return cached_file, variable, vessel_id_column, vessel_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col
+    time_col = str(request.GET.get('time_col' + str(count), 'time'))
+    var_unit = str(request.GET.get('var_unit' + str(count), '-'))
+    var_unit = var_unit.split(',')
+    return cached_file, variable, vessel_id_column, vessel_id, color_col, marker_limit, use_color_col, agg_function, lat_col, lon_col, time_col, var_unit
 
 
 def get_plotline_parameters(request, count):
@@ -197,7 +204,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
                     else:
                         platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
                     platform_flag = True
-            elif(s['name'] == variable) and (s['exclude'] is not True):
+            elif(s['name'] in variable) and (s['exclude'] is not True):
                 s['exclude'] = False
                 if s['datatype'] == 'STRING':
                     s['aggregate'] = 'MIN'
@@ -279,7 +286,7 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
 
     for f in doc['from']:
         for s in f['select']:
-            if(s['name'] == variable) and (s['exclude'] is not True):
+            if(s['name'] in variable) and (s['exclude'] is not True):
                 s['exclude'] = False
                 s['aggregate'] = agg_function
                 var_flag = True
@@ -690,19 +697,19 @@ def map_visualizer(request):
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid_for_dataset_coverage').id):
                     dataset_id = str(request.GET.get('dataset_id'))
-                    cached_file, variable, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
+                    cached_file, variable, vessel_id_column, platform_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, _col, var_unit = get_markers_parameters(request, count,'coverage')
                     query_pk = load_modify_query_for_grid_coverage(dataset_id, marker_limit)
                     variable = AbstractQuery.objects.get(pk=int(query_pk)).document['from'][0]['select'][0]['name']
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
                                                        variable, agg_function,
                                                        lat_col, lon_col, m,
-                                                       request, cached_file, dataset_id)
+                                                       request, cached_file,var_unit, dataset_id)
             except ObjectDoesNotExist:
                 pass
 
             # Heatmap
             try:
-                if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id:
+                if layer_id == Visualization.objects.get(view_name='get_map_heatmap').id or layer_id == Visualization.objects.get(view_name='get_df_map_heatmap').id:
                     cached_file, heat_col, lat_col, lon_col = get_heatmap_parameters(request,
                                                                                                         count)
                     m, extra_js = get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col,
@@ -711,38 +718,39 @@ def map_visualizer(request):
                 pass
             # Contours
             try:
-                if (layer_id == Visualization.objects.get(view_name='get_map_contour').id):
+                if (layer_id == Visualization.objects.get(view_name='get_map_contour').id or layer_id == Visualization.objects.get(view_name='get_df_map_contour').id):
                     cached_file, n_contours, step, variable, unit, lat_col, lon_col, agg_function = get_contour_parameters(request, count)
                     m, extra_js, old_map_id, legend, unit = get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, variable, lat_col, lon_col, agg_function, m,
-                                                                     cached_file, request)
-                    unit = unit
-                    import sys
-                    if sys.argv[1] == 'runserver':
-                        legend_id = legend.split("static/", 1)[1]
-                    else:
-                        legend_id = legend.split("staticfiles/", 1)[1]
+                                                                    cached_file, request)
+                    if old_map_id != '':
+                        unit = unit
+                        import sys
+                        if sys.argv[1] == 'runserver':
+                            legend_id = legend.split("static/", 1)[1]
+                        else:
+                            legend_id = legend.split("staticfiles/", 1)[1]
 
-                    #legend_id=legend
-                    old_map_id_list.append(old_map_id)
+                        #legend_id=legend
+                        old_map_id_list.append(old_map_id)
             except ObjectDoesNotExist:
                 pass
                 # Map Markers Course Vessel
             try:
-                if (layer_id == Visualization.objects.get(view_name='get_map_markers_vessel_course').id):
-                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, count)
-                    m, extra_js = get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, agg_function,
-                                             lat_col, lon_col, color_col, use_color_column, m, request, cached_file)
+                if (layer_id == Visualization.objects.get(view_name='get_map_markers_vessel_course').id or layer_id == Visualization.objects.get(view_name='get_df_map_markers_vessel_course').id):
+                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col,time_col, var_unit = get_markers_parameters(request, count, 'vessel')
+                    m, extra_js = get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, var_unit, agg_function,
+                                             lat_col, lon_col, time_col, color_col, use_color_column, m, request, cached_file)
             except ObjectDoesNotExist:
                 pass
                 # Map Markers Grid
             try:
-                if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid').id):
-                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(
-                        request, count)
+                if (layer_id == Visualization.objects.get(view_name='get_map_markers_grid').id or layer_id == Visualization.objects.get(view_name='get_df_map_markers_grid').id):
+                    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, _col, var_unit = get_markers_parameters(
+                        request, count,'markers_grid')
                     m, extra_js = get_map_markers_grid(query_pk, df, notebook_id, marker_limit,
                                                                 variable, agg_function,
                                                                 lat_col, lon_col, m,
-                                                                request, cached_file)
+                                                                request, cached_file, var_unit)
             except ObjectDoesNotExist:
                 pass
 
@@ -841,7 +849,7 @@ def get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Plotline - Layer:' + str(time.time()).replace(".","_") + ' / Ship ID: ' + str(vessel_id), overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Visualization: Plotline -- Layer:' + str(time.time()).replace(".","_") + ' -- Ship ID: ' + str(vessel_id), overlay=True,
                                               control=True).add_to(m)
     folium.PolyLine(points, color=color, weight=2.5, opacity=0.8,
                     ).add_to(pol_group_layer)
@@ -887,7 +895,7 @@ def get_map_polygon(marker_limit, color, query_pk, df, notebook_id, lat_col, lon
 
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
 
-    pol_group_layer = folium.map.FeatureGroup(name='Polygon - Layer:' + str(time.time()).replace(".","_") , overlay=True,
+    pol_group_layer = folium.map.FeatureGroup(name='Visualization: Polygon -- Layer:' + str(time.time()).replace(".","_") , overlay=True,
                                               control=True).add_to(m)
     folium.PolyLine(points, color=color, weight=2.0, opacity=0.8,
                     ).add_to(pol_group_layer)
@@ -1054,7 +1062,7 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, ca
             for s in data:
                 row = [float(s[lat_col]), float(s[lon_col]), float(s[heat_col])]
                 heatmap_data.append(row)
-
+            data = heatmap_data
         heatmap_result_data, min_lat, min_lon, max_lat, max_lon, max_intensity = create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index)
         dict['min_lat'] = min_lat
         dict['max_lat'] = max_lat
@@ -1074,8 +1082,8 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, ca
         min_lon = cached_data['min_lon']
         max_lon = cached_data['max_lon']
         heatmap_result_data = cached_data['heatmap_result_data']
-
-    HeatMap(heatmap_result_data,max_val=1.0, radius = 15,name="Heat Map - Layer: "+str(time.time()).replace(".","_")).add_to(m)
+    viz_layer = str(time.time()).replace(".","_")
+    HeatMap(heatmap_result_data,max_val=1.0, radius = 15,name="Visualization: Heatmap -- Layer: " + viz_layer + " -- Variable:" + str(heat_col)).add_to(m)
     # if needed use gradient above gradient={0: 'blue',0.2: 'lightblue',0.3:'cadetblue', 0.4: 'lightgreen',0.5:'green',0.6:'lime', 0.7:'yellow',0.9:'orange',1: 'red'}
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     ret_html = ""
@@ -1105,13 +1113,14 @@ def get_heatmap_query_data(query, heat_variable):
 def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=0):
     viz = PyplotVisualisation(user=request.user, time=datetime.now(), status='waiting')
     viz.save()
+    has_data = False
     try:
         round_num = get_contour_step_rounded(step)
         dict = {}
         if not os.path.isfile('visualizer/static/visualizer/temp/'+cached_file):
             if query_pk != 0:
                 query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
-                data, lat_index, lon_index, var_index, unit = get_contours_query_data(query, variable)
+                data, lat_index, lon_index, var_index, unit, var_title = get_contours_query_data(query, variable)
             else:
                 df_data, headers = load_execute_dataframe_data(request, df, notebook_id)
                 data = []
@@ -1120,42 +1129,54 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                 lat_index = 0
                 lon_index = 1
                 var_index = 2
-            Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val = get_contour_grid(data, lat_index, lon_index, step, var_index)
-            # final_data, data_grid = get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index)
-            data_grid = []
-            # mappath = create_contour_image(Lats, Lons, final_data, max_val, min_val, n_contours)
+                try:
+                    var_title = headers[var_index]
+                except:
+                    var_title = 'Variable'
+            if len(data) > 0:
+                has_data = True
 
-            xi = np.arange(min_lon, max_lon + 0.00001, step)
-            yi = np.arange(min_lat, max_lat + 0.00001, step)
+            if has_data:
+                has_data = True
+                Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val = get_contour_grid(data, lat_index, lon_index, step, var_index)
+                # final_data, data_grid = get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index)
+                data_grid = []
+                # mappath = create_contour_image(Lats, Lons, final_data, max_val, min_val, n_contours)
 
-            time_threshold = datetime.now() - timedelta(hours=1)
-            oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
-            while len(PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='running')) > 0 or int(oldest_viz.id) != viz.id:
-                time.sleep(5)
+                xi = np.arange(min_lon, max_lon + 0.00001, step)
+                yi = np.arange(min_lat, max_lat + 0.00001, step)
+
+                time_threshold = datetime.now() - timedelta(hours=1)
                 oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
-            viz.status = 'running'
-            viz.save()
-            mappath = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
-            print 'mappath'
-            print mappath
-            legpath = get_contour_legend(max_val, min_val)
-            # legpath = ''
-            print 'legpath'
-            print legpath
+                while len(PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='running')) > 0 or int(oldest_viz.id) != viz.id:
+                    time.sleep(5)
+                    oldest_viz = PyplotVisualisation.objects.filter(time__gt=time_threshold).filter(status='waiting').order_by('time').first()
+                viz.status = 'running'
+                viz.save()
+                mappath, data_grid = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
+                print 'mappath'
+                print mappath
+                legpath = get_contour_legend(max_val, min_val, var_title)
+                # legpath = ''
+                print 'legpath'
+                print legpath
 
-            dict['min_lat'] = min_lat
-            dict['max_lat'] = max_lat
-            dict['min_lon'] = min_lon
-            dict['max_lon'] = max_lon
-            dict['lats_bins_min'] = lats_bins_min = lats_bins[0]
-            dict['lons_bins_min'] = lons_bins_min = lons_bins[0]
-            dict['lats_bins_max'] = lats_bins_max = lats_bins[-1]
-            dict['lons_bins_max'] = lons_bins_max = lons_bins[-1]
-            dict['image_path'] = mappath
-            dict['leg_path'] = legpath
-            dict['data_grid'] = data_grid
-            with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
-                json.dump(dict, f)
+                dict['min_lat'] = min_lat
+                dict['max_lat'] = max_lat
+                dict['min_lon'] = min_lon
+                dict['max_lon'] = max_lon
+                dict['lats_bins_min'] = lats_bins_min = lats_bins[0]
+                dict['lons_bins_min'] = lons_bins_min = lons_bins[0]
+                dict['lats_bins_max'] = lats_bins_max = lats_bins[-1]
+                dict['lons_bins_max'] = lons_bins_max = lons_bins[-1]
+                dict['image_path'] = mappath
+                dict['leg_path'] = legpath
+                dict['data_grid'] = data_grid
+                dict['var_title'] = var_title
+                with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
+                    json.dump(dict, f)
+            else:
+                has_data = False
         else:
             print ('Contours data is cached!')
             with open('visualizer/static/visualizer/temp/' + cached_file) as f:
@@ -1171,17 +1192,23 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
             mappath = cached_data['image_path'].encode('ascii')
             legpath = cached_data['leg_path'].encode('ascii')
             data_grid = cached_data['data_grid']
-            data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
+            var_title = cached_data['var_title']
+            has_data = True
+        if has_data:
+            print viz.id + lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, max_lat, max_lon, min_lat, min_lon
+            mapname = create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
+                                    max_lon, min_lat, min_lon, legpath, var_title)
 
-        print viz.id + lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, max_lat, max_lon, min_lat, min_lon
-        mapname = create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
-                                max_lon, min_lat, min_lon, legpath)
-
-        print 'mapname ok'
-        map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
-                                                  step, mapname)
-        viz.status = 'done'
-        viz.save()
+            print 'mapname ok'
+            map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
+                                                      step, mapname, unit, var_title)
+            viz.status = 'done'
+            viz.save()
+        else:
+            ret_html = ''
+            map_id = ''
+            legpath = ''
+            unit = ''
         visualisation_type_analytics('get_map_contour')
         return m, ret_html, map_id, legpath, unit
 
@@ -1196,7 +1223,8 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
         raise Exception('An error occurred while creating the contours on map.')
 
 
-def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname):
+def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname,
+                           unit, var_title):
     f = open(mapname, 'r')
     map_html = f.read()
     soup = BeautifulSoup(map_html, 'html.parser')
@@ -1208,13 +1236,11 @@ def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, m
     if len(css_all) > 3:
         css_all = [css.prettify() for css in css_all[3:]]
     f.close()
-    # import pdb
-    # pdb.set_trace()
     temp_html = render_to_string('visualizer/map_viz_folium.html',
                                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step,
                                   'data_grid': data_grid, 'min_lat': min_lat,
                                   'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon,
-                                  'agg_function': agg_function, 'legend_id': legpath})
+                                  'agg_function': agg_function, 'legend_id': legpath, 'var_title': var_title})
     if "var startsplitter = 42;" in temp_html:
         ret_html = "<script> " + temp_html.split("var startsplitter = 42;")[1].split("var endsplitter = 42;")[
             0] + " </script>"
@@ -1224,7 +1250,7 @@ def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, m
 
 
 def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat, max_lon,
-                            min_lat, min_lon, legpath):
+                            min_lat, min_lon, legpath, var_title):
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     # read in png file to numpy array
     data_img = Image.open(mappath)
@@ -1233,7 +1259,8 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     # Overlay the image
     contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
-    contour_layer.layer_name = 'Contours On Map - Layer:' + str(time.time()).replace(".","_")
+    contour_layer.layer_name = 'Visualization: Contours On Map -- Layer:' + str(time.time()).replace(".","_") + ' -- ' \
+                                                                                                                'Variable: ' + str(var_title)
     m.add_child(contour_layer)
     legend_img = Image.open(legpath)
     legend = trim(legend_img)
@@ -1242,8 +1269,9 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     # contour_legend_layer.layer_name = 'Contours Legend - Layer:' + str(time.time()).replace(".", "_")
     # m.add_child(contour_legend_layer)
     # Overlay an extra coastline field (to be removed)
-    folium.GeoJson(open('ne_50m_land.geojson').read(),
-                   style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
+    folium.GeoJson(open('ne_10m_land.json').read(),
+                   style_function=lambda feature: {'fillColor': 'grey', 'fillOpacity': 0.9, 'color': 'black',
+                                                   'weight': 2}) \
         .add_to(m) \
         .layer_name = 'Coastline - Layer'
     # Parse the HTML to pass to template through the render
@@ -1254,14 +1282,15 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     return mapname
 
 
-def get_contour_legend(max_val, min_val):
+def get_contour_legend(max_val, min_val, var_title):
     a = np.array([[min_val, max_val]])
     pl.figure(figsize=(2.8, 0.4))
     img = pl.imshow(a, cmap="rainbow")
     pl.gca().set_visible(False)
-    cax = pl.axes([0.1, 0.2, 0.8, 0.6])
+    cax = pl.axes([0.1, 0.2, 1.5, 0.6])
     cbar = pl.colorbar(orientation="horizontal", cax=cax)
     cbar.ax.tick_params(labelsize=9, colors="#ffffff")
+    cbar.set_label(var_title, color="#ffffff", fontsize='small')
     ts = str(time.time()).replace(".", "")
     # legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
     import sys
@@ -1304,24 +1333,18 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     len_xi = len(xi)
     len_yi = len(yi)
     land = None
+    print 'checking is land'
     for x_index, x in enumerate(xi):
         for y_index, y in enumerate(yi):
             land = False
-            xcord, ycord = bm(x, y)
-            if bm.is_land(xcord, ycord):
-                land = True
-            xcord, ycord = bm(x+0.1, y)
-            if bm.is_land(xcord, ycord):
-                land = True
-            xcord, ycord = bm(x, y+0.1)
-            if bm.is_land(xcord, ycord):
-                land = True
-            # xcord, ycord = bm(x+0.1, y+0.1)
-            # if bm.is_land(xcord, ycord):
-            #     land = True
+            # x_offset_list = y_offset_list = [-0.075, -0.05, -0.025, -0.01, 0, 0.01, 0.025, 0.05, 0.075]
+            x_offset_list = y_offset_list = [0]
+            for x_offset in x_offset_list:
+                for y_offset in y_offset_list:
+                    xcord, ycord = bm(x + x_offset, y + y_offset)
+                    if bm.is_land(xcord, ycord):
+                        land = True
 
-            # print 'examining ' + str(x) + ', ' + str(y)
-            # print str(land)
             if land:
                 # try:
                 #     zi[y_index-1][x_index-1] = None
@@ -1355,17 +1378,27 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     # fig, ax1 = plt.subplots(nrows=1)
     min_val = None
     max_val = None
-    for r in zi:
-        for c in r:
-            if c is not None:
+    # import pdb
+    # pdb.set_trace()
+    for i, r in enumerate(zi):
+        for j, c in enumerate(r):
+            if str(c) == '--':
+                zi[i][j] = None
+                print '--'
+                continue
+            if c is not None and not np.isnan(c):
                 min_val = c
                 max_val = c
                 break
         if min_val is not None:
             break
-    for r in zi:
-        for c in r:
-            if c is not None:
+    for i, r in enumerate(zi):
+        for j, c in enumerate(r):
+            if str(c) == '--':
+                zi[i][j] = None
+                print '--'
+                continue
+            if c is not None and not np.isnan(c):
                 if c < min_val:
                     min_val = c
                 if c > max_val:
@@ -1403,7 +1436,21 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     plt.close()
     fig = None
     ax = None
-    return mappath
+    new_data_grid = []
+    try:
+        data_grid = zi.data.tolist()
+        for row in data_grid:
+            new_row = []
+            for el in row:
+                if np.isnan(el):
+                    new_row.append(-9999999)
+                else:
+                    new_row.append(el)
+            new_data_grid.append(new_row)
+        data_grid = new_data_grid
+    except:
+        data_grid = []
+    return mappath, data_grid
 
 
 def get_contour_points(data, lat_index, lats_bins, lon_index, lons_bins, min_lat, min_lon, step, var_index):
@@ -1487,13 +1534,16 @@ def get_contours_query_data(query, variable):
         if c['name'] == variable:
             var_index = idx
             unit = c['unit']
+            var_title = c['title'].encode('ascii')
         elif c['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
         elif c['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
     data = [row for row in result_data if row[var_index] is not None]
+
     # print("THE UNIT IS " + unit)
-    return data, lat_index, lon_index, var_index, unit
+    data = result_data
+    return data, lat_index, lon_index, var_index, unit, var_title
 
 
 
@@ -1511,6 +1561,32 @@ def get_contour_step_rounded(step):
 
 
 def get_marker_query_data(query, variable, color_col):
+    var_title = []
+    var_unit = []
+    try:
+        query_data = execute_query_method(query)
+    except:
+        raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    data = query_data[0]['results']
+    result_headers = query_data[0]['headers']
+    time_index = lat_index = lon_index = color_index = -1
+    var_index = []
+    for idx, c in enumerate(result_headers['columns']):
+        if c['name'].split('_', 1)[1] == 'latitude':
+            lat_index = idx
+        elif c['name'].split('_', 1)[1] == 'longitude':
+            lon_index = idx
+        elif c['name'].split('_', 1)[1] == 'time':
+            time_index = idx
+        elif c['name'] in variable:
+            var_index.append(idx)
+            var_title.append(c['title'].encode('ascii'))
+            var_unit.append(c['unit'].encode('ascii'))
+        elif c['name'] == color_col:
+            color_index = idx
+    return data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit
+
+def get_live_ais_query_data(query, variable):
     try:
         query_data = execute_query_method(query)
     except:
@@ -1519,37 +1595,55 @@ def get_marker_query_data(query, variable, color_col):
     result_headers = query_data[0]['headers']
     var_title = var_unit = None
     time_index = lat_index = lon_index = var_index = color_index = -1
-    for idx, c in enumerate(result_headers['columns']):
-        if c['name'].split('_', 1)[1] == 'latitude':
+    for idx, st in enumerate(result_headers['columns']):
+        if st['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
-        elif c['name'].split('_', 1)[1] == 'longitude':
+        elif st['name'].split('_', 1)[1] == 'longitude':
             lon_index = idx
-        elif c['name'].split('_', 1)[1] == 'time':
+        elif st['name'].split('_', 1)[1] == 'time':
             time_index = idx
-        elif c['name'] == variable:
+        elif st['name'] == variable:
             var_index = idx
-            var_title = c['title'].encode('ascii')
-            var_unit = c['unit'].encode('ascii')
-        elif c['name'] == color_col:
-            color_index = idx
-    return data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit
+            var_title = st['title'].encode('ascii')
+            var_unit = st['unit'].encode('ascii')
+    return data, lat_index, lon_index, time_index, var_index, var_title, var_unit
 
 
 
-def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request, cached_file, dataset_id=None):
+def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_function, lat_col, lon_col, m, request, cached_file,df_var_unit, dataset_id=None):
     dic = {}
     print variable
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
+            varidx_offset = 0
             if dataset_id is not None:
                 query = AbstractQuery.objects.get(pk=int(load_modify_query_for_grid_coverage(dataset_id, marker_limit)))
             else:
                 query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
             data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '')
         elif df != '':
-            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(df, lat_col, lon_col, notebook_id, request, variable)
-            var_title = 'title'
-            var_unit = 'unit'
+            data, headers = load_execute_dataframe_data(request, df, notebook_id)
+            markers_data = []
+            lat_index = 0
+            lon_index = 1
+            varidx_offset = 0
+            var_index = []
+            var_titles = []
+            # var_units = []
+            for v in variable:
+                var_titles.append(v)
+                # var_units.append(df_var_unit)
+                var_index.append(varidx_offset)
+                varidx_offset = varidx_offset + 1
+            varidx_offset = 2
+            for s in data:
+                row = [float(s[lat_col]), float(s[lon_col])]
+                for v in variable:
+                    row.append(s[v])
+                markers_data.append(row)
+            data = markers_data
+            var_title = var_titles
+            var_unit = df_var_unit
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
 
@@ -1559,6 +1653,7 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
         dic['var_index'] = var_index
         dic['var_title'] = var_title
         dic['var_unit'] = var_unit
+        dic['offset_var_idx'] = varidx_offset
         with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
             json.dump(dic, f, default=myconverter)
         visualisation_type_analytics('get_map_markers_grid')
@@ -1572,23 +1667,29 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
         var_index = cached_data['var_index']
         var_title = cached_data['var_title']
         var_unit = cached_data['var_unit']
+        varidx_offset = cached_data['offset_var_idx']
 
-    ret_html = create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit)
+    ret_html = create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit, varidx_offset)
     return m, ret_html
 
 
 
-def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, agg_function, lat_col, lon_col, color_col, use_color_col, m, request,cached_file):
+def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vessel_column, vessel_id, variable, var_unt, agg_function, lat_col, lon_col, time_col, color_col, use_color_col, m, request,cached_file):
     dic = {}
+
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_column, vessel_id, color_col, agg_function, use_color_col)
             data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_query_data(query, variable, color_col)
         elif df != '':
-            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, notebook_id, request, variable)
+            data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, time_col, notebook_id, request, variable)
+            var_unit = var_unt[0]
+            var_index = [var_index]
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
-
+        var_title = variable
+        var_unit = var_unit[0]
+        var_index = var_index[0]
         dic['data'] = data
         dic['color_index'] = color_index
         dic['lat_index'] = lat_index
@@ -1620,7 +1721,8 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vesse
 
 def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_index, m, time_index, var_index,
                                 var_title, var_unit, vessel_id):
-    pol_group_layer = folium.map.FeatureGroup(name='Markers - Vessel Course Layer : ' + str(time.time()).replace(".","_") + '/ Ship ID: ' + str(vessel_id),
+    vessel_titles = [el.encode('ascii') for el in vessel_id]
+    pol_group_layer = folium.map.FeatureGroup(name='Visualization: Markers - Vessel Course -- Layer : ' + str(time.time()).replace(".","_") + ' -- Ship ID(s): ' + str(vessel_titles),
                                               overlay=True,
                                               control=True).add_to(m)
     color_dict = dict()
@@ -1676,7 +1778,7 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
     return ret_html
 
 
-def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit):
+def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_title, var_unit, varidx_offset):
     pol_group_layer = folium.map.FeatureGroup(name='Markers - Grid Layer : ' + str(time.time()).replace(".","_") ,
                                               overlay=True,
                                               control=True).add_to(m)
@@ -1695,10 +1797,18 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
             max_lon = d[lon_index]
         if d[lon_index] < min_lon and d[lon_index] is not None:
             min_lon = d[lon_index]
-        if d[var_index] is not None:
+        flag = False
+        string_var = ''
+        count = 0
+        for v_idx in var_index:
+            if d[v_idx +varidx_offset] is not None:
+                flag = True
+                string_var = string_var + var_title[count] + ": " + str(round(d[v_idx+varidx_offset],3)) +" "+ str(var_unit[count])+"<br>"
+            count = count + 1
+        if flag:
             folium.Marker(
                 location=[d[lat_index], d[lon_index]],
-                popup=str(var_title) + ": " + str(round(d[var_index],3)) +" "+ str(var_unit)+"<br>Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
+                popup= string_var + "Latitude: " + str(d[lat_index]) + "<br>Longitude: " + str(d[lon_index]),icon=folium.Icon(color=marker_color)).add_to(marker_cluster)
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
@@ -1708,38 +1818,45 @@ def create_marker_grid_points(data, lat_index, lon_index, m, var_index, var_titl
     return ret_html
 
 
-def get_makers_dataframe_data(color_col, df, lat_col, lon_col, notebook_id, request, variable):
-    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')[0]  # GET LAST
-    livy = service_exec.service.through_livy
-    session_id = service_exec.livy_session
-    exec_id = service_exec.id
-    updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-    if not livy:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df,
-                                                          order_by='time')
-    else:
-        json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by='time')
-    if not livy:
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    data = []
-    lat_index = 0
-    lon_index = 1
-    var_index = 2
-    color_index = 3
-    time_index = 4
-    for s in json_data:
-        row = [float(s[lat_col]), float(s[lon_col])]
-        if variable != '':
-            row.append(str(s[variable]))
+def get_makers_dataframe_data(color_col, df, lat_col, lon_col, time_col, notebook_id, request, variable):
+    try:
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
+        if not livy:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df,
+                                                              order_by=time_col)
         else:
-            row.append('')
-        if color_col != '':
-            row.append(s[color_col])
-        else:
-            row.append('')
-        data.append(row)
+            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=time_col)
+        if not livy:
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        data = []
+        lat_index = 0
+        lon_index = 1
+        time_index = 2
+        var_index = 3
+        color_index = 4
+        for s in json_data:
+            row = [float(s[lat_col]), float(s[lon_col]), s[time_col]]
+            if variable != '':
+                row.append(str(s[variable]))
+            else:
+                row.append('')
+            if color_col != '':
+                row.append(s[color_col])
+            else:
+                row.append('')
+            data.append(row)
+    except:
+        raise ValueError(
+            'The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
     return data, lat_index, lon_index, var_index, color_index, time_index
 
 
@@ -2249,6 +2366,7 @@ def create_heatmap_points(heat_col, data, lat_index, lon_index, heat_var_index):
     max_lon = float(max_lon)
     min_lon = float(min_lon)
 
+
     return heatmap_result_data, min_lat, min_lon, max_lat, max_lon, maximum
 
 
@@ -2391,160 +2509,177 @@ def map_viz_folium_heatmap_time(request):
 
 
 def get_histogram_chart_am(request):
-    query_pk = int(str(request.GET.get('query', '0')))
+    try:
+        query_pk = int(str(request.GET.get('query', '0')))
 
-    df = str(request.GET.get('df', ''))
-    notebook_id = str(request.GET.get('notebook_id', ''))
+        df = str(request.GET.get('df', ''))
+        notebook_id = str(request.GET.get('notebook_id', ''))
 
-    x_var = str(request.GET.get('x_var', ''))
-    var_unit = str(request.GET.get('x_var_unit', ''))
-    bins = int(str(request.GET.get('bins', '5')))
+        x_var = str(request.GET.get('x_var', ''))
+        var_unit = str(request.GET.get('x_var_unit', ''))
+        bins = int(str(request.GET.get('bins', '5')))
 
-    if query_pk != 0:
-        query = AbstractQuery.objects.get(pk=query_pk)
-        query = TempQuery(document=query.document)
-        doc = query.document
+        if query_pk != 0:
+            query = AbstractQuery.objects.get(pk=query_pk)
+            query = TempQuery(document=query.document)
+            doc = query.document
 
-        from_table = ''
-        table_col = ''
-        cursor = None
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == x_var:
-                    var_title = s['title']
-                    if s['type'] == 'VALUE':
-                        v_obj = Variable.objects.get(pk=int(f['type']))
-                        var_unit = v_obj.unit
-                        if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-                            from_table = f['name'][:-2] + '_' + f['type']
-                            table_col = 'value'
-                            cursor = connections['default'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                            from_table = str(v_obj.dataset.table_name)
-                            table_col = str(v_obj.name)
-                            cursor = connections['UBITECH_POSTGRES'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-                            from_table = str(v_obj.dataset.table_name)
-                            table_col = str(v_obj.name)
-                            cursor = get_presto_cursor()
+            from_table = ''
+            table_col = ''
+            cursor = None
+            for f in doc['from']:
+                for s in f['select']:
+                    if s['name'] == x_var:
+                        var_title = s['title']
+                        if s['type'] == 'VALUE':
+                            v_obj = Variable.objects.get(pk=int(f['type']))
+                            var_unit = v_obj.unit
+                            if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+                                from_table = f['name'][:-2] + '_' + f['type']
+                                table_col = 'value'
+                                cursor = connections['default'].cursor()
+                            elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                                from_table = str(v_obj.dataset.table_name)
+                                table_col = str(v_obj.name)
+                                cursor = connections['UBITECH_POSTGRES'].cursor()
+                            elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+                                from_table = str(v_obj.dataset.table_name)
+                                table_col = str(v_obj.name)
+                                cursor = get_presto_cursor()
+                        else:
+                            d_obj = Dimension.objects.get(pk=int(s['type']))
+                            v_obj = d_obj.variable
+                            var_unit = d_obj.unit
+                            if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
+                                from_table = f['name'][:-2] + '_' + f['type']
+                                table_col = d_obj.name + '_' + s['type']
+                                cursor = connections['default'].cursor()
+                            elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
+                                from_table = str(v_obj.dataset.table_name)
+                                table_col = str(d_obj.name)
+                                cursor = connections['UBITECH_POSTGRES'].cursor()
+                            elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
+                                from_table = str(v_obj.dataset.table_name)
+                                table_col = str(d_obj.name)
+                                cursor = get_presto_cursor()
                     else:
-                        d_obj = Dimension.objects.get(pk=int(s['type']))
-                        v_obj = d_obj.variable
-                        var_unit = d_obj.unit
-                        if v_obj.dataset.stored_at == 'LOCAL_POSTGRES':
-                            from_table = f['name'][:-2] + '_' + f['type']
-                            table_col = d_obj.name + '_' + s['type']
-                            cursor = connections['default'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_POSTGRES':
-                            from_table = str(v_obj.dataset.table_name)
-                            table_col = str(d_obj.name)
-                            cursor = connections['UBITECH_POSTGRES'].cursor()
-                        elif v_obj.dataset.stored_at == 'UBITECH_PRESTO':
-                            from_table = str(v_obj.dataset.table_name)
-                            table_col = str(d_obj.name)
-                            cursor = get_presto_cursor()
-                else:
-                    s['exclude'] = True
-        # print doc
-        query.document = doc
-        raw = query.raw_query
-        print raw
-        try:
-            where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
-        except:
-            where_clause = ''
+                        s['exclude'] = True
+            # print doc
+            query.document = doc
+            raw = query.raw_query
+            print raw
+            try:
+                where_clause = ' WHERE ' + str(raw.split("WHERE")[1].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
+            except:
+                where_clause = ''
 
-        try:
-            join_clause = ' JOIN ' + str(raw.split("JOIN")[1].split('WHERE')[0].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
-        except:
-            join_clause = ''
+            try:
+                join_clause = ' JOIN ' + str(raw.split("JOIN")[1].split('WHERE')[0].split(') AS')[0].split("GROUP")[0].split("ORDER")[0]) + ' '
+            except:
+                join_clause = ''
 
-        initial_from_table = from_table
-        if join_clause != '':
-            if join_clause.split('JOIN')[1].split('ON')[0].strip() == from_table:
-                from_table = raw.split("FROM")[2].split('JOIN')[0].strip()
+            initial_from_table = from_table
+            if join_clause != '':
+                if join_clause.split('JOIN')[1].split('ON')[0].strip() == from_table:
+                    from_table = raw.split("FROM")[2].split('JOIN')[0].strip()
 
-        bins -= 1
-        if where_clause == '':
-            raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
-                        histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
-                         (min({5}.{0}), max({5}.{0})) as range,
-                         count(*) as freq from {1} {4}, drb_stats {3} where {5}.{0} IS NOT NULL
+            bins -= 1
+            if where_clause == '':
+                raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
+                            histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
+                             (min({5}.{0}), max({5}.{0})) as range,
+                             count(*) as freq from {1} {4}, drb_stats {3} where {5}.{0} IS NOT NULL
+        
+                             group by 1
+                             order by 1)
+                            select range, freq
+                            from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
+            else:
+                raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
+                                    histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
+                                     (min({5}.{0}), max({5}.{0})) as range,
+                                     count(*) as freq from {1} {4}, drb_stats {3} AND {5}.{0} IS NOT NULL
     
-                         group by 1
-                         order by 1)
-                        select range, freq
-                        from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
+                                     group by 1
+                                     order by 1)
+                                    select range, freq
+                                    from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
+            # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
+            print raw_query
+            # result = execute_query_method(query)[0]
+
+            cursor.execute(raw_query)
+            data = cursor.fetchall()
+            json_data = []
+            for d in data:
+                if d[0][0] is not None :
+                    start_value = str(float(d[0][0]))
+                else :
+                    start_value = 'None'
+                if d[0][1] is not None :
+                    end_value = str(float(d[0][1]))
+                else :
+                    end_value = 'None'
+                json_data.append({"startValues": '['+ start_value + ',' + end_value + ']', "counts": str(d[1])})
+            y_var = 'counts'
+            x_var = 'startValues'
+            # print data
+            json_data = convert_unicode_json(json_data)
+            dataset_list = get_dataset_list(query)
+            analytics_dataset_visualisation(dataset_list)
         else:
-            raw_query = """with drb_stats as (select min({5}.{0}) as min, max({5}.{0}) as max from {1} {4} {3}),
-                                histogram as (select width_bucket({5}.{0}, min, max, {2}) ,
-                                 (min({5}.{0}), max({5}.{0})) as range,
-                                 count(*) as freq from {1} {4}, drb_stats {3} AND {5}.{0} IS NOT NULL
+            try:
+                bins += 1
+                var_title = x_var
+                livy = False
+                service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+                if len(service_exec) > 0:
+                    service_exec = service_exec[0]  # GET LAST
+                    session_id = service_exec.livy_session
+                    exec_id = service_exec.id
+                    updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+                    livy = service_exec.service.through_livy
+                if livy:
+                    tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
+                    try:
+                        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=session_id, mode='livy')
+                    except:
+                        pass
+                    scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var,num_of_bins=bins)
+                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=session_id, mode='livy')
+                    json_data = create_livy_scala_toJSON_paragraph(session_id=session_id, df_name=df)
 
-                                 group by 1
-                                 order by 1)
-                                select range, freq
-                                from histogram""".format(table_col, from_table, bins, where_clause, join_clause, initial_from_table)
-        # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
-        print raw_query
-        # result = execute_query_method(query)[0]
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
+                else:
+                    tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
+                    try:
+                        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=0, mode='zeppelin')
+                    except:
+                        pass
+                    scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var, num_of_bins=bins)
+                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=0, mode='zeppelin')
+                    toJSON_paragraph_id = create_zep_scala_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+                    run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+                    json_data = get_zep_scala_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
+                    delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
-        cursor.execute(raw_query)
-        data = cursor.fetchall()
-        json_data = []
-        for d in data:
-            if d[0][0] is not None :
-                start_value = str(float(d[0][0]))
-            else :
-                start_value = 'None'
-            if d[0][1] is not None :
-                end_value = str(float(d[0][1]))
-            else :
-                end_value = 'None'
-            json_data.append({"startValues": '['+ start_value + ',' + end_value + ']', "counts": str(d[1])})
-        y_var = 'counts'
-        x_var = 'startValues'
-        # print data
-        json_data = convert_unicode_json(json_data)
-        dataset_list = get_dataset_list(query)
-        analytics_dataset_visualisation(dataset_list)
-    else:
-        bins += 1
-        var_title = x_var
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=session_id, mode='livy')
-            scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var,num_of_bins=bins)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=session_id, mode='livy')
-            json_data = create_livy_scala_toJSON_paragraph(session_id=session_id, df_name=df)
-
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
-        else:
-            tempView_paragraph_id = create_zep_tempView_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id, livy_session_id=0, mode='zeppelin')
-            scala_histogram_paragraph_id = create_zep_scala_histogram_paragraph(notebook_id=notebook_id, title='', df_name=df, hist_col=x_var, num_of_bins=bins)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id, livy_session_id=0, mode='zeppelin')
-            toJSON_paragraph_id = create_zep_scala_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-            json_data = get_zep_scala_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=tempView_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=scala_histogram_paragraph_id)
-            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-
-        for i in range(0, len(json_data) - 1):
-            json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
-        json_data = json_data[:-1]
-        y_var = 'counts'
-        x_var = 'startValues'
+                for i in range(0, len(json_data) - 1):
+                    json_data[i]['startValues'] = str('[' + str(json_data[i]['startValues']) + ',' + str(json_data[i + 1]['startValues']) + ']')
+                var_unit = ''
+                json_data = json_data[:-1]
+                y_var = 'counts'
+                x_var = 'startValues'
+            except:
+                raise ValueError(
+                    'The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
+    except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
+        return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_histogram_chart_am')
     return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var, 'category_title': var_title + " (" +str(var_unit) + ")"})
 
@@ -2718,7 +2853,6 @@ def get_histogram_2d_matplotlib(request):
         print('Creating Histogram-2d')
         freq, xedges, yedges = np.histogram2d(list_x, list_y, bins, weights=list_counts)
         new_table = []
-
         for el in freq:
             hor_table = []
             for i in el:
@@ -2729,7 +2863,8 @@ def get_histogram_2d_matplotlib(request):
 
         xedges = [round(x, 2) for x in xedges]
         yedges = [round(y, 2) for y in yedges]
-
+        y_clean_axis = xedges[0:len(xedges)-1]
+        x_clean_axis = yedges[0:len(yedges)-1]
 
         # print('Creating X-Axis and Y-Axis different bins')
         # bin_x_cont = []
@@ -2753,6 +2888,18 @@ def get_histogram_2d_matplotlib(request):
         #     bin_y_cont.append(temp)
 
         fig, ax = plt.subplots()
+        # for i in range(len(yedges) - 1):
+        #     for j in range(len(xedges) - 1):
+        #         ax.text(xedges[j] + 0.5, yedges[i] + 0.5, freq[i, j],
+        #                 color="b", fontweight="bold", fontsize="4")
+
+        freq_html = []
+        freq_list = freq.tolist()
+        for freq_el_list in freq_list:
+            freq_row_html = []
+            for freq_el in freq_el_list:
+                freq_row_html.append(int(freq_el))
+            freq_html.append(freq_row_html)
 
         im, cbar = heatmap(new_table, xedges, yedges, ax=ax,
                            cmap="YlGn", cbarlabel="Percentage %")
@@ -2777,7 +2924,7 @@ def get_histogram_2d_matplotlib(request):
         viz.save()
         visualisation_type_analytics('get_histogram_2d_am')
         return render(request, 'visualizer/histogram_2d_matplotlib.html',
-                      {'img_name': img_name})
+                      {'img_name': img_name, 'freq_table':freq_html, 'x_axis': x_clean_axis, 'y_axis': y_clean_axis})
     except Exception, e:
         viz.status = 'failed'
         viz.save()
@@ -2866,6 +3013,15 @@ def histogram2d_load_modify_query(query_pk, x_var, y_var):
                 s['groupBy'] = False
     print doc
     doc['limit'] = []
+    not_null_filtering = {"a": {"a": str(x_var), "b": "", "op": "not_null"},
+                          "b": {"a": str(y_var), "b": "", "op": "not_null"}, "op": "AND"}
+    if doc['filters'].__len__() == 0:
+        doc['filters'] = not_null_filtering
+    else:
+        alpha_argument = doc["filters"]
+        beta_argument = not_null_filtering
+        doc['filters'] = json.loads(
+            '{"a":' + json.dumps(alpha_argument) + ', "b":' + json.dumps(beta_argument) + ', "op": "AND"}')
     doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
     query.document = doc
 
@@ -3085,9 +3241,23 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
                 # s['aggregate'] = ''   commented out this in order to get values when join on lat/lon (otherwise join on does not have agg)
                 s['groupBy'] = False
                 s['exclude'] = True
+    desc = False
     if ordering == True:
         if x_flag == True:
-            doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+            order_index = -1
+            try:
+                order_index = [x['name'] for x in doc['orderings']].index(x_var)
+            except ValueError:
+                order_index = -1
+            if order_index >= 0:
+                if doc['orderings'][order_index]['type'] == 'ASC':
+                    desc = False
+                else:
+                    desc = True
+            else:
+                doc['orderings'] = [{'name': x_var, 'type': 'ASC'}]
+                desc = False
+
         else:
             raise ValueError('-Variable or Dimension for the X-Axis of Line-Charts and Column-Charts is needed.\n-Variable or Dimension for creating the sub-groups of the Pie-Chart is needed.')
     try:
@@ -3098,7 +3268,7 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
     except:
         pass
     query.document = doc
-    return query
+    return query, desc
 
 def load_modify_query_aggregate(query_pk, var, agg_function):
     query = AbstractQuery.objects.get(pk=query_pk)
@@ -3148,9 +3318,22 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
                 # s['aggregate'] = ''
                 s['groupBy'] = False
                 s['exclude'] = True
+    desc = False
     if ordering == True:
         if x_flag == True:
-            doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+            time_index = -1
+            try:
+                time_index = [x['name'].split('_', 1)[1] for x in doc['orderings']].index('time')
+            except ValueError:
+                time_index = -1
+            if time_index >= 0:
+                if doc['orderings'][time_index]['type'] == 'ASC':
+                    desc = False
+                else:
+                    desc = True
+            else:
+                doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+                desc = False
         else:
             raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
     try:
@@ -3160,7 +3343,7 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
     except:
         pass
     query.document = doc
-    return query, order_var, min_period
+    return query, order_var, min_period, desc
 
 
 def get_chart_query_data(query, x_var, y_var_list):
@@ -3210,37 +3393,40 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_
     y_title_list = []
     livy = False
     service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-    if len(service_exec) > 0:
-        service_exec = service_exec[0]  # GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
-    if livy:
-        if ordering:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+    try:
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
+        if livy:
+            if ordering:
+                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=x_var, order_type='ASC')
+            else:
+                json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
         else:
-            json_data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
-    else:
-        if ordering:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var,
-                                                          order_type='ASC')
-        else:
-            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-        json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            if ordering:
+                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df, order_by=x_var,
+                                                              order_type='ASC')
+            else:
+                toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            json_data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
 
-    x_m_unit = x_var_unit
-    x_var_title = x_var
+        x_m_unit = x_var_unit
+        x_var_title = x_var
 
-    for i, x in enumerate(y_var_list):
-        y_title_list.append(str(x))
-        try:
-            y_m_unit.append(str(y_var_unit_list[i]))
-        except IndexError:
-            y_m_unit.append(str(''))
-            pass
+        for i, x in enumerate(y_var_list):
+            y_title_list.append(str(x))
+            try:
+                y_m_unit.append(str(y_var_unit_list[i]))
+            except IndexError:
+                y_m_unit.append(str(''))
+                pass
+    except:
+        raise ValueError('The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
 
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
@@ -3252,7 +3438,6 @@ def get_line_chart_am(request):
         y_var_list = request.GET.getlist('y_var[]')
         agg_function = str(request.GET.get('agg_func', 'avg'))
         x_var_unit = str(request.GET.get('x_var_unit', ''))
-        y_var_unit_list = request.GET.getlist('y_var_unit[]')
         y_var_min_list = request.GET.getlist('y_var_min[]')
         same_axis = request.GET.get('same_axis', '0')
         if len(y_var_min_list) == 0:
@@ -3261,15 +3446,19 @@ def get_line_chart_am(request):
         if len(y_var_max_list) == 0:
             y_var_max_list = ['None'] * len(y_var_list)
 
+        y_var_unit_list = str(request.GET.get('y_var_unit', ''))
+        y_var_unit_list = y_var_unit_list.split(',')
         limit = str(request.GET.get('limit', 'True'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             if limit == 'True':
-                query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, True)
+                query, desc = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, True)
             else:
-                query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
+                query, desc = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
+            if desc:
+                json_data = list(reversed(json_data))
             x_var_title = x_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
                 try:
@@ -3283,6 +3472,9 @@ def get_line_chart_am(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
@@ -3302,13 +3494,24 @@ def get_time_series_am(request):
         y_var_list = request.GET.getlist('y_var[]')
         x_var_unit = str(request.GET.get('x_var_unit', ''))
         y_var_unit_list = request.GET.getlist('y_var_unit[]')
+
+        y_var_min_list = request.GET.getlist('y_var_min[]')
+        same_axis = request.GET.get('same_axis', '0')
+        if len(y_var_min_list) == 0:
+            y_var_min_list = ['None'] * len(y_var_list)
+        y_var_max_list = request.GET.getlist('y_var_max[]')
+        if len(y_var_max_list) == 0:
+            y_var_max_list = ['None'] * len(y_var_list)
+
         agg_function = str(request.GET.get('agg_func', 'avg'))
         chart_type = str(request.GET.get('chart_type', 'line'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query, order_var, min_period = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
+            query, order_var, min_period, desc = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
+            if desc:
+                json_data = list(reversed(json_data))
             min_chart_period = chart_min_period_finder(min_period)
             x_var_title = x_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
@@ -3330,10 +3533,10 @@ def get_time_series_am(request):
     visualisation_type_analytics('get_time_series_am')
     if chart_type == 'line':
         return render(request, 'visualizer/line_chart_am.html',
-                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'isDate': 'true', 'min_period':min_chart_period})
+                      {'data': json_data, 'value_col': zip(y_var_list, y_var_min_list, y_var_max_list), 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'same_axis': same_axis, 'isDate': 'true', 'min_period':min_chart_period})
     else:
         return render(request, 'visualizer/column_chart_am.html',
-                      {'data': json_data, 'value_col': y_var_list, 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'category_title': str(order_var) + " " + str(x_m_unit), 'isDate': 'true', 'min_period': min_chart_period})
+                      {'data': json_data, 'value_col': zip(y_var_list, y_var_min_list, y_var_max_list), 'm_units': y_m_unit, 'title_col': y_var_title_list, 'category_col': order_var, 'category_title': str(order_var) + " " + str(x_m_unit), 'isDate': 'true', 'min_period': min_chart_period})
 
 
 def get_column_chart_am(request):
@@ -3343,12 +3546,13 @@ def get_column_chart_am(request):
         x_var = str(request.GET.get('x_var', ''))
         y_var_list = request.GET.getlist('y_var[]')
         x_var_unit = str(request.GET.get('x_var_unit', ''))
-        y_var_unit_list = request.GET.getlist('y_var_unit[]')
+        y_var_unit_list = str(request.GET.get('y_var_unit', ''))
+        y_var_unit_list = y_var_unit_list.split(',')
         agg_function = str(request.GET.get('agg_func', 'avg'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
+            query, _ = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
             x_var_title = x_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
@@ -3363,6 +3567,9 @@ def get_column_chart_am(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
@@ -3380,12 +3587,12 @@ def get_pie_chart_am(request):
         key_var = str(request.GET.get('key_var', ''))
         value_var = str(request.GET.get('value_var', ''))
         x_var_unit = str(request.GET.get('x_var_unit', ''))
-        y_var_unit_list = request.GET.getlist('y_var_unit[]')
+        y_var_unit_list = str(request.GET.get('y_var_unit'))
         agg_function = str(request.GET.get('agg_func', 'sum'))
         if not agg_function.lower() in AGGREGATE_VIZ:
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
-            query = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
+            query, _ = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
             key_var_title = key_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
@@ -3396,11 +3603,14 @@ def get_pie_chart_am(request):
                 except ValueError as e:
                     pass
         elif df !='':
-            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], x_var_unit, y_var_unit_list, True)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,key_var_title = get_chart_dataframe_data(request, notebook_id, df, key_var, [value_var], x_var_unit, [y_var_unit_list], True)
 
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_pie_chart_am')
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title) + " (" + str(x_m_unit) + ")", 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
@@ -3437,22 +3647,28 @@ def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_
 def load_execute_dataframe_data(request, df, notebook_id):
     # import pdb
     # pdb.set_trace()
-    livy = False
-    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-    if len(service_exec) > 0:
-        service_exec = service_exec[0]  # GET LAST
-        session_id = service_exec.livy_session
-        exec_id = service_exec.id
-        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-        livy = service_exec.service.through_livy
-    if livy:
-        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
-    else:
-        toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
-        run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
-        data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-        delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
-    headers = [key for key in data[0].keys()]
+    try:
+        livy = False
+        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+        if len(service_exec) > 0:
+            service_exec = service_exec[0]  # GET LAST
+            session_id = service_exec.livy_session
+            exec_id = service_exec.id
+            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+            livy = service_exec.service.through_livy
+        if livy:
+            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df)
+        else:
+            toJSON_paragraph_id = create_zep_toJSON_paragraph(notebook_id=notebook_id, title='', df_name=df)
+            run_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id, livy_session_id=0, mode='zeppelin')
+            data = get_zep_toJSON_paragraph_response(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+            delete_zep_paragraph(notebook_id=notebook_id, paragraph_id=toJSON_paragraph_id)
+        headers = []
+        if len(data) > 0:
+            headers = [key for key in data[0].keys()]
+    except:
+        raise ValueError(
+            'The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
     return data, headers
 
 
@@ -3460,7 +3676,7 @@ def load_execute_dataframe_data(request, df, notebook_id):
 def get_data_table(request):
     try:
         query_pk, df, notebook_id = get_data_parameters(request, '')
-        column_choice = request.GET.getlist('column_choice[]')
+        column_choice = request.GET.getlist('column_choice[]','all')
         limit = 500
         offset = int(request.GET.get('offset', 0))
         if not column_choice:
@@ -3478,14 +3694,19 @@ def get_data_table(request):
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
-
+    has_data = True
+    if len(data) == 0:
+        has_data = False
     if data.__len__() < limit:
         has_next = False
     else:
         has_next = True
     visualisation_type_analytics('get_data_table')
-    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id})
+    return render(request, 'visualizer/data_table.html', {'headers': headers, 'data': data, 'query_pk': int(query_pk), 'offset':offset,'has_next': has_next, 'neg_step': limit*(-1), 'pos_step': limit, 'column_choice': column_choice, 'isJSON': isJSON, 'df': df, 'notebook_id': notebook_id, 'has_data':has_data})
 
 def map_oil_spill_hcmr(map, min_lat, max_lat, min_lon, max_lon):
     all_polygons = []
@@ -3513,9 +3734,12 @@ def hcmr_create_polygons_on_map(pol_group_layer, filepath, polygon_color, map, m
                                 metadata_path):
     shapely_polygons = []
     off_limits_flag = False
+    of = 2
+    draw_of = 3.5
     with open(metadata_path) as f:
         meta_data = json.load(f)
-        if meta_data['max_lat'] < min_lat or meta_data['min_lat'] > max_lat or meta_data['max_lon'] < min_lon or meta_data['min_lon'] > max_lon:
+        if meta_data['max_lat'] < (min_lat - of) or meta_data['min_lat'] > (max_lat + of) or\
+                        meta_data['max_lon'] < (min_lon - of) or meta_data['min_lon'] > (max_lon + of):
             off_limits_flag = True
             print 'Area off limits'
 
@@ -3531,24 +3755,34 @@ def hcmr_create_polygons_on_map(pol_group_layer, filepath, polygon_color, map, m
                     points = []
                     external_shapely = []
                     internal_shapely = []
-                    for coordinate in polygon['outer_boundary']['coordinates']:
-                        points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
-                        external_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
-                    points.append(points_outer)
-                    for inner_polygon in polygon['inner_boundaries']:
-                        hole = []
-                        single_internal_shapely = []
-                        for coordinate in inner_polygon['coordinates']:
-                            hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
-                            single_internal_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
-                        points.append(hole)
-                        points_inner.append(hole)
-                        internal_shapely.append(single_internal_shapely)
-                    count_polygons = count_polygons+1
-                    folium.PolyLine(points, color=polygon_color, weight=2.0, opacity=0.8,
-                                    fill=polygon_color
-                                    ).add_to(pol_group_layer)
-                    shapely_polygons.append(Polygon(external_shapely, internal_shapely))
+                    p_max_lon = polygon['outer_boundary']['polygon_limits']['max_lon']
+                    p_max_lat = polygon['outer_boundary']['polygon_limits']['max_lat']
+                    p_min_lon = polygon['outer_boundary']['polygon_limits']['min_lon']
+                    p_min_lat = polygon['outer_boundary']['polygon_limits']['min_lat']
+                    flag_polygon_away = False
+                    if (min_lat - draw_of) > p_max_lat or (max_lat + draw_of) < p_min_lat or (min_lon - draw_of) > \
+                            p_max_lon or (max_lon + draw_of) < p_min_lon:
+                        flag_polygon_away = True
+
+                    if not flag_polygon_away:
+                        for coordinate in polygon['outer_boundary']['coordinates']:
+                            points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                            external_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
+                        points.append(points_outer)
+                        for inner_polygon in polygon['inner_boundaries']:
+                            hole = []
+                            single_internal_shapely = []
+                            for coordinate in inner_polygon['coordinates']:
+                                hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                                single_internal_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
+                            points.append(hole)
+                            points_inner.append(hole)
+                            internal_shapely.append(single_internal_shapely)
+                        count_polygons = count_polygons+1
+                        folium.PolyLine(points, color=polygon_color, weight=2.0, opacity=1,
+                                        fill=polygon_color
+                                        ).add_to(pol_group_layer)
+                        shapely_polygons.append(Polygon(external_shapely, internal_shapely))
     return map, shapely_polygons
 
 
@@ -3667,6 +3901,10 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
                                 max_date, min_date, min_lat, max_lat, min_lon, max_lon,
                                 max_filter_date, min_filter_date))
     data = presto_cur.fetchall()
+    curr_year = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M').year
+    for el in data:
+        el[3] = ((datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f')).replace(year=curr_year)).strftime('%Y-%m-%d, %H:%M:%S.%f')
+
     has_ais = False
     if len(data)>0:
         has_ais = True
@@ -3710,8 +3948,8 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
 def get_min_max_time_for_query(start_date_string, sim_length):
     start_date = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M')
     new_date = start_date.replace(year=2011)
-    if new_date.month > 5:
-        new_date = new_date.replace(month = 5)
+    # if new_date.month > 5:
+    #     new_date = new_date.replace(month = 5)
     min_filter_date = new_date - timedelta(hours=2)
     max_filter_date = new_date + timedelta(hours=2)
 
@@ -3723,166 +3961,202 @@ def get_min_max_time_for_query(start_date_string, sim_length):
 
 def map_markers_in_time_hcmr(request):
     m = create_map()
-    # comment out map_routes until you find a way to cleanup the route-data
-    # m = map_routes(m)
     FMT, df, duration, lat_col, lon_col, markerType, marker_limit, \
     notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, \
-    ais_layer, time_interval, start_lat_lon_list, start_date, latitude, longitude, sim_length= hcmr_service_parameters(request)
-    if query_pk != 0:
-        q = AbstractQuery.objects.get(pk=int(query_pk))
-        q = Query(document=q.document)
-        doc = q.document
-
-        doc['limit'] = marker_limit
-        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
-
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == order_var:
-                    s['exclude'] = False
-                elif s['name'].split('_', 1)[1] == 'latitude':
-                    s['exclude'] = False
-                elif s['name'].split('_', 1)[1] == 'longitude':
-                    s['exclude'] = False
-                # elif s['name'] == var:
-                #     s['exclude'] = False
-                else:
-                    s['exclude'] = True
-
-        q.document = doc
-
-        query_data = execute_query_method(q)
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-        print(result_headers)
-        has_data = len(data) > 0
-        var_index = order_index = lon_index = lat_index = -1
-
-        for idx, c in enumerate(result_headers['columns']):
-            # if c['name'] == var:
-            #     var_index = idx
-            if c['name'].split('_', 1)[1] == 'latitude':
-                lat_index = idx
-            elif c['name'].split('_', 1)[1] == 'longitude':
-                lon_index = idx
-            elif c['name'] == order_var:
-                order_index = idx
-
-        features = [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [float(d[lon_index]), float(d[lat_index])],
-                },
-                "properties": {
-                    "times": [str(d[order_index])],
-                    "style": {
-                        "color": "blue",
-                    }
-                }
-            }
-            for d in data
-        ]
-        tdelta = data[1][order_index] - data[0][order_index]
-        period = 'PT{0}S'.format(tdelta.seconds)
+    ais_layer, time_interval, start_lat_lon_list, start_date, latitude, longitude, sim_length, contours_layer,\
+    contours_var = hcmr_service_parameters(request)
+    print 'HCMR Parameters Collected'
+    # if query_pk != 0:
+    #     q = AbstractQuery.objects.get(pk=int(query_pk))
+    #     q = Query(document=q.document)
+    #     doc = q.document
+    #
+    #     doc['limit'] = marker_limit
+    #     doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+    #
+    #     for f in doc['from']:
+    #         for s in f['select']:
+    #             if s['name'] == order_var:
+    #                 s['exclude'] = False
+    #             elif s['name'].split('_', 1)[1] == 'latitude':
+    #                 s['exclude'] = False
+    #             elif s['name'].split('_', 1)[1] == 'longitude':
+    #                 s['exclude'] = False
+    #             else:
+    #                 s['exclude'] = True
+    #
+    #     q.document = doc
+    #
+    #     query_data = execute_query_method(q)
+    #     data = query_data[0]['results']
+    #     result_headers = query_data[0]['headers']
+    #     print(result_headers)
+    #     has_data = len(data) > 0
+    #     order_index = lon_index = lat_index = -1
+    #
+    #     for idx, c in enumerate(result_headers['columns']):
+    #         if c['name'].split('_', 1)[1] == 'latitude':
+    #             lat_index = idx
+    #         elif c['name'].split('_', 1)[1] == 'longitude':
+    #             lon_index = idx
+    #         elif c['name'] == order_var:
+    #             order_index = idx
+    #
+    #     features = [
+    #         {
+    #             "type": "Feature",
+    #             "geometry": {
+    #                 "type": "Point",
+    #                 "coordinates": [float(d[lon_index]), float(d[lat_index])],
+    #             },
+    #             "properties": {
+    #                 "times": [str(d[order_index])],
+    #                 "style": {
+    #                     "color": "blue",
+    #                 }
+    #             }
+    #         }
+    #         for d in data
+    #     ]
+    #     tdelta = data[1][order_index] - data[0][order_index]
+    #     period = 'PT{0}S'.format(tdelta.seconds)
+    # else:
+    livy = False
+    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+    if len(service_exec) > 0:
+        service_exec = service_exec[0]  # GET LAST
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        livy = service_exec.service.through_livy
+    if livy:
+        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
     else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
-        else:
+        data = []
+        with open('visualizer/static/visualizer/files/' + data_file) as json_data:
+            data = json.load(json_data)
+            print(data[:3])
+    print 'Data Collected'
+    has_data = len(data) > 0
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+    for d in data:
+        min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
+    zoom_offset = 0.5
+    m.fit_bounds([(min_lat - zoom_offset, min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
+    print 'Zoom Set'
+    # HCMR asked to remove the zoom according to the simulated oilspill. They need the output zoomed out.
 
-            data = []
-            with open('visualizer/static/visualizer/files/' + data_file) as json_data:
-                data = json.load(json_data)
-                print(data[:3])
-        has_data = len(data) > 0
-        min_lat = 90
-        max_lat = -90
-        min_lon = 180
-        max_lon = -180
-        for d in data:
-            min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
-        zoom_offset = 0.5
-        m.fit_bounds([(min_lat - zoom_offset , min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
-        # HCMR asked to remove the zoom according to the simulated oilspill. They need the output zoomed out.
+    natura_table = []
+    min_grid_lat = ''
+    min_grid_lon = ''
+    resolution = ''
+    grid_tables = []
+    grid_lat_lon_min_max_list = []
+    if natura_layer == "true":
+        grid_files_list = []
+        for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
+            if not filename.endswith(".csv"):
+                with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
+                    natura_info = json.load(file)
+                min_grid_lat = natura_info['min_lat']
+                min_grid_lon = natura_info['min_lon']
+                max_grid_lat = natura_info['max_lat']
+                max_grid_lon = natura_info['max_lon']
+                grid_polygon = Polygon([(max_grid_lat,min_grid_lon),(min_grid_lat,min_grid_lon), (min_grid_lat,
+                        max_grid_lon), (max_grid_lat,max_grid_lon)])
+                spill_polygon = Polygon([(max_lat, min_lon), (min_lat, min_lon), (min_lat, max_lon), (max_lat, max_lon)])
+                if grid_polygon.intersects(spill_polygon):
+                    grid_files_list.append(filename)
+                    grid_lat_lon_min_max_list.append(natura_info)
+        print 'Intersection of spill area with grid areas'
 
-        natura_table = []
-        min_grid_lat = ''
-        min_grid_lon = ''
-        resolution = ''
-        if natura_layer == "true":
-            grid_files_list = []
-            grid_lat_lon_min_max_list = []
-            for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
-                if not filename.endswith(".csv"):
-                    with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
-                        natura_info = json.load(file)
-                    min_grid_lat = natura_info['min_lat']
-                    min_grid_lon = natura_info['min_lon']
-                    max_grid_lat = natura_info['max_lat']
-                    max_grid_lon = natura_info['max_lon']
-                    grid_polygon = Polygon([(max_grid_lat,min_grid_lon),(min_grid_lat,min_grid_lon), (min_grid_lat,max_grid_lon), (max_grid_lat,max_grid_lon)])
-                    spill_polygon = Polygon([(max_lat,min_lon),(min_lat,min_lon),(min_lat,max_lon),(max_lat,max_lon)])
-                    if grid_polygon.intersects(spill_polygon):
-                        grid_files_list.append(filename)
-                        grid_lat_lon_min_max_list.append(natura_info)
+        for grid_file in grid_files_list:
+            with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
+                reader = csv.reader(csvfile)
+                natura_table = [[int(e) for e in r] for r in reader]
+                csvfile.close()
+            grid_tables.append(natura_table)
+        print 'Creation of grid tables'
 
-            grid_tables = []
-            for grid_file in grid_files_list:
-                with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
-                    reader = csv.reader(csvfile)
-                    natura_table = [[int(e) for e in r] for r in reader]
-                    csvfile.close()
-                grid_tables.append(natura_table)
-
-        import pytz
-        timezone = pytz.utc
-        import datetime
-        features = [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [float(d[lon_col]), float(d[lat_col])],
-                },
-                "properties": {
-                    "times": [str(timezone.localize(datetime.datetime.strptime(d[order_var],'%Y-%m-%d %H:%M:%S')))],
-                    # "times": [str(d[order_var])],
-                    "style": {
-                        # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
-                        "color": color_point_oil_spill2(grid_tables, (d[lat_col], d[lon_col], d['Status']), grid_lat_lon_min_max_list),
-                        # "color": "red"
-                    }
+    import pytz
+    timezone = pytz.utc
+    import datetime
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [float(d[lon_col]), float(d[lat_col])],
+            },
+            "properties": {
+                "times": [str(timezone.localize(datetime.datetime.strptime(d[order_var],'%Y-%m-%d %H:%M:%S')))],
+                # "times": [str(d[order_var])],
+                "style": {
+                    # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
+                    "color": color_point_oil_spill2(grid_tables, (d[lat_col], d[lon_col], d['Status']), grid_lat_lon_min_max_list),
+                    # "color": "red"
                 }
             }
-            for d in data
-        ]
-        # print data
+        }
+        for d in data
+    ]
+    print 'Coloring of points completed'
+    # print data
 
-        # tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
-        list_of_times = [d[order_var] for d in data]
-        list_of_times = list(dict.fromkeys(list_of_times))
-        list_of_times.sort()
-        available_times = set(list_of_times)
-        period = 'PT'+ str(time_interval) +'H'
+    # tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
+    list_of_times = [d[order_var] for d in data]
+    list_of_times = list(dict.fromkeys(list_of_times))
+    list_of_times.sort()
+    available_times = set(list_of_times)
+    period = 'PT'+ str(time_interval) +'H'
 
     has_ais = False
     ais_asked = False
+
+    contour_unit = "m"
+    legend_id = ''
+    cont_ret_html = ''
     if has_data:
         if ais_layer == "true":
             m, has_ais = add_oil_spill_ais_layer(m, start_date, sim_length, start_lat_lon_list)
             ais_asked = True
+            print 'AIS Layer Completed'
 
         if natura_layer == "true":
             m, shapely_polygons = map_oil_spill_hcmr(m, min_lat, max_lat, min_lon, max_lon)
+            print 'Natura Layer Completed on map'
+
+        if contours_layer == "true":
+            c_off = 2
+            contour_qd = {"from": [{"name": "depth_0", "type": 2425, "select": [
+                {"name": "i0_depth", "type": "VALUE", "title": "Depth", "exclude": False, "groupBy": False,
+                 "datatype": "FLOAT", "aggregate": ""},
+                {"name": "i0_longitude", "type": 7484, "title": "Longitude", "exclude": "", "groupBy": False,
+                 "datatype": "FLOAT", "aggregate": ""},
+                {"name": "i0_latitude", "type": 7485, "title": "Latitude", "exclude": "", "groupBy": False,
+                 "datatype": "FLOAT", "aggregate": ""}]}], "limit": None, "offset": 0, "filters": {
+                "a": {"a": "<7485,7484>", "b": "<<-90,-180>,<90,180>>", "op": "inside_rect"},
+                "b": {"a": "i0_depth", "b": "", "op": "not_null"}, "op": "AND"}, "distinct": False, "orderings": []}
+            contour_qd['filters']['a']['b'] = "<<" + str(min_lat - c_off) + ',' + str(min_lon - c_off) + ">," \
+                        "<" + str(max_lat +c_off) + "," + str(max_lon + c_off) + ">>"
+            cont_query = AbstractQuery(document=contour_qd, user=request.user)
+            cont_query.save()
+            query_id = cont_query.id
+
+            m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(40, 0.1, contours_var, contour_unit,
+                                                                               query_id, '', '', '', '', '', 'avg', m,
+                                                                              str(time.time()).replace('.', ''),
+                                                                              request)
+            import sys
+            if sys.argv[1] == 'runserver':
+                legend_id = cont_legpath.split("static/", 1)[1]
+            else:
+                legend_id = cont_legpath.split("staticfiles/", 1)[1]
+
+            print 'Contours Layer Completed'
 
     features = convert_unicode_json(features)
 
@@ -3930,10 +4204,16 @@ def map_markers_in_time_hcmr(request):
         css_all = [css.prettify() for css in css_all[3:]]
     f.close()
     js_all = [js.replace('worldCopyJump', 'preferCanvas: true , worldCopyJump') for js in js_all]
+
+    if (cont_ret_html != ""):
+        js_all.extend([cont_ret_html])
     os.remove('templates/map.html')
 
     return render(request, 'visualizer/map_markers_in_time.html',
-                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType, 'has_data': has_data, 'ignore_every': ignore_every, 'available_times': available_times, 'has_ais': has_ais, 'ais_asked': ais_asked})
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval':
+                          period,'duration':duration, 'markerType': markerType, 'has_data': has_data, 'ignore_every':
+                          ignore_every, 'available_times': available_times, 'has_ais': has_ais, 'ais_asked':
+                          ais_asked, 'legend_id': legend_id, 'unit': contour_unit})
 
 
 def hcmr_service_parameters(request):
@@ -3956,12 +4236,15 @@ def hcmr_service_parameters(request):
     latitude = str(request.GET.get('latitude', ''))
     longitude = str(request.GET.get('longitude', ''))
     sim_length = str(request.GET.get('length', ''))
+    contours_layer = str(request.GET.get('contours_layer', ''))
+    contours_var = str(request.GET.get('contours_var', ''))
     start_lat_lon_list = []
     for c in range(1, (int(request.GET.get('valid_points', 1000)) + 1)):
         start_lat_lon_list.append([float(request.GET.get('start_lat' + str(c), 0)), float(request.GET.get('start_lon' + str(c), 0))])
 
     return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, \
-           data_file, rp_file, natura_layer, ais_layer,time_interval, start_lat_lon_list, start_date, latitude, longitude, sim_length
+           data_file, rp_file, natura_layer, ais_layer,time_interval, start_lat_lon_list, start_date, latitude, \
+           longitude, sim_length, contours_layer, contours_var
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
@@ -4088,9 +4371,145 @@ def get_aggregate_value(request):
         else:
             value, unit, var_list, var_title, _ = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
     except ValueError as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_aggregate_value')
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit, 'agg_func':agg_function, 'var_title': var_title})
+
+def get_live_ais(request):
+    m = create_map()
+    js_list = []
+    old_map_id_list = []
+    extra_js = ""
+    legend_id = ""
+    query_pk, df, notebook_id = get_data_parameters(request, '')
+    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col = get_markers_parameters(request, '')
+    list_of_vessels = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk)
+    dict_vessels = {}
+    dict_vessels['vessels'] = vessel_id
+    folium.LayerControl().add_to(m)
+    temp_map = 'templates/map1' + str(int(time.time())) + '.html'
+    m.save(temp_map)
+    map_html = open(temp_map, 'r').read()
+    soup = BeautifulSoup(map_html, 'html.parser')
+    map_id = soup.find("div", {"class": "folium-map"}).get('id')
+    js_all = soup.findAll('script')
+    if len(js_all) > 5:
+        js_all = [js.prettify() for js in js_all[5:]]
+    # print(js_all)
+    if js_list:
+        js_all.extend(js_list)
+    css_all = soup.findAll('link')
+    if len(css_all) > 3:
+        css_all = [css.prettify() for css in css_all[3:]]
+    # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
+    html1 = render_to_string('visualizer/live_ais_folium_template.html',
+                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id, 'query_pk': query_pk, 'vessel_id': json.dumps(dict_vessels), 'vessel_column': vessel_column, 'variable': variable, 'lov_json': json.dumps(list_of_vessels)})
+    # print(html1)
+    return HttpResponse(html1)
+
+
+def live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk):
+    if len(vessel_id) <= 17:
+        list_of_vessels = {}
+        for vessel in vessel_id:
+            query = load_modify_query_live_ais(query_pk, 1, vessel_column, vessel, variable)
+            data, lat_index, lon_index, time_index, var_index, var_title, var_unit = get_live_ais_query_data(query, variable)
+            vessel_dict = {}
+            vessel_dict['latitude'] = data[0][lat_index]
+            vessel_dict['longitude'] = data[0][lon_index]
+            vessel_dict['time'] = data[0][time_index]
+            vessel_dict['variable'] = data[0][var_index]
+            vessel_dict['unit'] = var_unit
+            vessel_dict['variable_title'] = var_title
+            list_of_vessels[str(vessel)] = vessel_dict
+    else:
+        raise ValueError('The visualisation is not available for more than seventeen vessels')
+    return list_of_vessels
+
+
+def ajax_get_live_ais_new_position(request):
+    query_pk = str(request.GET.get('query_pk','0'))
+    vessel_column = str(request.GET.get("vessel_column", ''))
+    variable = str(request.GET.get('variable', ''))
+    vessel_id = [int(x) for x in request.GET.getlist('vessel_id[]')]
+    result = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk)
+    return JsonResponse(result)
+
+
+
+def load_modify_query_live_ais(query_pk, marker_limit, vessel_column, vessel_id, variable):
+    query = AbstractQuery.objects.get(pk=query_pk)
+    query = TempQuery(document=query.document)
+    doc = query.document
+    time_flag = platform_flag = lat_flag = lon_flag = False
+    for f in doc['from']:
+        for s in f['select']:
+            if (s['name'].split('_', 1)[1] == 'time') and (s['exclude'] is not True):
+                order_var = s['name']
+                time_flag = True
+                s['groupBy'] = False
+                s['aggregate'] = ''
+            elif (s['name'] == variable) and (s['exclude'] is not True):
+                s['exclude'] = False
+                var_flag = True
+                if (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
+                    platform_id_filtername = str(s['name'])
+                    if str(s['type']) == "VALUE":
+                        platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                    else:
+                        platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
+                    platform_flag = True
+            elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
+                platform_id_filtername = str(s['name'])
+                s['exclude'] = False
+                s['groupBy'] = False
+                s['aggregate'] = ''
+                if str(s['type']) == "VALUE":
+                    platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
+                else:
+                    platform_id_datatype = Dimension.objects.get(pk=int(s['type'])).dataType
+                platform_flag = True
+
+            elif (s['name'].split('_', 1)[1] == 'latitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['groupBy'] = False
+                s['aggregate'] = ''
+                lat_flag = True
+            elif (s['name'].split('_', 1)[1] == 'longitude') and (s['exclude'] is not True):
+                s['exclude'] = False
+                s['groupBy'] = False
+                s['aggregate'] = ''
+                lon_flag = True
+            else:
+                s['exclude'] = True
+    if not time_flag:
+        raise ValueError('Time is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        doc['orderings'] = [{'name': order_var, 'type': 'DESC'}]
+    if not platform_flag:
+        raise ValueError(
+            'Ship/Vessel/Route/Platform ID is not a dimension of the chosen query. The requested visualisation cannot be executed.')
+    else:
+        if platform_id_datatype == "STRING":
+            vessel_argument = json.loads(
+                '{"a":"' + str(platform_id_filtername) + '", "b": "\'' + str(vessel_id) + '\'", "op": "eq"}')
+        else:
+            vessel_argument = json.loads(
+                '{"a":"' + str(platform_id_filtername) + '", "b": ' + str(vessel_id) + ', "op": "eq"}')
+
+    doc['filters'] = vessel_argument
+
+    if not lat_flag or not lon_flag:
+        raise ValueError(
+            'Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
+
+    doc['limit'] = marker_limit
+
+    query.document = doc
+    return query
 
 def myconverter(o):
     if isinstance(o, datetime):
@@ -4776,3 +5195,5 @@ def map_viz_folium_heatmap(request):
 #     # ax.set_extent(bbox)
 #     ax.coastlines(resolution='50m')
 #     return fig, ax
+
+

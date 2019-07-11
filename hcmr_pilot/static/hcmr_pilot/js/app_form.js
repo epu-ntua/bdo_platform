@@ -607,7 +607,7 @@ function create_new_oilspill(user_marker, lat_selector, lon_selector, offset, na
     });
     user_marker.setIcon(icon);
     map.addLayer(marker_layer);
-    map.locate();
+    // map.locate();
     lat_selector.val((bounds[0] + bounds[2]) / 2);
     lon_selector.val((bounds[1] + bounds[3]) / 2);
     // map.setView([(bounds[0] + bounds[2]) / 2,(bounds[1] + bounds[3]) / 2], 6);
@@ -701,6 +701,19 @@ $(document).ready(function() {
     $('.leaflet-control').css('position', 'relative');
     $('.leaflet-control').css('right', '380px');
     $('.ui.dropdown').dropdown();
+    $('#contours_sel').parent().css('bottom','6px');
+    $('#contours_sel').parent().css('margin-top','4px');
+    $('#contours_sel').parent().css('width','100%');
+    $('#contours_sel').parent().addClass('disabled');
+    // $('#contours_checkbox').parent().parent().addClass('col-sm-5');
+    $('#contours_checkbox').parent().parent().css('padding-left','0px');
+    $(this).on('change', '#contours_checkbox', function() {
+        if(this.checked) {
+            $('#contours_sel').parent().removeClass('disabled');
+        }else{
+            $('#contours_sel').parent().addClass('disabled');
+        }
+    });
     $('#time_interval').parent().css('min-width','13rem');
     $('#time_interval').parent().addClass("form-control");
     $('#time_interval').parent().css('top','3px');
@@ -1016,7 +1029,7 @@ $(document).ready(function() {
         map.addLayer(first_marker_layer);
         map.on('locationfound', onLocationfound);
         interactive_form(onLocationfound, first_user_marker);
-        map.locate();
+        // map.locate();
         map.on('click', function (e) {
             var latlng = L.latLng(e.latlng.lat, e.latlng.lng);
             first_user_marker.setLatLng(latlng).update(first_user_marker);
@@ -1053,7 +1066,7 @@ $(document).ready(function() {
         map.addLayer(first_marker_layer);
         map.on('locationfound', onLocationfound);
         interactive_form(onLocationfound, first_user_marker);
-        map.locate();
+        // map.locate();
         map.on('click', function (e) {
             var latlng = L.latLng(e.latlng.lat, e.latlng.lng);
             first_user_marker.setLatLng(latlng).update(first_user_marker);
@@ -1150,6 +1163,7 @@ $(document).ready(function() {
         var duration ;
         var wave_dataset;
         var hd_dataset;
+        var contours_var;
         // var depth = 0;
         if (scenario === 1 || scenario ===3) {
             lat = $('#lat').val();
@@ -1161,6 +1175,7 @@ $(document).ready(function() {
             duration = $("#vis_duration").val();
             wave_dataset = $("#sel1").val();
             hd_dataset = $("#sel2").val();
+            contours_var = $("#contours_sel").val();
             // if (scenario===3){
             //     depth = $('#depth').val();
             // }
@@ -1220,6 +1235,7 @@ $(document).ready(function() {
             console.log(start_date);
             var natura_layer = $('input[name="natura_checkbox"]:checked').length > 0;
             var ais_layer = $('input[name="ais_checkbox"]:checked').length > 0;
+            var contours_layer = $('input[name="contours_checkbox"]:checked').length > 0;
             var url = "/oilspill/" +
                 "scenario" + scenario +
                 "/process/?" +
@@ -1255,7 +1271,9 @@ $(document).ready(function() {
                 "&wave_model=" + wave_dataset +
                 "&hd_model=" + hd_dataset +
                 "&natura_layer=" + natura_layer +
-                "&ais_layer=" + ais_layer;
+                "&ais_layer=" + ais_layer +
+                "&contours_layer=" + contours_layer +
+                "&contours_var=" + contours_var;
 
 
 

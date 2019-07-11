@@ -44,6 +44,13 @@
         <h4 style="text-align: center; background-color: white;">No vessels were near the oil spill start at the given time frame</h4>
     {% endif %}
     {% leaflet_map map_id %}
+    {% if legend_id != "" %}
+        <div style="position:absolute; bottom:35px; left:60px; ">
+            <img src="{% static legend_id %}" alt="Legend" >
+{#            <img src="{{ legend_id }}" alt="Legend" >#}
+            <span style="color: white;">{{ unit }}</span>
+        </div>
+    {% endif %}
     <input hidden value="" id="current_time" />
     <div style="position: fixed; background:#00000063;  bottom:50px; right:50px; z-index:9999; font-size:14px; color: white">
         <div style="padding: 10px">
