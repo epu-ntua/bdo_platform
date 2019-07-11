@@ -3813,18 +3813,17 @@ def color_point_oil_spill2(natura_tables, point, max_min_loc):
                 min_lat = el['min_lat']
                 min_lon = el['min_lon']
                 resolution = el['resolution']
-                break
             count = count + 1
-        try:
-            x = int((point[0] - min_lat)*resolution)
-            y = int((point[1] - min_lon)*resolution)
-            if (x > 0) and (y > 0):
-                if table[y][x] == 1:
-                    return 'red'
-            else:
+            try:
+                x = int((point[0] - min_lat)*resolution)
+                y = int((point[1] - min_lon)*resolution)
+                if (x > 0) and (y > 0):
+                    if table[y][x] == 1:
+                        return 'red'
+                else:
+                    pass
+            except:
                 pass
-        except:
-            pass
     if point[2] == 0:
         return 'darkblue'
     elif point[2] == 1:
