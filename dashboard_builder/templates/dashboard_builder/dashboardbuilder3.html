@@ -42,11 +42,15 @@
         </div>
     </div>
 
-    <div class="row text-center">
+    <div class="row text-center" style="position: relative">
+        <span id="privacy_status" class="pull-left" style="position: absolute;left: 0;top: 20px;">
+            <input type="checkbox" name="private" value="True" checked/> Private
+        </span>
+        <span id="sharing_status" class="pull-left" style="position: absolute;left: 0;top: 40px;">
+            <input type="checkbox" name="can_be_shared" value="False"/> Can be shared?
+        </span>
         <input class="form-control text-center" type="text" id="dashboard_title"
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
-        <span id="privacy_status" class="pull-left"><input type="checkbox" name="private" value="True" checked/> Private<br></span>
-        <span id="sharing_status" class="pull-left"><input type="checkbox" name="can_be_shared" value="False"/> Can be shared? <br></span>
     </div>
 
     <div class="row text-left">
@@ -55,7 +59,7 @@
             <i class="fa fa-plus-circle o-white"></i> New Widget
         </button>
 
-        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" style="display: none">
+        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-success" style="display: none">
             Save Dashboard
         </button>
 
@@ -278,6 +282,11 @@
 {% endblock %}
 
 {% block js %}
+    <script>
+        $(document).ready(function($){
+            $('#dashboard_title').closest('.form-group').css('width', '60%').css('margin-left', '20%')
+        });
+    </script>
 
     <script type="text/javascript" src={% static '/js/angular.js' %}></script>
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>

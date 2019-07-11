@@ -23,7 +23,7 @@
         </style>
     {% endfor %}
     <link rel="stylesheet" type="text/css" href="{% static 'dashboard_builder/css/dashboard_builder_css.css' %}?bdo_version={{ settings.BDO_VERSION }}"/>
-
+    <link rel="stylesheet" type="text/css" href = "{% static 'vendor/bootstrap-tour/src/bootstrap-tour.min.css' %}"/>
 
 {% endblock %}
 
@@ -41,18 +41,22 @@
         </div>
     </div>
 
-    <div class="row text-center">
+    <div class="row text-center"  style="position: relative">
+        <span id="privacy_status" class="pull-left" style="position: absolute;left: 0;top: 20px;">
+            <input type="checkbox" name="private" {% if dashboard.private %}value="True" checked {% else %} value="False" {% endif %}/> Private
+        </span>
+        <span id="sharing_status" class="pull-left" style="position: absolute;left: 0;top: 40px;">
+            <input type="checkbox" name="can_be_shared" {% if dashboard.can_be_shared %}value="True" checked {% else %} value="False" {% endif %}/> Can be shared?
+        </span>
         <input class="form-control text-center" type="text" id="dashboard_title"
                value="{{ dashboard_title }}" style="font-size: 20pt;"/>
-        <span class="pull-left"><input type="checkbox" name="private" value="True" checked/> Private<br></span>
-        <span class="pull-left"><input type="checkbox" name="can_be_shared" value="False"/> Can be shared<br></span>
     </div>
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal" style="padding-left: 15px;"
                 data-target="#myModal">
             <i style="float: left; margin-right: 18px" class="fa fa-plus-circle o-white"></i> <span style="float: right">New Widget</span>
         </button>
-        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-primary" >
+        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-success" >
             Save Dashboard
         </button>
         {% if is_owner %}
@@ -79,7 +83,7 @@
                     <div ng-class="{'ng-wrapper': item.noteData == ''}" ng-switch="!!item.url" >
                         <div class="ng-wrapper" ng-switch-when="true">
                             <div class="loadingFrame"><img src="{% static 'img/loading_gif.gif' %}"/></div>
-                            <iframe  class="iframe-class" src=[[item.url]] frameborder='0' onLoad="hideGif( this, event )" ></iframe>
+                            <iframe  class="iframe-class" src="[[item.url]]" frameborder='0' onLoad="hideGif( this, event )" ></iframe>
                         </div>
                     </div>
                     <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.noteData">
@@ -275,6 +279,12 @@
 {% endblock %}
 
 {% block js %}
+    <script>
+        $(document).ready(function($){
+            $('#dashboard_title').closest('.form-group').css('width', '60%').css('margin-left', '20%')
+        });
+    </script>
+
 
     <script type="text/javascript" src={% static '/js/angular.js' %}></script>
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
@@ -286,6 +296,7 @@
         var viz_conf_json = JSON.parse('{{ visualisation_configuration|escapejs }}');
     </script>
     <script type="text/javascript" src={% static '/js/angular-sanitize.min.js' %}></script>
+    <script type="text/javascript" src="{% static 'vendor/bootstrap-tour/src/bootstrap-tour.min.js' %}"></script>
     <script>
         var app = angular.module('myApp', ['gridster','ngSanitize']);
 

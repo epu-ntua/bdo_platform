@@ -837,7 +837,7 @@ $("#select_data_popover").click(function () {
                     $('#config-viz-form').empty();
                     $('#config-viz-form').append(submitted_args);
                     myData = $("#config-viz-form").serialize();
-                    alert(myData);
+                    // alert(myData);
                     viz_request += '?';
                     viz_request += myData;
                     viz_request += '&query=' + $('#myModal #selected_query').val();
@@ -1169,14 +1169,16 @@ $("#select_data_popover").click(function () {
                         return tour;
                     }
                 }else if (init===6){
-                    tour.addStep({
-                        element: "#tour_input_select_data",
-                        placement: "right",
-                        title: "Select Query",
-                        content: "Select another Query to use for the creation of another layer of the visualisation.",
+                    if (tour !== undefined) {
+                        tour.addStep({
+                            element: "#tour_input_select_data",
+                            placement: "right",
+                            title: "Select Query",
+                            content: "Select another Query to use for the creation of another layer of the visualisation.",
                         });
-                    tour.next();
-                    return tour;
+                        tour.next();
+                        return tour;
+                    }
                 }else if (init===7){
                     $('.tour').hide();
                     return tour;
