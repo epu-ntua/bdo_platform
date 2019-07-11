@@ -4067,7 +4067,7 @@ def map_markers_in_time_hcmr(request):
     if natura_layer == "true":
         grid_files_list = []
         for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
-            if not filename.endswith(".csv"):
+            if filename.endswith("info"):
                 with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
                     natura_info = json.load(file)
                 min_grid_lat = natura_info['min_lat']
