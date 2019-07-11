@@ -4131,6 +4131,7 @@ def map_markers_in_time_hcmr(request):
 
     legend_id = ''
     cont_ret_html = ''
+    contour_unit = ''
     if has_data:
         if ais_layer == "true":
             m, has_ais = add_oil_spill_ais_layer(m, start_date, sim_length, start_lat_lon_list)
