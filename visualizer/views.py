@@ -1130,7 +1130,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                 lon_index = 1
                 var_index = 2
                 try:
-                    var_title = headers[var_index]
+                    var_title = str(variable)
                 except:
                     var_title = 'Variable'
             if len(data) > 0:
