@@ -39,7 +39,7 @@ import traceback
 from query_designer.models import TempQuery
 from visualizer.models import Visualization, PyplotVisualisation
 from aggregator.models import *
-
+import pyarrow.parquet as pq
 from utils import *
 from tests import *
 from django.views.decorators.cache import never_cache
@@ -3805,7 +3805,7 @@ def color_point_oil_spill2(natura_tables, point, max_min_loc):
             x = int((point[0] - min_lat)*resolution)
             y = int((point[1] - min_lon)*resolution)
             if (x > 0) and (y > 0):
-                if table[x][y] == 1:
+                if table[y][x] == 1:
                     return 'red'
             else:
                 pass
@@ -4053,7 +4053,7 @@ def map_markers_in_time_hcmr(request):
         if natura_layer == "true":
             grid_files_list = []
             for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
-                if not filename.endswith(".csv"):
+                if filename.endswith("info"):
                     with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
                         natura_info = json.load(file)
                     min_grid_lat = natura_info['min_lat']
@@ -4067,10 +4067,11 @@ def map_markers_in_time_hcmr(request):
                         grid_lat_lon_min_max_list.append(natura_info)
 
             for grid_file in grid_files_list:
-                with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
-                    reader = csv.reader(csvfile)
-                    natura_table = [[int(e) for e in r] for r in reader]
-                    csvfile.close()
+                natura_table = pq.read_table('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.parquet')
+                # with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
+                #     reader = csv.reader(csvfile)
+                #     natura_table = [[int(e) for e in r] for r in reader]
+                #     csvfile.close()
                 grid_tables.append(natura_table)
 
         import pytz
