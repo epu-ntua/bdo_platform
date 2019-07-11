@@ -83,7 +83,7 @@
                         </div>
                     </div>
                     <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.noteData">
-                        <div class="ng-wrapper" ng-switch-when="true" ng-bind-html="[[item.noteData]]">
+                        <div class="ng-wrapper" ng-switch-when="true" ng-bind-html="trustAsHtml([[item.noteData]])">
                         </div>
                     </div>
 
@@ -294,7 +294,7 @@
             $interpolateProvider.endSymbol(']]');
         });
 
-        app.controller('MainCtrl', function ($scope) {
+        app.controller('MainCtrl', function ($scope, $sce) {
             $scope.counter = "0";
             $scope.tempInnerHtml = "";
             $scope.gridsterOpts = {
@@ -330,6 +330,10 @@
                         $('.wrap1').hide();
                     }
                 }
+            };
+
+            $scope.trustAsHtml = function(string) {
+                return $sce.trustAsHtml(string.toString());
             };
 
             $scope.standardItems = [];
