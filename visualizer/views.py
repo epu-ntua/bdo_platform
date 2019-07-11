@@ -1120,7 +1120,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
         if not os.path.isfile('visualizer/static/visualizer/temp/'+cached_file):
             if query_pk != 0:
                 query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
-                data, lat_index, lon_index, var_index, unit = get_contours_query_data(query, variable)
+                data, lat_index, lon_index, var_index, unit, var_title = get_contours_query_data(query, variable)
             else:
                 df_data, headers = load_execute_dataframe_data(request, df, notebook_id)
                 data = []
@@ -1129,7 +1129,10 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                 lat_index = 0
                 lon_index = 1
                 var_index = 2
-
+                try:
+                    var_title = headers[var_index]
+                except:
+                    var_title = 'Variable'
             if len(data) > 0:
                 has_data = True
 
@@ -1153,7 +1156,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                 mappath, data_grid = create_contour_image(yi, xi, data, max_val, min_val, n_contours, lat_index, lon_index, var_index)
                 print 'mappath'
                 print mappath
-                legpath = get_contour_legend(max_val, min_val)
+                legpath = get_contour_legend(max_val, min_val, var_title)
                 # legpath = ''
                 print 'legpath'
                 print legpath
@@ -1169,6 +1172,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                 dict['image_path'] = mappath
                 dict['leg_path'] = legpath
                 dict['data_grid'] = data_grid
+                dict['var_title'] = var_title
                 with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
                     json.dump(dict, f)
             else:
@@ -1188,16 +1192,17 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
             mappath = cached_data['image_path'].encode('ascii')
             legpath = cached_data['leg_path'].encode('ascii')
             data_grid = cached_data['data_grid']
+            var_title = cached_data['var_title']
             # data_grid = [[j.encode('ascii') for j in i] for i in data_grid]
             has_data = True
         if has_data:
             print viz.id + lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, max_lat, max_lon, min_lat, min_lon
             mapname = create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat,
-                                    max_lon, min_lat, min_lon, legpath, variable)
+                                    max_lon, min_lat, min_lon, legpath, var_title)
 
             print 'mapname ok'
             map_id, ret_html = parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon,
-                                                      step, mapname,unit, variable)
+                                                      step, mapname, unit, var_title)
             viz.status = 'done'
             viz.save()
         else:
@@ -1219,7 +1224,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
         raise Exception('An error occurred while creating the contours on map.')
 
 
-def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname,unit,variable):
+def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname,unit,var_title):
     f = open(mapname, 'r')
     map_html = f.read()
     soup = BeautifulSoup(map_html, 'html.parser')
@@ -1235,7 +1240,7 @@ def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, m
                                  {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'step': step,
                                   'data_grid': data_grid, 'min_lat': min_lat,
                                   'max_lat': max_lat, 'min_lon': min_lon, 'max_lon': max_lon,
-                                  'agg_function': agg_function, 'legend_id': legpath, 'unit':unit, 'variable': variable})
+                                  'agg_function': agg_function, 'legend_id': legpath, 'var_title': var_title})
     if "var startsplitter = 42;" in temp_html:
         ret_html = "<script> " + temp_html.split("var startsplitter = 42;")[1].split("var endsplitter = 42;")[
             0] + " </script>"
@@ -1245,7 +1250,7 @@ def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, m
 
 
 def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bins_min, m, mappath, max_lat, max_lon,
-                            min_lat, min_lon, legpath, variable):
+                            min_lat, min_lon, legpath, var_title):
     m.fit_bounds([(min_lat, min_lon), (max_lat, max_lon)])
     # read in png file to numpy array
     data_img = Image.open(mappath)
@@ -1254,7 +1259,7 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     # Overlay the image
     contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
-    contour_layer.layer_name = 'Visualization: Contours On Map -- Layer:' + str(time.time()).replace(".","_") + ' -- Variable: ' + str(variable)
+    contour_layer.layer_name = 'Visualization: Contours On Map -- Layer:' + str(time.time()).replace(".","_") + ' -- Variable: ' + str(var_title)
     m.add_child(contour_layer)
     legend_img = Image.open(legpath)
     legend = trim(legend_img)
@@ -1263,8 +1268,9 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     # contour_legend_layer.layer_name = 'Contours Legend - Layer:' + str(time.time()).replace(".", "_")
     # m.add_child(contour_legend_layer)
     # Overlay an extra coastline field (to be removed)
-    folium.GeoJson(open('ne_50m_land.geojson').read(),
-                   style_function=lambda feature: {'fillColor': '#002a70', 'color': 'black', 'weight': 3}) \
+    folium.GeoJson(open('ne_10m_land.json').read(),
+                   style_function=lambda feature: {'fillColor': 'grey', 'fillOpacity': 0.9, 'color': 'black',
+                                                   'weight': 2}) \
         .add_to(m) \
         .layer_name = 'Coastline - Layer'
     # Parse the HTML to pass to template through the render
@@ -1275,15 +1281,15 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     return mapname
 
 
-def get_contour_legend(max_val, min_val):
+def get_contour_legend(max_val, min_val, var_title):
     a = np.array([[min_val, max_val]])
     pl.figure(figsize=(2.8, 0.4))
     img = pl.imshow(a, cmap="rainbow")
     pl.gca().set_visible(False)
-    cax = pl.axes([0.1, 0.2, 0.8, 0.6])
+    cax = pl.axes([0.1, 0.2, 1.5, 0.6])
     cbar = pl.colorbar(orientation="horizontal", cax=cax)
     cbar.ax.tick_params(labelsize=9, colors="#ffffff")
-    # cbar.set_label('', color='white', )
+    cbar.set_label(var_title, color="#ffffff", fontsize='small')
     ts = str(time.time()).replace(".", "")
     # legpath = 'visualizer/static/visualizer/img/temp/' + ts + 'colorbar.png'
     import sys
@@ -1335,21 +1341,14 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     for x_index, x in enumerate(xi):
         for y_index, y in enumerate(yi):
             land = False
-            xcord, ycord = bm(x, y)
-            if bm.is_land(xcord, ycord):
-                land = True
-            xcord, ycord = bm(x+0.1, y)
-            if bm.is_land(xcord, ycord):
-                land = True
-            xcord, ycord = bm(x, y+0.1)
-            if bm.is_land(xcord, ycord):
-                land = True
-            # xcord, ycord = bm(x+0.1, y+0.1)
-            # if bm.is_land(xcord, ycord):
-            #     land = True
+            # x_offset_list = y_offset_list = [-0.075, -0.05, -0.025, -0.01, 0, 0.01, 0.025, 0.05, 0.075]
+            x_offset_list = y_offset_list = [0]
+            for x_offset in x_offset_list:
+                for y_offset in y_offset_list:
+                    xcord, ycord = bm(x + x_offset, y + y_offset)
+                    if bm.is_land(xcord, ycord):
+                        land = True
 
-            # print 'examining ' + str(x) + ', ' + str(y)
-            # print str(land)
             if land:
                 # try:
                 #     zi[y_index-1][x_index-1] = None
@@ -1545,6 +1544,7 @@ def get_contours_query_data(query, variable):
         if c['name'] == variable:
             var_index = idx
             unit = c['unit']
+            var_title = c['title'].encode('ascii')
         elif c['name'].split('_', 1)[1] == 'latitude':
             lat_index = idx
         elif c['name'].split('_', 1)[1] == 'longitude':
@@ -1552,7 +1552,8 @@ def get_contours_query_data(query, variable):
     # data = [row for row in result_data if row[var_index] is not None]
     data = result_data
     # print("THE UNIT IS " + unit)
-    return data, lat_index, lon_index, var_index, unit
+    data = result_data
+    return data, lat_index, lon_index, var_index, unit, var_title
 
 
 
@@ -3743,9 +3744,12 @@ def hcmr_create_polygons_on_map(pol_group_layer, filepath, polygon_color, map, m
                                 metadata_path):
     shapely_polygons = []
     off_limits_flag = False
+    of = 2
+    draw_of = 3.5
     with open(metadata_path) as f:
         meta_data = json.load(f)
-        if meta_data['max_lat'] < min_lat or meta_data['min_lat'] > max_lat or meta_data['max_lon'] < min_lon or meta_data['min_lon'] > max_lon:
+        if meta_data['max_lat'] < (min_lat - of) or meta_data['min_lat'] > (max_lat + of) or\
+                        meta_data['max_lon'] < (min_lon - of) or meta_data['min_lon'] > (max_lon + of):
             off_limits_flag = True
             print 'Area off limits'
 
@@ -3761,24 +3765,34 @@ def hcmr_create_polygons_on_map(pol_group_layer, filepath, polygon_color, map, m
                     points = []
                     external_shapely = []
                     internal_shapely = []
-                    for coordinate in polygon['outer_boundary']['coordinates']:
-                        points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
-                        external_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
-                    points.append(points_outer)
-                    for inner_polygon in polygon['inner_boundaries']:
-                        hole = []
-                        single_internal_shapely = []
-                        for coordinate in inner_polygon['coordinates']:
-                            hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
-                            single_internal_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
-                        points.append(hole)
-                        points_inner.append(hole)
-                        internal_shapely.append(single_internal_shapely)
-                    count_polygons = count_polygons+1
-                    folium.PolyLine(points, color=polygon_color, weight=2.0, opacity=0.8,
-                                    fill=polygon_color
-                                    ).add_to(pol_group_layer)
-                    shapely_polygons.append(Polygon(external_shapely, internal_shapely))
+                    p_max_lon = polygon['outer_boundary']['polygon_limits']['max_lon']
+                    p_max_lat = polygon['outer_boundary']['polygon_limits']['max_lat']
+                    p_min_lon = polygon['outer_boundary']['polygon_limits']['min_lon']
+                    p_min_lat = polygon['outer_boundary']['polygon_limits']['min_lat']
+                    flag_polygon_away = False
+                    if (min_lat - draw_of) > p_max_lat or (max_lat + draw_of) < p_min_lat or (min_lon - draw_of) > \
+                            p_max_lon or (max_lon + draw_of) < p_min_lon:
+                        flag_polygon_away = True
+
+                    if not flag_polygon_away:
+                        for coordinate in polygon['outer_boundary']['coordinates']:
+                            points_outer.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                            external_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
+                        points.append(points_outer)
+                        for inner_polygon in polygon['inner_boundaries']:
+                            hole = []
+                            single_internal_shapely = []
+                            for coordinate in inner_polygon['coordinates']:
+                                hole.append([float(coordinate['latitude']), float(coordinate['longitude'])])
+                                single_internal_shapely.append((float(coordinate['latitude']), float(coordinate['longitude'])))
+                            points.append(hole)
+                            points_inner.append(hole)
+                            internal_shapely.append(single_internal_shapely)
+                        count_polygons = count_polygons+1
+                        folium.PolyLine(points, color=polygon_color, weight=2.0, opacity=1,
+                                        fill=polygon_color
+                                        ).add_to(pol_group_layer)
+                        shapely_polygons.append(Polygon(external_shapely, internal_shapely))
     return map, shapely_polygons
 
 
@@ -3897,6 +3911,10 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
                                 max_date, min_date, min_lat, max_lat, min_lon, max_lon,
                                 max_filter_date, min_filter_date))
     data = presto_cur.fetchall()
+    curr_year = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M').year
+    for el in data:
+        el[3] = ((datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f')).replace(year=curr_year)).strftime('%Y-%m-%d, %H:%M:%S.%f')
+
     has_ais = False
     if len(data)>0:
         has_ais = True
@@ -3940,8 +3958,8 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
 def get_min_max_time_for_query(start_date_string, sim_length):
     start_date = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M')
     new_date = start_date.replace(year=2011)
-    if new_date.month > 5:
-        new_date = new_date.replace(month = 5)
+    # if new_date.month > 5:
+    #     new_date = new_date.replace(month = 5)
     min_filter_date = new_date - timedelta(hours=2)
     max_filter_date = new_date + timedelta(hours=2)
 
@@ -3953,167 +3971,204 @@ def get_min_max_time_for_query(start_date_string, sim_length):
 
 def map_markers_in_time_hcmr(request):
     m = create_map()
-    # comment out map_routes until you find a way to cleanup the route-data
-    # m = map_routes(m)
     FMT, df, duration, lat_col, lon_col, markerType, marker_limit, \
     notebook_id, order_var, query_pk, data_file, rp_file, natura_layer, \
-    ais_layer, time_interval, start_lat_lon_list, start_date, latitude, longitude, sim_length= hcmr_service_parameters(request)
-    if query_pk != 0:
-        q = AbstractQuery.objects.get(pk=int(query_pk))
-        q = Query(document=q.document)
-        doc = q.document
-
-        doc['limit'] = marker_limit
-        doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
-
-        for f in doc['from']:
-            for s in f['select']:
-                if s['name'] == order_var:
-                    s['exclude'] = False
-                elif s['name'].split('_', 1)[1] == 'latitude':
-                    s['exclude'] = False
-                elif s['name'].split('_', 1)[1] == 'longitude':
-                    s['exclude'] = False
-                # elif s['name'] == var:
-                #     s['exclude'] = False
-                else:
-                    s['exclude'] = True
-
-        q.document = doc
-
-        query_data = execute_query_method(q)
-        data = query_data[0]['results']
-        result_headers = query_data[0]['headers']
-        print(result_headers)
-        has_data = len(data) > 0
-        var_index = order_index = lon_index = lat_index = -1
-
-        for idx, c in enumerate(result_headers['columns']):
-            # if c['name'] == var:
-            #     var_index = idx
-            if c['name'].split('_', 1)[1] == 'latitude':
-                lat_index = idx
-            elif c['name'].split('_', 1)[1] == 'longitude':
-                lon_index = idx
-            elif c['name'] == order_var:
-                order_index = idx
-
-        features = [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [float(d[lon_index]), float(d[lat_index])],
-                },
-                "properties": {
-                    "times": [str(d[order_index])],
-                    "style": {
-                        "color": "blue",
-                    }
-                }
-            }
-            for d in data
-        ]
-        tdelta = data[1][order_index] - data[0][order_index]
-        period = 'PT{0}S'.format(tdelta.seconds)
+    ais_layer, time_interval, start_lat_lon_list, start_date, latitude, longitude, sim_length, contours_layer,\
+    contours_var = hcmr_service_parameters(request)
+    print 'HCMR Parameters Collected'
+    # if query_pk != 0:
+    #     q = AbstractQuery.objects.get(pk=int(query_pk))
+    #     q = Query(document=q.document)
+    #     doc = q.document
+    #
+    #     doc['limit'] = marker_limit
+    #     doc['orderings'] = [{'name': order_var, 'type': 'ASC'}]
+    #
+    #     for f in doc['from']:
+    #         for s in f['select']:
+    #             if s['name'] == order_var:
+    #                 s['exclude'] = False
+    #             elif s['name'].split('_', 1)[1] == 'latitude':
+    #                 s['exclude'] = False
+    #             elif s['name'].split('_', 1)[1] == 'longitude':
+    #                 s['exclude'] = False
+    #             else:
+    #                 s['exclude'] = True
+    #
+    #     q.document = doc
+    #
+    #     query_data = execute_query_method(q)
+    #     data = query_data[0]['results']
+    #     result_headers = query_data[0]['headers']
+    #     print(result_headers)
+    #     has_data = len(data) > 0
+    #     order_index = lon_index = lat_index = -1
+    #
+    #     for idx, c in enumerate(result_headers['columns']):
+    #         if c['name'].split('_', 1)[1] == 'latitude':
+    #             lat_index = idx
+    #         elif c['name'].split('_', 1)[1] == 'longitude':
+    #             lon_index = idx
+    #         elif c['name'] == order_var:
+    #             order_index = idx
+    #
+    #     features = [
+    #         {
+    #             "type": "Feature",
+    #             "geometry": {
+    #                 "type": "Point",
+    #                 "coordinates": [float(d[lon_index]), float(d[lat_index])],
+    #             },
+    #             "properties": {
+    #                 "times": [str(d[order_index])],
+    #                 "style": {
+    #                     "color": "blue",
+    #                 }
+    #             }
+    #         }
+    #         for d in data
+    #     ]
+    #     tdelta = data[1][order_index] - data[0][order_index]
+    #     period = 'PT{0}S'.format(tdelta.seconds)
+    # else:
+    livy = False
+    service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
+    if len(service_exec) > 0:
+        service_exec = service_exec[0]  # GET LAST
+        session_id = service_exec.livy_session
+        exec_id = service_exec.id
+        updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
+        livy = service_exec.service.through_livy
+    if livy:
+        data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
     else:
-        livy = False
-        service_exec = ServiceInstance.objects.filter(notebook_id=notebook_id).order_by('-id')
-        if len(service_exec) > 0:
-            service_exec = service_exec[0]  # GET LAST
-            session_id = service_exec.livy_session
-            exec_id = service_exec.id
-            updateServiceInstanceVisualizations(exec_id, request.build_absolute_uri())
-            livy = service_exec.service.through_livy
-        if livy:
-            data = create_livy_toJSON_paragraph(session_id=session_id, df_name=df, order_by=order_var, order_type='ASC')
-        else:
+        data = []
+        with open('visualizer/static/visualizer/files/' + data_file) as json_data:
+            data = json.load(json_data)
+            print(data[:3])
+    print 'Data Collected'
+    has_data = len(data) > 0
+    min_lat = 90
+    max_lat = -90
+    min_lon = 180
+    max_lon = -180
+    for d in data:
+        min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
+    zoom_offset = 0.5
+    m.fit_bounds([(min_lat - zoom_offset, min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
+    print 'Zoom Set'
+    # HCMR asked to remove the zoom according to the simulated oilspill. They need the output zoomed out.
 
-            data = []
-            with open('visualizer/static/visualizer/files/' + data_file) as json_data:
-                data = json.load(json_data)
-                print(data[:3])
-        has_data = len(data) > 0
-        min_lat = 90
-        max_lat = -90
-        min_lon = 180
-        max_lon = -180
-        for d in data:
-            min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
-        zoom_offset = 0.5
-        m.fit_bounds([(min_lat - zoom_offset , min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
-        # HCMR asked to remove the zoom according to the simulated oilspill. They need the output zoomed out.
+    natura_table = []
+    min_grid_lat = ''
+    min_grid_lon = ''
+    resolution = ''
+    grid_tables = []
+    grid_lat_lon_min_max_list = []
+    if natura_layer == "true":
+        grid_files_list = []
+        for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
+            if not filename.endswith(".csv"):
+                with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
+                    natura_info = json.load(file)
+                min_grid_lat = natura_info['min_lat']
+                min_grid_lon = natura_info['min_lon']
+                max_grid_lat = natura_info['max_lat']
+                max_grid_lon = natura_info['max_lon']
+                grid_polygon = Polygon([(max_grid_lat,min_grid_lon),(min_grid_lat,min_grid_lon), (min_grid_lat,
+                        max_grid_lon), (max_grid_lat,max_grid_lon)])
+                spill_polygon = Polygon([(max_lat, min_lon), (min_lat, min_lon), (min_lat, max_lon), (max_lat, max_lon)])
+                if grid_polygon.intersects(spill_polygon):
+                    grid_files_list.append(filename)
+                    grid_lat_lon_min_max_list.append(natura_info)
+        print 'Intersection of spill area with grid areas'
 
-        natura_table = []
-        min_grid_lat = ''
-        min_grid_lon = ''
-        resolution = ''
-        grid_tables = []
-        grid_lat_lon_min_max_list = []
-        if natura_layer == "true":
-            grid_files_list = []
-            for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
-                if filename.endswith("info"):
-                    with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
-                        natura_info = json.load(file)
-                    min_grid_lat = natura_info['min_lat']
-                    min_grid_lon = natura_info['min_lon']
-                    max_grid_lat = natura_info['max_lat']
-                    max_grid_lon = natura_info['max_lon']
-                    grid_polygon = Polygon([(max_grid_lat,min_grid_lon),(min_grid_lat,min_grid_lon), (min_grid_lat,max_grid_lon), (max_grid_lat,max_grid_lon)])
-                    spill_polygon = Polygon([(max_lat,min_lon),(min_lat,min_lon),(min_lat,max_lon),(max_lat,max_lon)])
-                    if grid_polygon.intersects(spill_polygon):
-                        grid_files_list.append(filename)
-                        grid_lat_lon_min_max_list.append(natura_info)
+        for grid_file in grid_files_list:
+            natura_table = pq.read_table('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.parquet')
+            # with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
+            #     reader = csv.reader(csvfile)
+            #     natura_table = [[int(e) for e in r] for r in reader]
+            #     csvfile.close()
+            grid_tables.append(natura_table)
 
-            for grid_file in grid_files_list:
-                natura_table = pq.read_table('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.parquet')
-                # with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
-                #     reader = csv.reader(csvfile)
-                #     natura_table = [[int(e) for e in r] for r in reader]
-                #     csvfile.close()
-                grid_tables.append(natura_table)
 
-        import pytz
-        timezone = pytz.utc
-        import datetime
-        features = [
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [float(d[lon_col]), float(d[lat_col])],
-                },
-                "properties": {
-                    "times": [str(timezone.localize(datetime.datetime.strptime(d[order_var],'%Y-%m-%d %H:%M:%S')))],
-                    # "times": [str(d[order_var])],
-                    "style": {
-                        # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
-                        "color": color_point_oil_spill2(grid_tables, (d[lat_col], d[lon_col], d['Status']), grid_lat_lon_min_max_list),
-                        # "color": "red"
-                    }
+        print 'Creation of grid tables'
+    import pytz
+    timezone = pytz.utc
+    import datetime
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [float(d[lon_col]), float(d[lat_col])],
+            },
+            "properties": {
+                "times": [str(timezone.localize(datetime.datetime.strptime(d[order_var],'%Y-%m-%d %H:%M:%S')))],
+                # "times": [str(d[order_var])],
+                "style": {
+                    # "color": color_point_oil_spill(filtered_polygons, float(d[lat_col]), float(d[lon_col])),
+                    "color": color_point_oil_spill2(grid_tables, (d[lat_col], d[lon_col], d['Status']), grid_lat_lon_min_max_list),
+                    # "color": "red"
                 }
             }
-            for d in data
-        ]
-        # print data
+        }
+        for d in data
+    ]
+    print 'Coloring of points completed'
+    # print data
 
-        # tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
-        list_of_times = [d[order_var] for d in data]
-        list_of_times = list(dict.fromkeys(list_of_times))
-        list_of_times.sort()
-        available_times = set(list_of_times)
-        period = 'PT'+ str(time_interval) +'H'
+    # tdelta = datetime.strptime(data[1][order_var], FMT) - datetime.strptime(data[0][order_var], FMT)
+    list_of_times = [d[order_var] for d in data]
+    list_of_times = list(dict.fromkeys(list_of_times))
+    list_of_times.sort()
+    available_times = set(list_of_times)
+    period = 'PT'+ str(time_interval) +'H'
 
     has_ais = False
     ais_asked = False
+
+    contour_unit = "m"
+    legend_id = ''
+    cont_ret_html = ''
     if has_data:
         if ais_layer == "true":
             m, has_ais = add_oil_spill_ais_layer(m, start_date, sim_length, start_lat_lon_list)
             ais_asked = True
+            print 'AIS Layer Completed'
 
         if natura_layer == "true":
             m, shapely_polygons = map_oil_spill_hcmr(m, min_lat, max_lat, min_lon, max_lon)
+            print 'Natura Layer Completed on map'
+
+        if contours_layer == "true":
+            c_off = 2
+            contour_qd = {"from": [{"name": "depth_0", "type": 2425, "select": [
+                {"name": "i0_depth", "type": "VALUE", "title": "Depth", "exclude": False, "groupBy": False,
+                 "datatype": "FLOAT", "aggregate": ""},
+                {"name": "i0_longitude", "type": 7484, "title": "Longitude", "exclude": "", "groupBy": False,
+                 "datatype": "FLOAT", "aggregate": ""},
+                {"name": "i0_latitude", "type": 7485, "title": "Latitude", "exclude": "", "groupBy": False,
+                 "datatype": "FLOAT", "aggregate": ""}]}], "limit": None, "offset": 0, "filters": {
+                "a": {"a": "<7485,7484>", "b": "<<-90,-180>,<90,180>>", "op": "inside_rect"},
+                "b": {"a": "i0_depth", "b": "", "op": "not_null"}, "op": "AND"}, "distinct": False, "orderings": []}
+            contour_qd['filters']['a']['b'] = "<<" + str(min_lat - c_off) + ',' + str(min_lon - c_off) + ">," \
+                        "<" + str(max_lat +c_off) + "," + str(max_lon + c_off) + ">>"
+            cont_query = AbstractQuery(document=contour_qd, user=request.user)
+            cont_query.save()
+            query_id = cont_query.id
+
+            m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(40, 0.1, contours_var, contour_unit,
+                                                                               query_id, '', '', '', '', '', 'avg', m,
+                                                                              str(time.time()).replace('.', ''),
+                                                                              request)
+            import sys
+            if sys.argv[1] == 'runserver':
+                legend_id = cont_legpath.split("static/", 1)[1]
+            else:
+                legend_id = cont_legpath.split("staticfiles/", 1)[1]
+
+            print 'Contours Layer Completed'
 
     features = convert_unicode_json(features)
 
@@ -4161,10 +4216,16 @@ def map_markers_in_time_hcmr(request):
         css_all = [css.prettify() for css in css_all[3:]]
     f.close()
     js_all = [js.replace('worldCopyJump', 'preferCanvas: true , worldCopyJump') for js in js_all]
+
+    if (cont_ret_html != ""):
+        js_all.extend([cont_ret_html])
     os.remove('templates/map.html')
 
     return render(request, 'visualizer/map_markers_in_time.html',
-                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval': period,'duration':duration, 'markerType': markerType, 'has_data': has_data, 'ignore_every': ignore_every, 'available_times': available_times, 'has_ais': has_ais, 'ais_asked': ais_asked})
+                      {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'data': features, 'time_interval':
+                          period,'duration':duration, 'markerType': markerType, 'has_data': has_data, 'ignore_every':
+                          ignore_every, 'available_times': available_times, 'has_ais': has_ais, 'ais_asked':
+                          ais_asked, 'legend_id': legend_id, 'unit': contour_unit})
 
 
 def hcmr_service_parameters(request):
@@ -4187,12 +4248,15 @@ def hcmr_service_parameters(request):
     latitude = str(request.GET.get('latitude', ''))
     longitude = str(request.GET.get('longitude', ''))
     sim_length = str(request.GET.get('length', ''))
+    contours_layer = str(request.GET.get('contours_layer', ''))
+    contours_var = str(request.GET.get('contours_var', ''))
     start_lat_lon_list = []
     for c in range(1, (int(request.GET.get('valid_points', 1000)) + 1)):
         start_lat_lon_list.append([float(request.GET.get('start_lat' + str(c), 0)), float(request.GET.get('start_lon' + str(c), 0))])
 
     return FMT, df, duration, lat_col, lon_col, markerType, marker_limit, notebook_id, order_var, query_pk, \
-           data_file, rp_file, natura_layer, ais_layer,time_interval, start_lat_lon_list, start_date, latitude, longitude, sim_length
+           data_file, rp_file, natura_layer, ais_layer,time_interval, start_lat_lon_list, start_date, latitude, \
+           longitude, sim_length, contours_layer, contours_var
 
 
 def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
@@ -5143,4 +5207,3 @@ def map_viz_folium_heatmap(request):
 #     # ax.set_extent(bbox)
 #     ax.coastlines(resolution='50m')
 #     return fig, ax
-

@@ -60,7 +60,7 @@
         var final_data={{ data_grid |safe}};
         var agg_func= "{{ agg_function }}";
         var var_unit = "{{ unit }}";
-        var var_title = "{{ variable }}";
+        var var_title = "{{ var_title }}";
         var popup = L.popup();
         map.on('click',latLngPop);
 
@@ -101,7 +101,7 @@
                     popup.setLatLng(e.latlng)
                         .setContent("Latitude Area: [" + sa_lat +"  ,  " + ea_lat +"]"+
                             "<br>Longitude Area: [" + sa_lon +"  ,  " + ea_lon +"]"+
-                            "<br>" + var_title +"("+ agg_func +") : " + value+" "+ var_unit)
+                            "<br>" + var_title +": " + value+" "+ var_unit)
                         .openOn(map);
                 }
             }

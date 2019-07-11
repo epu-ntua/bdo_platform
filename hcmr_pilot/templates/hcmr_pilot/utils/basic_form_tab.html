@@ -127,12 +127,20 @@
 {#        <div class="checkbox">#}
 {#            <label><input type="checkbox" name="optradio" checked>None</label>#}
 {#        </div>#}
-        <div class="checkbox" style="margin: 3px 0;">
+        <div class="checkbox" style="margin: 6px 0;">
             <label><input type="checkbox" name="natura_checkbox" id="natura_checkbox">Natura protected areas</label>
         </div>
-        <div class="checkbox" style="margin: 3px 0;">
+        <div class="checkbox" style="margin: 6px 0;">
             <label><input type="checkbox" name="ais_checkbox" id="ais_checkbox">AIS data</label>
         </div>
+        <div class="checkbox" style="margin: 6px 0;">
+            <label><input type="checkbox" name="contours_checkbox" id="contours_checkbox">Contours on Map</label>
+        </div>
+
+         <select class="dropdown ui" id="contours_sel">
+            <option value="i0_depth">Mediterranean Bathymetry</option>
+         </select>
+
         </div>
     {% endifequal %}
     {% ifequal scenario '2' %}
