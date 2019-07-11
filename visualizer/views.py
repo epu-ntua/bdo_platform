@@ -4142,12 +4142,16 @@ def map_markers_in_time_hcmr(request):
 
         if contours_layer == "true":
             c_off = 2
-            contour_qd = {"from": [{"name": "depth_0", "type": 2425, "select": [
+            c_dataset = Dataset.objects.get(table_name='hcmr_poseidon_med_bathymetry')
+            c_variable = Variable.objects.get(dataset=c_dataset, name='depth')
+            c_dim_lat = Dimension.objects.get(variable=c_variable, name='latitude')
+            c_dim_lon = Dimension.objects.get(variable=c_variable, name='longitude')
+            contour_qd = {"from": [{"name": "depth_0", "type": c_variable.id, "select": [
                 {"name": "i0_depth", "type": "VALUE", "title": "Depth", "exclude": False, "groupBy": False,
                  "datatype": "FLOAT", "aggregate": ""},
-                {"name": "i0_longitude", "type": 7484, "title": "Longitude", "exclude": "", "groupBy": False,
+                {"name": "i0_longitude", "type": c_dim_lon.id, "title": "Longitude", "exclude": "", "groupBy": False,
                  "datatype": "FLOAT", "aggregate": ""},
-                {"name": "i0_latitude", "type": 7485, "title": "Latitude", "exclude": "", "groupBy": False,
+                {"name": "i0_latitude", "type": c_dim_lat.id, "title": "Latitude", "exclude": "", "groupBy": False,
                  "datatype": "FLOAT", "aggregate": ""}]}], "limit": None, "offset": 0, "filters": {
                 "a": {"a": "<7485,7484>", "b": "<<-90,-180>,<90,180>>", "op": "inside_rect"},
                 "b": {"a": "i0_depth", "b": "", "op": "not_null"}, "op": "AND"}, "distinct": False, "orderings": []}
