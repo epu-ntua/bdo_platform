@@ -400,7 +400,7 @@ def run_zep_paragraph(notebook_id, paragraph_id, livy_session_id, mode, attempt=
         kind = 'spark'
         if 'pyspark' in code:
             kind = 'pyspark'
-        code = code.replace('%livy.pyspark\n', '').replace('%livy.pyspark', '').replace('%spark.pyspark\n', '').replace('%spark.pyspark', '').replace('%pyspark\n', '').replace('%pyspark', '').replace('%spark\n', '').replace('%spark', '')
+        code = code.replace('%livy.pyspark\n', '').replace('%livy.pyspark', '').replace('%livy.spark\n', '').replace('%livy.spark', '').replace('%spark.pyspark\n', '').replace('%spark.pyspark', '').replace('%pyspark\n', '').replace('%pyspark', '').replace('%spark\n', '').replace('%spark', '')
 
         if code is not None or code != '':
             execute_code_on_livy(code=code, session_id=livy_session_id, kind=kind)
