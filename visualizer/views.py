@@ -1173,6 +1173,8 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
                 dict['leg_path'] = legpath
                 dict['data_grid'] = data_grid
                 dict['var_title'] = var_title
+                print "cached_file_name"
+                print cached_file
                 with open('visualizer/static/visualizer/temp/' + cached_file, 'w') as f:
                     json.dump(dict, f)
             else:
@@ -4127,7 +4129,6 @@ def map_markers_in_time_hcmr(request):
     has_ais = False
     ais_asked = False
 
-    contour_unit = "m"
     legend_id = ''
     cont_ret_html = ''
     if has_data:
@@ -4141,39 +4142,41 @@ def map_markers_in_time_hcmr(request):
             print 'Natura Layer Completed on map'
 
         if contours_layer == "true":
-            c_off = 2
-            c_dataset = Dataset.objects.get(table_name='hcmr_poseidon_med_bathymetry')
-            c_variable = Variable.objects.get(dataset=c_dataset, name='depth')
-            c_dim_lat = Dimension.objects.get(variable=c_variable, name='latitude')
-            c_dim_lon = Dimension.objects.get(variable=c_variable, name='longitude')
+            if contours_var == "i0_depth":
+                contour_unit = "m"
+                c_off = 2
+                c_dataset = Dataset.objects.get(table_name='hcmr_poseidon_med_bathymetry')
+                c_variable = Variable.objects.get(dataset=c_dataset, name='depth')
+                c_dim_lat = Dimension.objects.get(variable=c_variable, name='latitude')
+                c_dim_lon = Dimension.objects.get(variable=c_variable, name='longitude')
 
-            contour_qd = {"from": [{"name": "depth_0", "type": c_variable.id, "select": [
-                {"name": "i0_depth", "type": "VALUE", "title": "Depth", "exclude": False, "groupBy": False,
-                 "datatype": "FLOAT", "aggregate": ""},
-                {"name": "i0_longitude", "type": c_dim_lon.id, "title": "Longitude", "exclude": "", "groupBy": False,
-                 "datatype": "FLOAT", "aggregate": ""},
-                {"name": "i0_latitude", "type": c_dim_lat.id, "title": "Latitude", "exclude": "", "groupBy": False,
-                 "datatype": "FLOAT", "aggregate": ""}]}], "limit": None, "offset": 0, "filters": {
-                "a": {"a": "<" + str(c_dim_lat.id) + "," + str(c_dim_lon.id) + ">", "b": "<<-90,-180>,<90,180>>",
-                      "op": "inside_rect"},
-                "b": {"a": "i0_depth", "b": "", "op": "not_null"}, "op": "AND"}, "distinct": False, "orderings": []}
-            contour_qd['filters']['a']['b'] = "<<" + str(min_lat - c_off) + ',' + str(min_lon - c_off) + ">," \
-                        "<" + str(max_lat +c_off) + "," + str(max_lon + c_off) + ">>"
-            cont_query = AbstractQuery(document=contour_qd, user=request.user)
-            cont_query.save()
-            query_id = cont_query.id
+                contour_qd = {"from": [{"name": "depth_0", "type": c_variable.id, "select": [
+                    {"name": "i0_depth", "type": "VALUE", "title": "Depth", "exclude": False, "groupBy": False,
+                     "datatype": "FLOAT", "aggregate": ""},
+                    {"name": "i0_longitude", "type": c_dim_lon.id, "title": "Longitude", "exclude": "", "groupBy": False,
+                     "datatype": "FLOAT", "aggregate": ""},
+                    {"name": "i0_latitude", "type": c_dim_lat.id, "title": "Latitude", "exclude": "", "groupBy": False,
+                     "datatype": "FLOAT", "aggregate": ""}]}], "limit": None, "offset": 0, "filters": {
+                    "a": {"a": "<" + str(c_dim_lat.id) + "," + str(c_dim_lon.id) + ">", "b": "<<-90,-180>,<90,180>>",
+                          "op": "inside_rect"},
+                    "b": {"a": "i0_depth", "b": "", "op": "not_null"}, "op": "AND"}, "distinct": False, "orderings": []}
+                contour_qd['filters']['a']['b'] = "<<" + str(min_lat - c_off) + ',' + str(min_lon - c_off) + ">," \
+                            "<" + str(max_lat +c_off) + "," + str(max_lon + c_off) + ">>"
+                cont_query = AbstractQuery(document=contour_qd, user=request.user)
+                cont_query.save()
+                query_id = cont_query.id
 
-            m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit,
-                                                                               query_id, '', '', '', '', '', 'avg', m,
-                                                                              str(time.time()).replace('.', ''),
-                                                                              request)
-            if cont_legpath!='':
-                import sys
+                m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit,
+                                                                                   query_id, '', '', '', '', '', 'avg', m,
+                                                                                  'hcmr_med_bathymetry_cached',
+                                                                                  request)
+                if cont_legpath!='':
+                    import sys
 
-                if sys.argv[1] == 'runserver':
-                    legend_id = cont_legpath.split("static/", 1)[1]
-                else:
-                    legend_id = cont_legpath.split("staticfiles/", 1)[1]
+                    if sys.argv[1] == 'runserver':
+                        legend_id = cont_legpath.split("static/", 1)[1]
+                    else:
+                        legend_id = cont_legpath.split("staticfiles/", 1)[1]
 
                 print 'Contours Layer Completed'
 
