@@ -41,7 +41,7 @@
                             </div>
                         </div>
                         <div  ng-class="{'ng-wrapper': item.url == '' }" ng-switch="!!item.url" >
-                            <div class="ng-wrapper" ng-switch-when="false" ng-bind-html="[[item.noteData]]">
+                            <div class="ng-wrapper" ng-switch-when="false" ng-bind-html="trustAsHtml([[item.noteData]])">
                             </div>
                         </div>
                     </li>
@@ -186,7 +186,7 @@
         });
 
         {#Angular app setup#}
-        app.controller('MainCtrl', function ($scope) {
+        app.controller('MainCtrl', function ($scope, $sce) {
             {#Declaring global variables used later#}
             $scope.counter = "0";
             $scope.tempInnerHtml="";
@@ -227,6 +227,10 @@
                         $('.wrap1').hide();
                     }
                 },
+            };
+
+            $scope.trustAsHtml = function(string) {
+                return $sce.trustAsHtml(string.toString());
             };
 
             {#List where widgets are kept with their data#}
