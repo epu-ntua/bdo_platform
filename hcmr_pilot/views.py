@@ -477,9 +477,7 @@ def process(request, exec_instance):
                 url_start = 'http'
             else:
                 url_start = 'https'
-            visualization_url = url_start+"://" + request.META[
-                'HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?"+oil_spill_start+"markerType=circle&lat_col=Lat&lon_col=Lon" + "&data_file=" + hcmr_data_filename + "&red_points_file=" + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer + "&time_interval=" + time_interval + "&valid_points="+ str(len(valid_points))
-            visualization_url = "http://" + request.META['HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?"+oil_spill_start \
+            visualization_url = url_start+"://" + request.META['HTTP_HOST'] + "/visualizations/map_markers_in_time_hcmr/" + "?"+oil_spill_start \
                                 + "&markerType=circle&lat_col=Lat&lon_col=Lon" \
                                 + "&data_file=" + hcmr_data_filename + "&red_points_file=" \
                                 + red_points_filename + "&natura_layer=" + natura_layer + "&ais_layer=" + ais_layer \
