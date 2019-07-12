@@ -4179,7 +4179,7 @@ def map_markers_in_time_hcmr(request):
                 cont_query.save()
                 query_id = cont_query.id
 
-                m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit, query_id, '', '', '', '', '', 'avg', m, 'hcmr_med_bathymetry_cached',request)
+                m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit, query_id, '', '', '', '', '', 'avg', m, 'hcmr_med_bathymetry_cached'+str(time.time()).replace('.', ''),request)
                 # import pdb
                 # pdb.set_trace()
                 if cont_legpath!='':
@@ -4241,8 +4241,8 @@ def map_markers_in_time_hcmr(request):
     f.close()
     js_all = [js.replace('worldCopyJump', 'preferCanvas: true , worldCopyJump') for js in js_all]
 
-    if (cont_ret_html != ""):
-        js_all.extend([cont_ret_html])
+    # if (cont_ret_html != ""):
+    #     js_all.extend([cont_ret_html])
     os.remove('templates/map.html')
 
     return render(request, 'visualizer/map_markers_in_time.html',
