@@ -793,14 +793,34 @@ def cancel_execution(request, exec_instance):
     return JsonResponse({'status': "cancelled"})
 
 
+def max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, latitude, longitude):
+    if latitude > max_lat:
+        max_lat = float(latitude)
+    if latitude < min_lat:
+        min_lat = float(latitude)
+    if longitude > max_lon:
+        max_lon = float(longitude)
+    if longitude < min_lon:
+        min_lon = float(longitude)
+    return min_lat, max_lat, min_lon, max_lon
+
 def extract_depth_data(json_data_file):
     import pytz
     import datetime
     timezone = pytz.utc
+
     with open('visualizer/static/visualizer/files/' + json_data_file) as json_file:
         data = json.load(json_file)
+        min_lat = 90
+        max_lat = -90
+        min_lon = 180
+        max_lon = -180
+        for d in data:
+            min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon,
+                                                                       float(d['Lat']), float(d['Lon']))
+
         points = []
-        natura_table, resolution, min_lat, min_lon = get_natura_table()
+        grid_tables, grid_lat_lon_min_max_list = get_natura_table(min_lat, min_lon, max_lat, max_lon)
         for p in data:
             lat, lon = p['Lat'],p['Lon']
             status = p['Status']
@@ -808,36 +828,76 @@ def extract_depth_data(json_data_file):
                      "lat": lat,
                      "lon": lon,
                      "time": str(timezone.localize(datetime.datetime.strptime(p["time"],'%Y-%m-%d %H:%M:%S'))),
-                     "color": get_color(natura_table, lat, lon, status, resolution, min_lat, min_lon)}
+                     "color": get_color(grid_tables, lat, lon, status, grid_lat_lon_min_max_list)}
             points.append(point)
         return points
 
 
-def get_natura_table():
-    with open('visualizer/static/visualizer/files/natura_grid_fr.csv', 'r') as csvfile:
-        reader = csv.reader(csvfile)
-        natura_table = [[int(e) for e in r] for r in reader]
-        csvfile.close()
-    with open('visualizer/static/visualizer/files/natura_grid_info_fr', 'r') as file:
-        natura_info = json.load(file)
-    min_grid_lat = natura_info['min_lat']
-    min_grid_lon = natura_info['min_lon']
-    resolution = natura_info['resolution']
-    return natura_table, resolution, min_grid_lat, min_grid_lon
+def get_natura_table(min_lat, min_lon, max_lat, max_lon):
+    import os
+    from shapely.geometry.polygon import Polygon
+    natura_table = []
+    min_grid_lat = ''
+    min_grid_lon = ''
+    resolution = ''
+    grid_tables = []
+    grid_lat_lon_min_max_list = []
+    grid_files_list = []
+    for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
+        if filename.endswith("info"):
+            with open('visualizer/static/visualizer/natura_grid_files/' + str(filename), 'r') as file:
+                natura_info = json.load(file)
+            min_grid_lat = natura_info['min_lat']
+            min_grid_lon = natura_info['min_lon']
+            max_grid_lat = natura_info['max_lat']
+            max_grid_lon = natura_info['max_lon']
+            grid_polygon = Polygon([(max_grid_lat, min_grid_lon), (min_grid_lat, min_grid_lon), (min_grid_lat,
+                                                                                                 max_grid_lon),
+                                    (max_grid_lat, max_grid_lon)])
+            spill_polygon = Polygon([(max_lat, min_lon), (min_lat, min_lon), (min_lat, max_lon), (max_lat, max_lon)])
+            if grid_polygon.intersects(spill_polygon):
+                grid_files_list.append(filename)
+                grid_lat_lon_min_max_list.append(natura_info)
+    print 'Intersection of spill area with grid areas'
+
+    for grid_file in grid_files_list:
+        import sys
+        if sys.argv[1] == 'runserver':
+            with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv',
+                      'r') as csvfile:
+                reader = csv.reader(csvfile)
+                natura_table = [[int(e) for e in r] for r in reader]
+                csvfile.close()
+        else:
+            import pyarrow.parquet as pq
+            natura_table = pq.read_table(
+                'visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.parquet')
+        grid_tables.append(natura_table)
+
+    print 'Creation of grid tables'
+    return grid_tables, grid_lat_lon_min_max_list
 
 
-def get_color(natura_table, lat, lon, status, resolution, min_lat, min_lon):
-    if len(natura_table) != 0:
-        try:
-            x = int((lat - min_lat)*resolution)
-            y = int((lon - min_lon)*resolution)
-            if (x>0) and (y>0):
-                if natura_table[x][y] == 1:
-                    return 'red'
-            else:
+def get_color(natura_tables, lat, lon, status, max_min_loc):
+    if len(natura_tables) != 0:
+        count = 0
+        for el in max_min_loc:
+            if lon > el['min_lon'] and lon < el['max_lon']:
+                table = natura_tables[count]
+                min_lat = el['min_lat']
+                min_lon = el['min_lon']
+                resolution = el['resolution']
+            count = count + 1
+            try:
+                x = int((lat - min_lat) * resolution)
+                y = int((lon - min_lon) * resolution)
+                if (x > 0) and (y > 0):
+                    if table[y][x] == 1:
+                        return 'red'
+                else:
+                    pass
+            except:
                 pass
-        except:
-            pass
     if status == 0:
         return 'darkblue'
     elif status == 1:
@@ -848,6 +908,7 @@ def get_color(natura_table, lat, lon, status, resolution, min_lat, min_lon):
         return 'orange'
     else:
         return 'lightblue'
+
 
 def get_presto_cursor():
     presto_credentials = settings.DATABASES['UBITECH_PRESTO']
