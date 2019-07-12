@@ -1269,7 +1269,7 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     # contour_legend_layer.layer_name = 'Contours Legend - Layer:' + str(time.time()).replace(".", "_")
     # m.add_child(contour_legend_layer)
     # Overlay an extra coastline field (to be removed)
-    folium.GeoJson(open('ne_10m_land.json').read(),
+    folium.GeoJson(open('ne_10m_land.json').read(), control=False,
                    style_function=lambda feature: {'fillColor': 'grey', 'fillOpacity': 1, 'color': 'black',
                                                    'weight': 2}) \
         .add_to(m) \
@@ -1317,11 +1317,7 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     min_y = min(y)
     max_x = max(x)
     max_y = max(y)
-    print 'creating basemap'
-    bm = Basemap(llcrnrlon = min_x, llcrnrlat = min_y,
-               urcrnrlon = max_x, urcrnrlat =
-                 max_y,projection='cyl', resolution='i')
-    print 'creating triangulation'
+
     triang = tri.Triangulation(x, y)
     interpolator = tri.LinearTriInterpolator(triang, z)
     Xi, Yi = np.meshgrid(xi, yi)
@@ -1346,6 +1342,11 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
             x_offset_list = y_offset_list = []
             for x_offset in x_offset_list:
                 for y_offset in y_offset_list:
+                    print 'creating basemap'
+                    bm = Basemap(llcrnrlon=min_x, llcrnrlat=min_y,
+                                 urcrnrlon=max_x, urcrnrlat=
+                                 max_y, projection='cyl', resolution='i')
+                    print 'creating triangulation'
                     xcord, ycord = bm(x + x_offset, y + y_offset)
                     if bm.is_land(xcord, ycord):
                         land = True
