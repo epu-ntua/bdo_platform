@@ -3818,11 +3818,19 @@ def color_point_oil_spill2(natura_tables, point, max_min_loc):
             try:
                 x = int((point[0] - min_lat)*resolution)
                 y = int((point[1] - min_lon)*resolution)
-                if (x > 0) and (y > 0):
-                    if table[y][x] == 1:
-                        return 'red'
+                import sys
+                if sys.argv[1] == 'runserver':
+                    if (x > 0) and (y > 0):
+                        if table[x][y] == 1:
+                            return 'red'
+                    else:
+                        pass
                 else:
-                    pass
+                    if (x > 0) and (y > 0):
+                        if table[y][x] == 1:
+                            return 'red'
+                    else:
+                        pass
             except:
                 pass
     if point[2] == 0:
@@ -4084,11 +4092,16 @@ def map_markers_in_time_hcmr(request):
                     grid_lat_lon_min_max_list.append(natura_info)
         print 'Intersection of spill area with grid areas'
         for grid_file in grid_files_list:
-            natura_table = pq.read_table('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.parquet')
-            # with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
-            #     reader = csv.reader(csvfile)
-            #     natura_table = [[int(e) for e in r] for r in reader]
-            #     csvfile.close()
+            import sys
+            if sys.argv[1] == 'runserver':
+                with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv',
+                          'r') as csvfile:
+                    reader = csv.reader(csvfile)
+                    natura_table = [[int(e) for e in r] for r in reader]
+                    csvfile.close()
+            else:
+                import pyarrow.parquet as pq
+                natura_table = pq.read_table('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.parquet')
             grid_tables.append(natura_table)
 
 
@@ -4166,10 +4179,9 @@ def map_markers_in_time_hcmr(request):
                 cont_query.save()
                 query_id = cont_query.id
 
-                m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit,
-                                                                                   query_id, '', '', '', '', '', 'avg', m,
-                                                                                  'hcmr_med_bathymetry_cached',
-                                                                                  request)
+                m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit, query_id, '', '', '', '', '', 'avg', m, 'hcmr_med_bathymetry_cached',request)
+                import pdb
+                pdb.set_trace()
                 if cont_legpath!='':
                     import sys
 
