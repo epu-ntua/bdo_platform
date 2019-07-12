@@ -4064,8 +4064,7 @@ def map_markers_in_time_hcmr(request):
     for d in data:
         min_lat, max_lat, min_lon, max_lon = max_min_lat_lon_check(min_lat, max_lat, min_lon, max_lon, float(d[lat_col]), float(d[lon_col]))
     zoom_offset = 0.5
-    m.fit_bounds([(min_lat - zoom_offset, min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
-    print 'Zoom Set'
+
     # HCMR asked to remove the zoom according to the simulated oilspill. They need the output zoomed out.
 
     natura_table = []
@@ -4181,8 +4180,8 @@ def map_markers_in_time_hcmr(request):
                 query_id = cont_query.id
 
                 m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit, query_id, '', '', '', '', '', 'avg', m, 'hcmr_med_bathymetry_cached',request)
-                import pdb
-                pdb.set_trace()
+                # import pdb
+                # pdb.set_trace()
                 if cont_legpath!='':
                     import sys
 
@@ -4193,6 +4192,8 @@ def map_markers_in_time_hcmr(request):
 
                 print 'Contours Layer Completed'
 
+    m.fit_bounds([(min_lat - zoom_offset, min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
+    print 'Zoom Set'
     features = convert_unicode_json(features)
 
 
