@@ -39,7 +39,6 @@ import traceback
 from query_designer.models import TempQuery
 from visualizer.models import Visualization, PyplotVisualisation
 from aggregator.models import *
-import pyarrow.parquet as pq
 from utils import *
 from tests import *
 from django.views.decorators.cache import never_cache
@@ -1259,7 +1258,7 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     data = trim(data_img)
     data_img.close()
     # Overlay the image
-    contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=0.8, mercator_project=True,
+    contour_layer = plugins.ImageOverlay(data, zindex=1, opacity=1, mercator_project=True,
                                          bounds=[[lats_bins_min, lons_bins_min], [lats_bins_max, lons_bins_max]])
     contour_layer.layer_name = 'Visualization: Contours On Map -- Layer:' + str(time.time()).replace(".","_") + ' -- Variable: ' + str(var_title)
     m.add_child(contour_layer)
@@ -1271,7 +1270,7 @@ def create_contour_map_html(lats_bins_max, lats_bins_min, lons_bins_max, lons_bi
     # m.add_child(contour_legend_layer)
     # Overlay an extra coastline field (to be removed)
     folium.GeoJson(open('ne_10m_land.json').read(),
-                   style_function=lambda feature: {'fillColor': 'grey', 'fillOpacity': 0.9, 'color': 'black',
+                   style_function=lambda feature: {'fillColor': 'grey', 'fillOpacity': 1, 'color': 'black',
                                                    'weight': 2}) \
         .add_to(m) \
         .layer_name = 'Coastline - Layer'
@@ -1344,7 +1343,7 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
         for y_index, y in enumerate(yi):
             land = False
             # x_offset_list = y_offset_list = [-0.075, -0.05, -0.025, -0.01, 0, 0.01, 0.025, 0.05, 0.075]
-            x_offset_list = y_offset_list = [0]
+            x_offset_list = y_offset_list = []
             for x_offset in x_offset_list:
                 for y_offset in y_offset_list:
                     xcord, ycord = bm(x + x_offset, y + y_offset)
@@ -4067,6 +4066,7 @@ def map_markers_in_time_hcmr(request):
     grid_tables = []
     grid_lat_lon_min_max_list = []
     if natura_layer == "true":
+        import pyarrow.parquet as pq
         grid_files_list = []
         for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
             if filename.endswith("info"):
@@ -4083,7 +4083,6 @@ def map_markers_in_time_hcmr(request):
                     grid_files_list.append(filename)
                     grid_lat_lon_min_max_list.append(natura_info)
         print 'Intersection of spill area with grid areas'
-
         for grid_file in grid_files_list:
             natura_table = pq.read_table('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.parquet')
             # with open('visualizer/static/visualizer/natura_grid_files/' + str(grid_file).split('__')[0] + '_.csv', 'r') as csvfile:
