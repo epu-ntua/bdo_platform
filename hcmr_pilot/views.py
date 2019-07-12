@@ -891,11 +891,19 @@ def get_color(natura_tables, lat, lon, status, max_min_loc):
             try:
                 x = int((lat - min_lat) * resolution)
                 y = int((lon - min_lon) * resolution)
-                if (x > 0) and (y > 0):
-                    if table[y][x] == 1:
-                        return 'red'
+                import sys
+                if sys.argv[1] == 'runserver':
+                    if (x > 0) and (y > 0):
+                        if table[x][y] == 1:
+                            return 'red'
+                    else:
+                        pass
                 else:
-                    pass
+                    if (x > 0) and (y > 0):
+                        if table[y][x] == 1:
+                            return 'red'
+                    else:
+                        pass
             except:
                 pass
     if status == 0:
