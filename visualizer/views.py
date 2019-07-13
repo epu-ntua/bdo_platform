@@ -112,7 +112,7 @@ def get_markers_parameters(request, count, viz_type):
     marker_limit = str(request.GET.get("marker_limit" + str(count), '1'))
     try:
         vessel_id_column = str(request.GET.get("vessel-id-columns-select" + str(count), ''))
-        vessel_id = request.GET.getlist("vessel-id" + str(count)+'[]', '')
+        vessel_id = [str(request.GET.get("vessel-id" + str(count), ''))]
     except ValueError:
         raise ValueError('Platform ID has a numeric value.(cannot be empty)')
     start_date_course = str(request.GET.get("start_date" + str(count), ''))

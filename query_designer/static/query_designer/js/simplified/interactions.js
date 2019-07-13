@@ -1055,10 +1055,10 @@ $(function() {
     });
 
     $("#choices select").on("select2:unselecting", function () {
-        $("#lat_min").val("");
-        $("#lat_max").val("");
-        $("#lon_min").val("");
-        $("#lon_max").val("");
+        $("#lat_min").val("").trigger('change');
+        $("#lat_max").val("").trigger('change');
+        $("#lon_min").val("").trigger('change');
+        $("#lon_max").val("").trigger('change');
     });
 
 
