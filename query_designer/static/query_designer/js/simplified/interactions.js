@@ -180,9 +180,13 @@ $(function() {
 
 
         var hasGlobal = false;
+        var hasDanish = false;
         $.each(QueryToolbox.dataset_names, function (idx, dataset) {
            if(dataset.toLowerCase().indexOf("global") >= 0){
                hasGlobal = true;
+           }
+           if(dataset.toLowerCase().indexOf("danish") >= 0){
+               hasDanish = true;
            }
         });
 
@@ -193,7 +197,8 @@ $(function() {
             }
         });
 
-        if(hasGlobal || magnitude == "billion"){
+
+        if(hasGlobal){
             console.log('has global');
             $("#mapchoices").val(1).trigger("change");
 
