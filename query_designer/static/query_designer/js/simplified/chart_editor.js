@@ -356,6 +356,8 @@ $(document).ready(function () {
             allow_plotline_submit = limit_points(plotline_vessel_course_input,viz_conf_plotline,allow_plotline_submit,'positions',0);
         });
         aggregate_value_col_select.parent().dropdown('clear');
+
+
         var plotline_vessel_col_id_select = $('.popover-content #viz_'+plotline_vessel_course_id+' #vessel-id-columns-select');
         plotline_vessel_col_id_select.on('change', function(){
             allow_plotline_submit = missing_parameter(plotline_vessel_col_id_select, allow_plotline_submit, 'Vessel-ID-Column',1 )
@@ -363,11 +365,14 @@ $(document).ready(function () {
                 plotline_vessel_id_select.parent().removeClass('disabled');
                 plotline_vessel_id_select.find('option').remove();
                 $('.vessel-id-select option[data-type="'+ String(plotline_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
-                plotline_vessel_id_select.parent().dropdown('clear');
+                // plotline_vessel_id_select.parent().dropdown('clear');
             }else{
-                plotline_vessel_id_select.find('option').remove();
-                plotline_vessel_id_select.parent().dropdown('clear');
-                plotline_vessel_id_select.parent().addClass('disabled');
+                setTimeout(function() {
+                    plotline_vessel_id_select.dropdown('set selected',plotline_vessel_id_select.find('option').val());
+                    plotline_vessel_id_select.parent().dropdown('clear');
+                    plotline_vessel_id_select.find('option').remove();
+                    plotline_vessel_id_select.parent().addClass('disabled');
+                }, 20);
             }
         });
         plotline_vessel_col_id_select.parent().dropdown('clear');
@@ -376,7 +381,11 @@ $(document).ready(function () {
         });
         plotline_vessel_id_select.parent().dropdown('clear');
         plotline_vessel_id_select.parent().addClass('disabled');
-
+        $('.popover-content .date').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
+        if(startdate !== 'undefined' && startdate !== null){
+            var vessel_course_plotline_startDate = new Date(startdate);
+            $('.popover-content .date').datetimepicker("update", vessel_course_plotline_startDate);
+        }
 
         //CONTOURS
         var allow_contour_submit = [true,true];
@@ -502,6 +511,12 @@ $(document).ready(function () {
         markers_vessel_id_select.on('change', function(){
             allow_markers_vessel_submit = missing_parameter(markers_vessel_id_select, allow_markers_vessel_submit, 'Vessel-ID', 3 )
         });
+        $('.popover-content .date').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
+        if(startdate !== 'undefined' && startdate !== null){
+            var vessel_course_markers_startDate = new Date(startdate);
+            $('.popover-content .date').datetimepicker("update", vessel_course_markers_startDate);
+        }
+
 
 
         //LIVE AIS
@@ -654,6 +669,7 @@ $(document).ready(function () {
 
         $(".popover-content .vessel-id").dropdown({
             clearable: true,
+            allowAdditions: true,
             placeholder: 'Select the vessel identifier',
         });
 

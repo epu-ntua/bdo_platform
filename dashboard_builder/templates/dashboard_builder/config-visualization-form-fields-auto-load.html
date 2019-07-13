@@ -107,7 +107,22 @@
                                     <div class="form-group col-sm-3" style="display: inline-block;margin: 1px 1px;">
                                         <input step="0.001" type="number" id="max_lon" class="form-control" style="width:100%">
                                     </div>
-                                </div>s
+                                </div>
+                           {% elif argument.type == 'DATETIME' %}
+                                <div class="coverage-date-filters">
+                                    <div class="row">
+                                        <div>
+                                            <div class="form-group">
+                                                <div class='input-group date'>
+                                                    <input type='text' class="form-control" name="{{ argument.name }}" id="{{ argument.name }}"/>
+                                                    <span class="input-group-addon">
+                                                        <span class="glyphicon glyphicon-calendar"></span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                            {% elif argument.type == 'INT' %}
                                 <input id="{{ argument.name }}" type="number" step="1" class="form-control full-width" name="{{ argument.name }}" value="{{ argument.default }}">
                             {% elif argument.type == 'FLOAT' %}
