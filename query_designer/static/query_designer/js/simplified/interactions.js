@@ -966,7 +966,7 @@ $(function() {
                 $("#global_message_alert").show();
                 $("#chart-sidebar #chart-control-list .nav-pills li").eq(1).find('a').click();
             }
-            else if((bounds[2] - bounds[0] > 17) || (bounds[3] - bounds[1] > 43)){
+            else if(hasGlobal  && ((bounds[2] - bounds[0] > 25) || (bounds[3] - bounds[1] > 43))){
                 $("#spatial_filter_message_alert").show();
                 $("#chart-sidebar #chart-control-list .nav-pills li").eq(1).find('a').click();
             }            else{
