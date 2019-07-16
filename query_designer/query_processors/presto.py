@@ -40,9 +40,10 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
         limit, query, subquery_cnt = build_query(c_name, columns, groups, selects, self)
 
     # if for map visualisation, do not perform round on select, but choose min
+    print 'trying to remove round'
     if from_visualizer:
         query = remove_round_from_select(query)
-
+    print 'removed round'
     cursor = choose_db_cursor(v_obj)
 
     if not only_headers:
@@ -575,6 +576,11 @@ def fix_date_trunc(q, subquery, subquery_cnt):
             q = re.sub(r"date_trunc_" + time_trunc + "\((" + name + ")\)",
                        "date_trunc('" + time_trunc + "', " + name + ")", q)
         # print q
+    print 'looking for COUNTdistinctdate_trunc'
+
+    if str(q).find('COUNTdistinctdate_trunc') > -1:
+        q = q.split('COUNTdistinctdate_trunc')[0] + 'COUNT(DISTINCT date_trunc' + q.split('COUNTdistinctdate_trunc')[1].split(')', 1)[0] + '))' + q.split('COUNTdistinctdate_trunc')[1].split(')', 1)[1]
+    print 'done COUNTdistinctdate_trunc'
     return q
 
 

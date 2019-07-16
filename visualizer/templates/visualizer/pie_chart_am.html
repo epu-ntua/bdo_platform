@@ -54,7 +54,7 @@ var chart = AmCharts.makeChart("chartdiv", {
     "theme": "light",
     "addClassNames": false,
     "allLabels": [{
-        "text": "{{ agg_function }} of {{ var_title }} records grouped by {{ category_title }}",
+        "text": "{{ agg_function }} of {% if agg_function == 'SUM' %}{{ var_title }}{% endif %} records grouped by {{ category_title }}",
         "bold": true,
         "x": "50%",
         "y": "95%",
@@ -63,11 +63,11 @@ var chart = AmCharts.makeChart("chartdiv", {
         "align": "middle",
         "size": 15
     }],
-{#  "legend":{#}
-{#   	"position":"right",#}
-{#    "marginRight":100,#}
-{#    "autoMargins":false#}
-{#  },#}
+  "legend":{
+   	"position":"right",
+    "marginRight":100,
+    "autoMargins":false
+  },
     "innerRadius": "30%",
     "defs": {
         "filter": [{

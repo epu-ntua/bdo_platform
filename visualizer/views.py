@@ -3312,7 +3312,11 @@ def load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, chart_typ
     for f in doc['from']:
         for s in f['select']:
             if (s['name'] in y_var_list) and (s['exclude'] is not True):
-                s['aggregate'] = agg_function
+                if chart_type == 'pie_chart_am' and agg_function == 'COUNT':
+                    s['aggregate'] = agg_function +'distinct'+ s['aggregate']
+                    s['groupBy'] = False
+                else:
+                    s['aggregate'] = agg_function
                 s['exclude'] = False
             elif (s['name'] == x_var) and (s['exclude'] is not True):
                 s['groupBy'] = True
@@ -3676,6 +3680,8 @@ def get_pie_chart_am(request):
             query, _ = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
             json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
             key_var_title = key_var_title.replace("\n", " ")
+            if str(key_var_title).index('(') >= 0:
+                key_var_title = str(key_var_title).split('(')[1].split(')')[0]
             for idx, y_var_title in enumerate(y_var_title_list):
                 try:
                     start = y_var_title.index("(")
