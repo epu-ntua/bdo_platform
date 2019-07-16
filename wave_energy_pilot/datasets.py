@@ -30,7 +30,7 @@ DATASETS = (
                      min_lat=-12.00, max_lat=12.00, min_lng=-14.00, max_lng=14.00, min_date="12/01/2018", max_date="03/31/2019",
              applications=["data_visualisation", "wave_forecast", "wave_resource_assessment_single",
                            "wave_resource_assessment_area", "matching_analysis", "wecs_assessment_location", "wecs_forecast", "wecs_assessment_area"]),
-    dict(id="225", title="Copernicus Iberian Waves Hourly Forecast", variables=(dict(id=1, title="Sea surface wave spectral moments", name='sea_surface_wave_mean_period_from_variance_spectral_density_second_frequency_moment'),
+    dict(id="347", title="Copernicus Iberian Waves Hourly Forecast", variables=(dict(id=1, title="Sea surface wave spectral moments", name='sea_surface_wave_mean_period_from_variance_spectral_density_second_frequency_moment'),
                                                                dict(id=2, title="Sea surface wave significant height", name='sea_surface_wave_significant_height')),
                      min_lat=-12.00, max_lat=12.00, min_lng=-14.00, max_lng=14.00, min_date="12/01/2018", max_date="03/31/2019",
              applications=["data_visualisation", "wave_forecast", "wave_resource_assessment_single",
