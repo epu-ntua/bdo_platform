@@ -139,6 +139,18 @@ def hcmr_statistics(scenario, simulation_length, time_interval, ocean_circulatio
        print str(e)
 
 
+def service_per_user(service_obj, user):
+    try:
+        service_per_user_obj = ServicePerUser.objects.get(service=service_obj, user=user)
+        service_per_user_obj.service_runs = service_per_user_obj.service_runs + 1
+        service_per_user_obj.save()
+        print 'Service per User increment'
+    except ObjectDoesNotExist:
+        print 'Service per User object created'
+        service_per_user_obj = ServicePerUser(service=service_obj, user=user, service_runs=1)
+        service_per_user_obj.save()
+
+
 def nester_statistics(service, dataset):
     try:
         nester_obj = WaveEnergyResourceAssessment(service=service, dataset=dataset)

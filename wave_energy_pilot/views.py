@@ -423,6 +423,7 @@ def wec_single_location_evaluation_execution_process(request, exec_instance):
             dataset_service_execution(dataset_obj, service_obj)
             service_use(service_obj)
             unique_service_use(service_obj, request.user)
+            service_per_user(service_obj, request.user)
             nester_statistics(service_obj, dataset_obj)
         except:
             print 'Dataset or service does not exist'
@@ -566,6 +567,7 @@ def wec_area_evaluation_execution_process(request, exec_instance):
             dataset_service_execution(dataset_obj, service_obj)
             service_use(service_obj)
             unique_service_use(service_obj, request.user)
+            service_per_user(service_obj, request.user)
             nester_statistics(service_obj, dataset_obj)
         except:
             print 'Dataset or service does not exist'
@@ -697,6 +699,7 @@ def wec_generation_forecast_execution_process(request, exec_instance):
             dataset_service_execution(dataset_obj, service_obj)
             service_use(service_obj)
             unique_service_use(service_obj, request.user)
+            service_per_user(service_obj, request.user)
             nester_statistics(service_obj, dataset_obj)
         except:
             print 'Dataset or service does not exist'
@@ -862,6 +865,7 @@ def wec_load_matching_execution_process(request, exec_instance):
             dataset_service_execution(dataset_obj, service_obj)
             service_use(service_obj)
             unique_service_use(service_obj, request.user)
+            service_per_user(service_obj, request.user)
             nester_statistics(service_obj, dataset_obj)
         except:
             print 'Dataset or service does not exist'
@@ -1027,6 +1031,7 @@ def data_visualization_results(request):
         dataset_service_execution(dataset_obj, service_obj)
         service_use(service_obj)
         unique_service_use(service_obj, request.user)
+        service_per_user(service_obj, request.user)
         nester_statistics(service_obj, dataset_obj)
     except:
         print 'Dataset or service does not exist'
@@ -1143,6 +1148,7 @@ def single_location_evaluation_execution_process(request, exec_instance):
             dataset_service_execution(dataset_obj, service_obj)
             service_use(service_obj)
             unique_service_use(service_obj, request.user)
+            service_per_user(service_obj, request.user)
             nester_statistics(service_obj, dataset_obj)
         except:
             print 'Dataset or service does not exist'
@@ -1282,6 +1288,7 @@ def area_location_evaluation_execution_process(request, exec_instance):
             dataset_service_execution(dataset_obj, service_obj)
             service_use(service_obj)
             unique_service_use(service_obj, request.user)
+            service_per_user(service_obj, request.user)
             nester_statistics(service_obj, dataset_obj)
         except:
             print 'Dataset or service does not exist'
@@ -1403,6 +1410,7 @@ def wave_forecast_execution_process(request, exec_instance):
             dataset_service_execution(dataset_obj, service_obj)
             service_use(service_obj)
             unique_service_use(service_obj, request.user)
+            service_per_user(service_obj, request.user)
             nester_statistics(service_obj, dataset_obj)
         except:
             print 'Dataset or service does not exist'

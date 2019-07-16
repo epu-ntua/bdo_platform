@@ -754,7 +754,7 @@ def map_visualizer(request):
             try:
                 if (layer_id == Visualization.objects.get(view_name='get_map_polygon_for_dataset_coverage').id):
                     dataset_id = str(request.GET.get('dataset_id'))
-                    m, extra_js = get_map_polygon_for_dataset_coverage(dataset_id, m)
+                    m, extra_js = get_map_polygon_for_dataset_coverage(dataset_id, m, request)
             except ObjectDoesNotExist:
                 pass
             # Map Grid - For dataset coverage
@@ -856,10 +856,10 @@ def map_visualizer(request):
 
 
 
-def get_map_plotline_vessel_query_data(query):
+def get_map_plotline_vessel_query_data(query, request):
     try:
-        query_data = execute_query_method(query)
-    except:
+        query_data = execute_query_method(query, request)
+    except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
@@ -882,7 +882,7 @@ def get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, vessel_id, start_date_course, num_of_days)
-            data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+            data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query, request)
             from operator import itemgetter
             data = sorted(data, key=itemgetter(time_index))
             cols = ["id","id","id","id"]
@@ -900,7 +900,7 @@ def get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color
             points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(newdata, lat_index, lon_index)
 
         elif df != '':
-            data, y_m_unit, y_title_list = get_chart_dataframe_data(request, notebook_id, df, '', [], False)
+            data, y_m_unit, y_title_list = get_chart_dataframe_data(request, request, notebook_id, df, '', [], False)
             points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_col, lon_col)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
@@ -942,7 +942,7 @@ def get_map_polygon(marker_limit, color, query_pk, df, notebook_id, lat_col, lon
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_polygon(query_pk, marker_limit)
-            data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+            data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query,request)
             points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(data, lat_index, lon_index)
 
         elif df != '':
@@ -1070,14 +1070,14 @@ def load_modify_query_for_grid_coverage(dataset_id, marker_limit=100):
 
 
 # def get_map_polygon_for_dataset_coverage(query_pk, m):
-def get_map_polygon_for_dataset_coverage(dataset_id, m):
+def get_map_polygon_for_dataset_coverage(dataset_id, m, request):
     query_pk = load_modify_query_for_polygon_coverage(dataset_id)
     query = load_modify_query_polygon_for_dataset_coverage(query_pk, 'MIN')
-    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query, request)
     min_lat = data[0][lat_index]
     min_lon = data[0][lon_index]
     query = load_modify_query_polygon_for_dataset_coverage(query_pk, 'MAX')
-    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
+    data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query, request)
     max_lat = data[0][lat_index]
     max_lon = data[0][lon_index]
     points = list()
@@ -1130,7 +1130,7 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, ca
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_heatmap(query_pk, heat_col)
-            data, lat_index, lon_index, heat_var_index = get_heatmap_query_data(query, heat_col)
+            data, lat_index, lon_index, heat_var_index = get_heatmap_query_data(query, heat_col, request)
         else:
             data, headers = load_execute_dataframe_data(request, df, notebook_id)
             heatmap_data = []
@@ -1168,9 +1168,9 @@ def get_map_heatmap(query_pk, df, notebook_id, lat_col, lon_col, heat_col, m, ca
     return m, ret_html
 
 
-def get_heatmap_query_data(query, heat_variable):
+def get_heatmap_query_data(query, heat_variable, request):
     try:
-        query_data = execute_query_method(query)
+        query_data = execute_query_method(query, request)
     except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
@@ -1198,7 +1198,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
         if not os.path.isfile('visualizer/static/visualizer/temp/'+cached_file):
             if query_pk != 0:
                 query = load_modify_query_contours(agg_function, query_pk, round_num, variable)
-                data, lat_index, lon_index, var_index, unit, var_title = get_contours_query_data(query, variable)
+                data, lat_index, lon_index, var_index, unit, var_title = get_contours_query_data(query, variable, request)
             else:
                 df_data, headers = load_execute_dataframe_data(request, df, notebook_id)
                 data = []
@@ -1301,7 +1301,7 @@ def get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id,
         # if tries == 0:
         #     return get_map_contour(n_contours, step, variable, unit, query_pk, df, notebook_id, contour_col, lat_col, lon_col, agg_function, m, cached_file, request, tries=1)
         # else:
-        raise Exception('An error occurred while creating the contours on map.')
+        raise Exception(e.message)
 
 
 def parse_contour_map_html(agg_function, data_grid, legpath, max_lat, max_lon, min_lat, min_lon, step, mapname,unit,var_title):
@@ -1612,9 +1612,9 @@ def get_contour_grid(data, lat_index, lon_index, step, var_index):
     return Lats, Lons, lats_bins, lons_bins, max_lat, max_lon, max_val, min_lat, min_lon, min_val
 
 
-def get_contours_query_data(query, variable):
+def get_contours_query_data(query, variable, request):
     try:
-        result = execute_query_method(query, from_visualizer=False)[0]
+        result = execute_query_method(query, request, from_visualizer=False)[0]
     except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     result_data = result['results']
@@ -1653,12 +1653,12 @@ def get_contour_step_rounded(step):
     return round_num
 
 
-def get_marker_query_data(query, variable, color_col):
+def get_marker_query_data(query, variable, color_col, request):
     var_title = []
     var_unit = []
     try:
-        query_data = execute_query_method(query)
-    except:
+        query_data = execute_query_method(query, request)
+    except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
@@ -1679,10 +1679,10 @@ def get_marker_query_data(query, variable, color_col):
             color_index = idx
     return data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit
 
-def get_live_ais_query_data(query, variable):
+def get_live_ais_query_data(query, variable, request):
     try:
-        query_data = execute_query_method(query)
-    except:
+        query_data = execute_query_method(query, request)
+    except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
     result_headers = query_data[0]['headers']
@@ -1713,7 +1713,7 @@ def get_map_markers_grid(query_pk, df, notebook_id, marker_limit, variable, agg_
                 query = AbstractQuery.objects.get(pk=int(load_modify_query_for_grid_coverage(dataset_id, marker_limit)))
             else:
                 query = load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function)
-            data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '')
+            data, lat_index, lon_index, time_null, var_index, color_null, var_title, var_unit = get_marker_query_data(query, variable, '', request)
         elif df != '':
             data, headers = load_execute_dataframe_data(request, df, notebook_id)
             markers_data = []
@@ -1773,7 +1773,7 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vesse
     if not os.path.isfile('visualizer/static/visualizer/temp/' + cached_file):
         if query_pk != 0:
             query = load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_column, vessel_id, color_col, agg_function, use_color_col, start_date_course, num_of_days)
-            data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_query_data(query, variable, color_col)
+            data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_query_data(query, variable, color_col, request)
         elif df != '':
             data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, time_col, notebook_id, request, variable)
             var_unit = var_unt[0]
@@ -2301,7 +2301,7 @@ def map_markers_in_time(request):
         # print doc
         q.document = doc
 
-        query_data = execute_query_method(q)
+        query_data = execute_query_method(q, request)
         data = query_data[0]['results']
         result_headers = query_data[0]['headers']
         print(result_headers)
@@ -2499,7 +2499,7 @@ def map_viz_folium_heatmap_time(request):
         q.document = doc
 
         lat_index = lon_index = var_index = 0
-        result = execute_query_method(q)[0]
+        result = execute_query_method(q, request)[0]
         result_data = result['results']
         result_headers = result['headers']
 
@@ -2700,7 +2700,12 @@ def get_histogram_chart_am(request):
             # This tries to execute the existing query just to check the access to the datasets and has no additional functions.
             print raw_query
             # result = execute_query_method(query)[0]
-
+            try:
+                check_api_calls(request.user)
+            except Exception as e:
+                print 'API call failed because user exceeded the number of allowed API calls or does not have a plan'
+                traceback.print_exc()
+                return render(request, 'error_page.html', {'message': e.message})
             cursor.execute(raw_query)
             data = cursor.fetchall()
             json_data = []
@@ -2772,6 +2777,7 @@ def get_histogram_chart_am(request):
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_histogram_chart_am')
     return render(request, 'visualizer/histogram_simple_am.html', {'data': convert_unicode_json(json_data), 'value_col': y_var, 'category_col': x_var, 'category_title': var_title + " (" +str(var_unit) + ")"})
@@ -2914,6 +2920,12 @@ def get_histogram_2d_matplotlib(request):
             # print raw_query
             raw_query = str(query.raw_query).replace("(SELECT", "(SELECT count(*), ")
             print raw_query
+            try:
+                check_api_calls(request.user)
+            except Exception as e:
+                print 'API call failed because user exceeded the number of allowed API calls or does not have a plan'
+                traceback.print_exc()
+                return render(request, 'error_page.html', {'message': e.message})
             cursor = get_presto_cursor()
             cursor.execute(raw_query)
             result_data = cursor.fetchall()
@@ -3048,8 +3060,8 @@ def histogram2d_dataframe(x_var, y_var):
 
 
 
-def histogram2d_execute_query(query, x_var, y_var):
-    query_data = execute_query_method(query)
+def histogram2d_execute_query(query, x_var, y_var, request):
+    query_data = execute_query_method(query, request)
     result_data = query_data[0]['results']
     result_headers = query_data[0]['headers']
     # TODO: find out why result_data SOMETIMES contains a [None,None] element in the last position
@@ -3149,7 +3161,7 @@ def get_histogram_2d_am(request):
         doc['orderings'] = [{'name': x_var, 'type': 'ASC'}, {'name': y_var, 'type': 'ASC'}]
         query.document = doc
 
-        query_data = execute_query_method(query)
+        query_data = execute_query_method(query, request)
 
         result_data = query_data[0]['results']
         result_headers = query_data[0]['headers']
@@ -3443,9 +3455,9 @@ def load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolutio
     return query, order_var, min_period, desc
 
 
-def get_chart_query_data(query, x_var, y_var_list):
+def get_chart_query_data(query, x_var, y_var_list, request):
     try:
-        query_data = execute_query_method(query)
+        query_data = execute_query_method(query, request)
     except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
@@ -3553,7 +3565,7 @@ def get_line_chart_am(request):
                 query, desc = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, True)
             else:
                 query, desc = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function, 'line_chart_am', True, False)
-            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
+            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list, request)
             if desc:
                 json_data = list(reversed(json_data))
             x_var_title = x_var_title.replace("\n", " ")
@@ -3568,10 +3580,11 @@ def get_line_chart_am(request):
             json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit, y_var_unit_list, True)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
-    except ValueError as e:
+    except (ValueError, Exception) as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
@@ -3606,7 +3619,7 @@ def get_time_series_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query, order_var, min_period, desc = load_modify_query_timeseries(query_pk, existing_temp_res, temporal_resolution, y_var_list, agg_function, 'time_series_am')
-            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list)
+            json_data, y_m_unit, x_m_unit, y_var_title_list,x_var_title = get_chart_query_data(query, order_var, y_var_list, request)
             if desc:
                 json_data = list(reversed(json_data))
             min_chart_period = chart_min_period_finder(min_period)
@@ -3624,7 +3637,7 @@ def get_time_series_am(request):
             min_chart_period = 'ss'
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
-    except ValueError as e:
+    except (ValueError, Exception) as e:
         traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_time_series_am')
@@ -3650,7 +3663,7 @@ def get_column_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query, _ = load_modify_query_chart(query_pk, x_var, y_var_list, agg_function,'column_chart_am')
-            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list)
+            json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_query_data(query, x_var, y_var_list, request)
             x_var_title = x_var_title.replace("\n", " ")
             for idx, y_var_title in enumerate(y_var_title_list):
                 try:
@@ -3663,10 +3676,11 @@ def get_column_chart_am(request):
             json_data, y_m_unit, x_m_unit, y_var_title_list, x_var_title = get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_unit, y_var_unit_list, False)
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
-    except ValueError as e:
+    except (ValueError,Exception) as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
 
     if 'time' in x_var:
@@ -3690,7 +3704,7 @@ def get_pie_chart_am(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query, _ = load_modify_query_chart(query_pk, key_var, [value_var], agg_function, 'pie_chart_am')
-            json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var])
+            json_data, y_m_unit, x_m_unit, y_var_title_list, key_var_title = get_chart_query_data(query, key_var, [value_var], request)
             key_var_title = key_var_title.replace("\n", " ")
             if str(key_var_title).index('(') >= 0:
                 key_var_title = str(key_var_title).split('(')[1].split(')')[0]
@@ -3706,17 +3720,18 @@ def get_pie_chart_am(request):
 
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
-    except ValueError as e:
+    except (ValueError, Exception) as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_pie_chart_am')
     return render(request, 'visualizer/pie_chart_am.html', {'data': json_data, 'value_var': value_var, 'key_var': key_var, 'var_title': str(y_var_title_list[0]).replace("\n", " "),'category_title':str(key_var_title) + " (" + str(x_m_unit) + ")", 'agg_function': agg_function.capitalize().replace("\n", " "), 'unit':y_m_unit[0]})
 
 
 
-def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_type):
+def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_type, request):
     query = AbstractQuery.objects.get(pk=query_pk)
     q = TempQuery(document=query.document)
     doc = q.document
@@ -3735,9 +3750,11 @@ def load_execute_query_data_table(query_pk, offset, limit, column_choice, chart_
     doc['offset'] = offset
     q.document = doc
     try:
-        result = execute_query_method(q)[0]
+        result = execute_query_method(q, request)[0]
     except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
+    except Exception as e:
+        raise Exception(e.message)
     data = result['results']
     headers = result['headers']['columns']
     return data, headers
@@ -3782,7 +3799,7 @@ def get_data_table(request):
             raise ValueError('At least one column of the given query has to be selected.')
         if query_pk != 0:
             if column_choice.__len__() != 0:
-                data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice,'data_table')
+                data, headers = load_execute_query_data_table(query_pk, offset, limit, column_choice,'data_table', request)
             else:
                 data = []
                 headers = []
@@ -3792,10 +3809,11 @@ def get_data_table(request):
             isJSON = True
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
-    except ValueError as e:
+    except (ValueError, Exception) as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
     has_data = True
     if len(data) == 0:
@@ -4460,9 +4478,9 @@ def get_bearing(p1, p2):
         return bearing + 360
     return bearing
 
-def get_aggregate_query_data(query, variable):
+def get_aggregate_query_data(query, variable, request):
     try:
-        query_data = execute_query_method(query)
+        query_data = execute_query_method(query, request)
     except ProgrammingError:
         raise ValueError('The requested visualisation cannot be executed for the chosen query.')
     data = query_data[0]['results']
@@ -4490,56 +4508,66 @@ def get_aggregate_value(request):
             raise ValueError('The given aggregate function is not valid.')
         if query_pk != 0:
             query = load_modify_query_aggregate(query_pk, variable, agg_function)
-            value, unit, var_title = get_aggregate_query_data(query, variable)
+            value, unit, var_title = get_aggregate_query_data(query, variable, request)
         else:
             value, unit, var_list, var_title, _ = get_chart_dataframe_data(request, notebook_id, df, '', [variable], False)
-    except ValueError as e:
+    except (ValueError, Exception) as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
+        traceback.print_exc()
         return render(request, 'error_page.html', {'message': e.message})
     visualisation_type_analytics('get_aggregate_value')
     return render(request, 'visualizer/aggregate_value.html', {'value': value, 'unit': unit, 'agg_func':agg_function, 'var_title': var_title})
 
 def get_live_ais(request):
-    m = create_map()
-    js_list = []
-    old_map_id_list = []
-    extra_js = ""
-    legend_id = ""
-    query_pk, df, notebook_id = get_data_parameters(request, '')
-    cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, time_col, var_unit, start_date_course, num_of_days = get_markers_parameters(request, '')
-    list_of_vessels = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk)
-    dict_vessels = {}
-    dict_vessels['vessels'] = vessel_id
-    folium.LayerControl().add_to(m)
-    temp_map = 'templates/map1' + str(int(time.time())) + '.html'
-    m.save(temp_map)
-    map_html = open(temp_map, 'r').read()
-    soup = BeautifulSoup(map_html, 'html.parser')
-    map_id = soup.find("div", {"class": "folium-map"}).get('id')
-    js_all = soup.findAll('script')
-    if len(js_all) > 5:
-        js_all = [js.prettify() for js in js_all[5:]]
-    # print(js_all)
-    if js_list:
-        js_all.extend(js_list)
-    css_all = soup.findAll('link')
-    if len(css_all) > 3:
-        css_all = [css.prettify() for css in css_all[3:]]
-    # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
-    html1 = render_to_string('visualizer/live_ais_folium_template.html',
-                             {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id, 'query_pk': query_pk, 'vessel_id': json.dumps(dict_vessels), 'vessel_column': vessel_column, 'variable': variable, 'lov_json': json.dumps(list_of_vessels)})
-    # print(html1)
-    return HttpResponse(html1)
+    try:
+        m = create_map()
+        js_list = []
+        old_map_id_list = []
+        extra_js = ""
+        legend_id = ""
+        query_pk, df, notebook_id = get_data_parameters(request, '')
+        cached_file, variable, vessel_column, vessel_id, color_col, marker_limit, use_color_column, agg_function, lat_col, lon_col, time_col, var_unit, start_date_course, num_of_days = get_markers_parameters(request, '', 'live_ais')
+        list_of_vessels = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk, request)
+        dict_vessels = {}
+        dict_vessels['vessels'] = vessel_id
+        folium.LayerControl().add_to(m)
+        temp_map = 'templates/map1' + str(int(time.time())) + '.html'
+        m.save(temp_map)
+        map_html = open(temp_map, 'r').read()
+        soup = BeautifulSoup(map_html, 'html.parser')
+        map_id = soup.find("div", {"class": "folium-map"}).get('id')
+        js_all = soup.findAll('script')
+        if len(js_all) > 5:
+            js_all = [js.prettify() for js in js_all[5:]]
+        # print(js_all)
+        if js_list:
+            js_all.extend(js_list)
+        css_all = soup.findAll('link')
+        if len(css_all) > 3:
+            css_all = [css.prettify() for css in css_all[3:]]
+        # js_all = [js.replace('worldCopyJump', 'preferCanvas: false , worldCopyJump') for js in js_all]
+        visualisation_type_analytics('get_live_ais')
+        html1 = render_to_string('visualizer/live_ais_folium_template.html',
+                                 {'map_id': map_id, 'js_all': js_all, 'css_all': css_all, 'legend_id': legend_id, 'query_pk': query_pk, 'vessel_id': json.dumps(dict_vessels), 'vessel_column': vessel_column, 'variable': variable, 'lov_json': json.dumps(list_of_vessels)})
+        # print(html1)
+        return HttpResponse(html1)
+    except (ValueError, Exception) as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
+        traceback.print_exc()
+        return render(request, 'error_page.html', {'message': e.message})
 
 
-def live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk):
+
+def live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk, request):
     if len(vessel_id) <= 17:
         list_of_vessels = {}
         for vessel in vessel_id:
             query = load_modify_query_live_ais(query_pk, 1, vessel_column, vessel, variable)
-            data, lat_index, lon_index, time_index, var_index, var_title, var_unit = get_live_ais_query_data(query, variable)
+            data, lat_index, lon_index, time_index, var_index, var_title, var_unit = get_live_ais_query_data(query, variable, request)
             vessel_dict = {}
             vessel_dict['latitude'] = data[0][lat_index]
             vessel_dict['longitude'] = data[0][lon_index]
@@ -4558,7 +4586,7 @@ def ajax_get_live_ais_new_position(request):
     vessel_column = str(request.GET.get("vessel_column", ''))
     variable = str(request.GET.get('variable', ''))
     vessel_id = [int(x) for x in request.GET.getlist('vessel_id[]')]
-    result = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk)
+    result = live_ais_new_vessels_positions(vessel_column, vessel_id, variable, query_pk, request)
     return JsonResponse(result)
 
 
@@ -4959,13 +4987,52 @@ def createjson(lonlat,time,status,color):
 
 
 
-def execute_query_method(q, from_visualizer=True):
-    result = q.execute(from_visualizer=from_visualizer)
-    print q.document
-    dataset_list = get_dataset_list(q)
-    analytics_dataset_visualisation(dataset_list)
-    return result
+def execute_query_method(q, request, from_visualizer=True):
+    try:
+        check_api_calls(request.user)
+        result = q.execute(from_visualizer=from_visualizer)
+        print q.document
+        dataset_list = get_dataset_list(q)
+        analytics_dataset_visualisation(dataset_list)
+        return result
+    except Exception as e:
+        print 'API call failed because user exceeded the number of allowed API calls or does not have a plan'
+        traceback.print_exc()
+        raise Exception(e.message)
 
+
+def check_api_calls(user):
+    user_plans = UserPlans.objects.filter(user=user, date_end__gte=datetime.now()).order_by('-date_end')
+    if len(user_plans) > 0:
+        user_plan = user_plans[0]
+        plan = user_plan.plan
+        plan_limit = plan.query_limit
+        if plan_limit is not None:
+            apicalls_count = user_plan.query_count
+            if apicalls_count < plan_limit:
+                check_flag = True
+                user_plan.query_count = user_plan.query_count + 1
+                user_plan.save()
+                print 'API calls increased'
+            else:
+                print 'API calls exceeded plan limit'
+                check_flag = False
+        else:
+            check_flag = True
+            user_plan.query_count = user_plan.query_count + 1
+            user_plan.save()
+            print 'Unlimited plan'
+    else:
+        new_plan = UserPlans(user=user, plan=BDO_Plan.objects.get(plan_name='free'))
+        new_plan.save()
+        new_plan.query_count = new_plan.query_count + 1
+        new_plan.save()
+        check_flag = True
+    if not check_flag:
+        raise Exception(
+            'Permission Denied! You have exceeded your monthly request quota for the Big Data Ocean API!\nCurrent Plan: ' + str(
+                user_plan.plan.plan_title) + '\nAPI Calls: ' + str(user_plan.query_count) + '/' + str(
+                user_plan.plan.query_limit) + '\nPlease, upgrade to a higher tier!')
 
 def get_dataset_list(q):
     dataset_list = []

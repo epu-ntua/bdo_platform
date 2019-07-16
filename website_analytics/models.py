@@ -13,6 +13,7 @@ from query_designer.models import AbstractQuery
 from django.db import migrations
 from django.apps import apps
 from django.db.models import Count
+from datetime import datetime, timedelta
 
 
 
@@ -101,10 +102,43 @@ class MareProtectionService(Model):
     natura_layer = BooleanField(default=False)
     ais_layer = BooleanField(default=False)
 
+
 class WaveEnergyResourceAssessment(Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='analytics_nester_statistics_service')
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='analytics_nester_statistics_dataset')
 
+
+class BDO_Plan(Model):
+    plan_name = TextField(primary_key=True)
+    plan_title = TextField(default='Untitled Plan')
+    query_limit = IntegerField(default=120, null=True)
+    price = FloatField(default=0, null=True)
+    access_to_beta_services = BooleanField(default=True)
+    # wave_energy_pera_service_limit = IntegerField(default=60)
+    # wave_energy_eca_service_limit = IntegerField(default=0)
+    # oil_spill_disp_forecast_service_limit = IntegerField(default=60)
+    # high_risk_pollution_service_limit = IntegerField(default=0)
+    # underwater_accident_service_limit = IntegerField(default=0)
+
+
+class UserPlans(Model):
+    user = ForeignKey(User, related_name='plan_user')
+    plan = ForeignKey(BDO_Plan, related_name='plan_plan')
+    date_start = DateTimeField(auto_now_add=True)
+    date_end = DateTimeField(default=(datetime.now() + timedelta(days=30)))
+    active = BooleanField(default=True)
+    auto_renewal = BooleanField(default=True)
+    query_count = IntegerField(default=0)
+    # wave_energy_pera_service_limit = IntegerField(default=0)
+    # wave_energy_eca_service_limit = IntegerField(default=0)
+    # oil_spill_disp_forecast_service_limit = IntegerField(default=0)
+    # high_risk_pollution_service_limit = IntegerField(default=0)
+    # underwater_accident_service_limit = IntegerField(default=0)
+
+class ServicePerUser(Model):
+    user = ForeignKey(User, related_name='service_per_user_user')
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='service_per_user_service')
+    service_runs = IntegerField(default=1)
 
 
 # run these queries in the database for the creation of the views
