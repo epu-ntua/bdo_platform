@@ -94,10 +94,10 @@ def services(request):
                       'sharing': 'Private'}
     pilot_services.append(fnk_service)
     return render(request, 'services/services/services_index.html', {
-        'my_dashboards': user_dashboards,
-        'bdo_dashboards': bdo_dashboards,
-        'my_services': user_services,
-        'bdo_services': bdo_services,
+        'my_dashboards': user_dashboards.order_by('-created'),
+        'bdo_dashboards': bdo_dashboards.order_by('-created'),
+        'my_services': user_services.order_by('-created'),
+        'bdo_services': bdo_services.order_by('-created'),
         'pilot_services': pilot_services
     })
 
