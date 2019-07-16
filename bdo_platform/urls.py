@@ -53,11 +53,11 @@ urlpatterns = [
     # on demand
     url(r'^on-demand/', include('on_demand.urls')),
 
-    # # uploader
-    # url(r'^upload/', include('uploader.urls')),
-    #
-    # # parser
-    # url(r'^parse/', include('data_parser.urls')),
+    # uploader
+    url(r'^upload/', include('uploader.urls')),
+
+    # parser
+    url(r'^parse/', include('data_parser.urls')),
 
     # s3direct
     url(r'^s3direct/', include('s3direct.urls')),

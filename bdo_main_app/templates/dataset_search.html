@@ -255,7 +255,7 @@
                                tabindex="-1"
                                href="#"
                                data-path=".dataset-last_updated"
-                               data-order="asc"
+                               data-order="desc"
                                data-type="text"
                                data-default="true">Last Updated (most recent first)</a>
                          </li>
@@ -265,7 +265,7 @@
                                tabindex="-1"
                                href="#"
                                data-path=".dataset-last_updated"
-                               data-order="desc"
+                               data-order="asc"
                                data-type="text">Last Updated (last recent first)</a>
                         </li>
                         <li role="presentation" class="divider"></li>
@@ -659,7 +659,7 @@
                                                     </tr>
                                                     <tr class="dataset-last_updated" last_updated="{{ dataset.last_updated }}">
                                                         <td>Last Updated</td>
-                                                        <td>{{ dataset.last_updated }}</td>
+                                                        <td>{% if dataset.last_updated is None  or dataset.last_updated == '' %}0{% else %}{{ dataset.last_updated }}{% endif %}</td>
                                                     </tr>
                                                     <tr class="is-private" data-dataset-private='{{ dataset.private }}'>
                                                         <td>Private</td>

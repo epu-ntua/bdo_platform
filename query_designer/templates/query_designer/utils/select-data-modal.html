@@ -463,7 +463,7 @@
                                            tabindex="-1"
                                            href="#"
                                            data-path=".dataset-last_updated"
-                                           data-order="asc"
+                                           data-order="desc"
                                            data-type="text"
                                            data-default="true">Last Updated (recent first)</a>
                                      </li>
@@ -473,7 +473,7 @@
                                            tabindex="-1"
                                            href="#"
                                            data-path=".dataset-last_updated"
-                                           data-order="desc"
+                                           data-order="asc"
                                            data-type="text">Last Updated (recent last)</a>
                                     </li>
                                     <li role="presentation" class="divider"></li>
@@ -488,7 +488,7 @@
                                             {{ dataset.title }}
                                         </div>
                                         <div>
-                                            <div style="display: inline-block;" class="dataset-publisher">By {{ dataset.publisher }} (<a target="_blank" rel="noopener noreferrer" href="/datasets/{{ dataset.id }}/">more</a>)</div> <span class="pull-right last_updated_in_title">{% if dataset.last_updated is None or dataset.last_updated == '' %}Static dataset{% else %}Last updated: {{ dataset.last_updated }}{% endif %}</span>
+                                            <div style="display: inline-block;" class="dataset-publisher">By {{ dataset.publisher }} (<a target="_blank" rel="noopener noreferrer" href="/datasets/{{ dataset.id }}/">more</a>)</div> <span class="pull-right last_updated_in_title">{% if dataset.last_updated is None or dataset.last_updated == '' %}A Static dataset{% else %}Last updated: {{ dataset.last_updated }}{% endif %}</span>
                                         </div>
                                     </div>
                                     <div class="dataset-info hidden">
@@ -540,9 +540,9 @@
                                                         <td>{{ dataset.source }}</td>
                                                     </tr>
                                                     <tr>
-                                                    <tr class="dataset-last_updated" last_updated="{{ dataset.last_updated }}">
-                                                        <td>Last Updated</td>
-                                                        <td>{% if dataset.last_updated is None  or dataset.last_updated == '' %}Static dataset{% else %}{{ dataset.last_updated }}{% endif %}</td>
+                                                    <tr class="dataset-last_updated" last_updated="{% if dataset.last_updated is None  or dataset.last_updated == '' %}3{% else %}{{ dataset.last_updated }}{% endif %}">
+                                                        <td>Last updated</td>
+                                                        <td>{% if dataset.last_updated is None  or dataset.last_updated == '' %}0{% else %}{{ dataset.last_updated }}{% endif %}</td>
                                                     </tr>
                                                     {% for key, value in dataset.metadata.items %}
                                                         {% if value is not None and value != "" %}

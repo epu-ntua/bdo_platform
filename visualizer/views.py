@@ -330,11 +330,11 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
                     if s['aggregate'] == '':
                         s['aggregate'] = 'round2'
                     lon_flag = True
-            elif (s['name'].split('_', 1)[1] == 'time'):
-                s['exclude'] = True
-                s['groupBy'] = False
-                # if s['aggregate'] == '':
-                # s['aggregate'] = 'MAX'
+            # elif (s['name'].split('_', 1)[1] == 'time'):
+            #     s['exclude'] = True
+            #     s['groupBy'] = False
+            #     # if s['aggregate'] == '':
+            #     # s['aggregate'] = 'MAX'
             else:
                 if s['datatype'] == 'STRING':
                     s['aggregate'] = 'MIN'
@@ -342,7 +342,10 @@ def load_modify_query_marker_grid(query_pk, variable, marker_limit, agg_function
                     s['aggregate'] = 'MIN'
                 else:
                     s['aggregate'] = 'AVG'
-                # s['exclude'] = True
+                s['exclude'] = True
+                s['groupBy'] = False
+                if str(s['name']) in [str(x['name']) for x in doc['orderings']]:
+                    s['exclude'] = False
 
     if not lat_flag or not lon_flag:
         raise ValueError('Latitude and Longitude are not dimensions of the chosen query. The requested visualisation cannot be executed.')
@@ -881,12 +884,19 @@ def get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color
             query = load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, vessel_id, start_date_course, num_of_days)
             data, lat_index, lon_index, time_index = get_map_plotline_vessel_query_data(query)
             from operator import itemgetter
-            data = sorted(data, key=itemgetter(0))
+            data = sorted(data, key=itemgetter(time_index))
+            cols = ["id","id","id","id"]
+            cols[lat_index] = 'lat'
+            cols[lon_index] = 'lon'
+            cols[time_index] = 'time'
             import pandas as pd
-            df = pd.DataFrame(data, columns=["time", "lat", "lon", "id"])
+            df = pd.DataFrame(data, columns=cols)
             df['time'] = df['time'].apply(lambda x: datetime.strptime(str(x).split('.')[0], '%Y-%m-%d %H:%M:%S').replace(minute=0, second=0, microsecond=0).strftime('%Y-%m-%d %H:%M:%S'))
+            new_df = df.groupby(['time']).first().reset_index()
+            lat_index = new_df.columns.tolist().index('lat')
+            lon_index = new_df.columns.tolist().index('lon')
             newdata = df.groupby(['time']).first().reset_index().values.tolist()
-
+            print newdata[:5]
             points, min_lat, max_lat, min_lon, max_lon = create_plotline_points(newdata, lat_index, lon_index)
 
         elif df != '':
@@ -1378,9 +1388,11 @@ def create_contour_image(yi, xi, final_data, max_val, min_val, n_contours, lat_i
     import matplotlib.tri as tri
     from mpl_toolkits.basemap import Basemap
     print 'creating x,y,z'
+    # print lon_index, lat_index, var_index
+    # print final_data[0]
     x = np.array([i[lon_index] for i in final_data])
     y = np.array([i[lat_index] for i in final_data])
-    z = np.array([i[var_index] for i in final_data])
+    z = np.array([i[var_index] for i in final_data], dtype=float)
     print 'finding min, max'
     min_x = min(x)
     min_y = min(y)
