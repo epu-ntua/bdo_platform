@@ -448,7 +448,7 @@ def build_where_clause(self):
     if not filters:
         where_clause = ''
     else:
-        where_clause = self.process_filters(filters, 'presto')
+        where_clause = self.process_filters(filters, 'presto', use_table_names=True)
 
     extra_filters = ''
     for f in self.document['from']:

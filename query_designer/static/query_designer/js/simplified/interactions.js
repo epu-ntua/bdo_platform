@@ -1055,10 +1055,12 @@ $(function() {
     });
 
     $("#choices select").on("select2:unselecting", function () {
-        $("#lat_min").val("").trigger('change');
-        $("#lat_max").val("").trigger('change');
-        $("#lon_min").val("").trigger('change');
-        $("#lon_max").val("").trigger('change');
+        // $("#lat_min").val("").trigger('change');
+        // $("#lat_max").val("").trigger('change');
+        // $("#lon_min").val("").trigger('change');
+        // $("#lon_max").val("").trigger('change');
+        // bounds = [-90,-180,90,180]
+        $('#resetMapBounds').click();
     });
 
 
