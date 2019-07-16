@@ -5,6 +5,8 @@
 {% block css %}
 
     <link type="text/css" rel="stylesheet" href="/static/css/angular-gridster.css"/>
+    <link href="{% static "css/bootstrap-datetimepicker.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
+
     <link href="{% static "vendor/Semantic-UI-CSS-master/semantic.css" %}?bdo_version={{ settings.BDO_VERSION }}" rel="stylesheet">
     {% for viz in available_viz %}
         {% if viz.data_source == 'query' %}
@@ -287,7 +289,7 @@
             $('#dashboard_title').closest('.form-group').css('width', '60%').css('margin-left', '20%')
         });
     </script>
-
+    <script src="{% static "js/bootstrap-datetimepicker.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>
     <script type="text/javascript" src={% static '/js/angular.js' %}></script>
     <script type="text/javascript" src={% static '/js/angular-gridster.min.js' %}></script>
     <script type="text/javascript" src={% static '/js/jquery.resize.js' %}></script>

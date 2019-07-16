@@ -53,13 +53,23 @@
                                 <select id="{{ argument.name }}" class="ui dropdown full-width vessel-id-columns-select" name="{{ argument.name }}" style="width: 250px">
 
                                 </select>
-                            {% elif argument.type == 'VESSEL_ID_LIST' %}
+                            {% elif argument.type == 'VESSEL_ID' %}
                                 {% if viz.view_name == 'get_map_plotline_vessel_course'  %}
                                     <select id="{{ argument.name }}" class="ui search selection dropdown full-width vessel-id" name="{{ argument.name }}" style="width: 250px">
 
                                     </select>
                                 {% else %}
                                     <select id="{{ argument.name }}" class="ui search selection dropdown full-width vessel-id" name="{{ argument.name }}" style="width: 250px">
+
+                                    </select>
+                                {% endif %}
+                            {% elif argument.type == 'VESSEL_ID_LIST' %}
+                                {% if viz.view_name == 'get_map_plotline_vessel_course'  %}
+                                    <select id="{{ argument.name }}" class="ui search selection dropdown full-width vessel-id" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
+
+                                    </select>
+                                {% else %}
+                                    <select id="{{ argument.name }}" class="ui search selection dropdown full-width vessel-id" name="{{ argument.name }}[]" multiple="multiple" style="width: 250px">
 
                                     </select>
                                 {% endif %}

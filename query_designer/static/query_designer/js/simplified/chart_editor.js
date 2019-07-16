@@ -365,6 +365,9 @@ $(document).ready(function () {
                 plotline_vessel_id_select.parent().removeClass('disabled');
                 plotline_vessel_id_select.find('option').remove();
                 $('.vessel-id-select option[data-type="'+ String(plotline_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+                setTimeout(function() {
+                    plotline_vessel_id_select.parent().dropdown('clear');
+                }, 20);
                 // plotline_vessel_id_select.parent().dropdown('clear');
             }else{
                 setTimeout(function() {
@@ -497,6 +500,9 @@ $(document).ready(function () {
                 markers_vessel_id_select.parent().removeClass('disabled');
                 markers_vessel_id_select.find('option').remove();
                 $('.vessel-id-select option[data-type="'+ String(markers_vessel_col_id_select.val())+'"]').clone().appendTo('.popover-content #vessel-id');
+                setTimeout(function() {
+                    markers_vessel_id_select.parent().dropdown('clear');
+                }, 20);
             }else{
                 $('.popover-content #vessel-id').append('<option value=1>test</option>');
                 setTimeout(function() {
