@@ -290,7 +290,14 @@ def index(request):
 
 
 def execute(request):
-    service = Service.objects.get(pk=settings.OIL_SPILL_SERVICE_ID)
+    scenario = str(request.GET.get('scenario'))
+    if scenario == '1':
+        service = Service.objects.get(pk=settings.OIL_SPILL_FORECAST_SERVICE_ID)
+    if scenario == '2':
+        service = Service.objects.get(pk=settings.HIGH_RISK_POLLUTION_SERVICE_ID)
+    if scenario == '3':
+        service = Service.objects.get(pk=settings.UNDERWATER_ACCIDENT_SERVICE_ID)
+
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
@@ -500,6 +507,8 @@ def process(request, exec_instance):
             service_use(service_obj)
             unique_service_use(service_obj, request.user)
             hcmr_statistics(scenario, sim_length, time_interval,ocean_model, wave_model, str_to_bool(natura_layer), str_to_bool(ais_layer))
+            service_per_user(service_obj, request.user)
+
             # context = {
             #     'url': visualization_url,
             #     'out_filepath': filename_output,

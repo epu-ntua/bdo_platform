@@ -10,6 +10,8 @@ from .models import *
 from .forms import *
 from django.dispatch.dispatcher import receiver
 from allauth.account.signals import email_confirmed
+from website_analytics.models import BDO_Plan, UserPlans
+from datetime import datetime
 
 
 @receiver(email_confirmed, dispatch_uid="unique")
@@ -27,9 +29,26 @@ def user_logged_in_(request, **kwargs):
 
 def show_profile(request, username):
     user = User.objects.get(username=username)
-
+    user_plans = UserPlans.objects.filter(user=user, date_end__gte=datetime.now()).order_by('-date_end')
+    if len(user_plans) > 0:
+        user_plan = user_plans[0]
+        plan_title = user_plan.plan.plan_title
+        pdate_start = user_plan.date_start
+        pdate_end = user_plan.date_end
+        api_calls = user_plan.query_count
+        limit = user_plan.plan.query_limit
+        if limit is not None:
+            calls_left = limit - api_calls
+        else:
+            calls_left = 'Unlimited'
+    else:
+        api_calls = None
+        limit = 0
+        plan_title = ''
+        pdate_start = ''
+        pdate_end = ''
     return render(request, 'profile/index.html', {
-        'user': user,
+        'user': user, 'api_calls': api_calls, 'limit': limit, 'pdate_start': pdate_start, 'pdate_end': pdate_end, 'plan_title':plan_title, 'calls_left': calls_left
     })
 
 

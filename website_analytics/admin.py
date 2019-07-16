@@ -19,6 +19,10 @@ admin.site.register(DatasetPageViews, DatasetPageViewsAdmin)
 #
 # admin.site.register(DatasetUniqueViews, DatasetUniqueViewsAdmin)
 
+class ServicePerUserAdmin(admin.ModelAdmin):
+    list_display = [field.name for field in ServicePerUser._meta.get_fields()]
+
+admin.site.register(ServicePerUser, ServicePerUserAdmin)
 
 class UniqueDatasetPreviewAdmin(admin.ModelAdmin):
     list_display = [field.name for field in UniqueDatasetPreview._meta.get_fields()]

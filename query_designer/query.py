@@ -13,7 +13,8 @@ from django.http import HttpResponseForbidden
 from django.core.exceptions import PermissionDenied
 from access_controller.policy_enforcement_point import PEP
 from website_analytics.views import *
-
+from datetime import datetime
+import traceback
 
 def execute_query(request, pk=None):
     user = request.user
@@ -55,6 +56,13 @@ def execute_query(request, pk=None):
             return HttpResponseForbidden()
 
         try:
+            check_api_calls(user)
+        except Exception as e:
+            print 'API call failed because user exceeded the number of allowed API calls or does not have a plan'
+            traceback.print_exc()
+            # return render(request, 'error_page.html', {'message': e.message})
+            return JsonResponse({"error_message": e.message})
+        try:
             # execute
             result = q.execute(dimension_values=dimension_values,
                                variable=variable,
@@ -85,3 +93,32 @@ def execute_query(request, pk=None):
         return HttpResponseForbidden()
 
 
+def check_api_calls(user):
+    user_plans = UserPlans.objects.filter(user=user, date_end__gte=datetime.now()).order_by('-date_end')
+    if len(user_plans) > 0:
+        user_plan = user_plans[0]
+        plan = user_plan.plan
+        plan_limit = plan.query_limit
+        if plan_limit is not None:
+            apicalls_count = user_plan.query_count
+            if apicalls_count < plan_limit:
+                check_flag = True
+                user_plan.query_count = user_plan.query_count + 1
+                user_plan.save()
+                print 'API calls increased'
+            else:
+                print 'API calls exceeded plan limit'
+                check_flag = False
+        else:
+            check_flag = True
+            user_plan.query_count = user_plan.query_count + 1
+            user_plan.save()
+            print 'Unlimited plan'
+    else:
+        new_plan = UserPlans(user=user, plan=BDO_Plan.objects.get(plan_name='free'))
+        new_plan.save()
+        new_plan.query_count = new_plan.query_count + 1
+        new_plan.save()
+        check_flag = True
+    if not check_flag:
+        raise Exception('Permission Denied! You have exceeded your monthly request quota for the Big Data Ocean API!<br>Current Plan: ' + str(user_plan.plan.plan_title) + '<br>API Calls: ' + str(user_plan.query_count) + '/' + str(user_plan.plan.query_limit) + '<br>Please, upgrade to a higher tier!')

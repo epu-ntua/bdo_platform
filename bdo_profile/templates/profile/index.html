@@ -67,7 +67,37 @@
                                                 </div>
                                             </div>
                                         </div>
-
+                                        {% if plan_title == '' %}
+                                            <div class="row">
+                                                <div class="col-xs-12">
+                                                    <div class="form-group">
+                                                        <label class="section-label o-blue">Current Plan</label>
+                                                        <div>-</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="row">
+                                                <div class="col-xs-12">
+                                                    <div class="form-group">
+                                                        <label class="section-label o-blue">Current Plan</label>
+                                                        <div>{{ plan_title}} (API Limit: {{ limit }})</div>
+                                                        <div>API Requests Made: {{ api_calls }}</div>
+                                                        <div>API Requests Left: {{ calls_left }}</div>
+{#                                                        <div>Limit: {{ limit }}</div>#}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-xs-12">
+                                                    <div class="form-group">
+                                                        <label class="section-label o-blue">Plan Duration</label>
+                                                        <div>From: {{ pdate_start }}</div>
+                                                        <div>To: {{ pdate_end }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
                                         <div class="row">
                                             <div class="col-xs-12">
                                                 <div class="form-group">
