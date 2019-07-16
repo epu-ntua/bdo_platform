@@ -4,7 +4,8 @@ from __future__ import unicode_literals
 
 import datetime
 from django.db import migrations, models
-
+from django.db.models.deletion import CASCADE
+from django.conf import settings
 
 class Migration(migrations.Migration):
 
@@ -13,6 +14,41 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+
+        migrations.CreateModel(
+            name='BDO_Plan',
+            fields=[
+                ('plan_name', models.TextField(primary_key=True, serialize=False)),
+                ('plan_title', models.TextField(default='Untitled Plan')),
+                ('query_limit', models.IntegerField(default=120, null=True)),
+                ('price', models.FloatField(default=0, null=True)),
+                ('access_to_beta_services', models.BooleanField(default=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='ServicePerUser',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('service_runs', models.IntegerField(default=1)),
+                ('service', models.ForeignKey(on_delete=CASCADE, related_name='service_per_user_service',
+                                              to='service_builder.Service')),
+                ('user',
+                 models.ForeignKey(on_delete=CASCADE, related_name='service_per_user_user', to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='UserPlans',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('date_start', models.DateTimeField(auto_now_add=True)),
+                ('date_end', models.DateTimeField(default=datetime.datetime(2019, 8, 15, 16, 27, 30, 138000))),
+                ('active', models.BooleanField(default=True)),
+                ('auto_renewal', models.BooleanField(default=True)),
+                ('query_count', models.IntegerField(default=0)),
+                ('plan', models.ForeignKey(on_delete=CASCADE, related_name='plan_plan', to='website_analytics.BDO_Plan')),
+                ('user', models.ForeignKey(on_delete=CASCADE, related_name='plan_user', to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
         migrations.AlterField(
             model_name='userplans',
             name='date_end',

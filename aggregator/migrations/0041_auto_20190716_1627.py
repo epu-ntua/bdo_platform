@@ -15,22 +15,22 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='Vessel_Identifier',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('column_name', models.CharField(max_length=200)),
-                ('values_list', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='vessel_identifiers', to='aggregator.Dataset')),
-            ],
-        ),
+        # migrations.CreateModel(
+        #     name='Vessel_Identifier',
+        #     fields=[
+        #         ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        #         ('column_name', models.CharField(max_length=200)),
+        #         ('values_list', django.contrib.postgres.fields.jsonb.JSONField()),
+        #         ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='vessel_identifiers', to='aggregator.Dataset')),
+        #     ],
+        # ),
         migrations.AlterModelOptions(
             name='variable',
             options={'ordering': ['title']},
         ),
-        migrations.AlterField(
-            model_name='datasetaccessrequest',
-            name='creation_date',
-            field=models.DateTimeField(default=datetime.datetime(2019, 7, 16, 16, 27, 29, 630000)),
-        ),
+        # migrations.AlterField(
+        #     model_name='datasetaccessrequest',
+        #     name='creation_date',
+        #     field=models.DateTimeField(default=datetime.datetime(2019, 7, 16, 16, 27, 29, 630000)),
+        # ),
     ]

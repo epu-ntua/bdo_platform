@@ -16,31 +16,31 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='SavedDataframes',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('filename', models.CharField(max_length=200)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
-        migrations.RemoveField(
-            model_name='service',
-            name='service_user',
-        ),
-        migrations.AddField(
-            model_name='service',
-            name='can_be_shared',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AlterField(
-            model_name='service',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_owner', to=settings.AUTH_USER_MODEL),
-        ),
-        migrations.AlterField(
-            model_name='serviceaccessrequest',
-            name='creation_date',
-            field=models.DateTimeField(default=datetime.datetime(2019, 7, 16, 16, 27, 30, 111000)),
-        ),
+        # migrations.CreateModel(
+        #     name='SavedDataframes',
+        #     fields=[
+        #         ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        #         ('filename', models.CharField(max_length=200)),
+        #         ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+        #     ],
+        # ),
+        # migrations.RemoveField(
+        #     model_name='service',
+        #     name='service_user',
+        # ),
+        # migrations.AddField(
+        #     model_name='service',
+        #     name='can_be_shared',
+        #     field=models.BooleanField(default=False),
+        # ),
+        # migrations.AlterField(
+        #     model_name='service',
+        #     name='user',
+        #     field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_owner', to=settings.AUTH_USER_MODEL),
+        # ),
+        # migrations.AlterField(
+        #     model_name='serviceaccessrequest',
+        #     name='creation_date',
+        #     field=models.DateTimeField(default=datetime.datetime(2019, 7, 16, 16, 27, 30, 111000)),
+        # ),
     ]
