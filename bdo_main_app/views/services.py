@@ -95,9 +95,9 @@ def services(request):
     pilot_services.append(fnk_service)
     return render(request, 'services/services/services_index.html', {
         'my_dashboards': user_dashboards.order_by('-created'),
-        'bdo_dashboards': bdo_dashboards.order_by('-created'),
+        'bdo_dashboards': bdo_dashboards,
         'my_services': user_services.order_by('-created'),
-        'bdo_services': bdo_services.order_by('-created'),
+        'bdo_services': bdo_services,
         'pilot_services': pilot_services
     })
 
