@@ -47,6 +47,7 @@ def show_profile(request, username):
         plan_title = ''
         pdate_start = ''
         pdate_end = ''
+        calls_left = ''
     return render(request, 'profile/index.html', {
         'user': user, 'api_calls': api_calls, 'limit': limit, 'pdate_start': pdate_start, 'pdate_end': pdate_end, 'plan_title':plan_title, 'calls_left': calls_left
     })
