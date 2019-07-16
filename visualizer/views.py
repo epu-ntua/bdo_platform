@@ -3463,7 +3463,7 @@ def get_chart_query_data(query, x_var, y_var_list):
             dict.update({newvar: str(d[y_index]).encode('ascii')})
             count = count + 1
 
-        dict.update({x_var: str(d[x_var_index])})
+        dict.update({x_var: d[x_var_index].encode('utf-8').strip()})
         json_data.append(dict)
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
 
