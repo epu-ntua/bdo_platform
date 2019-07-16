@@ -13,14 +13,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='dashboard',
-            name='can_be_shared',
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AlterField(
-            model_name='dashboardaccessrequest',
-            name='creation_date',
-            field=models.DateTimeField(default=datetime.datetime(2019, 7, 16, 16, 27, 30, 106000)),
-        ),
+        # migrations.AddField(
+        #     model_name='dashboard',
+        #     name='can_be_shared',
+        #     field=models.BooleanField(default=False),
+        # ),
+        # migrations.AlterField(
+        #     model_name='dashboardaccessrequest',
+        #     name='creation_date',
+        #     field=models.DateTimeField(default=datetime.datetime(2019, 7, 16, 16, 27, 30, 106000)),
+        # ),
     ]
