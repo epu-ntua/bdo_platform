@@ -1342,6 +1342,7 @@ function updateFilterByField(){
                     newOption.setAttribute('data-id', dimension.id);
                     newOption.setAttribute('data-name', dimension.name);
                     newOption.setAttribute('data-type', 'dimension');
+                    newOption.setAttribute('data-title', dimension.title);
                     $filterSelectField.append(newOption);
                 }
             }
@@ -1352,6 +1353,7 @@ function updateFilterByField(){
         newOption.setAttribute('data-name', variable.name);
         newOption.setAttribute('data-type', 'variable');
         newOption.setAttribute('data-forvariable', variable.id);
+        newOption.setAttribute('data-title', variable.title);
         $filterSelectField.append(newOption);
     });
     $filterSelectField.trigger('change');
