@@ -4010,31 +4010,37 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
     max_lat = float(max_lat) + 0.1
     min_lon = float(min_lon) - 0.1
     max_lon = float(max_lon) + 0.1
+    try:
+        min_date, max_date, min_filter_date, max_filter_date = get_min_max_time_for_query(start_date_string, sim_length)
 
-    min_date, max_date, min_filter_date, max_filter_date = get_min_max_time_for_query(start_date_string, sim_length)
-
-    query = """
-        SELECT latitude, longitude, platform_id, time FROM XMILE_AIS 
-        WHERE LATITUDE>=%s AND LATITUDE<=%s 
-        AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '%s'
-        AND TIME >= TIMESTAMP '%s' and platform_id in (
-            SELECT platform_id FROM XMILE_AIS
-            WHERE LATITUDE>=%s AND LATITUDE<=%s
+        query = """
+            SELECT latitude, longitude, platform_id, time FROM XMILE_AIS 
+            WHERE LATITUDE>=%s AND LATITUDE<=%s 
             AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '%s'
-            AND TIME >= TIMESTAMP '%s' 
-            group by platform_id   )
-        ORDER BY PLATFORM_ID, TIME"""
+            AND TIME >= TIMESTAMP '%s' and platform_id in (
+                SELECT platform_id FROM XMILE_AIS
+                WHERE LATITUDE>=%s AND LATITUDE<=%s
+                AND LONGITUDE>=%s AND LONGITUDE<=%s  AND TIME <= TIMESTAMP '%s'
+                AND TIME >= TIMESTAMP '%s' 
+                group by platform_id   )
+            ORDER BY PLATFORM_ID, TIME"""
+        print query % (min_lat, max_lat, min_lon, max_lon,
+                       max_date, min_date, min_lat, max_lat, min_lon, max_lon,
+                       max_filter_date, min_filter_date)
+        presto_cur.execute(query % (min_lat, max_lat, min_lon, max_lon,
+                                    max_date, min_date, min_lat, max_lat, min_lon, max_lon,
+                                    max_filter_date, min_filter_date))
+        data = presto_cur.fetchall()
+        curr_year = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M').year
 
-    presto_cur.execute(query % (min_lat, max_lat, min_lon, max_lon,
-                                max_date, min_date, min_lat, max_lat, min_lon, max_lon,
-                                max_filter_date, min_filter_date))
-    data = presto_cur.fetchall()
-    curr_year = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M').year
-    for el in data:
-        el[3] = ((datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f')).replace(year=curr_year)).strftime('%Y-%m-%d, %H:%M:%S.%f')
+        for el in data:
+            el[3] = ((datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f')).replace(year=curr_year)).strftime('%Y-%m-%d %H:%M:%S.%f')
+            el[3] = ((datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f')).replace(month=(datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f').month+2))).strftime('%Y-%m-%d %H:%M:%S.%f')
+    except:
+        data = []
 
     has_ais = False
-    if len(data)>0:
+    if len(data) > 0:
         has_ais = True
     try:
         platform_points = {}
@@ -4076,6 +4082,7 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
 def get_min_max_time_for_query(start_date_string, sim_length):
     start_date = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M')
     new_date = start_date.replace(year=2011)
+    new_date = new_date.replace(month=new_date.month-2)
     # if new_date.month > 5:
     #     new_date = new_date.replace(month = 5)
     min_filter_date = new_date - timedelta(hours=2)
@@ -4183,7 +4190,6 @@ def map_markers_in_time_hcmr(request):
     grid_tables = []
     grid_lat_lon_min_max_list = []
     if natura_layer == "true":
-        import pyarrow.parquet as pq
         grid_files_list = []
         for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
             if filename.endswith("info"):
