@@ -52,7 +52,7 @@
             <input type="checkbox" name="can_be_shared" value="False"/> Can be shared?
         </span>
         <input class="form-control text-center" type="text" id="dashboard_title"
-               value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;"/>
+               value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;  width: 100%;"/>
     </div>
 
     <div class="row text-left">
@@ -286,7 +286,7 @@
 {% block js %}
     <script>
         $(document).ready(function($){
-            $('#dashboard_title').closest('.form-group').css('width', '60%').css('margin-left', '20%')
+            $('#dashboard_title').closest('.form-group').css('width', '100%').css('margin-left', '20%')
         });
     </script>
     <script src="{% static "js/bootstrap-datetimepicker.js" %}?bdo_version={{ settings.BDO_VERSION }}"></script>

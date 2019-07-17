@@ -51,7 +51,7 @@
             <input type="checkbox" name="can_be_shared" {% if dashboard.can_be_shared %}value="True" checked {% else %} value="False" {% endif %}/> Can be shared?
         </span>
         <input class="form-control text-center" type="text" id="dashboard_title"
-               value="{{ dashboard_title }}" style="font-size: 20pt;"/>
+               value="{{ dashboard_title }}" style="font-size: 20pt; width: 100%;"/>
     </div>
     <div class="row text-left">
         <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal" style="padding-left: 15px;"
@@ -583,6 +583,7 @@
 
             $( document ).ready(function() {
                 $('#dashboard_title').val('{{dashboard_title}}');
+                $('#dashboard_title').closest('.form-group').css('width', '100%').css('margin-left', '20%');
                 var max = 0;
                 $(".note_wrapper").each(function (index) {
                     var curr_widget = $(this).parent().parent().parent().attr('id');
