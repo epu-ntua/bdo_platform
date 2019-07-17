@@ -66,6 +66,11 @@ class OwnerPolicy(Policy):
                         print "user is the owner"
                         # then allow
                         return True
+                else:
+                    if request_user.id == resource_owner.id:
+                        print "user is the owner"
+                        # then allow
+                        return True
             print "Failed!"
             # Otherwise, deny
             return False
