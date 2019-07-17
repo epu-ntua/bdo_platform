@@ -750,6 +750,7 @@ $("#select_data_popover").click(function () {
 
                 $(".popover-content .vessel-id").dropdown({
                     clearable: true,
+                    allowAdditions: true,
                     placeholder: 'Select the vessel identifier',
                 });
 
