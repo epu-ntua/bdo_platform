@@ -4183,7 +4183,6 @@ def map_markers_in_time_hcmr(request):
     grid_tables = []
     grid_lat_lon_min_max_list = []
     if natura_layer == "true":
-        import pyarrow.parquet as pq
         grid_files_list = []
         for filename in os.listdir('visualizer/static/visualizer/natura_grid_files'):
             if filename.endswith("info"):
@@ -4287,19 +4286,55 @@ def map_markers_in_time_hcmr(request):
                 cont_query = AbstractQuery(document=contour_qd, user=request.user)
                 cont_query.save()
                 query_id = cont_query.id
+            elif contours_var == 'i0_sea_surface_wave_significant_height':
+                contour_unit = "m"
+                c_off = 2
+                c_dataset = Dataset.objects.get(table_name='hcmr_poseidon_waves_forecast_latest')
+                c_variable = Variable.objects.get(dataset=c_dataset, name='sea_surface_wave_significant_height')
+                c_dim_lat = Dimension.objects.get(variable=c_variable, name='latitude')
+                c_dim_lon = Dimension.objects.get(variable=c_variable, name='longitude')
+                c_dim_time = Dimension.objects.get(variable=c_variable, name='time')
+                date_min = datetime.datetime.strptime(start_date, '%Y-%m-%d %H:%M')
+                date_max = date_min + timedelta(hours=int(sim_length))
+                date_min = date_min.strftime("%Y-%m-%d %H:%M")
+                date_max = date_max.strftime("%Y-%m-%d %H:%M")
 
-                m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit, query_id, '', '', '', '', '', 'avg', m, 'hcmr_med_bathymetry_cached'+str(time.time()).replace('.', ''),request)
-                # import pdb
-                # pdb.set_trace()
-                if cont_legpath!='':
-                    import sys
 
-                    if sys.argv[1] == 'runserver':
-                        legend_id = cont_legpath.split("static/", 1)[1]
-                    else:
-                        legend_id = cont_legpath.split("staticfiles/", 1)[1]
+                contour_qd = {"from": [{"name": "sea_surface_wave_significant_height_0", "type": c_variable.id, "select": [
+                    {"name": "i0_sea_surface_wave_significant_height", "type": "VALUE", "title": "Sea surface wave significant height", "exclude": False, "groupBy": False,
+                     "datatype": "FLOAT", "aggregate": ""},
+                    {"name": "i0_time", "type": c_dim_time.id, "title": "Time", "exclude": "", "groupBy": False,
+                     "datatype": "TIMESTAMP", "aggregate": ""},
+                    {"name": "i0_longitude", "type": c_dim_lon.id, "title": "Longitude", "exclude": "",
+                     "groupBy": False,
+                     "datatype": "FLOAT", "aggregate": ""},
+                    {"name": "i0_latitude", "type": c_dim_lat.id, "title": "Latitude", "exclude": "", "groupBy": False,
+                     "datatype": "FLOAT", "aggregate": ""}]}], "limit": None, "offset": 0, "filters": {
+                    "a": {"a": "<" + str(c_dim_lat.id) + "," + str(c_dim_lon.id) + ">", "b": "<<-90,-180>,<90,180>>",
+                          "op": "inside_rect"},
+                    "b": {"a": {"a": "i0_time", "b": "'" + str(date_max) + "'", "op": "lte_time"},
+                          "b": {"a": "i0_time", "b": "'" + str(date_min) + "'", "op": "gte_time"}, "op": "AND"},
+                    "op": "AND"}, "distinct": False, "orderings": []}
+                contour_qd['filters']['a']['b'] = "<<" + str(min_lat - c_off) + ',' + str(min_lon - c_off) + ">," \
+                                                                                                             "<" + str(
+                    max_lat + c_off) + "," + str(max_lon + c_off) + ">>"
+                cont_query = AbstractQuery(document=contour_qd, user=request.user)
+                cont_query.save()
+                query_id = cont_query.id
 
-                print 'Contours Layer Completed'
+            m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit, query_id, '', '', '', '', '', 'avg', m, 'hcmr_wave_height_cached'+str(time.time()).replace('.', ''),request)
+            # import pdb
+            # pdb.set_trace()
+            if cont_legpath!='':
+                import sys
+
+                if sys.argv[1] == 'runserver':
+                    legend_id = cont_legpath.split("static/", 1)[1]
+                else:
+                    legend_id = cont_legpath.split("staticfiles/", 1)[1]
+
+            print 'Contours Layer Completed'
+
 
     m.fit_bounds([(min_lat - zoom_offset, min_lon - zoom_offset), (max_lat + zoom_offset, max_lon + zoom_offset)])
     print 'Zoom Set'

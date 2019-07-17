@@ -371,10 +371,36 @@ function interactive_form(onLocationfound, user_marker){
         }
     });
     $('#startdatepicker input').on('change',function () {
+        var cont_s_date = new Date($("#startdatepicker input").val());
+        var now = new Date();
+        now.setDate(now.getDate()-1);
+        if (cont_s_date < now) {
+            console.log('no waves!');
+        }else{
+            console.log('waves!');
+        }
+        if (cont_s_date < now) {
+            $("#contours_sel").parent().find("div[data-value='i0_sea_surface_wave_significant_height']").addClass('disabled')
+        } else {
+            $("#contours_sel").parent().find("div[data-value='i0_sea_surface_wave_significant_height']").removeClass('disabled')
+        }
         allow_form_submit = missing_parameter($('#startdatepicker input'), allow_form_submit, 'date', 2, '#run-service-btn','date');
         check_sim_len_options();
     });
     $('#startdatepicker input').on('input',function () {
+        var cont_s_date = new Date($("#startdatepicker input").val());
+        var now = new Date();
+        now.setDate(now.getDate() - 1);
+        if (cont_s_date < now) {
+            console.log('no waves!');
+        } else {
+            console.log('waves!');
+        }
+        if (cont_s_date < now) {
+            $("#contours_sel").parent().find("div[data-value='i0_sea_surface_wave_significant_height']").addClass('disabled')
+        } else {
+            $("#contours_sel").parent().find("div[data-value='i0_sea_surface_wave_significant_height']").removeClass('disabled')
+        }
         allow_form_submit = missing_parameter($('#startdatepicker input'), allow_form_submit, 'date', 2, '#run-service-btn','date');
         check_sim_len_options();
     });
