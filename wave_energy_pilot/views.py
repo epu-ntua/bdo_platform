@@ -1469,6 +1469,6 @@ def get_load_matching_file_data(request):
     # file_path = 'visualizer/static/visualizer/files/kml2.json'
     with open(file_path, mode="r") as infile:
         reader = csv.reader(infile)
-        result_list = [{"time": rows[0], "value": rows[1]} for rows in reader]
+        result_list = [{"time": rows[0], "value": rows[1]} for rows in reader if len(rows) > 0]
     return JsonResponse({"result": result_list[1:]})
 
