@@ -4010,6 +4010,7 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
     max_lat = float(max_lat) + 0.1
     min_lon = float(min_lon) - 0.1
     max_lon = float(max_lon) + 0.1
+
     try:
         min_date, max_date, min_filter_date, max_filter_date = get_min_max_time_for_query(start_date_string, sim_length)
 
@@ -4024,6 +4025,7 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
                 AND TIME >= TIMESTAMP '%s' 
                 group by platform_id   )
             ORDER BY PLATFORM_ID, TIME"""
+
         print query % (min_lat, max_lat, min_lon, max_lon,
                        max_date, min_date, min_lat, max_lat, min_lon, max_lon,
                        max_filter_date, min_filter_date)
@@ -4090,7 +4092,13 @@ def get_min_max_time_for_query(start_date_string, sim_length):
 
     min_date = new_date
     max_date = new_date + timedelta(hours=int(sim_length))
-
+    now = datetime.now()
+    now = now.replace(year=2011)
+    now = now.replace(month=now.month - 2)
+    if max_date > now:
+        max_date = now
+        max_date = max_date.strftime('%Y-%m-%d %H:%M:%S')
+    min_date = new_date - timedelta(hours=2)
     return str(min_date), str(max_date), str(min_filter_date), str(max_filter_date)
 
 
