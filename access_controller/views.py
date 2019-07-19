@@ -16,13 +16,13 @@ from service_builder.models import Service, ServiceAccess, ServiceAccessRequest
 
 def requests(request):
     my_requests_dashboard = DashboardAccessRequest.objects.filter(user=request.user)
-    my_resources_requests_dashboard = DashboardAccessRequest.objects.select_related('resource').filter(user=request.user)
+    my_resources_requests_dashboard = DashboardAccessRequest.objects.filter(resource__user=request.user)
 
     my_requests_service = ServiceAccessRequest.objects.filter(user=request.user)
-    my_resources_requests_service = ServiceAccessRequest.objects.select_related('resource').filter(user=request.user)
+    my_resources_requests_service = ServiceAccessRequest.objects.filter(resource__user=request.user)
 
     my_requests_dataset = DatasetAccessRequest.objects.filter(user=request.user)
-    my_resources_requests_dataset = DatasetAccessRequest.objects.select_related('resource').filter(user=request.user)
+    my_resources_requests_dataset = DatasetAccessRequest.objects.filter(resource__owner=request.user)
 
     my_requests = [{"id": x.id,
                     "type": x.type,
