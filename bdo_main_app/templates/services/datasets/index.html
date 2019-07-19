@@ -53,7 +53,7 @@
                                 <div class="pull-right" style="text-align: right;">
 {#                                <span class="margin-right-4 o-gray"><i class="fa fa-industry o-purple margin-right-1"></i> 7 services</span>#}
 {#                                  <span class="margin-right-4 o-gray"><i class="fa fa-download o-green margin-right-1"></i> added: 3 months ago</span>#}
-                                    <span class="dataset-category"><span class="badge">{{ dataset.category }}</span></span>
+                                    <span class="dataset-category">{% if dataset.category is not None %}<span class="badge">{{ dataset.category }}{% endif %}</span></span>
     {#                                <span class="dataset-private"><span class="badge">{{ dataset.category }}</span></span>#}
                                     {% if dataset.private %}
                                         <button class="btn btn-danger btn-sm" style="margin: 0;">Private</button>
