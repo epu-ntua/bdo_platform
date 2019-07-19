@@ -29,7 +29,7 @@ from website_analytics.models import UserPlans
 
 def create_new_service(request):
     plan = UserPlans.objects.get(user=request.user)
-    if plan.plan != 'platinum' and plan.plan != 'silver':
+    if plan.plan.plan_name != 'platinum' and plan.plan.plan_name != 'silver':
         return render(request, 'service_builder/no_service_builder.html', {})
 
     user = request.user
