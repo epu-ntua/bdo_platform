@@ -1,6 +1,8 @@
 import csv
 import sys
 import json
+
+from django.core.exceptions import PermissionDenied
 from django.template.loader import render_to_string
 import folium
 from folium import plugins
@@ -15,6 +17,7 @@ from pandas import DataFrame
 from .forms import HCMRForm
 import calculate_red_points as red_points_calc
 from django.conf import settings
+from access_controller.policy_enforcement_point import PEP
 from service_builder.models import Service, ServiceInstance
 from threading import Thread
 from datetime import datetime
@@ -33,6 +36,12 @@ def trim(img):
     if bbox:
         img = img.crop(bbox)
     return np.array(img)
+
+
+def check_access(request, service):
+    access_decision = PEP.access_to_service(request, service.id)
+    if access_decision is False:
+        raise PermissionDenied
 
 
 def create_map():
@@ -298,6 +307,7 @@ def execute(request):
     if scenario == '3':
         service = Service.objects.get(pk=settings.UNDERWATER_ACCIDENT_SERVICE_ID)
 
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()

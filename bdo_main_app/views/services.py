@@ -14,6 +14,7 @@ from access_controller.policy_enforcement_point import PEP
 from django.views.decorators.cache import never_cache
 from django.core.exceptions import ObjectDoesNotExist
 from website_analytics.views import *
+from django.conf import settings
 
 
 @never_cache
@@ -61,7 +62,7 @@ def services(request):
                       'targeturl': '/pilot/wave-energy/',
                       'short_description': 'A quick and reliable primary energy resource assessment that will dictate the choice of a location to create wave farms.',
                       'creator': 'R&D Nester',
-                      'sharing': 'Open'}
+                      'sharing': 'Private'}
     pilot_services.append(nester_service)
     xmile_service = {'title': 'Anomaly Detection Service',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot4.jpg',
@@ -75,7 +76,7 @@ def services(request):
                       'targeturl': '/pilot/oil-spill-simulation/',
                       'short_description': 'Define the oil spill accident detected and receive a report on the highly affected areas during the specified time period.',
                       'creator': 'HCMR',
-                      'sharing': 'Open'}
+                      'sharing': 'Private'}
     pilot_services.append(hcmr_service)
     anek_service = {'title': 'Fuel Consumption Reduction Investigation',
                       'imageurl': 'https://s3.amazonaws.com/engagefp7/BDO/pilot1b.jpg',
@@ -98,7 +99,8 @@ def services(request):
         'bdo_dashboards': bdo_dashboards,
         'my_services': user_services.order_by('-created'),
         'bdo_services': bdo_services,
-        'pilot_services': pilot_services
+        'pilot_services': pilot_services,
+        'user_with_access_services': user_with_access_services
     })
 
 
@@ -173,7 +175,11 @@ def view_service(request, pk):
 
 
 def load_nester_service(request):
-    return render(request, 'services/services/load_nester_service.html', {})
+    s1 = Service.objects.get(pk=settings.WEC_LOCATION_EVALUATION_SERVICE_ID)
+    s2 = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
+    access_decision1 = PEP.access_to_service(request, s1.id)
+    access_decision2 = PEP.access_to_service(request, s2.id)
+    return render(request, 'services/services/load_nester_service.html', {'access_decision1': access_decision1, 'access_decision2': access_decision2})
 
 
 def load_xmile_service(request):
@@ -181,6 +187,12 @@ def load_xmile_service(request):
 
 
 def load_hcmr_service(request):
+    s1 = Service.objects.get(pk=settings.OIL_SPILL_FORECAST_SERVICE_ID)
+    s2 = Service.objects.get(pk=settings.HIGH_RISK_POLLUTION_SERVICE_ID)
+    s3 = Service.objects.get(pk=settings.UNDERWATER_ACCIDENT_SERVICE_ID)
+    access_decision1 = PEP.access_to_service(request, s1.id)
+    access_decision2 = PEP.access_to_service(request, s2.id)
+    access_decision3 = PEP.access_to_service(request, s3.id)
     return render(request, 'services/services/load_hcmr_service.html', {})
 
 

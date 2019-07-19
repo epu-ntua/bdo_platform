@@ -16,7 +16,7 @@ from django.conf import settings
 
 from background_task import background
 from django.utils.datastructures import MultiValueDictKeyError
-
+from access_controller.policy_enforcement_point import PEP
 from query_designer.models import Query, TempQuery
 from service_builder.forms import ServiceForm
 from visualizer.models import Visualization
@@ -24,9 +24,14 @@ from service_builder.models import Service, ServiceTemplate, ServiceInstance, Sa
 from visualizer.utils import create_zep__query_paragraph, run_zep_paragraph, run_zep_note, clone_zep_note, delete_zep_paragraph, \
     create_zep_getDict_paragraph, get_zep_getDict_paragraph_response, create_zep_arguments_paragraph, get_result_dict_from_livy, close_livy_session, \
     delete_zep_notebook, create_zep__query_load_dataframe_paragraph, create_zep__query_save_dataframe_paragraph
+from website_analytics.models import UserPlans
 
 
 def create_new_service(request):
+    plan = UserPlans.objects.get(user=request.user)
+    if plan.plan != 'platinum' and plan.plan != 'silver':
+        return render(request, 'service_builder/no_service_builder.html', {})
+
     user = request.user
     if request.user.is_authenticated():
         saved_queries = Query.objects.filter(user=user).exclude(document__from=[])
@@ -262,6 +267,9 @@ def delete_service(request, pk):
 
 
 def load_service(request, pk):
+    access_decision = PEP.access_to_service(request, pk)
+    if access_decision is False:
+        raise PermissionDenied
     service = Service.objects.get(pk=pk)
     title = service.title
 
@@ -389,6 +397,9 @@ def update_service_arguments(request):
 
 
 def submit_service_args(request, service_id):
+    access_decision = PEP.access_to_service(request, service_id)
+    if access_decision is False:
+        raise PermissionDenied
     service = Service.objects.get(pk=int(service_id))
     if service.title == 'Oil Spill Simulation Service':
         output_html = service.output_html

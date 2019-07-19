@@ -23,7 +23,13 @@
     </div>
 
     <h3 class="col-sm-8" style="text-decoration: underline;">Pilot Service 1 – Primary energy resource assessment</h3>
-    <div class="col-sm-4"><a class="btn btn-success pull-right" href="/wave-energy/">Go to service 1</a></div>
+    <div class="col-sm-4">
+        {% if access_decision1 %}
+            <a class="btn btn-success pull-right" href="/wave-energy/">Go to service 1</a>
+        {% else %}
+            <a class="pull-right" style="font-weight: bold; color: darkred; font-size: 110%;" href="mailto:sales@bigdataocean.eu" target="_top">For requesting access please contact <strong style="text-decoration: underline;">sales@bigdataocean.eu</strong></a>
+        {% endif %}
+    </div>
     <div class="col-sm-7">
         <div class="" style="margin-bottom: 2vh;">
             <h4>App1: Wave resource assessment in a single location</h4>
@@ -69,7 +75,13 @@
     
 
     <h3 class="col-sm-8" style="text-decoration: underline; margin-top: 50px;">Pilot Service 2 – Energy conversion assessment</h3>
-    <div class="col-sm-4" style="margin-top: 50px;"><a class="btn btn-success pull-right" href="/wave-energy/energy_conversion/">Go to service 2</a></div>
+    <div class="col-sm-4" style="margin-top: 50px;">
+        {% if access_decision2 %}
+            <a class="btn btn-success pull-right" href="/wave-energy/energy_conversion/">Go to service 2</a>
+        {% else %}
+            <a class="pull-right" style="font-weight: bold; color: darkred; text-decoration: underline;">For requesting access please contact <strong style="font-weight: bolder;">sales@bigdataocean.eu</strong></a>
+        {% endif %}
+    </div>
     <div class="col-sm-7">
         <div class="" style="margin-bottom: 2vh;">
             <h4>App1: Assessment of Wave Energy Converters in a single location</h4>

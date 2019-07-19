@@ -5,6 +5,8 @@ import collections, json
 from threading import Thread, Timer
 from background_task import background
 from datetime import datetime, timedelta
+
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -16,7 +18,7 @@ from aggregator.models import Variable, Dataset
 from lists import *
 from datasets import *
 from energy_converters import *
-
+from access_controller.policy_enforcement_point import PEP
 from query_designer.models import Query, TempQuery, AbstractQuery
 from service_builder.models import Service, ServiceInstance
 from visualizer.utils import delete_zep_notebook, clone_zep_note, create_zep_arguments_paragraph, delete_zep_paragraph, run_zep_note, \
@@ -28,6 +30,12 @@ from wave_energy_pilot.models import Wave_Energy_Converters
 
 from website_analytics.views import *
 from website_analytics.models import UserPlans
+
+
+def check_access(request, service):
+    access_decision = PEP.access_to_service(request, service.id)
+    if access_decision is False:
+        raise PermissionDenied
 
 
 def configure_spatial_filter(filters, lat_from, lat_to, lon_from, lon_to):
@@ -329,6 +337,7 @@ def energy_conversion_init(request):
 @never_cache
 def wec_single_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.WEC_LOCATION_EVALUATION_SERVICE_ID)
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
@@ -476,6 +485,7 @@ def wec_single_location_evaluation_results(request, exec_instance):
 @never_cache
 def wec_area_evaluation_execute(request):
     service = Service.objects.get(pk=settings.WEC_AREA_EVALUATION_SERVICE_ID)
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
@@ -622,6 +632,7 @@ def wec_area_evaluation_results(request, exec_instance):
 @never_cache
 def wec_generation_forecast_execute(request):
     service = Service.objects.get(pk=settings.WEC_GENERATION_FORECAST_SERVICE_ID)
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
@@ -752,6 +763,7 @@ def wec_generation_forecast_results(request, exec_instance):
 @never_cache
 def wec_load_matching_execute(request):
     service = Service.objects.get(pk=settings.WEC_LOAD_MATCHING_SERVICE_ID)
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
@@ -975,6 +987,7 @@ def init(request):
 @never_cache
 def data_visualization_results(request):
     service = Service.objects.get(pk=settings.DATA_VISUALISATION_SERVICE_ID)
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     # service_exec.save()
@@ -1059,6 +1072,7 @@ def data_visualization_results(request):
 @never_cache
 def single_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
@@ -1225,6 +1239,7 @@ def cancel_execution(request, exec_instance):
 @never_cache
 def area_location_evaluation_execute(request):
     service = Service.objects.get(pk=settings.AREA_EVALUATION_SERVICE_ID)
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
@@ -1358,6 +1373,7 @@ def area_location_evaluation_status(request, exec_instance):
 @never_cache
 def wave_forecast_execute(request):
     service = Service.objects.get(pk=settings.WAVE_FORECAST_SERVICE_ID)
+    check_access(request, service)
     service_exec = ServiceInstance(service=service, user=request.user, time=datetime.now(),
                                    status="starting service", dataframe_visualizations=[])
     service_exec.save()
