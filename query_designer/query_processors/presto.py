@@ -33,7 +33,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
     if len(self.document['from']) > 1:
         prejoin_name = extract_prejoin_name(self.document['from'])
 
-    if is_query_for_average(self.document['from']) and prejoin_name is not None:
+    if is_query_with_aggregate(self.document['from']) and prejoin_name is not None:
         limit, query, subquery_cnt = build_prejoin_query(prejoin_name, columns,
                                                                  prejoin_groups, self)
     else:
@@ -230,10 +230,10 @@ def preprocess_document(columns, groups, prejoin_groups, header_sql_types, heade
     return c_name_with_agg, v_obj, data_table_names, groups
 
 
-def is_query_for_average(from_list):
+def is_query_with_aggregate(from_list):
     for _from in from_list:
         for s in _from['select']:
-            if 'type' in s and s['type'] == 'VALUE' and s['aggregate'] != 'AVG':
+            if 'type' in s and s['type'] == 'VALUE' and s['aggregate'] == '':
                 return False
     return True
 
