@@ -27,6 +27,8 @@ from time import sleep
 from wave_energy_pilot.models import Wave_Energy_Converters
 
 from website_analytics.views import *
+from website_analytics.models import UserPlans
+
 
 def configure_spatial_filter(filters, lat_from, lat_to, lon_from, lon_to):
     if type(filters) == dict:
@@ -1035,6 +1037,11 @@ def data_visualization_results(request):
         nester_statistics(service_obj, dataset_obj)
     except:
         print 'Dataset or service does not exist'
+
+    user_plan = UserPlans.objects.get(user=request.user)
+    user_plan.query_count -= 1
+    user_plan.save()
+
     return render(request, 'wave_energy_pilot/data_visualisation result.html',
                   {'result': result,
                    'back_url': '/wave-energy/',
@@ -1182,6 +1189,10 @@ def single_location_evaluation_results(request, exec_instance):
     start_date = str(result['start_date'])
     end_date = str(result['end_date'])
 
+    user_plan = UserPlans.objects.get(user=request.user)
+    user_plan.query_count -= 1
+    user_plan.save()
+
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/location_assessment result.html',
                   {'result': result,
@@ -1322,6 +1333,10 @@ def area_location_evaluation_results(request, exec_instance):
     start_date = str(result['start_date'])
     end_date = str(result['end_date'])
 
+    user_plan = UserPlans.objects.get(user=request.user)
+    user_plan.query_count -= 3
+    user_plan.save()
+
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/area_assessment result.html',
                   {'result': result,
@@ -1442,6 +1457,10 @@ def wave_forecast_results(request, exec_instance):
     location_lon = str(result['location_lon'])
     start_date = str(result['start_date'])
     end_date = str(result['end_date'])
+
+    user_plan = UserPlans.objects.get(user=request.user)
+    user_plan.query_count -= 2
+    user_plan.save()
 
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wave_forecast result.html',
