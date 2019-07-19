@@ -373,7 +373,7 @@ function interactive_form(onLocationfound, user_marker){
     $('#startdatepicker input').on('change',function () {
         var cont_s_date = new Date($("#startdatepicker input").val());
         var now = new Date();
-        now.setDate(now.getDate()-1);
+        now.setDate(now.getDate()-30);
         if (cont_s_date < now) {
             console.log('no waves!');
         }else{
@@ -390,7 +390,7 @@ function interactive_form(onLocationfound, user_marker){
     $('#startdatepicker input').on('input',function () {
         var cont_s_date = new Date($("#startdatepicker input").val());
         var now = new Date();
-        now.setDate(now.getDate() - 1);
+        now.setDate(now.getDate() - 30);
         if (cont_s_date < now) {
             console.log('no waves!');
         } else {
