@@ -3786,7 +3786,8 @@ def load_execute_dataframe_data(request, df, notebook_id):
         headers = []
         if len(data) > 0:
             headers = [key for key in data[0].keys()]
-    except:
+    except Exception, e:
+        traceback.print_exc()
         raise ValueError(
             'The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
     return data, headers
