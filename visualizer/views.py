@@ -5053,13 +5053,17 @@ def createjson(lonlat,time,status,color):
 def execute_query_method(q, request, from_visualizer=True):
     try:
         check_api_calls(request.user)
+    except Exception as e:
+        print 'API call failed because user exceeded the number of allowed API calls or does not have a plan'
+        traceback.print_exc()
+        raise Exception(e.message)
+    try:
         result = q.execute(from_visualizer=from_visualizer)
         print q.document
         dataset_list = get_dataset_list(q)
         analytics_dataset_visualisation(dataset_list)
         return result
     except Exception as e:
-        print 'API call failed because user exceeded the number of allowed API calls or does not have a plan'
         traceback.print_exc()
         raise Exception(e.message)
 
