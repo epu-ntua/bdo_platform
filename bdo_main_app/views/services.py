@@ -177,8 +177,8 @@ def view_service(request, pk):
 def load_nester_service(request):
     s1 = Service.objects.get(pk=settings.WEC_LOCATION_EVALUATION_SERVICE_ID)
     s2 = Service.objects.get(pk=settings.LOCATION_EVALUATION_SERVICE_ID)
-    access_decision1 = PEP.access_to_service(request, s1.id)
-    access_decision2 = PEP.access_to_service(request, s2.id)
+    access_decision1 = PEP.access_to_service(request.user, s1.id)
+    access_decision2 = PEP.access_to_service(request.user, s2.id)
     return render(request, 'services/services/load_nester_service.html', {'access_decision1': access_decision1, 'access_decision2': access_decision2})
 
 
@@ -190,10 +190,10 @@ def load_hcmr_service(request):
     s1 = Service.objects.get(pk=settings.OIL_SPILL_FORECAST_SERVICE_ID)
     s2 = Service.objects.get(pk=settings.HIGH_RISK_POLLUTION_SERVICE_ID)
     s3 = Service.objects.get(pk=settings.UNDERWATER_ACCIDENT_SERVICE_ID)
-    access_decision1 = PEP.access_to_service(request, s1.id)
-    access_decision2 = PEP.access_to_service(request, s2.id)
-    access_decision3 = PEP.access_to_service(request, s3.id)
-    return render(request, 'services/services/load_hcmr_service.html', {})
+    access_decision1 = PEP.access_to_service(request.user, s1.id)
+    access_decision2 = PEP.access_to_service(request.user, s2.id)
+    access_decision3 = PEP.access_to_service(request.user, s3.id)
+    return render(request, 'services/services/load_hcmr_service.html', {'access_decision1': access_decision1, 'access_decision2': access_decision2, 'access_decision3': access_decision3})
 
 
 def load_anek_service(request):
