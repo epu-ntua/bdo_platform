@@ -6,6 +6,10 @@
     margin-top: 7vh;
 }
 
+.card{
+    display: block !important;
+}
+
 #carousel_container{
     margin-top: 10vh;
     padding: 2vh;
