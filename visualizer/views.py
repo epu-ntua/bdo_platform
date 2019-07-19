@@ -4033,12 +4033,15 @@ def add_oil_spill_ais_layer(m, start_date_string, sim_length, start_lat_lon_list
                                     max_date, min_date, min_lat, max_lat, min_lon, max_lon,
                                     max_filter_date, min_filter_date))
         data = presto_cur.fetchall()
+        print 'some ais'
+        print data[:2]
         curr_year = datetime.strptime(start_date_string, '%Y-%m-%d %H:%M').year
 
         for el in data:
             el[3] = ((datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f')).replace(year=curr_year)).strftime('%Y-%m-%d %H:%M:%S.%f')
             el[3] = ((datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f')).replace(month=(datetime.strptime(el[3], '%Y-%m-%d %H:%M:%S.%f').month+2))).strftime('%Y-%m-%d %H:%M:%S.%f')
     except:
+        print 'query failed'
         data = []
 
     has_ais = False
@@ -4092,9 +4095,11 @@ def get_min_max_time_for_query(start_date_string, sim_length):
 
     min_date = new_date
     max_date = new_date + timedelta(hours=int(sim_length))
-    now = datetime.now()
+    import pytz
+    now = datetime.now(pytz.timezone('Europe/Athens'))
     now = now.replace(year=2011)
     now = now.replace(month=now.month - 2)
+    now = datetime.strptime(now.strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
     if max_date > now:
         max_date = now
         max_date = max_date.strftime('%Y-%m-%d %H:%M:%S')
