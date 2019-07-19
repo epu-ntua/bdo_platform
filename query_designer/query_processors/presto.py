@@ -96,7 +96,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
             try:
                 all_rows = cursor.fetchall()
             except Exception, e:
-                if e.message.index('exceeded') >= 0:
+                if e.message.find('exceeded') >= 0:
                     print 'MAX MEMORY EXCEEDED'
                     raise Exception('max_memory_exceeded')
                 else:
