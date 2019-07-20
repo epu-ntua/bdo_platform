@@ -254,8 +254,8 @@ class AbstractQuery(Model):
                 raise NotImplementedError('TODO fix missing NOT operator in solr')
 
         else:
-            _a = self.process_filters(filters['a'], mode=mode)
-            _b = self.process_filters(filters['b'], mode=mode, quote=True)
+            _a = self.process_filters(filters['a'], mode=mode, use_table_names=use_table_names)
+            _b = self.process_filters(filters['b'], mode=mode, quote=True, use_table_names=use_table_names)
 
             result = '%s %s %s' % \
                    (('(%s)' % _a) if type(_a) not in [str, unicode, int, float] else _a,

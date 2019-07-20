@@ -244,10 +244,14 @@ def remove_round_from_select(q):
 
 
 def extract_prejoin_name(from_list):
-    variable_id1, variable_id2 = extract_variable_ids_from_doc(from_list)
-    dataset_id1 = extract_dataset_id_from_varible_ids(variable_id1)
-    dataset_id2 = extract_dataset_id_from_varible_ids(variable_id2)
-    return extract_prejoin_name_for_datasets(dataset_id1, dataset_id2)
+    dataset_list = []
+    for f in from_list:
+        dataset_list.append(Variable.objects.get(pk=int(f['type'])).dataset.id)
+    dataset_list = set(dataset_list)
+    if len(dataset_list) > 1:
+        return extract_prejoin_name_for_datasets(dataset_list[0], dataset_list[1])
+    else:
+        return None
 
 
 def build_prejoin_query(prejoin_name, columns, prejoin_groups, self):
