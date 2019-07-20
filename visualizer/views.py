@@ -194,7 +194,19 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
 
     cursor_presto = get_presto_cursor()
     table = Variable.objects.get(pk=int(doc['from'][0]['type'])).dataset.table_name
-    min_query = "SELECT * FROM (SELECT MIN(time) FROM " + table + " WHERE " + vessel_column + " = '" + str(vessel_id[0]) + "') AS SQ1 "
+
+    vessel_column_datatype = 'STRING'
+    for f in doc['from']:
+        for s in f['select']:
+            if str(s['name']).split('_', 1)[1] == vessel_column:
+                vessel_column_datatype = s['datatype']
+
+    if vessel_column_datatype == 'STRING':
+        min_query = "SELECT * FROM (SELECT MIN(time) FROM " + table + " WHERE " + vessel_column + " = '" + str(vessel_id[0]) + "') AS SQ1 "
+    else:
+        min_query = "SELECT * FROM (SELECT MIN(time) FROM " + table + " WHERE " + vessel_column + " = " + str(vessel_id[0]) + ") AS SQ1 "
+
+
     print min_query
     cursor_presto.execute(min_query)
     min_time = "'" + str(cursor_presto.fetchall()[0][0]).split('.')[0] + "'"
@@ -372,7 +384,19 @@ def load_modify_query_plotline_vessel(query_pk, marker_limit, vessel_column, ves
 
     cursor_presto = get_presto_cursor()
     table = Variable.objects.get(pk=int(doc['from'][0]['type'])).dataset.table_name
-    min_query = "SELECT * FROM (SELECT MIN(time) FROM " + table + " WHERE " + vessel_column + " = '" + str(vessel_id) + "') AS SQ1 "
+    vessel_column_datatype = 'STRING'
+    # print doc
+    for f in doc['from']:
+        for s in f['select']:
+            if str(s['name']).split('_', 1)[1] == vessel_column:
+                # print 'found datatype'
+                vessel_column_datatype = s['datatype']
+    # print vessel_column_datatype
+    if vessel_column_datatype == 'STRING':
+        min_query = "SELECT * FROM (SELECT MIN(time) FROM " + table + " WHERE " + vessel_column + " = '" + str(vessel_id) + "') AS SQ1 "
+    else:
+        min_query = "SELECT * FROM (SELECT MIN(time) FROM " + table + " WHERE " + vessel_column + " = " + str(vessel_id) + ") AS SQ1 "
+
     print min_query
     cursor_presto.execute(min_query)
     min_time = "'" + str(cursor_presto.fetchall()[0][0]).split('.')[0] + "'"
@@ -1797,6 +1821,7 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vesse
             new_df = df.groupby(['time']).first().reset_index()
             lat_index = new_df.columns.tolist().index('lat')
             lon_index = new_df.columns.tolist().index('lon')
+            time_index = new_df.columns.tolist().index('time')
             color_index = new_df.columns.tolist().index('id')
             for i in range(0, len(var_index)):
                 var_index[i] = new_df.columns.tolist().index('variable'+str(i))
