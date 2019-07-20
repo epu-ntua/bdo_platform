@@ -390,6 +390,7 @@ $(document).ready(function () {
         });
         plotline_vessel_id_select.parent().dropdown('clear');
         plotline_vessel_id_select.parent().addClass('disabled');
+        $('.popover-content .date').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
 
 
         //CONTOURS
@@ -519,7 +520,7 @@ $(document).ready(function () {
         markers_vessel_id_select.on('change', function(){
             allow_markers_vessel_submit = missing_parameter(markers_vessel_id_select, allow_markers_vessel_submit, 'Vessel-ID', 3 )
         });
-
+        $('.popover-content .date').datetimepicker({autoclose: true, pickerPosition: 'top-right'});
 
 
 
