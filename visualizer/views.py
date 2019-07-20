@@ -214,7 +214,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
                 order_var = s['name']
                 s['groupBy'] = True
                 if s['aggregate'] == '':
-                    s['aggregate'] = 'date_trunc_hour'
+                    s['aggregate'] = 'date_trunc_minute'
                 time_flag = True
             elif s['name'] == color_col and (s['exclude'] is not True):
                 s['exclude'] = False
@@ -239,6 +239,7 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
                 var_flag = True
                 if (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                     platform_id_filtername = str(s['name'])
+                    s['groupBy'] = True
                     if str(s['type']) == "VALUE":
                         platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
                     else:
@@ -246,7 +247,8 @@ def load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_col
                     platform_flag = True
             elif (s['name'].split('_', 1)[1] == vessel_column) and (s['exclude'] is not True):
                 platform_id_filtername = str(s['name'])
-                s['exclude'] = True
+                s['exclude'] = False
+                s['groupBy'] = True
                 if str(s['type']) == "VALUE":
                     platform_id_datatype = Variable.objects.get(pk=int(f['type'])).dataType
                 else:
@@ -877,8 +879,6 @@ def get_map_plotline_vessel_query_data(query, request):
         elif c['name'].split('_', 1)[1] == 'time':
             time_index = idx
     return data, lat_index, lon_index, time_index
-
-
 
 
 def get_map_plotline_vessel_course(marker_limit, vessel_column, vessel_id, color, query_pk, df, notebook_id, lat_col, lon_col, start_date_course, num_of_days, m, request, cached_file):
@@ -1778,13 +1778,38 @@ def get_map_markers_vessel_course(query_pk, df, notebook_id, marker_limit, vesse
         if query_pk != 0:
             query = load_modify_query_marker_vessel(query_pk, variable, marker_limit, vessel_column, vessel_id, color_col, agg_function, use_color_col, start_date_course, num_of_days)
             data, lat_index, lon_index, time_index, var_index, color_index, var_title, var_unit = get_marker_query_data(query, variable, color_col, request)
+
+            from operator import itemgetter
+            data = sorted(data, key=itemgetter(time_index))
+            cols = ["id", "id", "id", "id"] + (["id"] * len(var_index))
+            cols[lat_index] = 'lat'
+            cols[lon_index] = 'lon'
+            cols[time_index] = 'time'
+            for i, vi in enumerate(var_index):
+                cols[vi] = 'variable'+str(i)
+            import pandas as pd
+            # import pdb
+            # pdb.set_trace()
+            df = pd.DataFrame(data, columns=cols)
+            df['time'] = df['time'].apply(
+                lambda x: datetime.strptime(str(x).split('.')[0], '%Y-%m-%d %H:%M:%S').replace(minute=0, second=0, microsecond=0).strftime(
+                    '%Y-%m-%d %H:%M:%S'))
+            new_df = df.groupby(['time']).first().reset_index()
+            lat_index = new_df.columns.tolist().index('lat')
+            lon_index = new_df.columns.tolist().index('lon')
+            color_index = new_df.columns.tolist().index('id')
+            for i in range(0, len(var_index)):
+                var_index[i] = new_df.columns.tolist().index('variable'+str(i))
+            newdata = df.groupby(['time']).first().reset_index().values.tolist()
+            print newdata[:5]
+            data = newdata
         elif df != '':
             data, lat_index, lon_index, var_index, color_index, time_index = get_makers_dataframe_data(color_col, df, lat_col, lon_col, time_col, notebook_id, request, variable)
             var_unit = var_unt[0]
             var_index = [var_index]
         else:
             raise ValueError('Either query ID or dataframe name has to be specified.')
-        var_title = variable
+        var_title = var_title[0]
         var_unit = var_unit[0]
         var_index = var_index[0]
         dic['data'] = data
@@ -1828,6 +1853,9 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
     max_lat = -90
     min_lon = 180
     max_lon = -180
+    # import pdb
+    # pdb.set_trace()
+    prev = None
     for d in data:
         if color_col != '':
             if d[color_index] not in color_dict.keys():
@@ -1866,6 +1894,9 @@ def create_marker_vessel_points(color_col, color_index, data, lat_index, lon_ind
             # radius=2,
 
         ).add_to(pol_group_layer)
+        if prev != None:
+            folium.PolyLine(locations=[[prev[lat_index], prev[lon_index]], [d[lat_index], d[lon_index]]], color='grey').add_to(pol_group_layer)
+        prev = d
     max_lat = float(max_lat)
     min_lat = float(min_lat)
     max_lon = float(max_lon)
