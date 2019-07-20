@@ -91,12 +91,20 @@ function load_filters(filters, doc) {
                 }
             });
             var filterName = 'F' + (last_filter + 1);
+            var filter_b;
+            // console.log(filters['b']);
+            if (String(filters['b']).indexOf("'") > -1){
+                filter_b = filters['b'].slice(1, -1)
+            }
+            else{
+                filter_b = filters['b']
+            }
             QueryToolbox.filters[filterName]= {
                 a: a,
                 a_forVariable: a_forVariable,
                 a_title: a_title,
                 a_type: a_type,
-                b: filters['b'],
+                b: filter_b,
                 filter_string: a_title + ' ' + $("#filters-modal #new-filter-operator option[value='"+filters['op']+"']").text() + ' ' + filters['b'],
                 op: filters['op']
             };
