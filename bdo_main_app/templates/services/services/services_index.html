@@ -12,7 +12,7 @@
     <div class="row">
         <div class="col-sm-2" style="margin-top: 20px;"><a class="btn btn-success makerequestbtn" href="/on-demand/" role="button"><i class="fas fa-user-ninja" style="padding-right:5px"></i> Make a new request</a></div>
         <div class="col-sm-8">
-            <div class="o-lighter-gray text-center"><h2 style="box-shadow: 0 1px #e5e5e5; margin-left: 20%; margin-right: 20%;">BDO Applications and Dashboards</h2></div>
+            <div class="o-lighter-gray text-center"><h2 style="box-shadow: 0 1px #e5e5e5; margin-left: 20%; margin-right: 20%;">BDO Applications & Dashboards</h2></div>
             <div class="filterservices form-group">
 {#                <label for="filterservicesSelect" class="o-lighter-gray"><b>Filter Services</b></label>#}
 {#                <select class="form-control" width="300" id="filterservicesSelect">#}
@@ -32,20 +32,20 @@
         -->
         <li class="nav-item active" style="width: 20%; display: inline-block; float: none;">
             <a class="nav-link" href="#pilot-services-div" role="tab" data-toggle="tab">
-                <i class="fas fa-tablet-alt"></i>
+                <i class="fas fa-tablet-alt" style="padding: 10px 0;"></i>
                 Applications
             </a>
         </li>
         <li class="nav-item" style="width: 20%; display: inline-block; float: none;">
-            <a class="nav-link" href="#mydashboards" role="tab" data-toggle="tab">
-                <i class="fas fa-bar-chart"></i>
-                BDO Dashboards
+            <a class="nav-link" href="#dashboards" role="tab" data-toggle="tab">
+                <i class="fas fa-bar-chart" style="padding: 10px 0;"></i>
+                Dynamic Dashboards
             </a>
         </li>
         <li class="nav-item" style="width: 20%; display: inline-block; float: none;">
-            <a class="nav-link" href="#myservices" role="tab" data-toggle="tab">
-                <i class="fas fa-cogs"></i>
-                BDO Services
+            <a class="nav-link" href="#services" role="tab" data-toggle="tab">
+                <i class="fas fa-cogs" style="padding: 10px 0;"></i>
+                Analytical Services (beta)
             </a>
         </li>
 {#        <li class="nav-item " style="width: 20%; display: inline-block; float: none;">#}
@@ -87,77 +87,49 @@
             {% endfor %}
         </div>
 
-        <div class="tab-pane" id="myservices">
-            <h4>My Services</h4>
-            <hr>
-            <div class="card-deck">
-            {% for item in my_services %}
-                {% if forloop.counter == 5 %}
-                <div class="row">
-                    <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_services">Show more</button>
-                </div>
-                <div id="collapse_my_services" class="collapse">
-                {% endif %}
-                <div class="card card-default-width card-default-margin-right">
-                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
-                    <div class="card-body card-padding-20">
-                        <h5 class="card-title o-blue card-title-default-height">
-                            <a class="o-blue"
-                                {% if item.title == 'Vessel Fault Prediction (FNK)'%}
-                                    href="https://predictivemaintenance.ubitech.eu"
-                                {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
-                                    href="https://fuelconsumption.ubitech.eu"
-                                {% else %}
-                                    href="/services/service/{{item.pk}}"
-                                {% endif %}
-                            >
-                            {{item.title}}
-                            </a>
-                        </h5>
-                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
-                    </div>
+        <div class="tab-pane  col-sm-12" id="services"  style="text-align: center;">
+            <ul class="nav nav-pills" role="tablist" >
+                <li class="nav-item active" style="width: 20%; display: inline-block; float: none;"><a class="nav-link"  role="tab" data-toggle="tab" href="#myservices" >My services</a></li>
+                <li class="nav-item" style="width: 20%; display: inline-block; float: none;"><a class="nav-link"  role="tab" data-toggle="tab" href="#bdoservices">BDO services</a></li>
+                <li class="nav-item" style="width: 20%; display: inline-block; float: none;"><a class="nav-link"  role="tab" data-toggle="tab" href="#privateservices">Private services</a></li>
+            </ul>
+            <div class="tab-content tab-space text-center " style="padding: 0;">
+                <div class="tab-pane fade in active" id="myservices">
+                    <div class="card-deck">
+                    {% for item in my_services %}
+                        {% if forloop.counter == 5 %}
+                        <div class="row">
+                            <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_services">Show more</button>
+                        </div>
+                        <div id="collapse_my_services" class="collapse">
+                        {% endif %}
+                        <div class="card card-default-width card-default-margin-right">
+                            <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                            <div class="card-body card-padding-20">
+                                <h5 class="card-title o-blue card-title-default-height">
+                                    <a class="o-blue"
+                                        {% if item.title == 'Vessel Fault Prediction (FNK)'%}
+                                            href="https://predictivemaintenance.ubitech.eu"
+                                        {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
+                                            href="https://fuelconsumption.ubitech.eu"
+                                        {% else %}
+                                            href="/services/service/{{item.pk}}"
+                                        {% endif %}
+                                    >
+                                    {{item.title}}
+                                    </a>
+                                </h5>
+                                <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                            </div>
 
-                    <ul class="list-group list-group-flush" style="text-align: left;">
-                        <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
-                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
-                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
-                    </ul>
-                    <div class="card-body text-center">
-                        <a class="btn btn-primary"
-                            {% if item.title == 'Vessel Fault Prediction (FNK)'%}
-                                href="https://predictivemaintenance.ubitech.eu"
-                            {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
-                                href="https://fuelconsumption.ubitech.eu"
-                            {% else %}
-                                href="/services/service/{{item.pk}}"
-                            {% endif %}
-                             role="button">
-                            SHOW SERVICE
-                        </a>
-                    </div>
-                </div>
-                {% if forloop.last and forloop.counter >= 5 %}
-                    </div>
-                {% endif %}
-            {% empty %}
-                <b>No services are created yet. Click <a class="o-blue" href="/service_builder/create/">here</a> to create a new service.</b>
-            {% endfor %}
-            </div>
-            <h4>Private Services</h4>
-            <hr>
-            <div class="card-deck">
-                {% for item in bdo_services %}
-                    {% if forloop.counter == 5 %}
-                    <div class="row">
-                        <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_bdo_services">Show more</button>
-                    </div>
-                    <div id="collapse_bdo_services" class="collapse">
-                    {% endif %}
-                    <div class="card card-default-width card-default-margin-right">
-                        <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
-                        <div class="card-body card-padding-20">
-                            <h5 class="card-title o-blue card-title-default-height">
-                                <a class="o-blue"
+                            <ul class="list-group list-group-flush" style="text-align: left;">
+                                <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                                <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                                <li class="list-group-item">Date created <div class="pull-right">{{ item.created }}</div></li>
+                                <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>{{ item.price }}</b></div></li>
+                            </ul>
+                            <div class="card-body text-center">
+                                <a class="btn btn-primary"
                                     {% if item.title == 'Vessel Fault Prediction (FNK)'%}
                                         href="https://predictivemaintenance.ubitech.eu"
                                     {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
@@ -165,32 +137,120 @@
                                     {% else %}
                                         href="/services/service/{{item.pk}}"
                                     {% endif %}
-                                >
-                                {{item.title}}
+                                     role="button">
+                                    SHOW SERVICE
                                 </a>
-                            </h5>
-                            <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                            </div>
                         </div>
-
-                        <ul class="list-group list-group-flush" style="text-align: left;">
-                            <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
-                            <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
-                            <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
-                        </ul>
-                        <div class="card-body text-center">
-                            <a class="btn btn-success request-btn"  data-resource-id="{{ item.pk }}" data-toggle="modal" data-target="#request_access_service_modal" style=""
-                                 role="button">
-                                REQUEST ACCESS
-                            </a>
-                        </div>
+                        {% if forloop.last and forloop.counter >= 5 %}
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <b>No services are created yet. Click <a class="o-blue" href="/service_builder/create/">here</a> to create a new service.</b>
+                    {% endfor %}
                     </div>
-                    {% if forloop.last and forloop.counter >= 5 %}
-                        </div>
-                    {% endif %}
-                {% empty %}
-                    <b>No services are available.</b>
-                {% endfor %}
+                </div>
+                <div class="tab-pane fade" id="bdoservices">
+                    <div class="card-deck">
+                        {% for item in bdo_services %}
+                            {% if forloop.counter == 5 %}
+                            <div class="row">
+                                <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_bdo_services">Show more</button>
+                            </div>
+                            <div id="collapse_bdo_services" class="collapse">
+                            {% endif %}
+                            <div class="card card-default-width card-default-margin-right">
+                                <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                                <div class="card-body card-padding-20">
+                                    <h5 class="card-title o-blue card-title-default-height">
+                                        <a class="o-blue"
+                                            {% if item.title == 'Vessel Fault Prediction (FNK)'%}
+                                                href="https://predictivemaintenance.ubitech.eu"
+                                            {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
+                                                href="https://fuelconsumption.ubitech.eu"
+                                            {% else %}
+                                                href="/services/service/{{item.pk}}"
+                                            {% endif %}
+                                        >
+                                        {{item.title}}
+                                        </a>
+                                    </h5>
+                                    <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                                </div>
+
+                                <ul class="list-group list-group-flush" style="text-align: left;">
+                                    <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                                    <li class="list-group-item">Sharing <div class="pull-right ">Public</div></li>
+                                    <li class="list-group-item">Date created <div class="pull-right">{{ item.created }}</div></li>
+                                    <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
+                                </ul>
+                                <div class="card-body text-center">
+                                    <a class="btn btn-success request-btn"  data-resource-id="{{ item.pk }}" data-toggle="modal" data-target="#request_access_service_modal" style=""
+                                         role="button">
+                                        REQUEST ACCESS
+                                    </a>
+                                </div>
+                            </div>
+                            {% if forloop.last and forloop.counter >= 5 %}
+                                </div>
+                            {% endif %}
+                        {% empty %}
+                            <b>No services are available.</b>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="privateservices">
+                    <div class="card-deck">
+                        {% for item in private_services %}
+                            {% if forloop.counter == 5 %}
+                            <div class="row">
+                                <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_bdo_services">Show more</button>
+                            </div>
+                            <div id="collapse_bdo_services" class="collapse">
+                            {% endif %}
+                            <div class="card card-default-width card-default-margin-right">
+                                <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                                <div class="card-body card-padding-20">
+                                    <h5 class="card-title o-blue card-title-default-height">
+                                        <a class="o-blue"
+                                            {% if item.title == 'Vessel Fault Prediction (FNK)'%}
+                                                href="https://predictivemaintenance.ubitech.eu"
+                                            {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}
+                                                href="https://fuelconsumption.ubitech.eu"
+                                            {% else %}
+                                                href="/services/service/{{item.pk}}"
+                                            {% endif %}
+                                        >
+                                        {{item.title}}
+                                        </a>
+                                    </h5>
+                                    <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                                </div>
+
+                                <ul class="list-group list-group-flush" style="text-align: left;">
+                                    <li class="list-group-item">Service Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                                    <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                                    <li class="list-group-item">Date created <div class="pull-right">{{ item.created }}</div></li>
+                                    <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>{{ item.price }}</b></div></li>
+                                </ul>
+                                <div class="card-body text-center">
+                                    <a class="btn btn-success request-btn"  data-resource-id="{{ item.pk }}" data-toggle="modal" data-target="#request_access_service_modal" style=""
+                                         role="button">
+                                        REQUEST ACCESS
+                                    </a>
+                                </div>
+                            </div>
+                            {% if forloop.last and forloop.counter >= 5 %}
+                                </div>
+                            {% endif %}
+                        {% empty %}
+                            <b>No services are available.</b>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
+
+
 
 
         </div>
@@ -261,73 +321,114 @@
 {##}
 {##}
 {#        </div>#}
-        <div class="tab-pane" id="mydashboards">
-            <h4>My Dashboards</h4>
-            <hr>
-            <div class="card-deck">
-            {% for item in my_dashboards %}
-                {% if forloop.counter == 5 %}
-                    <div class="row">
-                        <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_dashboards">Show more</button>
-                    </div>
-                    <div id="collapse_my_dashboards" class="collapse">
-                {% endif %}
-                <div class="card card-default-width card-default-margin-right">
-                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
-                    <div class="card-body card-padding-20">
-                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/dashboard/{{item.pk}}">{{ item.title }}</a></h5>
-                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
-                    </div>
+        <div class="tab-pane col-sm-12" id="dashboards" style="text-align: center;">
+            <ul class="nav nav-pills" role="tablist" >
+                <li class="nav-item active" style="width: 20%; display: inline-block; float: none;"><a class="nav-link"  role="tab" data-toggle="tab" href="#mydashboards" >My dashboards</a></li>
+                <li class="nav-item" style="width: 20%; display: inline-block; float: none;"><a class="nav-link"  role="tab" data-toggle="tab" href="#bdodashboards">BDO dashboards</a></li>
+                <li class="nav-item" style="width: 20%; display: inline-block; float: none;"><a class="nav-link"  role="tab" data-toggle="tab" href="#privatedashboards">Private dashboards</a></li>
+            </ul>
+            <div class="tab-content tab-space text-center " style="padding: 0;">
+                <div class="tab-pane fade in active" id="mydashboards">
+                    <div class="card-deck">
+                    {% for item in my_dashboards %}
+                        {% if forloop.counter == 5 %}
+                            <div class="row">
+                                <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_dashboards">Show more</button>
+                            </div>
+                            <div id="collapse_my_dashboards" class="collapse">
+                        {% endif %}
+                        <div class="card card-default-width card-default-margin-right">
+                            <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                            <div class="card-body card-padding-20">
+                                <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/dashboard/{{item.pk}}">{{ item.title }}</a></h5>
+                                <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                            </div>
 
-                    <ul class="list-group list-group-flush" style="text-align: left;">
-                        <li class="list-group-item">Dashboard Creator <div class="pull-right">{{ item.user.username }}</div></li>
-                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
-                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
-                    </ul>
-                    <div class="card-body text-center">
-                        <a class="btn btn-primary blue" href="/services/dashboard/{{item.pk}}" role="button">SHOW DASHBOARD</a>
+                            <ul class="list-group list-group-flush" style="text-align: left;">
+                                <li class="list-group-item">Dashboard Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                                <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                                <li class="list-group-item">Date created <div class="pull-right">{{ item.created }}</div></li>
+                            </ul>
+                            <div class="card-body text-center">
+                                <a class="btn btn-primary blue" href="/services/dashboard/{{item.pk}}" role="button">SHOW DASHBOARD</a>
+                            </div>
+                        </div>
+                        {% if forloop.last and forloop.counter >= 5 %}
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <b>No dashboards are created yet. Click <a class="o-blue" href="/dashboards/create/">here</a> to create a new dashboard.</b>
+                    {% endfor %}
                     </div>
                 </div>
-                {% if forloop.last and forloop.counter >= 5 %}
-                    </div>
-                {% endif %}
-            {% empty %}
-                <b>No dashboards are created yet. Click <a class="o-blue" href="/dashboards/create/">here</a> to create a new dashboard.</b>
-            {% endfor %}
-            </div>
 
-            <h4>Private Dashboards</h4>
-            <hr>
-            <div class="card-deck">
-            {% for item in bdo_dashboards %}
-                {% if forloop.counter == 5 %}
-                    <div class="row">
-                        <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_dashboards">Show more</button>
-                    </div>
-                    <div id="collapse_my_dashboards" class="collapse">
-                {% endif %}
-                <div class="card card-default-width card-default-margin-right">
-                    <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
-                    <div class="card-body card-padding-20">
-                        <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/dashboard/{{item.pk}}">{{ item.title }}</a></h5>
-                        <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
-                    </div>
+                <div class="tab-pane fade" id="bdodashboards">
+                    <div class="card-deck">
+                        {% for item in bdo_dashboards %}
+                            {% if forloop.counter == 5 %}
+                                <div class="row">
+                                    <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_dashboards">Show more</button>
+                                </div>
+                                <div id="collapse_my_dashboards" class="collapse">
+                            {% endif %}
+                            <div class="card card-default-width card-default-margin-right">
+                                <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                                <div class="card-body card-padding-20">
+                                    <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/dashboard/{{item.pk}}">{{ item.title }}</a></h5>
+                                    <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                                </div>
 
-                    <ul class="list-group list-group-flush" style="text-align: left;">
-                        <li class="list-group-item">Dashboard Creator <div class="pull-right">{{ item.user.username }}</div></li>
-                        <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
-                        <li class="list-group-item">Price <div class="pull-right o-lighter-green"><b>Free</b></div></li>
-                    </ul>
-                    <div class="card-body text-center">
-                        <a class="btn btn-success request-btn" data-resource-id="{{ item.pk }}"  data-toggle="modal" data-target="#request_access_dashboard_modal" style=""  role="button">REQUEST ACCESS</a>
+                                <ul class="list-group list-group-flush" style="text-align: left;">
+                                    <li class="list-group-item">Dashboard Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                                    <li class="list-group-item">Sharing <div class="pull-right ">Public</div></li>
+                                    <li class="list-group-item">Date created <div class="pull-right">{{ item.created }}</div></li>
+                                </ul>
+                                <div class="card-body text-center">
+                                    <a class="btn btn-primary blue" href="/services/dashboard/{{item.pk}}" role="button">SHOW DASHBOARD</a>
+                                </div>
+                            </div>
+                            {% if forloop.last and forloop.counter >= 5 %}
+                                </div>
+                            {% endif %}
+                        {% empty %}
+                            <b>No dashboards available.</b>
+                        {% endfor %}
                     </div>
                 </div>
-                {% if forloop.last and forloop.counter >= 5 %}
+
+                <div class="tab-pane fade" id="privatedashboards">
+                    <div class="card-deck">
+                    {% for item in private_dashboards %}
+                        {% if forloop.counter == 5 %}
+                            <div class="row">
+                                <button class="btn btn-sm btn-primary" data-toggle="collapse" data-target="#collapse_my_dashboards">Show more</button>
+                            </div>
+                            <div id="collapse_my_dashboards" class="collapse">
+                        {% endif %}
+                        <div class="card card-default-width card-default-margin-right">
+                            <img class="card-img-top" src="{% if item.imageurl %}{{ item.imageurl }}{% else %}{% static "img/marketplace/default.svg" %}{% endif %}" alt="Card image cap">
+                            <div class="card-body card-padding-20">
+                                <h5 class="card-title o-blue card-title-default-height"><a class="o-blue" href="/services/dashboard/{{item.pk}}">{{ item.title }}</a></h5>
+                                <p class="card-text card-text-default-height">{{ item.description|default:"No description provided." }}</p>
+                            </div>
+
+                            <ul class="list-group list-group-flush" style="text-align: left;">
+                                <li class="list-group-item">Dashboard Creator <div class="pull-right">{{ item.user.username }}</div></li>
+                                <li class="list-group-item">Sharing <div class="pull-right ">{% if item.private == False %} Public {% else %}Private{% endif %}</div></li>
+                                <li class="list-group-item">Date created <div class="pull-right">{{ item.created }}</div></li>
+                            </ul>
+                            <div class="card-body text-center">
+                                <a class="btn btn-success request-btn" data-resource-id="{{ item.pk }}"  data-toggle="modal" data-target="#request_access_dashboard_modal" style=""  role="button">REQUEST ACCESS</a>
+                            </div>
+                        </div>
+                        {% if forloop.last and forloop.counter >= 5 %}
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <b>No dashboards are available.</b>
+                    {% endfor %}
                     </div>
-                {% endif %}
-            {% empty %}
-                <b>No dashboards are available.</b>
-            {% endfor %}
+                </div>
             </div>
         </div>
 {#        <div class="tab-pane" id="publicdashboards">#}

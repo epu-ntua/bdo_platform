@@ -33,6 +33,7 @@ class Service(Model):
     output_js = TextField(null=True)
 
     through_livy = BooleanField(default=False)
+    is_pilot = BooleanField(default=False)
 
     description = CharField(blank=True,max_length=512,null=True,default=None)
     price = CharField(max_length=50,default='free')

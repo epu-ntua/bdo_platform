@@ -21,16 +21,20 @@ from django.conf import settings
 def services(request):
     user = request.user
     if user.is_authenticated:
-        user_dashboards = Dashboard.objects.filter(user=user).order_by('id')
-        user_services = Service.objects.filter(user=user, published=True).order_by('id')
+        user_dashboards = Dashboard.objects.filter(user=user)
+        user_services = Service.objects.filter(user=user, published=True, is_pilot=False)
     else:
         user_dashboards = []
         user_services = []
-    bdo_dashboards = Dashboard.objects.filter(private=True, can_be_shared=True).filter(~Q(user=user))
-    bdo_services = Service.objects.filter(published=True, private=True, can_be_shared=True).filter(~Q(user=user))
 
-    public_dashboards = Dashboard.objects.filter(private=False).filter(~Q(user=user))
-    public_services = Service.objects.filter(published=True, private=False).filter(~Q(user=user))
+    private_dashboards = Dashboard.objects.filter(private=True, can_be_shared=True).filter(~Q(user=user)).order_by('-created')
+    private_services = Service.objects.filter(published=True, private=True, can_be_shared=True, is_pilot=False).filter(~Q(user=user)).order_by('-created')
+
+    bdo_dashboards = Dashboard.objects.filter(user=User.objects.get(username='BigDataOcean'))
+    bdo_services = Service.objects.filter(published=True, user=User.objects.get(username='BigDataOcean'), is_pilot=False)
+
+    # public_dashboards = Dashboard.objects.filter(private=False).filter(~Q(user=user))
+    # public_services = Service.objects.filter(published=True, private=False).filter(~Q(user=user))
 
     user_with_access_dashboards_list = []
     if request.user.is_authenticated():
@@ -49,12 +53,12 @@ def services(request):
                 user_with_access_services_list.append(access.service.id)
 
     user_with_access_dashboards = Dashboard.objects.filter(id__in=user_with_access_dashboards_list)
-    user_dashboards = user_dashboards | user_with_access_dashboards | public_dashboards
-    bdo_dashboards = [d for d in bdo_dashboards if d.id not in user_with_access_dashboards_list]
+    user_dashboards = user_dashboards | user_with_access_dashboards
+    private_dashboards = [d for d in private_dashboards if d.id not in user_with_access_dashboards_list]
 
-    user_with_access_services = Service.objects.filter(id__in=user_with_access_services_list)
-    user_services = user_services | user_with_access_services | public_services
-    bdo_services = [s for s in bdo_services if s.id not in user_with_access_services_list]
+    user_with_access_services = Service.objects.filter(id__in=user_with_access_services_list, is_pilot=False)
+    user_services = user_services | user_with_access_services
+    private_services = [s for s in private_services if s.id not in user_with_access_services_list]
 
     pilot_services = list()
     nester_service = {'title': 'Wave energy resource assessment',
@@ -96,9 +100,11 @@ def services(request):
     pilot_services.append(fnk_service)
     return render(request, 'services/services/services_index.html', {
         'my_dashboards': user_dashboards.order_by('-created'),
-        'bdo_dashboards': bdo_dashboards,
+        'bdo_dashboards': bdo_dashboards.order_by('-created'),
+        'private_dashboards': private_dashboards,
         'my_services': user_services.order_by('-created'),
-        'bdo_services': bdo_services,
+        'bdo_services': bdo_services.order_by('-created'),
+        'private_services': private_services,
         'pilot_services': pilot_services,
         'user_with_access_services': user_with_access_services
     })
