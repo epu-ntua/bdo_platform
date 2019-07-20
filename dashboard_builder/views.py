@@ -187,6 +187,7 @@ def edit_dashboard(request, pk=None):
             'dashboard_json': json.dumps(dashboard.viz_components),
             'dashboard_pk': pk,
             'dashboard_title': dashboard.title,
+            'dashboard_description': dashboard.description,
             'is_owner': owner,
             'sidebar_active': 'products',
             'saved_queries': saved_queries,
@@ -252,7 +253,8 @@ def save_dashboard(request, pk=None):
     print dashboard_data
     print "end of data"
     title = dashboard_data.pop('title', None)
-    # private = dashboard_data.pop('private', None)
+    description = dashboard_data.pop('description', None)
+    private = dashboard_data.pop('private', None)
     private = True
     can_be_shared = dashboard_data.pop('can_be_shared', None)
 
@@ -261,6 +263,7 @@ def save_dashboard(request, pk=None):
         print dashboard_data[order]
     dashboard.viz_components = dashboard_data
     dashboard.title = title
+    dashboard.description = str(description).strip()
     dashboard.private = private
     dashboard.can_be_shared = can_be_shared
     print dashboard.title

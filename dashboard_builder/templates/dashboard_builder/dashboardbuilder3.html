@@ -55,16 +55,25 @@
                value="Dashboard - {{ dashboard_title }}" style="font-size: 20pt;  width: 100%;"/>
     </div>
 
-    <div class="row text-left">
-        <button type="button" id="new_widget_btn" class="btn btn-md btn-primary" data-toggle="modal"
+    <div class="row" style="position: relative;">
+        <button type="button" id="new_widget_btn" class="btn btn-md btn-primary pull-left" data-toggle="modal"
                 data-target="#myModal">
             <i class="fa fa-plus-circle o-white"></i> New Widget
         </button>
 
-        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-success" style="display: none">
+        <button type="button" id="save_dashboard_btn" class="btn btn-md btn-success  pull-left" style="display: none">
             Save Dashboard
         </button>
 
+         <button data-toggle="collapse" class="btn btn-md btn-primary" data-target="#description" style="position: absolute; width: 10%; left: 45%">
+             Description
+         </button>
+    </div>
+
+    <div id="description" class="collapse col-sm-offset-3 col-sm-6"  style=" z-index: 5">
+        <textarea id="description_input" placeholder="Write a description for your dashboard..."  rows="4" style=" width: 100%; resize: none;">
+
+        </textarea>
     </div>
 
 
