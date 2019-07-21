@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
-
+import requests
 from aggregator.models import Variable, Dataset
 from lists import *
 from datasets import *
@@ -977,6 +977,20 @@ def init(request):
                 dataset["max_lng"] = -7
         except:
             print "dataset not found"
+    print 'pre creating livy session'
+    host = settings.LIVY_URL
+    headers = {'Content-Type': 'application/json', 'X-Requested-By': 'Admin'}
+
+    data = { 'kind': 'pyspark',
+             'jars': ['/user/livy/jars/postgresql-42.2.2.jar', '/user/livy/jars/presto-jdbc-0.213.jar'],
+             'driverMemory': '512m',
+             'driverCores': 1,
+             'numExecutors': 1,
+             'executorMemory': '3g',
+             'executorCores': 2,
+             'heartbeatTimeoutInSecond': 120,
+             'conf': {'spark.driver.maxResultSize': '2g'}}
+    response = requests.post(host + '/sessions', data=json.dumps(data), headers=headers).json()
     return render(request, 'wave_energy_pilot/load_service.html',
                   {'buoys_list': BUOYS,
                    'datasets_list': DATASETS,

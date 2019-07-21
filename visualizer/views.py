@@ -3595,6 +3595,7 @@ def get_chart_dataframe_data(request, notebook_id, df, x_var, y_var_list, x_var_
                 y_m_unit.append(str(''))
                 pass
     except:
+        traceback.print_exc()
         raise ValueError('The visualisation for the requested data frame cannot be created for one of the following reasons:\n-Data frame does not exist.\n-Form parameters are incorrect.')
 
     return json_data, y_m_unit, x_m_unit, y_title_list, x_var_title
