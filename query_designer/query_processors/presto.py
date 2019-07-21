@@ -247,7 +247,7 @@ def extract_prejoin_name(from_list):
     dataset_list = []
     for f in from_list:
         dataset_list.append(Variable.objects.get(pk=int(f['type'])).dataset.id)
-    dataset_list = set(dataset_list)
+    dataset_list = list(set(dataset_list))
     if len(dataset_list) > 1:
         return extract_prejoin_name_for_datasets(dataset_list[0], dataset_list[1])
     else:
