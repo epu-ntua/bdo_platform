@@ -335,7 +335,7 @@ $(document).ready(function(){
                 $("#filter_type").val('SPATIAL_COV').trigger('change');
                 $("#filter_type").select2();
             }
-            else if ((arg_op === 'gt_time') || (arg_op === 'gte_time') || (arg_op === 'lt_time') || (arg_op === 'lte_time')){
+            else if (String(new_arg_op).indexOf('time') > -1 ){
                 $("#filter_type option").not('[value="DATETIME"]').attr('disabled',true);
                 $("#filter_type").find('option[value="DATETIME"]').attr("disabled", false);
                 $("#filter_type").val('DATETIME').trigger('change');
