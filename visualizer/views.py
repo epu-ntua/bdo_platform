@@ -4401,9 +4401,12 @@ def map_markers_in_time_hcmr(request):
                 query_id = cont_query.id
 
             from website_analytics.models import UserPlans
-            user_plan = UserPlans.objects.get(user = request.user)
-            user_plan.query_count -= 1
-            user_plan.save()
+            try:
+                user_plan = UserPlans.objects.get(user = request.user)
+                user_plan.query_count -= 1
+                user_plan.save()
+            except:
+                pass
             m, cont_ret_html, m_id, cont_legpath, cont_unit = get_map_contour(50, 0.1, contours_var, contour_unit, query_id, '', '', '', '', '', 'avg', m, 'hcmr_wave_height_cached'+str(time.time()).replace('.', ''),request)
             # import pdb
             # pdb.set_trace()
