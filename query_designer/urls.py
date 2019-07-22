@@ -9,7 +9,7 @@ urlpatterns = [
     url('datasets/(?P<dataset_id>[\w-]+)/variables/$', views.dataset_variables),
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/properties/$', views.dataset_variable_properties),
     url('datasets/(?P<dataset_id>[\w-]+)/variables/(?P<variable_id>[\w-]+)/count/$', views.count_variable_values),
-    url('list/$', views.queries),
+    # url('list/$', views.queries),
 
     # formulas
     url('^formulas/save/$', views.save_formulas, name='save-formula'),
