@@ -123,6 +123,27 @@ $(document).ready(function() {
         set_time_filters();
     });
 
+    $('#startdatepicker input').on('input', function () {
+        if ($('#startdatepicker input').val()!== '') {
+            var minDate = new Date($('#startdatepicker input').val());
+            endpick.datetimepicker('setStartDate', minDate);
+            startdate = $('#startdatepicker input').val();
+            set_time_filters();
+        }else{
+            startdate = null;
+        }
+    });
+    $('#enddatepicker input').on('input', function () {
+        if ($('#enddatepicker input').val() !== '') {
+            var maxDate = new Date($('#enddatepicker input').val());
+            startpick.datetimepicker('setEndDate', maxDate);
+            enddate = $('#enddatepicker input').val();
+            set_time_filters();
+        }else{
+            enddate = null;
+        }
+    });
+
     /*          Set Up Default Selection of Map         */
     var mapselect = $('#mapchoices');
     mapselect.on('change', function(){
