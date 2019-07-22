@@ -689,6 +689,24 @@ def load_results_to_template(request):
     return HttpResponse(template.render(context))
 
 
+
+def list_services(request):
+    results = []
+
+    for s in Service.objects.all():
+        results.append({'id': s.id, 'title': s.title, 'description': s.description, 'provider': s.user.username})
+
+    return JsonResponse(results, safe=False)
+
+
+def list_service_args(request, pk):
+    return JsonResponse(Service.objects.get(pk=int(pk)).arguments, safe=False)
+
+
+def get_service_inst_status(request, pk):
+    return JsonResponse({'status': ServiceInstance.objects.get(pk=int(pk)).status}, safe=False)
+
+
 #----------HCMR Dummy Service -------------------------------------------------------------------#
 from django.contrib.auth.decorators import login_required
 import ftplib,time,io

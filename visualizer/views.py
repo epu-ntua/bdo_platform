@@ -5513,3 +5513,16 @@ def map_viz_folium_heatmap(request):
 #     # ax.set_extent(bbox)
 #     ax.coastlines(resolution='50m')
 #     return fig, ax
+
+
+def visualisation_types(request):
+    response = []
+    viz = Visualization.objects.filter(hidden=False, data_source='query')
+    for v in viz:
+        response.append({'title': v.title, 'description': v.description, 'type': v.type})
+    return JsonResponse(response , safe=False)
+
+
+def visualisation_type_params(request, pk):
+    viz = Visualization.objects.get(pk=int(pk))
+    return JsonResponse(viz.info , safe=False)

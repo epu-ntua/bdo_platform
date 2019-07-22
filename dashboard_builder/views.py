@@ -289,3 +289,10 @@ def delete_dashboard(request, pk=None):
     except ObjectDoesNotExist:
         pass
     return redirect('/bdo')
+
+
+def list_dashboards(request):
+    result = []
+    for d in Dashboard.objects.all():
+        result.append({'id': d.id, 'title': d.title, 'description': d.description, 'private': str(d.private)})
+    return JsonResponse(result, safe=False)

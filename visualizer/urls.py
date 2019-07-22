@@ -9,7 +9,8 @@ urlpatterns = [
     # url('^map_api/$', views.MapAPI.as_view(), name='map_api'),
     # url('^map_folium_contour/$', views.map_viz_folium_contour, name='map-viz-folium-contour'),
     # url('^test_request_zep/$', views.test_request_zep, name='test_request_zep'),
-
+    url('list/$', views.visualisation_types),
+    url('(?P<pk>\d+)/parameters/$', views.visualisation_type_params),
     url('^map_folium/$', views.map_viz_folium, name='map-viz-folium'),
 
     url('^map_course_mt/$', views.map_course_mt, name='map_course_mt'),

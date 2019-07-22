@@ -2,6 +2,7 @@ from django.conf.urls import url
 from dashboard_builder import views
 
 urlpatterns = [
+    url('list/$', views.list_dashboards),
     url('^create/$', views.build_dynamic_dashboard, name='build_dynamic_dashboard'),
     # url('^create/(?P<toCreate>\d+)/$', views.build_dynamic_dashboard, name='build_dynamic_dashboard'),
     # save
