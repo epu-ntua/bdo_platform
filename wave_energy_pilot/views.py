@@ -1065,9 +1065,12 @@ def data_visualization_results(request):
     except:
         print 'Dataset or service does not exist'
 
-    user_plan = UserPlans.objects.get(user=request.user)
-    user_plan.query_count -= 1
-    user_plan.save()
+    try:
+        user_plan = UserPlans.objects.get(user=request.user)
+        user_plan.query_count -= 1
+        user_plan.save()
+    except:
+        pass
 
     return render(request, 'wave_energy_pilot/data_visualisation result.html',
                   {'result': result,
@@ -1216,10 +1219,12 @@ def single_location_evaluation_results(request, exec_instance):
     location_lon = str(result['location_lon'])
     start_date = str(result['start_date'])
     end_date = str(result['end_date'])
-
-    user_plan = UserPlans.objects.get(user=request.user)
-    user_plan.query_count -= 1
-    user_plan.save()
+    try:
+        user_plan = UserPlans.objects.get(user=request.user)
+        user_plan.query_count -= 1
+        user_plan.save()
+    except:
+        pass
 
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/location_assessment result.html',
@@ -1362,9 +1367,12 @@ def area_location_evaluation_results(request, exec_instance):
     start_date = str(result['start_date'])
     end_date = str(result['end_date'])
 
-    user_plan = UserPlans.objects.get(user=request.user)
-    user_plan.query_count -= 3
-    user_plan.save()
+    try:
+        user_plan = UserPlans.objects.get(user=request.user)
+        user_plan.query_count -= 3
+        user_plan.save()
+    except:
+        pass
 
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/area_assessment result.html',
@@ -1488,9 +1496,12 @@ def wave_forecast_results(request, exec_instance):
     start_date = str(result['start_date'])
     end_date = str(result['end_date'])
 
-    user_plan = UserPlans.objects.get(user=request.user)
-    user_plan.query_count -= 2
-    user_plan.save()
+    try:
+        user_plan = UserPlans.objects.get(user=request.user)
+        user_plan.query_count -= 2
+        user_plan.save()
+    except:
+        pass
 
     # SHOW THE SERVICE OUTPUT PAGE
     return render(request, 'wave_energy_pilot/wave_forecast result.html',

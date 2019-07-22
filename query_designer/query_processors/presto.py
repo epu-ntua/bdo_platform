@@ -100,6 +100,7 @@ def process(self, dimension_values='', variable='', only_headers=False, commit=T
                     print 'MAX MEMORY EXCEEDED'
                     raise Exception('max_memory_exceeded')
                 else:
+                    print e.message
                     print 'other error'
                     raise Exception('error')
             print "First rows"
