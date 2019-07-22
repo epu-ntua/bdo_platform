@@ -76,7 +76,7 @@
             var icon = new L.Icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-' + color_list[i] + '.png'
             });
-            var user_marker = L.marker([lat, lon], {draggable: false}).bindPopup('Vessel ID: '+ vessel_id +'<br>'+'Latitude: '+lat+'<br>'+'Longitude: '+lon+'<br>'+'Time: '+time+'<br>'+var_title+': '+var_value+' '+ var_unit+'<br>').addTo(map);
+            var user_marker = L.marker([lat, lon], {draggable: false}).bindPopup('Vessel ID: '+ vessel_id +'<br>'+'Latitude: '+lat+'<br>'+'Longitude: '+lon+'<br>'+'Time (UTC): '+time+'<br>'+var_title+': '+var_value+' '+ var_unit+'<br>').addTo(map);
             markers_list.push(user_marker);
             var marker_layer = L.layerGroup(user_marker);
             user_marker.setIcon(icon);
