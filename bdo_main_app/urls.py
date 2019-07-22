@@ -8,6 +8,7 @@ urlpatterns = [
     url('^$', views.home, name='home'),
     # Terms of Usage
     url('^terms/$', views.terms, name='terms'),
+    url('^plans/$', views.plans, name='plans'),
     url('^documentation/$', views.documentation, name='documentation'),
     url('^bdo/$', views.dataset_search, name='bdo'),
     url('^search/$', views.search, name='search'),

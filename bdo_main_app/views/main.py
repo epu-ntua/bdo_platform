@@ -20,6 +20,60 @@ def documentation(request):
     return render(request, 'documentation.html')
 
 
+def plans(request):
+    plans = [
+        {
+            "name": "FREE",
+            "description": "For individuals or freelancers",
+            "corporate": "No",
+            "corporate_accounts": "0",
+            "external_users": "No",
+            "api_calls": "120",
+            "support": "Answers online (e.g., FAQ)",
+            "training": "No",
+            "price": "Free",
+            "color": "#1d567e",
+        },
+        {
+            "name": "BRONZE",
+            "description": "For companies with a small, agile data team",
+            "corporate": "Yes",
+            "corporate_accounts": "Up to 5",
+            "external_users": "No",
+            "api_calls": "1,000",
+            "support": "Standard office time",
+            "training": "No ",
+            "price": "199 € / month",
+            "color": "#754b4b",
+        },
+        {
+            "name": "SILVER",
+            "description": "For companies with midsize data team and operational partnerships to be managed",
+            "corporate": "Yes",
+            "corporate_accounts": "Up to 25",
+            "external_users": "Yes",
+            "api_calls": "50,000",
+            "support": "Standard office time",
+            "training": "Yes",
+            "price": "499 € / month",
+            "color": "#797979",
+        },
+        {
+            "name": "PLATINUM",
+            "description": "For companies with large scale operations and need for high-end professional support",
+            "corporate": "Yes",
+            "corporate_accounts": "Unlimited",
+            "external_users": "Yes",
+            "api_calls": "Unlimited",
+            "support": "24/7",
+            "training": "Yes",
+            "price": "Upon negotiation",
+            "color": "#444558",
+        },
+    ]
+    return render(request, 'plans.html', {'plans': plans})
+
+
 def exploretools(request):
     return render(request, 'explore.html')
 

@@ -1,0 +1,89 @@
+{% extends 'base.html'%}
+{% load static %}
+{% block css %}
+    <style>
+        .card-default-margin-right {
+            margin-right: 0px;
+        }
+
+{#        .card-default-width {#}
+{#            width: 300px;#}
+{#        }#}
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2 style="text-align: center;">Big Data Ocean Subscription Plans</h2>
+    <div class="col-sm-12" style="padding: 0;">
+        <div class="col-sm-2" style="padding: 0; ">
+            <div class="card card-default-margin-right" style="text-align: center; background-color: transparent; border: none; box-shadow: none; width: 97%;">
+                <div class="card-header card-padding-20" style="height: 170px; color: white; opacity: 0; background-color: {{ plan.color }};">
+
+                </div>
+                <div class="card-body text-center">
+                    <ul class="list-group list-group-flush" style="font-weight: bold;">
+{#                        <li class="list-group-item" style="height: 45px; padding-left: 5px; padding-right: 5px;">Private Corporate Environment</li>#}
+{#                        <li class="list-group-item" style="height: 60px; padding-left: 5px; padding-right: 5px;">Number of accounts in the Private Corporate Environment</li>#}
+{#                        <li class="list-group-item" style="height: 60px; padding-left: 5px; padding-right: 5px;">Access granted to selected external users</li>#}
+                        <li class="list-group-item" style="height: 60px; padding-left: 5px; padding-right: 5px;">Number of queries executed and visualisation calls</li>
+                        <li class="list-group-item" style="height: 60px; padding-left: 5px; padding-right: 5px;">Customer support</li>
+                        <li class="list-group-item" style="height: 60px; padding-left: 5px; padding-right: 5px;">Training</li>
+                        <li class="list-group-item" style="height: 84px; padding-left: 5px; padding-right: 5px;">Recurring service fee per month</li>
+                    </ul>
+    {#                    <a class="btn btn-primary"#}
+    {#                        {% if item.title == 'Vessel Fault Prediction (FNK)'%}#}
+    {#                            href="https://predictivemaintenance.ubitech.eu"#}
+    {#                        {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}#}
+    {#                            href="https://fuelconsumption.ubitech.eu"#}
+    {#                        {% else %}#}
+    {#                            href="/services/service/{{item.pk}}"#}
+    {#                        {% endif %}#}
+    {#                         role="button">#}
+    {#                        SHOW SERVICE#}
+    {#                    </a>#}
+                </div>
+            </div>
+        </div>
+        <div class="card-deck col-sm-10" style="padding: 0">
+            <div class="col-sm-12" style="padding: 0">
+            {% for plan in plans %}
+                <div class="card card-default-width card-default-margin-right col-sm-2" style="text-align: center;">
+                    <div class="card-header card-padding-20" style="height: 170px; color: white; background-color: {{ plan.color }};">
+                        <h3>{{ plan.name }}</h3>
+                        <p class="card-text">
+                            {{ plan.description }}
+                        </p>
+                    </div>
+                    <div class="card-body text-center">
+                        <ul class="list-group list-group-flush" style="">
+{#                            <li class="list-group-item" style="height: 45px;">{{ plan.corporate }}</li>#}
+{#                            <li class="list-group-item" style="height: 60px;">{{ plan.corporate_accounts }}</li>#}
+{#                            <li class="list-group-item" style="height: 60px;">{{ plan.external_users }}</li>#}
+                            <li class="list-group-item" style="height: 60px;">{{ plan.api_calls }}</li>
+                            <li class="list-group-item" style="height: 60px;">{{ plan.support }}</li>
+                            <li class="list-group-item" style="height: 60px;">{{ plan.training }}</li>
+                        </ul>
+                        <a class="btn btn-primary" role="button" href="mailto:sales@bigdataocean.eu" target="_top">
+                            {{ plan.price }}
+                        </a>
+        {#                    <a class="btn btn-primary"#}
+        {#                        {% if item.title == 'Vessel Fault Prediction (FNK)'%}#}
+        {#                            href="https://predictivemaintenance.ubitech.eu"#}
+        {#                        {% elif item.title == 'Vessel Fault Prediction (ANEK)'%}#}
+        {#                            href="https://fuelconsumption.ubitech.eu"#}
+        {#                        {% else %}#}
+        {#                            href="/services/service/{{item.pk}}"#}
+        {#                        {% endif %}#}
+        {#                         role="button">#}
+        {#                        SHOW SERVICE#}
+        {#                    </a>#}
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}
