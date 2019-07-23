@@ -940,7 +940,8 @@ $(function() {
 
     // *** RUN QUERY / EXPLORE RESULTS *** //
     /* On run query btn click, execute the query and fetch results */
-    $('body').on('click', '#run-query-btn', function () {
+    $('body').on('click dblclick', '#run-query-btn', function () {
+        $('#run-query-btn').attr('disabled', 'disabled');
         if(QueryToolbox.datasets.length <= 2){
             var hasGlobal = false;
             $.each(QueryToolbox.dataset_names, function (idx, dataset) {

@@ -331,6 +331,17 @@ $(function () {
                        }
                     });
                     var dimAggregate = '';
+                    if ((QueryToolbox.groupings.length > 0) || (QueryToolbox.temporal_resolution != '') || (QueryToolbox.spatial_resolution != '')) {
+                        if (dim.datatype === 'STRING'){
+                            dimAggregate = 'MIN'
+                        }
+                        else if (dim.datatype === 'TIMESTAMP'){
+                            dimAggregate = 'MIN'
+                        }
+                        else{
+                            dimAggregate = 'AVG'
+                        }
+                    }
 
                     // if spatial resolution is used
                     if ((name === 'latitude') || (name === 'longitude')) {
@@ -364,7 +375,7 @@ $(function () {
                         datatype: dim.datatype,
                         groupBy: groupBy,
                         aggregate: dimAggregate,
-                        exclude: !groupBy && variable.aggregate
+                        exclude: false
                     };
                     // check if joined
                     if (idx > 0) {
@@ -425,6 +436,7 @@ $(function () {
                 $table.find('thead').empty();
                 $table.find('tbody').empty();
                 $("#cancel-query-btn").show();
+
                 var xhr = $.ajax({
                     url: '/queries/execute/',
                     type: 'POST',
@@ -434,6 +446,7 @@ $(function () {
                     },
                     success: function (response) {
                         $("#cancel-query-btn").hide();
+                        $('#run-query-btn').attr('disabled', false);
                         $('.no-data-message').hide();
                         $('#chartdiv').show();
                         $('#paginationDiv').show();
@@ -478,14 +491,16 @@ $(function () {
                     error: function (response) {
                         console.log(response['error_message']);
                         $("#cancel-query-btn").hide();
+                        $('#run-query-btn').attr('disabled', false);
                         hide_gif();
                         $('#chartdiv').hide();
                         $('#paginationDiv').hide();
                         $('.no-data-message').show();
-                        alert('We are sorry, an error occurred.');
+                        alert('Query failed.');
                     }
                 });
                 $("#cancel-query-btn").click(function () {
+                    $('#run-query-btn').attr('disabled', false);
                     xhr.abort();
                     $(this).prop("onclick", null).off("click");
                 })
