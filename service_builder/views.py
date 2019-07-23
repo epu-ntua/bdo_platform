@@ -244,6 +244,7 @@ def publish_new_service(request):
             service.can_be_shared = False
 
         service.published = True
+        service.through_livy = True
 
         service.save()
 
