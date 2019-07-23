@@ -940,7 +940,25 @@ $(function() {
 
     // *** RUN QUERY / EXPLORE RESULTS *** //
     /* On run query btn click, execute the query and fetch results */
-    $('body').on('click dblclick', '#run-query-btn', function () {
+    $('body').on('click', '#run-query-btn', function (e) {
+        var $this = $(this);
+        if ($this.hasClass('clicked')){
+            $this.removeClass('clicked');
+            //here is your code for double click
+            execute_query();
+        }else{
+             $this.addClass('clicked');
+             setTimeout(function() {
+                 if ($this.hasClass('clicked')){
+                     $this.removeClass('clicked');
+                     //your code for single click
+                     execute_query();
+                 }
+             }, 300);
+        }
+    });
+
+    function execute_query () {
         $('#run-query-btn').attr('disabled', 'disabled');
         if(QueryToolbox.datasets.length <= 2){
             var hasGlobal = false;
@@ -977,7 +995,7 @@ $(function() {
         else{
             alert("You have selected variables from more than two different datasets. Please update your selection.");
         }
-    });
+    };
 
     function proceed_to_execute(){
         $('a[href="#dataDiv"]').trigger('click');
